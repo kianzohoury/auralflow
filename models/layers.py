@@ -23,13 +23,13 @@ class EncoderBlock(nn.Module):
         leak (float): Negative slope value for leaky ReLU. Default: 0.2.
     """
     def __init__(
-        self,
-        in_channels: int,
-        out_channels: Optional[int] = None,
-        kernel_size: Union[int, tuple] = 5,
-        stride: Union[int, tuple] = 2,
-        padding: Union[int, str] = 2,
-        leak: float = 0.2,
+            self,
+            in_channels: int,
+            out_channels: Optional[int] = None,
+            kernel_size: Union[int, tuple] = 5,
+            stride: Union[int, tuple] = 2,
+            padding: Union[int, str] = 2,
+            leak: float = 0.2,
     ):
         super(EncoderBlock, self).__init__()
         self.in_channels = in_channels
@@ -65,7 +65,7 @@ class EncoderBlock(nn.Module):
         """
         x = self.conv(data)
         x = self.bn(x)
-        output = self.leakyrelu(x)
+        output = self.relu(x)
         return output
 
 
@@ -85,13 +85,13 @@ class StackedEncoderBlock(nn.Module):
         leak (float): Negative slope value for leaky ReLU. Default: 0.2.
     """
     def __init__(
-        self,
-        in_channels: int,
-        out_channels: Optional[int] = None,
-        layers=1,
-        kernel_size: Union[int, tuple] = 5,
-        downsampling_method: str = 'conv',
-        leak: float = 0.2,
+            self,
+            in_channels: int,
+            out_channels: Optional[int] = None,
+            layers=1,
+            kernel_size: Union[int, tuple] = 5,
+            downsampling_method: str = 'conv',
+            leak: float = 0.2,
     ):
         super(StackedEncoderBlock, self).__init__()
         self.in_channels = in_channels
@@ -176,14 +176,14 @@ class DecoderBlock(nn.Module):
         Default: True.
 """
     def __init__(
-        self,
-        in_channels: int,
-        out_channels: Optional[int] = None,
-        kernel_size: Union[int, tuple] = 5,
-        stride: Union[int, tuple] = 2,
-        padding: Union[int, str] = 2,
-        dropout: float = 0,
-        skip_block: bool = True
+            self,
+            in_channels: int,
+            out_channels: Optional[int] = None,
+            kernel_size: Union[int, tuple] = 5,
+            stride: Union[int, tuple] = 2,
+            padding: Union[int, str] = 2,
+            dropout: float = 0,
+            skip_block: bool = True,
     ):
         super(DecoderBlock, self).__init__()
         self.in_channels = in_channels
@@ -209,7 +209,7 @@ class DecoderBlock(nn.Module):
 
         # Define block layers.
         self.bn = nn.BatchNorm2d(out_channels) if skip_block else nn.Identity()
-        self.relu == nn.ReLU() if skip_block else nn.Identity()
+        self.relu = nn.ReLU() if skip_block else nn.Identity()
         self.dropout = nn.Dropout2d(dropout) if dropout > 0 else nn.Identity()
 
     def forward(self, data: torch.Tensor, output_size: torch.Size) -> torch.Tensor:
@@ -289,14 +289,13 @@ class StackedDecoderBlock(nn.Module):
         # Define convolutional layers.
         for i in range(layers - 1):
             stack.append(
-                DecoderBlock(
+                EncoderBlock(
                     in_channels=out_channels,
                     out_channels=out_channels,
                     kernel_size=kernel_size,
-                    stride=2,
+                    stride=1,
                     padding='same',
-                    dropout=dropout,
-                    skip_block=skip_block
+                    leak=0
                 )
             )
 

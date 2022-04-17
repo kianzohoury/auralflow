@@ -2,8 +2,8 @@
 data:
   # targets:
   #   Target sources to separate. Pass in one or more sources as a list.
-  # mono:
-  #   Whether to compress stereo channels to single mono channel.
+  # num-channels:
+  #   Number of channels (mono = 1, stereo = 2). Default: 1.
   # sample-rate:
   #   Sampling rate of the audio files.
   # num-fft:
@@ -17,7 +17,7 @@ data:
   # backend:
   #   Backend audio framework for loading audio files.
   targets: [vocals]
-  mono: true
+  num-channels: 1
   sample-rate: 44100
   num-fft: 1024
   window-size: 1024

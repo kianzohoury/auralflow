@@ -17,6 +17,7 @@ from datatools.datasets import AudioFolder
 from argparse import ArgumentParser
 from yaml import YAMLError
 import ruamel.yaml
+import config.build
 import yaml
 
 from pprint import pprint
@@ -24,8 +25,8 @@ from pprint import pprint
 config_dir = Path(__file__).parent / 'config'
 session_logs_file = config_dir / 'session_logs.yaml'
 
+config_parser = ruamel.yaml.YAML(typ='safe', pure=True)
 yaml_parser = ruamel.yaml.YAML()
-
 
 def main(config: dict):
     """Main training method.
@@ -204,47 +205,10 @@ def main(config: dict):
     print("=" * 90 + "\nTraining finished.")
 
 
-def read_config_files(model_name: str):
-    try:
-        logs = config.utils.get_session_logs(session_logs_file)
-    except YAMLError:
-        print(f"Error: cannot build {model_name}.")
-        sys.exit(1)
-    session_dir = Path(logs['current']['location'])
-    model_dir = session_dir / model_name
-    if not model_dir.is_dir():
-        print("Cannot find model.")
-    else:
-        try:
-            dataset_config = yaml_parser.load(model_dir / 'data_config.yaml')
-            training_config = yaml_parser.load(model_dir / 'training_config.yaml')
-            model_config = yaml_parser.load(model_dir / 'unet_base.yaml')
-            training_blueprint = {
-                'model': model_config,
-                'training': training_config,
-                'data': dataset_config
-            }
-            return training_blueprint
-        except YAMLError:
-            print(f"Error: cannot build {model_name}.")
 
 
-# def build_model(model_name: str, session_dir: Path):
-#     try:
-#         logs = config.utils.get_session_logs(session_logs_file)
-#         session_dir = Path(logs['current']['location'])
-#         model_dir = session_dir / model_name
-#         if not model_dir.is_dir():
-#             print("Cannot find model.")
-#         else:
-#             data_config = yaml_parser.load(model_dir / 'data_config.yaml')
-#             training_config = yaml_parser.load(model_dir / 'training_config.yaml')
-#             model_config = yaml_parser.load(model_dir / 'unet_base.yaml')
-#
-#             #
-#             # tranining_parameters = config_data['model']
-#     except YAMLError:
-#         print(f"Error: cannot build {model_name}.")
+
+
 
 
 if __name__ == "__main__":
@@ -259,15 +223,20 @@ if __name__ == "__main__":
                         metavar='', required=True
                         )
 
-    args = parser.parse_args()
+    args = vars(parser.parse_args())
+    print(args)
 
     # locate model in current session if it exists
     # check if model is already trained, ask if wannt to resume
     # otherwise, build model, save it, and start training
-    #
 
-    read_config_files(args['model'])
-
+    model_name = args['model']
+    logs = config.utils.get_session_logs(session_logs_file)
+    model_dir = Path(logs[model_name]['location'])
+    config_dict = config.build.get_all_config_contents(model_dir)
+    pprint(config_dict)
+    model = config.build.build_model(config_dict)
+    pprint(model)
     # print(vars(args))
     # unet = UNet()
     # torchinfo.summary(unet, input_size=(16, 512, 128, 1))

@@ -3,7 +3,8 @@ import torch.nn as nn
 
 import numpy as np
 from typing import Optional, Union
-from layers import StackedEncoderBlock, StackedDecoderBlock
+from models.layers import StackedEncoderBlock, StackedDecoderBlock
+
 
 class UNet(nn.Module):
     def __init__(self):
@@ -94,58 +95,58 @@ class DynamicUNet(nn.Module):
     for Music Information Retrieval Conference, 23-27 Oct 2017, Suzhou, China.
     """
     def __init__(
-        self,
-        init_feature_size: int = 16,
-        num_fft: int = 512,
-        num_channels: int = 1,
-        bottleneck_size: Optional[int] = 512,
-        bottleneck_layers: int = 1,
-        bottleneck_type: str = 'conv',
-        max_layers: int = 6,
-        encoder_block_layers: int = 1,
-        decoder_block_layers: int = 1,
-        encoder_kernel_size: int = 5,
-        decoder_kernel_size: int = 5,
-        dropout: float = 0.5,
-        dropout_layers: int = 3,
-        skip_connections: bool = True,
-        mask_activation: str = 'sigmoid',
-        block_size: int = 2,
-        downsampling_method: Optional[str] = 'conv',
-        upsampling_method: Optional[str] = 'transposed',
-        block_activation: str = 'relu',
-        leakiness: Optional[float] = 0.2,
-        target_sources: Union[int, list] = 1,
-        input_norm: bool = False,
-        output_norm: bool = False
+            self,
+            init_features: int = 16,
+            num_fft: int = 512,
+            num_channels: int = 1,
+            bottleneck_size: Optional[int] = 512,
+            bottleneck_layers: int = 1,
+            bottleneck_type: str = 'conv',
+            max_layers: int = 6,
+            encoder_block_layers: int = 1,
+            decoder_block_layers: int = 1,
+            encoder_kernel_size: int = 5,
+            decoder_kernel_size: int = 5,
+            dropout: float = 0.5,
+            dropout_layers: int = 3,
+            skip_connections: bool = True,
+            mask_activation: str = 'sigmoid',
+            block_size: int = 2,
+            downsampling_method: Optional[str] = 'conv',
+            upsampling_method: Optional[str] = 'transposed',
+            block_activation: str = 'relu',
+            leakiness: Optional[float] = 0.2,
+            target_sources: Union[int, list] = 1,
+            input_norm: bool = False,
+            output_norm: bool = False
     ):
         super(DynamicUNet, self).__init__()
 
         assert num_fft & (num_fft - 1) == 0, \
             f"Frequency dimension must be a power of 2, but received {num_fft}"
-        assert init_feature_size & (init_feature_size - 1) == 0, \
+        assert init_features & (init_features - 1) == 0, \
             f"Input feature size must be a power of 2, but received {num_fft}"
 
-        self.init_feature_size = init_feature_size
+        self.init_feature_size = init_features
         self.num_channels = num_channels
 
         # determine depth of the model
         self.max_layers = min(
             max_layers,
-            int(np.log2(num_fft // init_feature_size) + 1)
+            int(np.log2(num_fft // init_features) + 1)
         )
 
         self.bottleneck_size = bottleneck_size
         self.dropout = dropout
 
         # construct autoencoder layers
-        encoder = nn.ModuleList()
-        decoder = nn.ModuleList()
+        encoder = []
+        decoder = []
         for layer in range(self.max_layers):
 
             if layer == 0:
                 in_channels = num_channels
-                out_channels = init_feature_size
+                out_channels = init_features
             else:
                 in_channels = out_channels
                 out_channels = in_channels * 2
@@ -155,30 +156,29 @@ class DynamicUNet(nn.Module):
                     in_channels,
                     out_channels,
                     kernel_size=5,
-                    downsampling_method=downsampling_method,
+                    # downsampling_method=downsampling_method,
                     leak=leakiness,
-                    layers=block_size
+                    layers=encoder_block_layers
                 )
             )
 
             out_channels = out_channels // 2 if layer == self.max_layers - 1 else out_channels
 
             decoder.append(
-                DecoderBlock(
+                StackedDecoderBlock(
                     out_channels * 2,
                     in_channels,
                     kernel_size=5,
-                    stride=2,
-                    padding=2,
-                    dropout_p=0.5 if 0 < self.max_layers - layer - 1 <= 3 else 0,
-                    skip_block=True if layer != 0 else False
+                    layers=decoder_block_layers,
+                    dropout=0.5 if 0 < self.max_layers - layer <= 3 else 0,
+                    skip_block=True
                 )
             )
 
         # register layers and final activation
-        self.encoder = encoder
-        self.decoder = decoder
-        self.activation = nn.Sigmoid() if activation == 'sigmoid' else nn.ReLU()
+        self.encoder = nn.ModuleList(encoder)
+        self.decoder = nn.ModuleList(decoder)
+        self.activation = nn.Sigmoid() if mask_activation == 'sigmoid' else nn.ReLU()
 
         # input normalization
         # self.input_normalization = nn.BatchNorm2d(num_fft)

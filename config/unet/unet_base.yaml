@@ -40,8 +40,8 @@ model:
   # output-normalization:
   #   Learnable normalization parameters to apply before final mask activation.
   name: my_model
-  base-model: Unet
-  depth: 6
+  base-model: unet
+  max-layers: 6
   init-features: 16
   bottleneck:
     type: conv
@@ -56,8 +56,8 @@ model:
     kernel-size: 5
     up: transposed
     dropout: 0.5
-    num-dropouts: 3
-    skip: True
+  num-dropouts: 3
+  skip-connections: True
   mask-activation: sigmoid
-  input-normalization: False
-  output-normalization: False
+  input-norm: False
+  output-norm: False
