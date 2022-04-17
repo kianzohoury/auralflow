@@ -1,0 +1,10 @@
+torch~=1.11.0
+tqdm~=4.64.0
+torchaudio~=0.11.0
+numpy~=1.21.5
+matplotlib~=3.5.1
+librosa~=0.9.1
+ipython~=8.2.0
+pyyaml~=6.0
+tabulate~=0.8.9
+torchinfo~=1.6.5

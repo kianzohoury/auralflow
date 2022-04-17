@@ -1,0 +1,23 @@
+TRAINING_KEYS = {
+    "targets",
+    "mono",
+    "sample-rate",
+    "num-fft",
+    "window-size",
+    "hop-length",
+    "chunk-size",
+    "load-size",
+    "batch_size",
+    "split",
+    "epochs",
+    "optim",
+    "lr",
+    "loss",
+    "patience",
+    "num-workers",
+    "pin-mem",
+    "cuda",
+    "num-gpus",
+    "backend",
+    "tensorboard"
+}
