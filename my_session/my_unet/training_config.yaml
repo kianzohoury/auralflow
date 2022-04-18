@@ -37,8 +37,8 @@ training:
   loss: l1
   patience: 10
   num-workers: 8
-  pin-memory: True
-  persistent-workers: True
-  cuda: True
+  pin-memory: true
+  persistent-workers: true
+  cuda: true
   gpus: 1
-  tensorboard: True
+  tensorboard: true

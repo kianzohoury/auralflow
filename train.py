@@ -93,18 +93,26 @@ def main(training_session: dict):
         persistent_workers=persistent
     )
 
+    print(f"Chosen device: {device}. Model is on "
+          f"{next(model.parameters()).device} ."
+          f"Backend: {train_dataset.backend}.")
+
+    print(f"Dataloader info: batch_size: {batch_size}, workers: {num_workers} "
+          f"pin_memory: {pin_mem}, persistent: {persistent}")
+
     print("=" * 95)
     print("Training session started...")
     print("=" * 95)
 
-    writer = tensorboard.SummaryWriter(training_session['model_dir'])
+    writer = tensorboard.SummaryWriter(training_session['model_dir'] / 'runs')
     stop_counter = 0
     model.train()
     for epoch in range(current_epoch, current_epoch + epochs + 1):
 
         total_loss = 0
-
+        start = time.time()
         with ProgressBar(train_dataloader, max_iters) as pbar:
+            loading_time = time.time() - start
             pbar.set_description(f"Epoch [{epoch}/{epochs}]")
             for index, (mixture, target) in enumerate(pbar):
                 optimizer.zero_grad()
@@ -139,7 +147,10 @@ def main(training_session: dict):
                 writer.add_scalar('Loss/train', loss.item(), global_steps)
 
                 iter_losses.append(loss.item())
-                pbar.set_postfix(loss=round(loss.item(), 3))
+                pbar.set_postfix({
+                    "loss": loss.item(),
+                    "loading_time": f"{round(loading_time, 2)}s"
+                })
 
                 # backpropagation/update step
                 loss.backward()
@@ -176,10 +187,14 @@ def main(training_session: dict):
                            training_session['model_dir'] / 'checkpoints',
                            display=(epoch - 1) % 10 == 0)
 
+        if epoch % 10 == 0:
+            torch.save(training_session, training_session['latest_checkpoint'])
+
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             training_session['best_val_loss'] = best_val_loss
             stop_counter = 0
+            torch.save(training_session, training_session['best_checkpoint'])
         elif stop_counter < patience:
             stop_counter += 1
             epochs_left = patience - stop_counter + 1
@@ -216,7 +231,7 @@ if __name__ == "__main__":
     try:
         model = config.build.build_model(config_dict)
         print("Success: PyTorch model was built. Visualizing model...")
-        time.sleep(3)
+        # time.sleep(3)
         data_config_copy = dict(config_dict['data'])
         for key in ['backend', 'audio_format']:
             data_config_copy.pop(key)
@@ -238,6 +253,7 @@ if __name__ == "__main__":
         print("Error: cannot train model.")
         sys.exit(0)
     elif args['model'] and not checkpoints_dir.is_dir():
+        checkpoints_dir.mkdir(parents=True, exist_ok=True)
         training_settings = config_dict['training']
         optimizer = torch.optim.Adam(model.parameters(), training_settings['lr'])
         criterion = nn.L1Loss()
@@ -246,6 +262,8 @@ if __name__ == "__main__":
         epoch_losses = []
         val_losses = []
         best_val_loss = float("inf")
+        latest_checkpoint = checkpoints_dir / f"{model_name}_latest.pth"
+        best_checkpoint = checkpoints_dir / f"{model_name}_best.pth"
 
         training_session = {
             'model': model,
@@ -264,10 +282,12 @@ if __name__ == "__main__":
             'val_losses': val_losses,
             'best_val_loss': best_val_loss,
             'current_epoch': 0,
-            'trained': False
+            'trained': False,
+            'latest_checkpoint': latest_checkpoint,
+            'best_checkpoint': best_checkpoint
         }
-        checkpoints_dir.mkdir()
-        torch.save(training_session, checkpoints_dir / f"{model_name}_latest.pth")
+        torch.save(training_session, latest_checkpoint)
+        torch.save(training_session, best_checkpoint)
     else:
         training_session = torch.load(checkpoints_dir / f"{model_name}_latest.pth")
     main(training_session)

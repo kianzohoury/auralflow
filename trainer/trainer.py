@@ -3,20 +3,9 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from utils.progress_bar import ProgressBar
 
-
-def run_training_loop():
-    pass
-
-
-
-
-
-
-
-
-
-
-
+#
+# def run_training_loop():
+#     pass
 
 
 def cross_validate(model: torch.nn.Module, data_loader: DataLoader,
@@ -33,6 +22,8 @@ def cross_validate(model: torch.nn.Module, data_loader: DataLoader,
     """
     num_iterations = max_iters
     total_loss = 0
+
+    step = 0
 
     model.eval()
     with ProgressBar(data_loader, num_iterations, train=False) as pbar:
@@ -64,8 +55,10 @@ def cross_validate(model: torch.nn.Module, data_loader: DataLoader,
                 loss = criterion(estimate, target_mag)
 
             total_loss += loss.item()
-            writer.add_scalar("Val/Loss", loss.item(), epoch)
+            writer.add_scalar("Val/Loss", loss.item(), step)
             pbar.set_postfix(loss=loss.item())
+
+            step += 1
 
             if index >= num_iterations:
                 pbar.set_postfix(loss=round(total_loss / num_iterations, 3))

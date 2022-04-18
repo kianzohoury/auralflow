@@ -1,9 +1,9 @@
 my_session:
   session-id: my_session
   location: /Users/Kian/Desktop/Auralate/my_session
-  date-created: 17/04/2022 18:18:55
+  date-created: 18/04/2022 14:29:41
   models:
-  - my_model
+  - my_unet
 second_session:
   session-id: second_session
   location: /Users/Kian/Desktop/Auralate/second_session
@@ -11,5 +11,5 @@ second_session:
   models:
   - new_model
 current:
-  session-id: second_session
-  location: /Users/Kian/Desktop/Auralate/second_session
+  session-id: my_session
+  location: /Users/Kian/Desktop/Auralate/my_session
