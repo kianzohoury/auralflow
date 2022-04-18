@@ -1,9 +1,9 @@
 import sys
+import time
 
 import torch
 import torch.nn as nn
 import numpy as np
-
 import torchinfo
 
 from pathlib import Path
@@ -13,9 +13,11 @@ from models.base_unet import UNet
 from trainer.trainer import cross_validate
 from utils.progress_bar import ProgressBar
 from torch.utils.data.dataloader import DataLoader
-from datatools.datasets import AudioFolder
+from AudioFolder.datasets import AudioFolder
 from argparse import ArgumentParser
+import transforms
 from yaml import YAMLError
+from typing import List
 import ruamel.yaml
 import config.build
 import yaml
@@ -205,12 +207,6 @@ def main(config: dict):
     print("=" * 90 + "\nTraining finished.")
 
 
-
-
-
-
-
-
 if __name__ == "__main__":
 
     parser = ArgumentParser(description="Training script.")
@@ -224,19 +220,34 @@ if __name__ == "__main__":
                         )
 
     args = vars(parser.parse_args())
-    print(args)
-
-    # locate model in current session if it exists
-    # check if model is already trained, ask if wannt to resume
-    # otherwise, build model, save it, and start training
 
     model_name = args['model']
     logs = config.utils.get_session_logs(session_logs_file)
-    model_dir = Path(logs[model_name]['location'])
+    session_dir = Path(logs['current']['location'])
+    model_dir = session_dir / model_name
     config_dict = config.build.get_all_config_contents(model_dir)
-    pprint(config_dict)
-    model = config.build.build_model(config_dict)
-    pprint(model)
+    try:
+        model = config.build.build_model(config_dict)
+        print("Success: PyTorch model was built. Visualizing model...")
+        time.sleep(3)
+        data_config_copy = dict(config_dict['data'])
+        print(data_config_copy)
+        for key in ['backend', 'audio_format']:
+            data_config_copy.pop(key)
+        data_config_copy['batch_size'] = config_dict['training']['batch_size']
+        input_shape = transforms.get_data_shape(**data_config_copy)
+        print(input_shape)
+        torchinfo.summary(model, input_size=input_shape[:-1], depth=8)
+    except Exception as e:
+        print(e)
+        raise e
+        sys.exit(0)
+
+    try:
+        dataset = config.build.build_audio_folder(config_dict, args['dataset'])
+    except FileNotFoundError as e:
+        print(str(e))
+    # print(dataset.__dict__)
     # print(vars(args))
     # unet = UNet()
     # torchinfo.summary(unet, input_size=(16, 512, 128, 1))
@@ -244,4 +255,5 @@ if __name__ == "__main__":
     # build_model(vars(args)['model'])
 
     # main(config)
+
 

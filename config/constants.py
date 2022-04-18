@@ -22,7 +22,6 @@ REQUIRED_MODEL_KEYS = {
     'encoder_down',
     'decoder_up',
     'encoder_leak',
-    'target',
     'input_norm',
     'output_norm'
 }

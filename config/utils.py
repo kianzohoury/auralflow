@@ -123,6 +123,6 @@ def list_models(logs_file: Path):
         table_string = tabulate(
             table_entries,
             headers=['Session', 'Model', 'Created', 'Location'],
-            tablefmt=""
+            tablefmt="rst"
         )
         print(table_string)

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+from typing import List
 
 
 def make_hann_window(window_length, trainable=True, device=None):
@@ -87,3 +87,30 @@ class PhaseApproximation(nn.Module):
     def forward(self, source: torch.Tensor) -> torch.Tensor:
         return source * torch.exp(1j * self.phase)
 
+
+def get_data_shape(batch_size: int, sample_rate: int, sample_length: int,
+                   num_fft: int, window_size: int, hop_length: int,
+                   num_channels: int, targets: List):
+    """Helper method to get the shape of PyTorch's STFT implementation.
+
+    Returns:
+        (tensor.Size): Size of the output.
+    """
+
+    # Due to symmetry property of STFT, if we want F frequency bins,
+    # we need to specify (F - 1) n_ffts, since num_fft = F // 2 + 1.
+    random_data = torch.rand((batch_size, num_channels,
+                              sample_rate * sample_length, len(targets)))
+    output = []
+    for target in range(random_data.shape[-1]):
+        channel_stfts = []
+        for channel in range(random_data.shape[1]):
+            stft_output = torch.stft(
+                random_data[:, channel, :, target].squeeze(1).squeeze(-1),
+                n_fft=num_fft - 1, hop_length=hop_length,
+                win_length=window_size - 1,
+                onesided=True, return_complex=True)
+            channel_stfts.append(stft_output)
+        output.append(torch.stack(channel_stfts, dim=-1))
+    output = torch.stack(output, dim=-1)
+    return output.size()

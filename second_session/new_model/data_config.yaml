@@ -16,7 +16,7 @@ data:
   #   Duration of the sampled audio clips.
   # backend:
   #   Backend audio framework for loading audio files.
-  targets: [vocals]
+  targets: [vocals, bass, drums]
   num-channels: 1
   sample-rate: 44100
   num-fft: 1024

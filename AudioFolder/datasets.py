@@ -26,13 +26,13 @@ class AudioFolder(IterableDataset):
         subset (str): Train or test set. Default: 'train'.
         audio_format (str): Audio format. Default: 'wav'.
         sample_rate (int): Sample rate. Default: 44100
-        is_mono (bool): True if samples should be compressed to mono.
+        num_channels (int): Number of audio channels. Default: 1.
             Default: True.
         backend (str): Torchaudio backend. Default: 'soundfile'.
     """
     def __init__(self, path: str, targets: Optional[List[str]] = None,
                  sample_length: int = 3, subset: str = 'train',
-                 audio_format: str = 'wav', sample_rate: int = 44100, mono: bool = True,
+                 audio_format: str = 'wav', sample_rate: int = 44100, num_channels: int = 1,
                  backend: str = 'soundfile', hop_length=None, num_fft=None, window_size=None):
 
         super(AudioFolder, self).__init__()
@@ -42,7 +42,7 @@ class AudioFolder(IterableDataset):
         self.subset = subset
         self.audio_format = audio_format
         self.sample_rate = sample_rate
-        self.mono = mono
+        self.num_channels = num_channels
         self.backend = backend
 
         self.hop_length = hop_length
@@ -51,11 +51,6 @@ class AudioFolder(IterableDataset):
 
         root_dir = Path(path)
         subset_dir = root_dir / subset
-        if not root_dir.is_dir():
-            raise FileNotFoundError(f"Cannot load data from {root_dir} folder.")
-        elif not subset_dir.is_dir():
-            raise FileNotFoundError(f"Cannot load data from {subset_dir} folder.")
-
         track_filepaths = []
         for track_fp in subset_dir.iterdir():
             target_filepaths = [track_fp.joinpath(target).with_suffix(
@@ -90,7 +85,7 @@ class AudioFolder(IterableDataset):
                 frame_offset=offset * self.sample_rate,
                 num_frames=self.sample_length * self.sample_rate
             )
-            if self.mono:
+            if self.num_channels == 1:
                 audio_data = torch.mean(audio_data, dim=0, keepdim=True)
             sources_data.append(audio_data)
 
@@ -120,7 +115,7 @@ class AudioFolder(IterableDataset):
             self.subset,
             self.audio_format,
             self.sample_rate,
-            self.mono,
+            self.num_channels,
             self.backend
         )
 

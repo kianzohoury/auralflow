@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 import numpy as np
-from typing import Optional, Union
+from typing import Optional, Union, List
 from models.layers import StackedEncoderBlock, StackedDecoderBlock
 
 
@@ -70,13 +70,17 @@ class DynamicUNet(nn.Module):
     Dynamic implementation of the deep U-Net encoder/decoder architecture for
     source separation proposed in [1].
 
-    Parameters
+    Args:
     ----------
-    init_feature_size (int): number of starting features (default = 16)
-    num_fft (int): number of STFT frequency bins (default = 512)
-    num_channels (int): number of input channels
-    max_layers (int): max depth of the autoencoder layers; will infer the limit
-                      on number of layers if optional bottleneck_size is specified
+    init_features (int):
+        Number of starting features. Default: 16.
+    num_fft (int):
+        Number of STFT frequency bins. Default: 512.
+    num_channels (int):
+        Number of input channels. Default: 1.
+    max_layers (int):
+        max depth of the autoencoder layers; will infer the limit n number of
+        layers if optional bottleneck_size is specified.
     bottleneck_size (int or None): number of features for bottleneck layer;
                                    if unspecified, will default to num_fft
     dropout (float): dropout probability p if dropout > 0 else no dropout used
@@ -95,55 +99,55 @@ class DynamicUNet(nn.Module):
     for Music Information Retrieval Conference, 23-27 Oct 2017, Suzhou, China.
     """
     def __init__(
-            self,
-            init_features: int = 16,
-            num_fft: int = 512,
-            num_channels: int = 1,
-            bottleneck_size: Optional[int] = 512,
-            bottleneck_layers: int = 1,
-            bottleneck_type: str = 'conv',
-            max_layers: int = 6,
-            encoder_block_layers: int = 1,
-            decoder_block_layers: int = 1,
-            encoder_kernel_size: int = 5,
-            decoder_kernel_size: int = 5,
-            dropout: float = 0.5,
-            dropout_layers: int = 3,
-            skip_connections: bool = True,
-            mask_activation: str = 'sigmoid',
-            block_size: int = 2,
-            downsampling_method: Optional[str] = 'conv',
-            upsampling_method: Optional[str] = 'transposed',
-            block_activation: str = 'relu',
-            leakiness: Optional[float] = 0.2,
-            target_sources: Union[int, list] = 1,
-            input_norm: bool = False,
-            output_norm: bool = False
+        self,
+        init_features: int = 16,
+        num_fft: int = 512,
+        window_size: int = 512,
+        hop_length: int = 768,
+        num_channels: int = 1,
+        targets: Optional[List] = None,
+        bottleneck_layers: int = 1,
+        bottleneck_type: str = 'conv',
+        max_layers: int = 6,
+        encoder_block_layers: int = 1,
+        decoder_block_layers: int = 1,
+        encoder_kernel_size: int = 5,
+        decoder_kernel_size: int = 5,
+        encoder_down: Optional[str] = 'conv',
+        decoder_up: Optional[str] = 'transposed',
+        decoder_dropout: float = 0.5,
+        num_dropouts: int = 3,
+        skip_connections: bool = True,
+        encoder_leak: float = 0.2,
+        mask_activation: str = 'sigmoid',
+        input_norm: bool = False,
+        output_norm: bool = False
     ):
         super(DynamicUNet, self).__init__()
-
         assert num_fft & (num_fft - 1) == 0, \
             f"Frequency dimension must be a power of 2, but received {num_fft}"
         assert init_features & (init_features - 1) == 0, \
             f"Input feature size must be a power of 2, but received {num_fft}"
 
         self.init_feature_size = init_features
+        self.num_fft = num_fft
+        self.window_size = window_size
+        self.hop_length = hop_length
+        self.targets = targets if targets else ['vocals']
+        self.bottleneck_layers = bottleneck_layers
+        self.bottleneck_type = bottleneck_type
         self.num_channels = num_channels
 
         # determine depth of the model
         self.max_layers = min(
             max_layers,
-            int(np.log2(num_fft // init_features) + 1)
+            int(np.log2(num_fft // init_features + 1e-6) + 1)
         )
 
-        self.bottleneck_size = bottleneck_size
-        self.dropout = dropout
-
         # construct autoencoder layers
-        encoder = []
-        decoder = []
+        encoder = nn.ModuleList()
+        decoder = nn.ModuleList()
         for layer in range(self.max_layers):
-
             if layer == 0:
                 in_channels = num_channels
                 out_channels = init_features
@@ -155,54 +159,72 @@ class DynamicUNet(nn.Module):
                 StackedEncoderBlock(
                     in_channels,
                     out_channels,
-                    kernel_size=5,
-                    # downsampling_method=downsampling_method,
-                    leak=leakiness,
-                    layers=encoder_block_layers
+                    layers=encoder_block_layers,
+                    kernel_size=encoder_kernel_size,
+                    downsampling_method=encoder_down,
+                    leak=encoder_leak
                 )
             )
 
-            out_channels = out_channels // 2 if layer == self.max_layers - 1 else out_channels
+            if layer == self.max_layers - 1:
+                out_channels = out_channels // 2
 
             decoder.append(
                 StackedDecoderBlock(
                     out_channels * 2,
                     in_channels,
-                    kernel_size=5,
+                    kernel_size=decoder_kernel_size,
                     layers=decoder_block_layers,
-                    dropout=0.5 if 0 < self.max_layers - layer <= 3 else 0,
+                    dropout=decoder_dropout if 0 < self.max_layers - layer <= num_dropouts else 0,
                     skip_block=True
                 )
             )
 
+        # Final 1x1 conv layer for multi-source mask estimation.
+        final_num_channels = decoder[0].out_channels
+
+        if len(self.targets) > 1:
+            self.final_conv = nn.Conv2d(
+                in_channels=final_num_channels,
+                out_channels=len(self.targets),
+                kernel_size=1,
+                stride=1,
+                padding='same'
+            )
+        else:
+            self.final_conv = nn.Identity()
+
         # register layers and final activation
-        self.encoder = nn.ModuleList(encoder)
-        self.decoder = nn.ModuleList(decoder)
+        self.encoder = encoder
+        self.decoder = decoder
         self.activation = nn.Sigmoid() if mask_activation == 'sigmoid' else nn.ReLU()
 
-        # input normalization
-        # self.input_normalization = nn.BatchNorm2d(num_fft)
+        if input_norm:
+            self.input_norm = nn.BatchNorm2d(num_fft)
+        else:
+            self.input_norm = nn.Identity()
+        if output_norm:
+            self.output_norm = nn.BatchNorm2d(num_fft)
+        else:
+            self.output_norm = nn.Identity()
 
     def forward(self, data: torch.Tensor) -> dict:
         """
         Performs source separation by indirectly learning a soft mask, and
         applying it to the mixture STFT (Short Time Fourier Transform).
 
-        Parameters
-        ----------
-        data (tensor): mixture magnitude STFT data of shape (N, F, T, C), where
-                       N: number of samples in mini-batch
-                       F: number of frequency bins
-                       T: number of frames (along the temporal dimension)
-                       C: number of input channels (1 = mono, 2 = stereo)
+        Args:
+        data (tensor):
+            mixture magnitude STFT data of shape (N, F, T, C), where
+            N: number of samples in mini-batch
+            F: number of frequency bins
+            T: number of frames (along the temporal dimension)
+            C: number of input channels (1 = mono, 2 = stereo)
 
-        Returns
-        -------
-        output (tensor): source estimate matching the shape of input
+        Returns:
+            output (tensor): source estimate matching the shape of input
         """
 
-        # # make copy of mixture STFT
-        # original = data.detach().clone().permute(0, 3, 1, 2)
 
         # normalize input
         # data = self.input_normalization(data)
@@ -213,12 +235,10 @@ class DynamicUNet(nn.Module):
 
         encodings = []
 
-
         # downsamplng layers
         for layer in range(self.max_layers - 1):
             data = self.encoder[layer](data)
             encodings.append(data)
-            # print(f"E{layer + 1}", data.mean())
             # save non-bottleneck intermediate encodings for skip connection
 
         # pass through bottleneck layer
@@ -227,14 +247,13 @@ class DynamicUNet(nn.Module):
 
         # upsampling layers
         for layer in range(self.max_layers - 2):
-            # print(f"D{layer + 1}", self.decoder[-1 - layer].skip_block)
             data = torch.cat([data, encodings[-1 - layer]], dim=1)
             data = self.decoder[-2 - layer](data, encodings[-2 - layer].size())
-            # print(f"D{layer + 1}", data.mean())
 
         # final conv layer + activation
         data = torch.cat([data, encodings[0]], dim=1)
         data = self.decoder[0](data, original.size())
+        data = self.final_conv(data)
         mask = self.activation(data)
 
         # print(mask.mean())
@@ -263,4 +282,5 @@ class DynamicUNet(nn.Module):
 
             estimate = (mask * mag) * torch.exp(1j * phase)
         return estimate
+
 
