@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torchinfo
+from torch.utils import tensorboard
+from utils.utils import checkpoint_handler
 
 from pathlib import Path
 
@@ -30,11 +32,12 @@ session_logs_file = config_dir / 'session_logs.yaml'
 config_parser = ruamel.yaml.YAML(typ='safe', pure=True)
 yaml_parser = ruamel.yaml.YAML()
 
-def main(config: dict):
+
+def main(training_session: dict):
     """Main training method.
 
     Args:
-        config (dict): Dictionary containing the training parameters.
+        training_session (dict): Dictionary containing the training parameters.
     """
 
     # Set seeds.
@@ -42,24 +45,37 @@ def main(config: dict):
     torch.manual_seed(0)
     torch.cuda.manual_seed(0)
 
-    # ignore tensorboard for now
-
-    train_dataset = AudioFolder(**config['dataset'], subset='train')
-    val_dataset = train_dataset.split(val_split=config['training']['val_split'])
-
-    if config['training']['cuda'] and torch.cuda.is_available():
+    if training_session['parameters']['cuda'] and torch.cuda.is_available():
         device = 'cuda'
     else:
         device = 'cpu'
 
-    epochs = config['training']['epochs']
-    batch_size = config['training']['batch_size']
-    lr = config['training']['lr']
-    # optimizer = config['training']['optimizer']
-    num_workers = config['training']['num_workers']
-    pin_mem = config['training']['pin_memory']
-    persistent = config['training']['persistent_workers']
-    patience = config['training']['patience']
+    model = training_session['model'].to(device)
+
+    epochs = training_session['parameters']['epochs']
+    batch_size = training_session['parameters']['batch_size']
+    lr = training_session['parameters']['lr']
+    optimizer = training_session['optimizer']
+    num_workers = training_session['parameters']['num_workers']
+    pin_mem = training_session['parameters']['pin_memory']
+    persistent = training_session['parameters']['persistent_workers']
+    patience = training_session['parameters']['patience']
+    val_split = training_session['parameters']['val_split']
+    max_iters = training_session['parameters']['max_iters']
+    current_epoch = training_session['current_epoch']
+    global_steps = training_session['global_steps']
+
+    iter_losses = training_session['iter_losses']
+    epoch_losses = training_session['epoch_losses']
+    val_losses = training_session['val_losses']
+    best_val_loss = training_session['best_val_loss']
+
+    num_fft = training_session['data']['num_fft']
+    window_size = training_session['data']['window_size']
+    hop_length = training_session['data']['hop_length']
+
+    train_dataset = training_session['dataset']
+    val_dataset = train_dataset.split(val_split)
 
     train_dataloader = torch.utils.data.DataLoader(
         dataset=train_dataset,
@@ -77,61 +93,32 @@ def main(config: dict):
         persistent_workers=persistent
     )
 
-    model = UNet().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    criterion = nn.L1Loss()
-    global_steps = 0
-    global_clock = 0
-    iter_history = []
-    epoch_history = []
-    validation_history = []
-    best_val_loss = float("inf")
-    stop_counter = 0
-
-    # initialize model state
-    model_state = {
-        'model_base' : model.__class__.__name__,
-        'device' : device,
-        'epoch' : 0,
-        'global_steps' : 0,
-        # 'max_iter' : max_iter,
-        'avg_epoch_time' : float("inf"),
-        'total_training_time' : float("inf"),
-        'state_dict' : model.state_dict(),
-        'optimizer' : optimizer.state_dict(),
-        'lr' : lr,
-        'criterion' : criterion,
-        'batch_size' : batch_size,
-        'iter_history' : iter_history,
-        'epoch_history' : epoch_history,
-        'val_history' : validation_history,
-        'final_train_loss' : float("inf"),
-        'final_val_loss' : float("inf"),
-        'best_val_loss' : float("inf"),
-        'checkpoint_dir' : config['session']['checkpoint_folder']
-    }
-
-    num_iterations = config['training']['max_iters']
-
-    print("=" * 90)
+    print("=" * 95)
     print("Training session started...")
-    print("=" * 90)
+    print("=" * 95)
 
+    writer = tensorboard.SummaryWriter(training_session['model_dir'])
+    stop_counter = 0
     model.train()
-    for epoch in range(1, epochs + 1):
+    for epoch in range(current_epoch, current_epoch + epochs + 1):
 
         total_loss = 0
-        epoch_clock = 0
 
-        with ProgressBar(train_dataloader, num_iterations) as pbar:
+        with ProgressBar(train_dataloader, max_iters) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{epochs}]")
             for index, (mixture, target) in enumerate(pbar):
                 optimizer.zero_grad()
 
                 mixture, target = mixture.to(device), target.to(device)
 
-                mixture_stft = torch.stft(mixture.squeeze(1).squeeze(-1), 1023, 518, 1023, onesided=True, return_complex=True)
-                target_stft = torch.stft(target.squeeze(1).squeeze(-1), 1023, 518, 1023, onesided=True, return_complex=True)
+                mixture_stft = torch.stft(mixture.squeeze(1).squeeze(-1),
+                                          num_fft - 1, hop_length,
+                                          window_size - 1, onesided=True,
+                                          return_complex=True)
+                target_stft = torch.stft(target.squeeze(1).squeeze(-1),
+                                         num_fft - 1, hop_length,
+                                         window_size - 1, onesided=True,
+                                         return_complex=True)
 
                 # reshape data
                 mixture_mag, target_mag = torch.abs(mixture_stft), torch.abs(target_stft)
@@ -148,7 +135,10 @@ def main(config: dict):
                 # estimate source(s) and record loss
                 loss = criterion(estimate, target_mag)
                 total_loss += loss.item()
-                iter_history.append(loss.item())
+
+                writer.add_scalar('Loss/train', loss.item(), global_steps)
+
+                iter_losses.append(loss.item())
                 pbar.set_postfix(loss=round(loss.item(), 3))
 
                 # backpropagation/update step
@@ -156,42 +146,39 @@ def main(config: dict):
                 optimizer.step()
 
                 global_steps += 1
-                epoch_clock = pbar.format_dict['elapsed']
 
                 # break after seeing max_iter * batch_size samples
-                if index >= num_iterations:
-                    pbar.set_postfix(loss=total_loss / num_iterations)
+                if index >= max_iters:
+                    pbar.set_postfix(loss=total_loss / max_iters)
                     pbar.clear()
                     break
 
-            global_clock += epoch_clock
-
-        epoch_history.append(total_loss / num_iterations)
+        epoch_losses.append(total_loss / max_iters)
 
         # additional validation step for early stopping
         val_loss = cross_validate(model, val_dataloader, criterion,
-                                  max_iters=num_iterations)
-        validation_history.append(val_loss)
+                                  max_iters, writer, num_fft,
+                                  window_size, hop_length, epoch, device)
+        val_losses.append(val_loss)
 
         # update current training environment/model state
-        model_state['epoch'] = epoch
-        model_state['global_steps'] = global_steps
-        model_state['total_training_time'] = global_clock
-        model_state['state_dict'] = model.state_dict()
-        model_state['avg_epoch_time'] = global_clock / epoch
-        model_state['optimizer'] = optimizer.state_dict()
-        model_state['iter_history'] = iter_history
-        model_state['epoch_history'] = epoch_history
-        model_state['val_history'] = validation_history
-        model_state['final_training_loss'] = total_loss / num_iterations
-        model_state['final_val_loss'] = val_loss
+        training_session['current_epoch'] = epoch
+        training_session['global_steps'] = global_steps
+        training_session['state_dict'] = model.state_dict()
+        training_session['optimizer'] = optimizer.state_dict()
+        training_session['iter_losses'] = iter_losses
+        training_session['epoch_losses'] = epoch_losses
+        training_session['val_losses'] = val_losses
+        training_session['trained'] = True
 
         # take snapshot and save to checkpoint directory
-        # checkpoint_handler(model_state, checkpoint_dir, display=(epoch - 1) % 10 == 0)
+        checkpoint_handler(training_session,
+                           training_session['model_dir'] / 'checkpoints',
+                           display=(epoch - 1) % 10 == 0)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            model_state['best_val_loss'] = best_val_loss
+            training_session['best_val_loss'] = best_val_loss
             stop_counter = 0
         elif stop_counter < patience:
             stop_counter += 1
@@ -231,29 +218,56 @@ if __name__ == "__main__":
         print("Success: PyTorch model was built. Visualizing model...")
         time.sleep(3)
         data_config_copy = dict(config_dict['data'])
-        print(data_config_copy)
         for key in ['backend', 'audio_format']:
             data_config_copy.pop(key)
         data_config_copy['batch_size'] = config_dict['training']['batch_size']
         input_shape = transforms.get_data_shape(**data_config_copy)
-        print(input_shape)
         torchinfo.summary(model, input_size=input_shape[:-1], depth=8)
     except Exception as e:
         print(e)
         raise e
-        sys.exit(0)
 
     try:
         dataset = config.build.build_audio_folder(config_dict, args['dataset'])
     except FileNotFoundError as e:
-        print(str(e))
-    # print(dataset.__dict__)
-    # print(vars(args))
-    # unet = UNet()
-    # torchinfo.summary(unet, input_size=(16, 512, 128, 1))
+        raise e
 
-    # build_model(vars(args)['model'])
+    checkpoints_dir = model_dir / Path('checkpoints')
 
-    # main(config)
+    if not args['model']:
+        print("Error: cannot train model.")
+        sys.exit(0)
+    elif args['model'] and not checkpoints_dir.is_dir():
+        training_settings = config_dict['training']
+        optimizer = torch.optim.Adam(model.parameters(), training_settings['lr'])
+        criterion = nn.L1Loss()
+        global_steps = 0
+        iter_losses = []
+        epoch_losses = []
+        val_losses = []
+        best_val_loss = float("inf")
 
-
+        training_session = {
+            'model': model,
+            'dataset': dataset,
+            'data': config_dict['data'],
+            'parameters': training_settings,
+            'session_dir': session_dir,
+            'model_dir': model_dir,
+            'state_dict': model.state_dict(),
+            'optimizer': optimizer,
+            'optimizer_dict': optimizer.state_dict(),
+            'global_steps': global_steps,
+            'criterion': criterion,
+            'iter_losses': iter_losses,
+            'epoch_losses': epoch_losses,
+            'val_losses': val_losses,
+            'best_val_loss': best_val_loss,
+            'current_epoch': 0,
+            'trained': False
+        }
+        checkpoints_dir.mkdir()
+        torch.save(training_session, checkpoints_dir / f"{model_name}_latest.pth")
+    else:
+        training_session = torch.load(checkpoints_dir / f"{model_name}_latest.pth")
+    main(training_session)

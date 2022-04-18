@@ -14,7 +14,7 @@ class ProgressBar(tqdm):
     def __init__(self, dataloader: DataLoader, total: int, train: bool = True):
         desc = None if train else f"Evaluating..."
         ascii_symbol = None if train else " ="
-        bar_format = "{desc:<20.20}{percentage:3.0f}%|{bar:20}{r_bar}"
+        bar_format = "{desc:<20.20}{percentage:6.0f}%|{bar:16}{r_bar}"
         super(ProgressBar, self).__init__(
             iterable=dataloader,
             desc=desc,
@@ -23,5 +23,5 @@ class ProgressBar(tqdm):
             ascii=ascii_symbol,
             bar_format=bar_format,
             total=total,
-            ncols=90
+            ncols=120
         )
