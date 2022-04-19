@@ -106,7 +106,7 @@ class DynamicUNet(nn.Module):
         hop_length: int = 768,
         num_channels: int = 1,
         targets: Optional[List] = None,
-        bottleneck_layers: int = 1,
+        bottleneck_layers: int = 3,
         bottleneck_type: str = 'conv',
         max_layers: int = 6,
         encoder_block_layers: int = 1,
@@ -179,34 +179,55 @@ class DynamicUNet(nn.Module):
                     skip_block=True
                 )
             )
+        
+        mid_channels = encoder[-1].out_channels
+        bottleneck = nn.ModuleList()
+        if bottleneck_type == 'conv':
+            for _ in range(bottleneck_layers):
+                bottleneck.append(
+                    nn.Sequential(
+                        nn.Conv2d(mid_channels, mid_channels, encoder_kernel_size, 1, 'same'),
+                        nn.BatchNorm2d(mid_channels),
+                        nn.ReLU()
+                    )
+                )
+        elif bottleneck_type == 'lstm':
+            pass
+        else:
+            pass
+
+        self.bottleneck = bottleneck
+
 
         # Final 1x1 conv layer for multi-source mask estimation.
         final_num_channels = decoder[0].out_channels
 
-        if len(self.targets) > 1:
-            self.final_conv = nn.Conv2d(
-                in_channels=final_num_channels,
-                out_channels=len(self.targets),
-                kernel_size=1,
-                stride=1,
-                padding='same'
-            )
-        else:
-            self.final_conv = nn.Identity()
+        # if len(self.targets) > 1:
+        self.final_conv = nn.Conv2d(
+            in_channels=final_num_channels,
+            out_channels=len(self.targets),
+            kernel_size=1,
+            stride=1,
+            padding='same'
+        )
+        # else:
+            # self.final_conv = nn.Identity()
 
         # register layers and final activation
         self.encoder = encoder
         self.decoder = decoder
         self.activation = nn.Sigmoid() if mask_activation == 'sigmoid' else nn.ReLU()
-
-        if input_norm:
-            self.input_norm = nn.BatchNorm2d(num_fft)
-        else:
-            self.input_norm = nn.Identity()
-        if output_norm:
-            self.output_norm = nn.BatchNorm2d(num_fft)
-        else:
-            self.output_norm = nn.Identity()
+        self.input_norm = nn.BatchNorm2d(512)
+        # self.output_norm = nn.BatchNorm2d(num_fft // 2)
+        
+        # if input_norm:
+        #     self.input_norm = nn.BatchNorm2d(num_fft)
+        # else:
+        #     self.input_norm = nn.Identity()
+        # if output_norm:
+        #     self.output_norm = nn.BatchNorm2d(num_fft)
+        # else:
+        #     self.output_norm = nn.Identity()
 
     def forward(self, data: torch.Tensor) -> dict:
         """
@@ -230,29 +251,35 @@ class DynamicUNet(nn.Module):
         # data = self.input_normalization(data)
 
         # channels must be first non-batch dimension for convolutional layers
+        data = self.input_norm(data)
         data = data.permute(0, 3, 1, 2)
         original = data
-
+        
         encodings = []
 
         # downsamplng layers
-        for layer in range(self.max_layers - 1):
+        for layer in range(len(self.encoder)):
             data = self.encoder[layer](data)
-            encodings.append(data)
-            # save non-bottleneck intermediate encodings for skip connection
+            if layer < len(self.encoder) - 1:
+                encodings.append(data)
 
-        # pass through bottleneck layer
-        data = self.encoder[-1](data)
-        data = self.decoder[-1](data, encodings[-1].size())
+        for i in range(len(self.bottleneck)):
+            data = self.bottleneck[i](data)
 
         # upsampling layers
-        for layer in range(self.max_layers - 2):
-            data = torch.cat([data, encodings[-1 - layer]], dim=1)
-            data = self.decoder[-2 - layer](data, encodings[-2 - layer].size())
-
+        for layer in range(len(self.decoder)):
+            if layer == 0:
+                output_size = encodings[-1].size()
+                data = self.decoder[-1](data, output_size)
+            elif layer < len(self.encoder) - 1:
+                output_size = encodings[-1 - layer].size()
+                data = torch.cat([data, encodings[-layer]], dim=1)
+                data = self.decoder[-1 - layer](data, output_size)
+            else:
+                output_size = original.size()
+                data = torch.cat([data, encodings[-layer]], dim=1)
+                data = self.decoder[-1 - layer](data, output_size)
         # final conv layer + activation
-        data = torch.cat([data, encodings[0]], dim=1)
-        data = self.decoder[0](data, original.size())
         data = self.final_conv(data)
         mask = self.activation(data)
 
@@ -266,6 +293,7 @@ class DynamicUNet(nn.Module):
 
         # stash copy of mask for signal reconstruction
         mask = mask.permute(0, 2, 3, 1)
+        # mask = self.output_norm(mask)
 
         output = {
             'estimate': None,
