@@ -64,6 +64,7 @@ def main(training_session: dict):
     max_iters = training_session['parameters']['max_iters']
     current_epoch = training_session['current_epoch']
     global_steps = training_session['global_steps']
+    val_steps = 0
 
     iter_losses = training_session['iter_losses']
     epoch_losses = training_session['epoch_losses']
@@ -110,11 +111,11 @@ def main(training_session: dict):
     for epoch in range(current_epoch, current_epoch + epochs + 1):
 
         total_loss = 0
-        start = time.time()
+        start = 0
         with ProgressBar(train_dataloader, max_iters) as pbar:
-            loading_time = time.time() - start
             pbar.set_description(f"Epoch [{epoch}/{epochs}]")
             for index, (mixture, target) in enumerate(pbar):
+                loading_time = time.time() - start
                 optimizer.zero_grad()
 
                 mixture, target = mixture.to(device), target.to(device)
@@ -157,6 +158,7 @@ def main(training_session: dict):
                 optimizer.step()
 
                 global_steps += 1
+                start = time.time()
 
                 # break after seeing max_iter * batch_size samples
                 if index >= max_iters:
@@ -167,9 +169,12 @@ def main(training_session: dict):
         epoch_losses.append(total_loss / max_iters)
 
         # additional validation step for early stopping
-        val_loss = cross_validate(model, val_dataloader, criterion,
-                                  max_iters, writer, num_fft,
-                                  window_size, hop_length, epoch, device)
+        val_loss, val_steps = cross_validate(
+            model, val_dataloader, criterion,
+            max_iters, writer, num_fft,
+            window_size, hop_length,
+            val_steps, device
+        )
         val_losses.append(val_loss)
 
         # update current training environment/model state
@@ -183,9 +188,9 @@ def main(training_session: dict):
         training_session['trained'] = True
 
         # take snapshot and save to checkpoint directory
-        checkpoint_handler(training_session,
-                           training_session['model_dir'] / 'checkpoints',
-                           display=(epoch - 1) % 10 == 0)
+        # checkpoint_handler(training_session,
+        #                    training_session['model_dir'] / 'checkpoints',
+        #                    display=(epoch - 1) % 10 == 0)
 
         if epoch % 10 == 0:
             torch.save(training_session, training_session['latest_checkpoint'])
@@ -230,6 +235,7 @@ if __name__ == "__main__":
     config_dict = config.build.get_all_config_contents(model_dir)
     try:
         model = config.build.build_model(config_dict)
+        model = UNet()
         print("Success: PyTorch model was built. Visualizing model...")
         # time.sleep(3)
         data_config_copy = dict(config_dict['data'])
