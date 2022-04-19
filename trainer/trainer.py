@@ -11,7 +11,7 @@ from utils.progress_bar import ProgressBar
 def cross_validate(model: torch.nn.Module, data_loader: DataLoader,
                    criterion: torch.nn.Module, max_iters: int,
                    writer: SummaryWriter, num_fft: int, window_size: int,
-                   hop_length: int, epoch: int, device: str = 'cpu') -> float:
+                   hop_length: int, val_steps: int, device: str = 'cpu') -> float:
     r"""Cross validates a model's performance.
 
     Designed to be called after each training epoch to prevent over-fitting
@@ -23,18 +23,16 @@ def cross_validate(model: torch.nn.Module, data_loader: DataLoader,
     num_iterations = max_iters
     total_loss = 0
 
-    step = 0
-
     model.eval()
     with ProgressBar(data_loader, num_iterations, train=False) as pbar:
         for index, (mixture, target) in enumerate(pbar):
             mixture, target = mixture.to(device), target.to(device)
 
             mixture_stft = torch.stft(mixture.squeeze(1).squeeze(-1),
-                                      num_fft - 1, hop_length, window_size,
+                                      num_fft - 1, hop_length, window_size - 1,
                                       onesided=True, return_complex=True)
             target_stft = torch.stft(target.squeeze(1).squeeze(-1), num_fft - 1,
-                                     hop_length, window_size, onesided=True,
+                                     hop_length, window_size - 1, onesided=True,
                                      return_complex=True)
 
             # reshape data
@@ -55,14 +53,15 @@ def cross_validate(model: torch.nn.Module, data_loader: DataLoader,
                 loss = criterion(estimate, target_mag)
 
             total_loss += loss.item()
-            writer.add_scalar("Val/Loss", loss.item(), step)
+            writer.add_scalar("Val/Loss", loss.item(), val_steps)
             pbar.set_postfix(loss=loss.item())
 
-            step += 1
+            val_steps += 1
 
             if index >= num_iterations:
                 pbar.set_postfix(loss=round(total_loss / num_iterations, 3))
                 pbar.clear()
                 break
 
-    return total_loss / num_iterations
+    return (total_loss / num_iterations, val_steps)
+
