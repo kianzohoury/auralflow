@@ -105,7 +105,7 @@ def main(training_session: dict):
     print("Training session started...")
     print("=" * 95)
 
-    writer = tensorboard.SummaryWriter(training_session['model_dir'] / 'runs')
+    writer = tensorboard.SummaryWriter(training_session['model_dir'].parent / 'runs')
     stop_counter = 0
     model.train()
     for epoch in range(current_epoch, current_epoch + epochs + 1):
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     config_dict = config.build.get_all_config_contents(model_dir)
     try:
         model = config.build.build_model(config_dict)
-        model = UNet()
+        # model = UNet()
         print("Success: PyTorch model was built. Visualizing model...")
         # time.sleep(3)
         data_config_copy = dict(config_dict['data'])
