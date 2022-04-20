@@ -87,6 +87,9 @@ class AudioFolder(IterableDataset):
 
         Returns:
             (tuple): A tuple of a training sample and its target sources.
+
+        Raises:
+            ValueError: If the audio backend cannot read an audio format.
         """
         sampled_track = np.random.choice(self._track_filepaths)
         source_names = ['mixture'] + self.targets
@@ -150,7 +153,6 @@ class AudioFolder(IterableDataset):
         # Shuffle and get the split point.
         np.random.shuffle(self._track_filepaths)
         split_index = round(len(self._track_filepaths) * (1.0 - val_split))
-
         # Make the split & update the pointers.
         train_filepaths = self._track_filepaths[:split_index]
         val_filepaths = self._track_filepaths[split_index:]

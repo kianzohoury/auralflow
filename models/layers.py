@@ -30,7 +30,7 @@ class EncoderBlock(nn.Module):
         batch_norm (bool): Whether to apply batch normalization. Default: True.
         bias (bool): Whether to include a bias term in the conv layer.
             Default: False.
-        leak (float): Negative slope value for leaky ReLU. Default: 0.2.
+        leak (float): Negative slope value if using leaky ReLU. Default: 0.2.
     """
     def __init__(
         self,
