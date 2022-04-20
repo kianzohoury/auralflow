@@ -1,4 +1,4 @@
-from torch.nn import nn
+import torch.nn as nn
 
 
 class DynamicUNet(nn.Module):
