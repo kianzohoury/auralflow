@@ -15,7 +15,7 @@ from models.base_unet import UNet
 from trainer.trainer import cross_validate
 from utils.progress_bar import ProgressBar
 from torch.utils.data.dataloader import DataLoader
-from AudioFolder.datasets import AudioFolder
+from audio_folder.datasets import AudioFolder
 from argparse import ArgumentParser
 import transforms
 from yaml import YAMLError

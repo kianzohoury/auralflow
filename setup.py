@@ -25,9 +25,9 @@ setup(
     description="A modular source separation training package.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pseeth/torch-stft",
-    author="Prem Seetharaman",
-    author_email="prem@u.northwestern.edu",
+    url="https://github.com/kianzohoury/auralflow",
+    author="Kian Zohoury",
+    author_email="kzohoury@berkeley.edu",
     classifiers=[
         "Environment :: Plugins",
         "Intended Audience :: Developers",
@@ -44,18 +44,11 @@ setup(
     # Exclude the build files.
     packages=find_packages(),
     install_requires=REQUIREMENTS,
-    extras_requires=EXTRAS,
-)
+    # extras_requires=EXTRAS,
 
-
-
-setup(
-    name="Auralate",
-    packages=["Auralate"],
-    entry_points={
-        'console_scripts': [
-            'Auralate = parse_sessions.__main__:main'
-        ]
-    }
+    # entry_points={
+    #     'console_scripts': [
+    #         'auralflow = parse_sessions.__main__:main'
+    #     ]
 )
 

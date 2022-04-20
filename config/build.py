@@ -5,7 +5,7 @@ from pathlib import Path
 import ruamel.yaml
 from yaml import YAMLError
 from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
-from AudioFolder.datasets import AudioFolder
+from audio_folder.datasets import AudioFolder
 from ruamel.yaml.error import MarkedYAMLError
 import textwrap
 from ruamel.yaml.scanner import ScannerError
@@ -94,14 +94,14 @@ def build_model(config_dict: dict) -> nn.Module:
 
 
 def build_audio_folder(config_dict: dict, dataset_dir: Path):
-    """Creates an AudioFolder for sampling audio from the dataset.
+    """Creates an audio_folder for sampling audio from the dataset.
 
     Args:
         config_dict (dict): Training configuration dictionary.
         dataset_dir (Path): Path to the data set folder.
 
     Returns:
-        (AudioFolder): An AudioFolder iterable dataset.
+        (audio_folder): An audio_folder iterable dataset.
 
     Raises:
         FileNotFoundError: Path to dataset could not be found.
@@ -111,4 +111,4 @@ def build_audio_folder(config_dict: dict, dataset_dir: Path):
         return AudioFolder(str(dataset_dir), **data_config)
     except FileNotFoundError:
         raise FileNotFoundError(f"Cannot load {str(dataset_dir)} into an "
-                                "AudioFolder. Check the directory's path.")
+                                "audio_folder. Check the directory's path.")

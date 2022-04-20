@@ -6,66 +6,7 @@ from typing import Optional, Union, List
 from models.layers import StackedEncoderBlock, StackedDecoderBlock
 
 
-class UNet(nn.Module):
-    def __init__(self):
-        super(UNet, self).__init__()
-        self.input_norm = nn.BatchNorm2d(512)
-        self.conv1 = nn.Sequential(nn.Conv2d(1, 16, 5, 2, 2), nn.BatchNorm2d(16), nn.LeakyReLU(0.2))
-        self.conv2 = nn.Sequential(nn.Conv2d(16, 32, 5, 2, 2), nn.BatchNorm2d(32), nn.LeakyReLU(0.2))
-        self.conv3 = nn.Sequential(nn.Conv2d(32, 64, 5, 2, 2), nn.BatchNorm2d(64), nn.LeakyReLU(0.2))
-        self.conv4 = nn.Sequential(nn.Conv2d(64, 128, 5, 2, 2), nn.BatchNorm2d(128), nn.LeakyReLU(0.2))
-        self.conv5 = nn.Sequential(nn.Conv2d(128, 256, 5, 2, 2), nn.BatchNorm2d(256), nn.LeakyReLU(0.2))
-        self.conv6 = nn.Sequential(nn.Conv2d(256, 512, 5, 2, 2), nn.BatchNorm2d(512), nn.LeakyReLU(0.2))
-
-        self.deconv1 = nn.ConvTranspose2d(512, 256, 5, 2, 2)
-        self.a1 = nn.Sequential(nn.BatchNorm2d(256), nn.Dropout2d(0.5), nn.ReLU())
-        self.deconv2 = nn.ConvTranspose2d(512, 128, 5, 2, 2)
-        self.a2 = nn.Sequential(nn.BatchNorm2d(128), nn.Dropout2d(0.5), nn.ReLU())
-        self.deconv3 = nn.ConvTranspose2d(256, 64, 5, 2, 2)
-        self.a3 = nn.Sequential(nn.BatchNorm2d(64), nn.Dropout2d(0.5), nn.ReLU())
-        self.deconv4 = nn.ConvTranspose2d(128, 32, 5, 2, 2)
-        self.a4 = nn.Sequential(nn.BatchNorm2d(32), nn.ReLU())
-        self.deconv5 = nn.ConvTranspose2d(64, 16, 5, 2, 2)
-        self.a5 = nn.Sequential(nn.BatchNorm2d(16), nn.ReLU())
-        self.deconv6 = nn.ConvTranspose2d(32, 1, 5, 2, 2)
-
-        self.final_conv = nn.Conv2d(1, 1, 1, 1, padding='same')
-        self.output_norm = nn.BatchNorm2d(512)
-        self.a6 = nn.Sigmoid()
-
-    def forward(self, x):
-
-        x = self.input_norm(x)
-
-        x = x.permute(0, 3, 1, 2)
-        e1 = self.conv1(x)
-        e2 = self.conv2(e1)
-        e3 = self.conv3(e2)
-        e4 = self.conv4(e3)
-        e5 = self.conv5(e4)
-        e6 = self.conv6(e5)
-
-        d1 = self.a1(self.deconv1(e6, output_size=e5.size()))
-        d2 = self.a2(self.deconv2(torch.cat([d1, e5], dim=1), output_size=e4.size()))
-        d3 = self.a3(self.deconv3(torch.cat([d2, e4], dim=1), output_size=e3.size()))
-        d4 = self.a4(self.deconv4(torch.cat([d3, e3], dim=1), output_size=e2.size()))
-        d5 = self.a5(self.deconv5(torch.cat([d4, e2], dim=1), output_size=e1.size()))
-        d6 = self.a6(self.deconv6(torch.cat([d5, e1], dim=1), output_size=x.size()))
-
-        d6 = self.final_conv(d6)
-        out = d6.permute(0, 2, 3, 1)
-        out = self.output_norm(out)
-        out = self.a6(out)
-
-        output = {
-            'mask': out,
-            'estimate': None
-        }
-
-        return output
-
-
-class DynamicUNet(nn.Module):
+class BaseUNet(nn.Module):
     """
     Dynamic implementation of the deep U-Net encoder/decoder architecture for
     source separation proposed in [1].
@@ -102,51 +43,70 @@ class DynamicUNet(nn.Module):
         self,
         init_features: int = 16,
         num_fft: int = 512,
-        window_size: int = 512,
-        hop_length: int = 768,
         num_channels: int = 1,
-        targets: Optional[List] = None,
-        bottleneck_layers: int = 3,
-        bottleneck_type: str = 'conv',
+
+        num_targets: int = 1,
+
         max_layers: int = 6,
-        encoder_block_layers: int = 1,
-        decoder_block_layers: int = 1,
-        encoder_kernel_size: int = 5,
-        decoder_kernel_size: int = 5,
-        encoder_down: Optional[str] = 'conv',
+        bottleneck_layers: int = 0,
+        bottleneck_type: str = 'conv',
+        # residual: bool = False,
+
+        encoder_scheme: Optional[dict] = None,
+        decoder_scheme: Optional[dict] = None,
+
+        # encoder_block_layers: int = 1,
+        # decoder_block_layers: int = 1,
+        # encoder_kernel_size: Union[int, List] = 5,
+        # decoder_kernel_size: Union[int, List] = 5,
+        # encoder_down: Optional[str] = 'conv',
         decoder_up: Optional[str] = 'transposed',
         decoder_dropout: float = 0.5,
         num_dropouts: int = 3,
         skip_connections: bool = True,
-        encoder_leak: float = 0.2,
+        # encoder_leak: float = 0.2,
+        final_conv_layer=False,
+
+
         mask_activation: str = 'sigmoid',
         input_norm: bool = False,
         output_norm: bool = False
     ):
-        super(DynamicUNet, self).__init__()
+        super(BaseUNet, self).__init__()
+
         assert num_fft & (num_fft - 1) == 0, \
             f"Frequency dimension must be a power of 2, but received {num_fft}"
         assert init_features & (init_features - 1) == 0, \
-            f"Input feature size must be a power of 2, but received {num_fft}"
+            f"Input feature size must be a power of 2, but received {init_features}"
+        assert 0 < num_targets <= 4,\
+            f"Number of targets must be between 0 and 4, but received {num_targets}"
+        assert 1 < num_channels < 2, \
+            f"Number of channels must be either 1 (mono) or 2 (stereo), but received {num_channels}"
+        assert bottleneck_type in {'conv', 'lstm', 'linear'}, \
+            f"Bottleneck type must be one of the following: 'conv', 'lstm', 'linear'."
 
+        # Register model attributes.
         self.init_feature_size = init_features
         self.num_fft = num_fft
-        self.window_size = window_size
-        self.hop_length = hop_length
-        self.targets = targets if targets else ['vocals']
+        self.num_targets = num_targets
         self.bottleneck_layers = bottleneck_layers
         self.bottleneck_type = bottleneck_type
         self.num_channels = num_channels
+        self.skip_connections = skip_connections
+        self.final_conv_layer = final_conv_layer
+        # self.residual = residual
 
-        # determine depth of the model
+        # Correct the maximum depth of the model if needed.
         self.max_layers = min(
             max_layers,
             int(np.log2(num_fft // init_features + 1e-6) + 1)
         )
 
-        # construct autoencoder layers
-        encoder = nn.ModuleList()
-        decoder = nn.ModuleList()
+        # Build the autoencoder.
+        self.encoder = nn.ModuleList()
+        self.decoder = nn.ModuleList()
+        in_channels, out_channels = num_channels, init_features
+
         for layer in range(self.max_layers):
             if layer == 0:
                 in_channels = num_channels
@@ -155,79 +115,84 @@ class DynamicUNet(nn.Module):
                 in_channels = out_channels
                 out_channels = in_channels * 2
 
-            encoder.append(
+            self.encoder.append(
                 StackedEncoderBlock(
-                    in_channels,
-                    out_channels,
-                    layers=encoder_block_layers,
-                    kernel_size=encoder_kernel_size,
-                    downsampling_method=encoder_down,
-                    leak=encoder_leak
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    scheme=encoder_scheme
                 )
             )
 
             if layer == self.max_layers - 1:
                 out_channels = out_channels // 2
 
-            decoder.append(
+            if self.max_layers - layer <= num_dropouts:
+                dropout_p = decoder_dropout
+            else:
+                dropout_p = 0
+
+            self.decoder.append(
                 StackedDecoderBlock(
-                    out_channels * 2,
-                    in_channels,
-                    kernel_size=decoder_kernel_size,
-                    layers=decoder_block_layers,
-                    dropout=decoder_dropout if 0 < self.max_layers - layer <= num_dropouts else 0,
-                    skip_block=True
+                    in_channels=out_channels * (1 + int(skip_connections)),
+                    out_channels=in_channels,
+                    scheme=decoder_scheme,
+                    dropout=dropout_p,
+                    skip_block=skip_connections
                 )
             )
-        
-        mid_channels = encoder[-1].out_channels
-        bottleneck = nn.ModuleList()
+
+        # Build the bottleneck.
+        mid_channels = self.encoder[-1].out_channels
+
         if bottleneck_type == 'conv':
+            self.bottleneck = nn.ModuleList()
             for _ in range(bottleneck_layers):
-                bottleneck.append(
-                    nn.Sequential(
-                        nn.Conv2d(mid_channels, mid_channels, encoder_kernel_size, 1, 'same'),
-                        nn.BatchNorm2d(mid_channels),
-                        nn.ReLU()
-                    )
+                self.bottleneck.append(nn.Sequential(
+                    nn.Conv2d(
+                        in_channels=mid_channels,
+                        out_channels=mid_channels,
+                        kernel_size=3,
+                        stride=1,
+                        padding='same'
+                    ),
+                    nn.BatchNorm2d(mid_channels),
+                    nn.ReLU())
                 )
         elif bottleneck_type == 'lstm':
-            pass
+            self.bottleneck = nn.Identity()
+        elif bottleneck_type == 'linear':
+            self.bottleneck = nn.Identity()
         else:
-            pass
+            self.bottleneck = nn.Identity()
 
-        self.bottleneck = bottleneck
+        # Build final 1x1 conv layer.
+        final_num_channels = self.decoder[0].out_channels
 
+        if self.final_conv_layer:
+            self.soft_conv = nn.Conv2d(
+                in_channels=final_num_channels,
+                out_channels=num_targets,
+                kernel_size=1,
+                stride=1,
+                padding='same'
+            )
+        else:
+            self.soft_conv = nn.Identity()
 
-        # Final 1x1 conv layer for multi-source mask estimation.
-        final_num_channels = decoder[0].out_channels
+        if mask_activation == 'sigmoid':
+            self.mask_activation = nn.Sigmoid()
+        else:
+            self.mask_activation = nn.ReLU()
 
-        # if len(self.targets) > 1:
-        self.final_conv = nn.Conv2d(
-            in_channels=final_num_channels,
-            out_channels=len(self.targets),
-            kernel_size=1,
-            stride=1,
-            padding='same'
-        )
-        # else:
-            # self.final_conv = nn.Identity()
+        if input_norm:
+            self.input_norm = nn.BatchNorm2d(num_fft)
+        else:
+            self.input_norm = nn.Identity()
 
-        # register layers and final activation
-        self.encoder = encoder
-        self.decoder = decoder
-        self.activation = nn.Sigmoid() if mask_activation == 'sigmoid' else nn.ReLU()
-        self.input_norm = nn.BatchNorm2d(512)
-        # self.output_norm = nn.BatchNorm2d(num_fft // 2)
-        
-        # if input_norm:
-        #     self.input_norm = nn.BatchNorm2d(num_fft)
-        # else:
-        #     self.input_norm = nn.Identity()
-        # if output_norm:
-        #     self.output_norm = nn.BatchNorm2d(num_fft)
-        # else:
-        #     self.output_norm = nn.Identity()
+        if output_norm:
+            self.output_norm = nn.BatchNorm2d(num_fft)
+        else:
+            self.output_norm = nn.Identity()
 
     def forward(self, data: torch.Tensor) -> dict:
         """
@@ -246,69 +211,43 @@ class DynamicUNet(nn.Module):
             output (tensor): source estimate matching the shape of input
         """
 
-
-        # normalize input
-        # data = self.input_normalization(data)
-
-        # channels must be first non-batch dimension for convolutional layers
         data = self.input_norm(data)
+
+        # Switch audio channel to the first non-batch dimension.
         data = data.permute(0, 3, 1, 2)
-        original = data
-        
+        # Store the input shape for later.
+        input_size = data.shape
+
+        # Store intermediate feature maps if utilizing skip connections.
         encodings = []
 
-        # downsamplng layers
+        # Feed into the encoder layers.
         for layer in range(len(self.encoder)):
             data = self.encoder[layer](data)
-            if layer < len(self.encoder) - 1:
+            if layer < len(self.encoder) - 1 and self.skip_connections:
                 encodings.append(data)
 
-        for i in range(len(self.bottleneck)):
-            data = self.bottleneck[i](data)
+        # Pass through bottleneck.
+        data = self.bottleneck(data)
 
-        # upsampling layers
+        # Feed into the decoder layers.
         for layer in range(len(self.decoder)):
-            if layer == 0:
-                output_size = encodings[-1].size()
-                data = self.decoder[-1](data, output_size)
-            elif layer < len(self.encoder) - 1:
+            if layer < len(self.decoder) - 1:
                 output_size = encodings[-1 - layer].size()
-                data = torch.cat([data, encodings[-layer]], dim=1)
+                if layer > 0 and self.skip_connections:
+                    data = torch.cat([data, encodings[-layer]], dim=1)
                 data = self.decoder[-1 - layer](data, output_size)
             else:
-                output_size = original.size()
-                data = torch.cat([data, encodings[-layer]], dim=1)
-                data = self.decoder[-1 - layer](data, output_size)
-        # final conv layer + activation
-        data = self.final_conv(data)
+                if self.skip_connections:
+                    data = torch.cat([data, encodings[-layer]], dim=1)
+                data = self.decoder[-1 - layer](data, input_size)
+
+        # Final conv + output normalization + mask activation.
+        data = self.soft_conv(data)
+        data = self.output_norm(data)
         mask = self.activation(data)
 
-        # print(mask.mean())
-
-        # get source estimate
-        # output = original.clone().detach() * mask
-
-        # reshape to match input shape
-        # output = output.permute(0, 2, 3, 1)
-
-        # stash copy of mask for signal reconstruction
+        # Reshape to match the input size.
         mask = mask.permute(0, 2, 3, 1)
-        # mask = self.output_norm(mask)
 
-        output = {
-            'estimate': None,
-            'mask': mask
-        }
-
-        return output
-
-    def separate(self, stft):
-        with torch.no_grad():
-            mag, phase = torch.abs(stft), torch.angle(stft)
-
-            mask = self.forward(mag)['mask']
-
-            estimate = (mask * mag) * torch.exp(1j * phase)
-        return estimate
-
-
+        return mask

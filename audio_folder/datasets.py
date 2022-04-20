@@ -96,14 +96,14 @@ class AudioFolder(IterableDataset):
         mix_data = mix_data.unsqueeze(-1)
         return mix_data, target_data
 
-    def split(self, val_split: float = 0.2) -> 'AudioFolder':
+    def split(self, val_split: float = 0.2) -> 'audio_folder':
         """
 
         Args:
             val_split (float): Ratio of samples to allocate for a validation
                 set. Default: 0.
         Returns:
-            (AudioFolder): The validation set.
+            (audio_folder): The validation set.
         """
         assert 0 < val_split <= 1.0, \
             "Split value must be between 0.0 and 1.0."
