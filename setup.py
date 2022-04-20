@@ -21,7 +21,7 @@ with open(Path("README.md"), "r") as file:
 
 setup(
     name="auralflow",
-    version="1.0.0",
+    version="1.0",
     description="A modular source separation training package.",
     long_description=long_description,
     long_description_content_type="text/markdown",
