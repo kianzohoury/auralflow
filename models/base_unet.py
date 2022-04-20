@@ -136,7 +136,7 @@ class BaseUNet(nn.Module):
                     in_channels=out_channels * (1 + int(skip_connections)),
                     out_channels=in_channels,
                     scheme=decoder_scheme,
-                    dropout=dropout_p,
+                    dropout_p=dropout_p,
                     skip_block=skip_connections
                 )
             )

@@ -1,17 +1,10 @@
 import torch
 import torch.nn as nn
 
-
 from typing import Optional, Union, List
 
 
 class EncoderBlock(nn.Module):
-    _activations = {
-        'relu': lambda leak: nn.ReLU() if not leak else nn.LeakyReLU(leak),
-        'sigmoid': lambda _: nn.Sigmoid(),
-        'tanh': lambda _: nn.Tanh(),
-        'glu': lambda _: nn.GLU(),
-    }
     """Fully-customizable encoder block layer for base separation models.
 
     By default, this block doubles the feature dimension (channels)
@@ -31,7 +24,19 @@ class EncoderBlock(nn.Module):
         bias (bool): Whether to include a bias term in the conv layer.
             Default: False.
         leak (float): Negative slope value if using leaky ReLU. Default: 0.2.
+    Examples:
+        >>> from models.layers import EncoderBlock
+        >>> encoder = EncoderBlock(16, 32, 5, 2, 2, 'relu', batch_norm=True)
+        >>> data = torch.rand((1, 16, 4, 1))
+        >>> output = encoder(data)
     """
+    _encoder_activations = {
+        'relu': lambda leak: nn.ReLU() if not leak else nn.LeakyReLU(leak),
+        'sigmoid': lambda _: nn.Sigmoid(),
+        'tanh': lambda _: nn.Tanh(),
+        'glu': lambda _: nn.GLU(),
+    }
+
     def __init__(
         self,
         in_channels: int,
@@ -64,7 +69,7 @@ class EncoderBlock(nn.Module):
             bias=bias
         )
         if activation_fn:
-            self.activation = self._activations[activation_fn](leak)
+            self.activation = self._encoder_activations[activation_fn](leak)
         else:
             self.activation = nn.Identity()
         if batch_norm:
@@ -202,56 +207,82 @@ class DecoderBlock(nn.Module):
     the same depth level in the encoder/decoder architecture.
 
     Args:
-    in_channels (int): Number of input channels.
-    out_channels (int or None): Number of output channels. If None, defaults
-        to 2 * in_channels.
-    kernel_size (int or tuple): Size or shape of the convolutional filter.
-        Default: 5.
-    stride (int or tuple): Size or shape of the stride. Default: 2.
-    padding (int or tuple): Size of zero-padding added to each side.
-        Default: 2.
-    dropout (float): Dropout probability. Default: 0.
-    skip_block (bool): True if block has a skip connection, false otherwise.
-        Default: True.
+        in_channels (int): Number of input channels.
+        out_channels (int or None): Number of output channels.
+            If None, defaults to 2 * in_channels.
+        kernel_size (int or tuple): Size or shape of the convolutional filter.
+            Default: 5.
+        stride (int or tuple): Size or shape of the stride. Default: 2.
+        padding (int or tuple): Size of zero-padding added to each side.
+            Default: 2.
+        dropout (float): Dropout probability. Default: 0.
+        skip_block (bool): True if block has a skip connection, false otherwise.
+            Default: True.
+
+    Example:
+        >>> from models.layers import DecoderBlock
+        >>> decoder = DecoderBlock(16, 1, 5, 2, 2, activation_fn='relu')
+        >>> data = torch.rand((1, 16, 4, 1))
+        >>> out = decoder(data, output_size=(1, 1, 8, 2))
 """
+    _decoder_activations = {
+        'relu': lambda: nn.ReLU(),
+        'sigmoid': lambda: nn.Sigmoid(),
+        'tanh': lambda: nn.Tanh(),
+        'glu': lambda: nn.GLU(),
+    }
+
     def __init__(
-            self,
-            in_channels: int,
-            out_channels: Optional[int] = None,
-            kernel_size: Union[int, tuple] = 5,
-            stride: Union[int, tuple] = 2,
-            padding: Union[int, str] = 2,
-            dropout: float = 0,
-            skip_block: bool = True,
+        self,
+        in_channels: int,
+        out_channels: Optional[int] = None,
+        kernel_size: Union[int, tuple] = 5,
+        stride: Union[int, tuple] = 2,
+        padding: Union[int, str] = 2,
+        dropout_p: float = 0,
+        skip_block: bool = True,
+        activation_fn: Optional[str] = 'relu',
+        batch_norm: bool = True,
+        bias: bool = False,
     ):
         super(DecoderBlock, self).__init__()
         self.in_channels = in_channels
         if out_channels is not None:
             self.out_channels = out_channels
         else:
-            self.out_channels = in_channels * 2
+            self.out_channels = out_channels = in_channels // 2
         self.kernel_size = kernel_size
         self.stride = stride
         self.padding = padding
-        self.dropout_p = dropout
         self.skip_block = skip_block
-
-        # Define decoder block sequence.
-        # tranposedconv -> batchnorm -> relu -> dropout
+        self.bias = bias
+        self.dropout_p = dropout_p
         self.convT = nn.ConvTranspose2d(
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride,
-            padding
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            bias=bias
         )
+        if activation_fn:
+            self.activation = self._decoder_activations[activation_fn]()
+        else:
+            self.activation = nn.Identity()
+        if batch_norm:
+            self.batchnorm = nn.BatchNorm2d(out_channels)
+        else:
+            self.batchnorm = nn.Identity()
+        if dropout_p > 0:
+            self.dropout = nn.Dropout2d(dropout_p)
+        else:
+            self.dropout = nn.Identity()
 
-        # Define block layers.
-        self.bn = nn.BatchNorm2d(out_channels) if skip_block else nn.Identity()
-        self.relu = nn.ReLU() if skip_block else nn.Identity()
-        self.dropout = nn.Dropout2d(dropout) if dropout > 0 else nn.Identity()
-
-    def forward(self, data: torch.Tensor, output_size: torch.Size) -> torch.Tensor:
+    def forward(
+        self,
+        data: torch.Tensor,
+        output_size: Optional[torch.Size] = None
+    ) -> torch.Tensor:
         """Forward method.
 
         Args:
@@ -260,9 +291,12 @@ class DecoderBlock(nn.Module):
         Returns:
             (tensor): Output feature map.
         """
-        x = self.convT(data, output_size=output_size)
-        x = self.bn(x)
-        x = self.relu(x)
+        if output_size:
+            x = self.convT(data, output_size=output_size)
+        else:
+            x = self.convT(data)
+        x = self.batchnorm(x)
+        x = self.activation(x)
         output = self.dropout(x)
         return output
 
@@ -280,7 +314,7 @@ class StackedDecoderBlock(nn.Module):
         kernel_size (int or tuple): Size or shape of the convolutional filter.
             Default: 5.
         upsampling_method (str): Type of upsampling. Default: 'transposed'.
-        dropout (float): Dropout probability. Default: 0.
+        dropout_p (float): Dropout probability. Default: 0.
         skip_block (bool): True if block has a skip connection, false otherwise.
             Default: True.
     """
@@ -292,7 +326,7 @@ class StackedDecoderBlock(nn.Module):
             scheme: Optional[dict] = None,
             kernel_size: Union[int, tuple] = 5,
             upsampling_method: str = 'transposed',
-            dropout: float = 0,
+            dropout_p: float = 0,
             skip_block: bool = True
     ):
         super(StackedDecoderBlock, self).__init__()
@@ -303,7 +337,7 @@ class StackedDecoderBlock(nn.Module):
             self.out_channels = in_channels * 2
         self.kernel_size = kernel_size
         self.upsampling_method = upsampling_method
-        self.dropout = dropout
+        self.dropout_p = dropout_p
         self.skip_block = skip_block
         self.layer = layers
 
@@ -317,7 +351,7 @@ class StackedDecoderBlock(nn.Module):
                 kernel_size=kernel_size,
                 stride=2,
                 padding=2,
-                dropout=dropout,
+                dropout_p=dropout_p,
                 skip_block=skip_block
             )
         # TODO: Implement down and decimate methods.

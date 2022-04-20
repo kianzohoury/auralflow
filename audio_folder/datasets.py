@@ -8,7 +8,6 @@ import torch.utils.data
 from pathlib import Path
 from torch.utils.data.dataset import IterableDataset
 from typing import Iterator, List, Optional, Tuple
-from torch.utils.data.dataloader import DataLoader
 
 
 class AudioFolder(IterableDataset):
@@ -42,8 +41,7 @@ class AudioFolder(IterableDataset):
 
     Examples:
         >>> train_data = AudioFolder('src/wav', ['vocals'], subset='train')
-        >>> train_loader = DataLoader(train_data, batch_size=8)
-        >>> audio_sample = next(iter(train_loader))
+        >>> audio_sample = next(iter(train_data))
     """
     def __init__(
         self,

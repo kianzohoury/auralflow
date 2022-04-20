@@ -1,5 +1,5 @@
 import config
-from models.base_unet import DynamicUNet
+from models.base_unet import BaseUNet
 
 REQUIRED_MODEL_KEYS = {
     'init_features',
@@ -27,6 +27,6 @@ REQUIRED_MODEL_KEYS = {
 }
 
 BASE_MODELS = {
-    "unet": DynamicUNet
+    "unet": BaseUNet
 }
 
