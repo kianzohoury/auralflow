@@ -1,9 +1,12 @@
-import config.utils
-import sys
 import torch.nn as nn
+import sys
+from pprint import pprint
+pprint(sys.path)
+
 from pathlib import Path
 import ruamel.yaml
 from yaml import YAMLError
+
 from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
 from audio_folder.datasets import AudioFolder
 from ruamel.yaml.error import MarkedYAMLError
@@ -11,7 +14,8 @@ from models.layers import StackedBlock
 import textwrap
 from ruamel.yaml.scanner import ScannerError
 import models
-from pprint import pprint
+
+from typing import List
 import time
 
 yaml_parser = ruamel.yaml.YAML(typ='safe', pure=True)
@@ -113,3 +117,10 @@ def build_audio_folder(config_dict: dict, dataset_dir: Path):
     except FileNotFoundError:
         raise FileNotFoundError(f"Cannot load {str(dataset_dir)} into an "
                                 "audio_folder. Check the directory's path.")
+
+
+def build_layers(config_dict: dict) -> List[dict]:
+    d = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml'))
+    pprint(d)
+    return [{}]
+

@@ -1,4 +1,3 @@
-import config
 from models.base_unet import BaseUNet
 
 REQUIRED_MODEL_KEYS = {
