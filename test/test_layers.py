@@ -2,7 +2,6 @@ import unittest
 import torch
 import torch.nn as nn
 
-import models.layers
 from models.layers import EncoderBlock, DecoderBlock, StackedBlock
 
 
@@ -33,8 +32,6 @@ class EncoderTest(unittest.TestCase):
         self.assertIsInstance(block.activation, nn.Sigmoid)
         block = EncoderBlock(16, 32, activation_fn='tanh')
         self.assertIsInstance(block.activation, nn.Tanh)
-        block = EncoderBlock(16, 32, activation_fn='glu', num_glu_features=512)
-        self.assertIsInstance(block.activation, models.layers.GLU2d)
         block = EncoderBlock(16, 32, activation_fn=None)
         self.assertIsInstance(block.activation, nn.Identity)
 
@@ -87,8 +84,6 @@ class DecoderTest(unittest.TestCase):
         self.assertIsInstance(block.activation, nn.Sigmoid)
         block = DecoderBlock(16, 32, activation_fn='tanh')
         self.assertIsInstance(block.activation, nn.Tanh)
-        block = DecoderBlock(16, 32, activation_fn='glu', num_glu_features=512)
-        self.assertIsInstance(block.activation, models.layers.GLU2d)
         block = DecoderBlock(16, 32, activation_fn=None)
         self.assertIsInstance(block.activation, nn.Identity)
 
@@ -125,12 +120,13 @@ class StackedBlockTest(unittest.TestCase):
                 'in_channels': 16,
                 'out_channels': 32,
                 'kernel_size': 5,
-                'stride': 2,
-                'padding': 2,
+                'stride': 1,
+                'padding': 'same',
                 'batch_norm': True,
                 'activation_fn': 'leaky_relu',
                 'leak': 0.2,
-                'bias': False
+                'bias': False,
+                'max_pool': True
             },
             {
                 'in_channels': 32,
@@ -141,7 +137,7 @@ class StackedBlockTest(unittest.TestCase):
                 'batch_norm': False,
                 'activation_fn': 'sigmoid',
                 'bias': False,
-                'max_pool': True
+                'max_pool': False
             },
             {
                 'in_channels': 64,
@@ -152,6 +148,7 @@ class StackedBlockTest(unittest.TestCase):
                 'batch_norm': True,
                 'activation_fn': 'relu',
                 'bias': False,
+                'max_pool': True
             }
         ]
         encoder = StackedBlock(stacked_scheme, block_type='encoder')

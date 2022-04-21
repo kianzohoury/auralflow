@@ -1,35 +1,8 @@
 
-import math
 import torch
 import torch.nn as nn
 
-from typing import Optional, Union, List, Tuple
-
-
-def _get_activation(
-    activation_fn: Union[str, None],
-    param: Optional[Union[int, float]] = None
-) -> nn.Module:
-    """Helper method to return an activation function.
-
-    Args:
-        param (int or None): For parameterized activation functions.
-
-    Returns:
-        (nn.Module): An activation function.
-    """
-    if activation_fn == 'leaky_relu':
-        return nn.LeakyReLU(param) if param is not None else nn.Identity()
-    elif activation_fn == 'relu':
-        return nn.ReLU()
-    elif activation_fn == 'sigmoid':
-        return nn.Sigmoid()
-    elif activation_fn == 'tanh':
-        return nn.Tanh()
-    elif activation_fn == 'glu':
-        return GLU2d(param) if param is not None else nn.Identity()
-    else:
-        return nn.Identity()
+from typing import Optional, Union, List
 
 
 class EncoderBlock(nn.Module):
@@ -45,15 +18,14 @@ class EncoderBlock(nn.Module):
         kernel_size (int or tuple): Size or shape of the convolutional filter.
             Default: 5.
         stride (int or tuple): Size or shape of the stride. Default: 2.
-        padding (int or tuple): Size of zero-padding added to each side.
+        padding (int or str): Size of zero-padding added to each side.
             Default: 2.
         activation_fn (str or None): Activation function. Default: 'relu'.
         batch_norm (bool): Whether to apply batch normalization. Default: True.
         bias (bool): Whether to include a bias term in the conv layer.
             Default: False.
         leak (float): Negative slope value if using leaky ReLU. Default: 0.2.
-        num_glu_features (int): The number of features for GLU2d activation
-            func. Default: None.
+        max_pool (bool): Whether to use maxpool. Default: False.
     Examples:
         >>> from models.layers import EncoderBlock
         >>> encoder = EncoderBlock(16, 32, 5, 2, 2, 'relu', batch_norm=True)
@@ -71,7 +43,6 @@ class EncoderBlock(nn.Module):
         batch_norm: bool = True,
         bias: bool = False,
         leak: Optional[float] = None,
-        num_glu_features: Optional[int] = None,
         max_pool: bool = False
     ):
         super(EncoderBlock, self).__init__()
@@ -85,7 +56,6 @@ class EncoderBlock(nn.Module):
         self.padding = padding
         self.bias = bias
         self.leak = leak
-        self.num_glu_features = num_glu_features
         self.maxpool = nn.MaxPool2d(2) if max_pool else nn.Identity()
         self.conv = nn.Conv2d(
             in_channels=in_channels,
@@ -95,13 +65,16 @@ class EncoderBlock(nn.Module):
             padding=padding,
             bias=bias
         )
-        if activation_fn == 'leaky_relu':
-            self.activation = _get_activation(activation_fn, leak)
-        elif activation_fn == 'glu':
-            self.activation = _get_activation(activation_fn,
-                                              num_glu_features)
+        if activation_fn == 'leaky_relu' and leak > 0:
+            self.activation = nn.LeakyReLU(leak)
+        elif activation_fn == 'relu':
+            self.activation = nn.ReLU()
+        elif activation_fn == 'sigmoid':
+            self.activation = nn.Sigmoid()
+        elif activation_fn == 'tanh':
+            self.activation = nn.Tanh()
         else:
-            self.activation = _get_activation(activation_fn)
+            self.activation = nn.Identity()
         if batch_norm:
             self.batchnorm = nn.BatchNorm2d(out_channels)
         else:
@@ -164,7 +137,6 @@ class DecoderBlock(nn.Module):
         activation_fn: Optional[str] = 'relu',
         batch_norm: bool = True,
         bias: bool = False,
-        num_glu_features: Optional[int] = None
     ):
         super(DecoderBlock, self).__init__()
         self.in_channels = in_channels
@@ -186,11 +158,14 @@ class DecoderBlock(nn.Module):
             padding=padding,
             bias=bias
         )
-        if activation_fn == 'glu':
-            self.activation = _get_activation(activation_fn,
-                                              num_glu_features)
+        if activation_fn == 'relu':
+            self.activation = nn.ReLU()
+        elif activation_fn == 'sigmoid':
+            self.activation = nn.Sigmoid()
+        elif activation_fn == 'tanh':
+            self.activation = nn.Tanh()
         else:
-            self.activation = _get_activation(activation_fn)
+            self.activation = nn.Identity()
         if batch_norm:
             self.batchnorm = nn.BatchNorm2d(out_channels)
         else:
@@ -282,6 +257,7 @@ class StackedBlock(nn.Module):
         'activation_fn',
         'leak',
         'dropout_p',
+        'max_pool',
         'bias',
     }
 
@@ -315,6 +291,7 @@ class StackedBlock(nn.Module):
         return output
 
 
+# Very slow.
 class GLU2d(nn.Module):
     """GLU adapted for 2-dimensional spatial reduction.
 
@@ -465,3 +442,4 @@ class GLU2d(nn.Module):
 #
 # Register layers.
 # self.conv_stack = nn.Sequential(*stack)
+

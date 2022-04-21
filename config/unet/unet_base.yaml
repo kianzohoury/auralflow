@@ -1,52 +1,154 @@
-# Model design.
-model:
-  # Your model's name.
-  name: my_model
-  # The base model architecture.
-  base-model: unet
-  # The max depth of the network.
-  max-layers: 6
-  # The number of features to start with.
-  init-features: 16
-  bottleneck:
-    # The type of bottleneck for the network.
+###############################################################################
+# Model design.                                                               #
+###############################################################################
+# Below are some important build configurations for your model's architecture.
+# Modify these (except for base-model) to create something new and interesting.
+
+
+base-model: unet
+max-layers: 6
+init-features: 16
+bottleneck-type:
     type: conv
-    # The number of layers within the bottleneck.
     num-layers: 1
-  encoder:
-    # The scheme for a single encoder sub-block.
-    # Format:
-    #   convolutions:
-    #     * conv_k{kernel_size}_s{stride_size}. Optionally,
-    #       conv_k{kernel_size}_same preserves the spatial dimension sizes.
-    #   downsampling:
-    #     * maxpool_{kernel_size}
-    #     * downscale (halves spatial dimensions)
-    #   activations:
-    #     * sigmoid
-    #     * relu
-    #     * leaky_relu_{leak constant}
-    #     * tanh
-    #     * glu
-    #   relu:
-    #     relu_{leak constant}
-    #
-    # If
-    scheme: ['conv_k5_s2', 'batch_norm', 'leaky_relu_0.2']
-    # How many sub-blocks to stack for an encoder block.
-    num-layers: 1
-  decoder:
-    # The scheme for a single decoder sub-block.
-    scheme: ['t_conv_k5_s2', 'batch_norm', 'dropout_0.5', 'relu']
-    # How many sub-blocks to stack for a decoder block.
-    num-layers: 1
-  # The number of layers using dropout (starting from the first decoder block).
-  num-dropouts: 3
-  # Whether to use skip connections or not.
-  skip-connections: True
-  # The final mask activation function.
-  mask-activation: sigmoid
-  # Whether to use input normalization.
-  input-norm: False
-  # Whether to use output normalization.
-  output-norm: False
+encoder:
+    scheme: [
+        [conv_k5_s2, batch_norm, leaky_relu_0.2],
+    ]
+decoder:
+    scheme: [
+        [tconv_k5_s2, batch_norm, dropout_0.5, relu],
+    ]
+num-dropouts: 3
+skip-connections: True
+mask-activation: sigmoid
+input-norm: False
+output-norm: False
+targets: [vocals]
+
+
+###############################################################################
+# Arguments                                                                   #
+###############################################################################
+# base-model: The base model architecture.
+# -----------
+# max-layers: The max depth of the network.
+# -----------
+# init-features: The initial hidden number of feature or channels.
+# --------------
+# bottleneck:
+#   type: The bottleneck type. Options: conv or lstm.
+#   -----
+#   num-layers: The number of layers within the bottleneck.
+#   -----------
+# encoder:
+#   scheme: The scheme for a single encoder block.
+#   -------
+# decoder:
+#   scheme: The scheme for a single decoder block.
+#   -------
+# num-dropouts: The number of layers with dropout starting from the bottom.
+# -------------
+# skip-connections: Whether to use skip connections or not.
+# -----------------
+# mask-activation: The final mask activation function.
+# ----------------
+# input-norm: Whether to use input normalization.
+# -----------
+# output-norm: Whether to use output normalization.
+# ------------
+###############################################################################
+# Encoder/decoder scheme format                                               #
+###############################################################################
+# These are the building blocks of block sequence. You can combine them however
+# you like, but some sequences tend to be better in terms of computational cost,
+# model performance and convergence.
+#
+# Convolutions:
+# -------------
+#   Options:
+#     * conv_k{kernel_size}_s{stride_size}: Strided convolution.
+#     * conv_k{kernel_size}_same: Output feature maps have same spatial size.
+#     * tconv_k{kernel_size}_s{stride_size}: Transposed convolution w/ stride.
+#
+# Maxpool:
+# -------
+#   Options:
+#     * maxpool_k{kernel_size}: Max pool with kernel_size.
+#
+# Activations:
+# -------------
+#   Options:
+#     * sigmoid
+#     * relu
+#     * leaky_relu_{leak constant}
+#     * tanh
+#
+# Normalization:
+# -------------
+#   Options:
+#     * batch_norm
+#     * dropout_{dropout probability}
+#
+###############################################################################
+# Common architectures                                                        #
+###############################################################################
+
+
+unet_like_1:
+    # enc: 5x5 conv -> bn -> leaky relu
+    # dec: 5x5 transposed conv -> bn -> dropout -> relu
+    max-layers: 6
+    init-features: 16
+    bottleneck-type:
+        type: conv
+        num-layers: 1
+    encoder:
+        scheme: [
+            [conv_k5_s2, batch_norm, leaky_relu_0.2],
+        ]
+    decoder:
+        scheme: [
+            [tconv_k5_s2, batch_norm, dropout_0.5, relu],
+        ]
+    num-dropouts: 3
+    skip-connections: True
+    mask-activation: sigmoid
+    input-norm: False
+    output-norm: False
+    targets: [vocals]
+
+
+unet_like_2:
+    # enc: 3x3 conv -> bn -> relu -> 3x3 conv -> bn -> relu -> maxpool
+    # dec: 5x5 transposed conv -> bn -> relu -> dropout -> 3x3 conv -> bn
+    #          ... -> relu -> 3x3 conv -> bn -> relu
+    max-layers: 5
+    init-features: 32
+    bottleneck-type:
+        type: conv
+        num-layers: 1
+    encoder:
+        scheme: [
+            [conv_k3_same, batch_norm, relu],
+            [conv_k3_same, batch_norm, relu, max_pool]
+        ]
+    decoder:
+        scheme: [
+            [tconv_k5_s2, batch_norm, relu, dropout_0.4],
+            [conv_k3_same, batch_norm, relu],
+            [conv_k3_same, batch_norm, relu]
+        ]
+    num-dropouts: 3
+    skip-connections: True
+    mask-activation: sigmoid
+    input-norm: False
+    output-norm: False
+    targets: [bass, drums, other, vocals]
+
+
+###############################################################################
+# Have fun building!                                                          #
+# Take a look at the documentation on Github for additional assistance:       #
+# https://github.com/kianzohoury/auralflow                                    #
+###############################################################################

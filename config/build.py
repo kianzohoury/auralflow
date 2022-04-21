@@ -7,6 +7,7 @@ from yaml import YAMLError
 from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
 from audio_folder.datasets import AudioFolder
 from ruamel.yaml.error import MarkedYAMLError
+from models.layers import StackedBlock
 import textwrap
 from ruamel.yaml.scanner import ScannerError
 import models
