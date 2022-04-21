@@ -1,9 +1,19 @@
+
 import torch
 import torch.nn as nn
+import math
 
 import numpy as np
-from typing import Optional, Union, List
-from models.layers import StackedEncoderBlock, StackedDecoderBlock
+from typing import Optional, Union, List, Tuple
+from models.layers import StackedBlock
+
+
+def get_padding(kernel_size: int, stride: int, in_size: Tuple, out_size: Tuple):
+    h_in, w_in = in_size
+    h_out, w_out = out_size
+    h_pad = math.ceil(((h_out - 1) * stride + kernel_size - h_in) / 2)
+    w_pad = math.ceil(((w_out - 1) * stride + kernel_size - w_in) / 2)
+    return h_pad, w_pad
 
 
 class BaseUNet(nn.Module):

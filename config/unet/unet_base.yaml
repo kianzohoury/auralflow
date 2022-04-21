@@ -1,63 +1,52 @@
 # Model design.
 model:
-  # name:
-  #   Model name or tag.
-  # base-model:
-  #   Base model architecture to inherit from.
-  # depth:
-  #   Depth or height of the model (only affects Unet).
-  # bottleneck:
-  #   type:
-  #     Type of bottleneck layers. Options: [conv|lstm|fc]
-  #   layers:
-  #     Depth of the stack of layers that make up the bottleneck portion.
-  # encoder:
-  #   block-layers:
-  #     Number of conv layers that make up a single encoder block.
-  #   kernel-size:
-  #     Size of the kernels.
-  #   down:
-  #     Downsampling method. Options: [conv|maxpool|avgpool|downsample|decimate]
-  #   leak:
-  #     Leakiness factor of ReLU activations between encoder conv layers.
-  # decoder:
-  #   block-layers:
-  #     Number of conv layers that make up a single decoder block.
-  #   kernel-size:
-  #     Size of the kernels.
-  #   up:
-  #     Upsampling method. Options: [transposed|upsample|unmaxpool]
-  #   dropout:
-  #     Dropout probability.
-  #   num-dropouts:
-  #     Number of dropout layers beginning from the first decoder block.
-  #   skip:
-  #     Whether to include skip connections or not (recommended).
-  # mask-activation:
-  #   Final activation for producing the mask.
-  # input-normalization:
-  #   Learnable normalization parameters to apply before forward pass.
-  # output-normalization:
-  #   Learnable normalization parameters to apply before final mask activation.
+  # Your model's name.
   name: my_model
+  # The base model architecture.
   base-model: unet
+  # The max depth of the network.
   max-layers: 6
+  # The number of features to start with.
   init-features: 16
   bottleneck:
+    # The type of bottleneck for the network.
     type: conv
-    layers: 1
+    # The number of layers within the bottleneck.
+    num-layers: 1
   encoder:
-    block-layers: 1
-    kernel-size: 5
-    down: conv
-    leak: 0.2
+    # The scheme for a single encoder sub-block.
+    # Format:
+    #   convolutions:
+    #     * conv_k{kernel_size}_s{stride_size}. Optionally,
+    #       conv_k{kernel_size}_same preserves the spatial dimension sizes.
+    #   downsampling:
+    #     * maxpool_{kernel_size}
+    #     * downscale (halves spatial dimensions)
+    #   activations:
+    #     * sigmoid
+    #     * relu
+    #     * leaky_relu_{leak constant}
+    #     * tanh
+    #     * glu
+    #   relu:
+    #     relu_{leak constant}
+    #
+    # If
+    scheme: ['conv_k5_s2', 'batch_norm', 'leaky_relu_0.2']
+    # How many sub-blocks to stack for an encoder block.
+    num-layers: 1
   decoder:
-    block-layers: 1
-    kernel-size: 5
-    up: transposed
-    dropout: 0.5
+    # The scheme for a single decoder sub-block.
+    scheme: ['t_conv_k5_s2', 'batch_norm', 'dropout_0.5', 'relu']
+    # How many sub-blocks to stack for a decoder block.
+    num-layers: 1
+  # The number of layers using dropout (starting from the first decoder block).
   num-dropouts: 3
+  # Whether to use skip connections or not.
   skip-connections: True
+  # The final mask activation function.
   mask-activation: sigmoid
+  # Whether to use input normalization.
   input-norm: False
+  # Whether to use output normalization.
   output-norm: False

@@ -2,7 +2,8 @@ import unittest
 import torch
 import torch.nn as nn
 
-from models.layers import EncoderBlock, DecoderBlock
+import models.layers
+from models.layers import EncoderBlock, DecoderBlock, StackedBlock
 
 
 class EncoderTest(unittest.TestCase):
@@ -23,14 +24,19 @@ class EncoderTest(unittest.TestCase):
         self.assertEqual(block.kernel_size, (3, 3))
 
     def test_activations(self):
-        names = ['relu', 'sigmoid', 'glu', 'tanh', None]
-        functions = [nn.ReLU, nn.Sigmoid, nn.GLU, nn.Tanh, nn.Identity]
-        for name, func in zip(names, functions):
-            block = EncoderBlock(16, 32, activation_fn=name, leak=0)
-            self.assertIsInstance(block.activation, func)
-        block = EncoderBlock(16, 32, activation_fn='relu', leak=0.9)
-        self.assertEqual(block.activation.negative_slope, 0.9)
+        block = EncoderBlock(16, 32, activation_fn='relu')
+        self.assertIsInstance(block.activation, nn.ReLU)
+        block = EncoderBlock(16, 32, activation_fn='leaky_relu', leak=0.2)
         self.assertIsInstance(block.activation, nn.LeakyReLU)
+        self.assertEqual(block.activation.negative_slope, 0.2)
+        block = EncoderBlock(16, 32, activation_fn='sigmoid')
+        self.assertIsInstance(block.activation, nn.Sigmoid)
+        block = EncoderBlock(16, 32, activation_fn='tanh')
+        self.assertIsInstance(block.activation, nn.Tanh)
+        block = EncoderBlock(16, 32, activation_fn='glu', num_glu_features=512)
+        self.assertIsInstance(block.activation, models.layers.GLU2d)
+        block = EncoderBlock(16, 32, activation_fn=None)
+        self.assertIsInstance(block.activation, nn.Identity)
 
     def test_padding_stride(self):
         data = torch.rand((8, 16, 512, 128))
@@ -75,11 +81,16 @@ class DecoderTest(unittest.TestCase):
         self.assertEqual(block.kernel_size, (3, 3))
 
     def test_activations(self):
-        names = ['relu', 'sigmoid', 'glu', 'tanh', None]
-        functions = [nn.ReLU, nn.Sigmoid, nn.GLU, nn.Tanh, nn.Identity]
-        for name, func in zip(names, functions):
-            block = DecoderBlock(16, 8, activation_fn=name)
-            self.assertIsInstance(block.activation, func)
+        block = DecoderBlock(16, 32, activation_fn='relu')
+        self.assertIsInstance(block.activation, nn.ReLU)
+        block = DecoderBlock(16, 32, activation_fn='sigmoid')
+        self.assertIsInstance(block.activation, nn.Sigmoid)
+        block = DecoderBlock(16, 32, activation_fn='tanh')
+        self.assertIsInstance(block.activation, nn.Tanh)
+        block = DecoderBlock(16, 32, activation_fn='glu', num_glu_features=512)
+        self.assertIsInstance(block.activation, models.layers.GLU2d)
+        block = DecoderBlock(16, 32, activation_fn=None)
+        self.assertIsInstance(block.activation, nn.Identity)
 
     def test_padding_stride(self):
         data = torch.rand((8, 16, 512, 128))
@@ -106,3 +117,112 @@ class DecoderTest(unittest.TestCase):
         self.assertTrue(block.dropout.p, 0.2)
         self.assertEqual(block.dropout_p, 0.2)
 
+
+class StackedBlockTest(unittest.TestCase):
+    def test_encoder_stacked(self):
+        stacked_scheme = [
+            {
+                'in_channels': 16,
+                'out_channels': 32,
+                'kernel_size': 5,
+                'stride': 2,
+                'padding': 2,
+                'batch_norm': True,
+                'activation_fn': 'leaky_relu',
+                'leak': 0.2,
+                'bias': False
+            },
+            {
+                'in_channels': 32,
+                'out_channels': 64,
+                'kernel_size': 5,
+                'stride': 2,
+                'padding': 2,
+                'batch_norm': False,
+                'activation_fn': 'sigmoid',
+                'bias': False,
+                'max_pool': True
+            },
+            {
+                'in_channels': 64,
+                'out_channels': 128,
+                'kernel_size': 5,
+                'stride': 2,
+                'padding': 2,
+                'batch_norm': True,
+                'activation_fn': 'relu',
+                'bias': False,
+            }
+        ]
+        encoder = StackedBlock(stacked_scheme, block_type='encoder')
+        for i, layer in enumerate(encoder.layers_stack):
+            self.assertEqual(layer.in_channels,
+                             stacked_scheme[i]['in_channels'])
+            self.assertEqual(layer.out_channels,
+                             stacked_scheme[i]['out_channels'])
+            self.assertEqual(layer.kernel_size,
+                             stacked_scheme[i]['kernel_size'])
+            self.assertEqual(layer.stride,
+                             stacked_scheme[i]['stride'])
+            self.assertEqual(layer.padding,
+                             stacked_scheme[i]['padding'])
+            if stacked_scheme[i]['batch_norm']:
+                self.assertIsInstance(layer.batchnorm, nn.BatchNorm2d)
+            if stacked_scheme[i]['activation_fn']:
+                self.assertIsInstance(layer.activation,
+                                      nn.modules.activation.Module)
+            if stacked_scheme[i]['max_pool']:
+                self.assertIsInstance(layer.maxpool, nn.MaxPool2d)
+            self.assertEqual(layer.bias, stacked_scheme[i]['bias'])
+
+    def test_decoder_stacked(self):
+        stacked_scheme = [
+            {
+                'in_channels': 64,
+                'out_channels': 32,
+                'kernel_size': 5,
+                'stride': 2,
+                'padding': 2,
+                'batch_norm': True,
+                'activation_fn': 'relu',
+                'bias': False
+            },
+            {
+                'in_channels': 32,
+                'out_channels': 16,
+                'kernel_size': 5,
+                'stride': 2,
+                'padding': 2,
+                'batch_norm': False,
+                'activation_fn': 'sigmoid',
+                'bias': False,
+            },
+            {
+                'in_channels': 16,
+                'out_channels': 1,
+                'kernel_size': 5,
+                'stride': 2,
+                'padding': 2,
+                'batch_norm': True,
+                'activation_fn': 'relu',
+                'bias': False,
+            }
+        ]
+        encoder = StackedBlock(stacked_scheme, block_type='decoder')
+        for i, layer in enumerate(encoder.layers_stack):
+            self.assertEqual(layer.in_channels,
+                             stacked_scheme[i]['in_channels'])
+            self.assertEqual(layer.out_channels,
+                             stacked_scheme[i]['out_channels'])
+            self.assertEqual(layer.kernel_size,
+                             stacked_scheme[i]['kernel_size'])
+            self.assertEqual(layer.stride,
+                             stacked_scheme[i]['stride'])
+            self.assertEqual(layer.padding,
+                             stacked_scheme[i]['padding'])
+            if stacked_scheme[i]['batch_norm']:
+                self.assertIsInstance(layer.batchnorm, nn.BatchNorm2d)
+            if stacked_scheme[i]['activation_fn']:
+                self.assertIsInstance(layer.batchnorm,
+                                      nn.modules.activation.Module)
+            self.assertEqual(layer.bias, stacked_scheme[i]['bias'])

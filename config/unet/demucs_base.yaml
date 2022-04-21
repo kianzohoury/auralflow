@@ -61,3 +61,5 @@ model:
   mask-activation: sigmoid
   input-norm: False
   output-norm: False
+
+  layers: [conv_8, relu, conv_1, glu]
