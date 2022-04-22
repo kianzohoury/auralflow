@@ -8,17 +8,19 @@
 base-model: unet
 max-layers: 6
 init-features: 16
-bottleneck-type:
+bottleneck:
     type: conv
     num-layers: 1
 encoder:
     scheme: [
-        [conv_k5_s2, batch_norm, leaky_relu_0.2],
+        [conv_k5, batch_norm, leaky_relu_0.2],
     ]
+    down: conv
 decoder:
     scheme: [
-        [tconv_k5_s2, batch_norm, dropout_0.5, relu],
+        [conv_k5, batch_norm, dropout_0.5, relu],
     ]
+    up: transpose
 num-dropouts: 3
 skip-connections: True
 mask-activation: sigmoid
@@ -32,49 +34,68 @@ targets: [vocals]
 ###############################################################################
 # base-model: The base model architecture.
 # -----------
-# max-layers: The max depth of the network.
+# max-layers (int): The max depth of the network.
 # -----------
-# init-features: The initial hidden number of feature or channels.
+# init-features (int): The initial hidden number of feature or channels.
 # --------------
 # bottleneck:
-#   type: The bottleneck type. Options: conv or lstm.
+#   type (str): The bottleneck type. Options: [conv | lstm]
 #   -----
-#   num-layers: The number of layers within the bottleneck.
+#   num-layers (int): The number of layers within the bottleneck.
 #   -----------
 # encoder:
-#   scheme: The scheme for a single encoder block.
+#   scheme (List[List]): The scheme for a single encoder block.
 #   -------
+#   down (str): The method for downsampling. Options: [conv | max_pool]
+#   -----
 # decoder:
-#   scheme: The scheme for a single decoder block.
+#   scheme (List[List]]: The scheme for a single decoder block.
 #   -------
-# num-dropouts: The number of layers with dropout starting from the bottom.
+#   up (str): The method for upsampling. Options: [transpose | upsample]
+#   -----
+# num-dropouts (int): The number of dropout layers starting from the bottom.
 # -------------
-# skip-connections: Whether to use skip connections or not.
+# skip-connections (bool): Whether to use skip connections or not.
 # -----------------
-# mask-activation: The final mask activation function.
+# mask-activation (str): The final mask activation function.
 # ----------------
-# input-norm: Whether to use input normalization.
+# input-norm (bool): Whether to use input normalization.
 # -----------
-# output-norm: Whether to use output normalization.
+# output-norm (bool): Whether to use output normalization.
 # ------------
 ###############################################################################
 # Encoder/decoder scheme format                                               #
 ###############################################################################
-# These are the building blocks of block sequence. You can combine them however
-# you like, but some sequences tend to be better in terms of computational cost,
-# model performance and convergence.
+# Instructions for specify encoder/decoder block schemes. You can combine these
+# layers however you like but some schemes will perform better than others
+# in terms of computational cost, model performance and loss convergence.
 #
 # Convolutions:
 # -------------
-#   Options:
-#     * conv_k{kernel_size}_s{stride_size}: Strided convolution.
-#     * conv_k{kernel_size}_same: Output feature maps have same spatial size.
-#     * tconv_k{kernel_size}_s{stride_size}: Transposed convolution w/ stride.
+#   * A convolutional block is denoted by conv_k{kernel_size}, where
+#     `kernel_size` is the kernel size.
 #
-# Maxpool:
-# -------
-#   Options:
-#     * maxpool_k{kernel_size}: Max pool with kernel_size.
+#   * If down=`conv`, then the last conv of the last layer in the encoder
+#     scheme will halve the spatial dimensions, and the very first conv will
+#     double the number of channels. All other convs will preserve the shape
+#     and number of channels, such that in_channels = out_channels, and
+#     (h_in, w_in) = (h_out, w_out).
+#
+#   * If down=`max_pool`, then downsampling is performed by an additional max
+#     pooling layer instead of a convolutional layer.
+#
+#   * If up=`transpose`, then the very first conv of the first layer in the
+#     decoder scheme both doubles the spatial dimensions and halves the number
+#     of channels. All other convs do not change the size of either dimensions.
+#
+#   * If up=`upsample`, then an upsampling layer comes before the convolutional
+#     layers of the decoder scheme. This layer doubles the spatial dimensions,
+#     but another conv layer is is needed to decrease the number of channels.
+#
+# Skip connections:
+# -----------------
+#   * If using skip connections, the first conv following an upsampling layer
+#     receives the corresponding output of the encoder.
 #
 # Activations:
 # -------------
@@ -93,24 +114,26 @@ targets: [vocals]
 ###############################################################################
 # Common architectures                                                        #
 ###############################################################################
-
+# Below are some common U-Net architectures.
 
 unet_like_1:
     # enc: 5x5 conv -> bn -> leaky relu
     # dec: 5x5 transposed conv -> bn -> dropout -> relu
     max-layers: 6
     init-features: 16
-    bottleneck-type:
+    bottleneck:
         type: conv
         num-layers: 1
     encoder:
         scheme: [
-            [conv_k5_s2, batch_norm, leaky_relu_0.2],
+            [conv_k5, batch_norm, leaky_relu_0.2],
         ]
+        down: conv
     decoder:
         scheme: [
-            [tconv_k5_s2, batch_norm, dropout_0.5, relu],
+            [conv_k5, batch_norm, dropout_0.5, relu],
         ]
+        up: transpose
     num-dropouts: 3
     skip-connections: True
     mask-activation: sigmoid
@@ -125,20 +148,22 @@ unet_like_2:
     #          ... -> relu -> 3x3 conv -> bn -> relu
     max-layers: 5
     init-features: 32
-    bottleneck-type:
+    bottleneck:
         type: conv
         num-layers: 1
     encoder:
         scheme: [
-            [conv_k3_same, batch_norm, relu],
-            [conv_k3_same, batch_norm, relu, max_pool]
+            [conv_k3, batch_norm, relu],
+            [conv_k3, batch_norm, relu]
         ]
+        down: max_pool
     decoder:
         scheme: [
-            [tconv_k5_s2, batch_norm, relu, dropout_0.4],
-            [conv_k3_same, batch_norm, relu],
-            [conv_k3_same, batch_norm, relu]
+            [conv_k5, batch_norm, relu, dropout_0.4],
+            [conv_k3, batch_norm, relu],
+            [conv_k3, batch_norm, relu]
         ]
+        up: transpose
     num-dropouts: 3
     skip-connections: True
     mask-activation: sigmoid
@@ -148,7 +173,7 @@ unet_like_2:
 
 
 ###############################################################################
-# Have fun building!                                                          #
-# Take a look at the documentation on Github for additional assistance:       #
+# Have fun building your models!                                              #
+# Take a look at the official documentation on Github for full details:       #
 # https://github.com/kianzohoury/auralflow                                    #
 ###############################################################################

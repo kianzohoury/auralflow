@@ -55,7 +55,7 @@ class EncoderBlock(nn.Module):
         self.stride = stride
         self.padding = padding
         self.bias = bias
-        self.leak = leak
+        self.leak = leak if leak is not None else 0
         self.maxpool = nn.MaxPool2d(2) if max_pool else nn.Identity()
         self.conv = nn.Conv2d(
             in_channels=in_channels,
@@ -65,7 +65,7 @@ class EncoderBlock(nn.Module):
             padding=padding,
             bias=bias
         )
-        if activation_fn == 'leaky_relu' and leak > 0:
+        if activation_fn == 'leaky_relu' and self.leak > 0:
             self.activation = nn.LeakyReLU(leak)
         elif activation_fn == 'relu':
             self.activation = nn.ReLU()
