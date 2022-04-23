@@ -109,6 +109,9 @@ tutorial_1a:
 # entry is a dropout layer, which requires a value for the dropout probability,
 # which we provided as 0.5.
 
+# Also note that the kernel sizes of convolution and transpose convolution
+# layers do not need to match, as the padding is handled for you internally.
+
 # Q: How to use skip connections?
 # -------------------------------
 # Skip connections tend to improve u-net models, so utilizing them is important.
