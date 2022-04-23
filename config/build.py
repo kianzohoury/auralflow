@@ -120,8 +120,8 @@ def build_audio_folder(config_dict: dict, dataset_dir: Path):
 
 def build_layers(config_dict: dict) -> List[dict]:
     d = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml'))
-    d = compress_keys(d)
+    # d = compress_keys(d)
     pprint(d)
     return [{}]
-
-def parse_layers(config_dict: dict):
+#
+# def parse_layers(config_dict: dict):

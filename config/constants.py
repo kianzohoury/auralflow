@@ -26,6 +26,6 @@ REQUIRED_MODEL_KEYS = {
 }
 
 BASE_MODELS = {
-    "unet": BaseUNet
+    "u-net": BaseUNet
 }
 

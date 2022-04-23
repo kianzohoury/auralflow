@@ -1,26 +1,42 @@
-###############################################################################
-# Model design.                                                               #
-###############################################################################
+################################################################################
+# Model configuration file
+################################################################################
 # Below are some important build configurations for your model's architecture.
-# Modify these (except for base-model) to create something new and interesting.
+# All keyword arguments are modifiable except for the base-model. It's
+# strongly encouraged to build new and interesting architectures, but do note
+# however that some architectures empirically perform better than others in
+# terms of computational cost, efficiency in the number of parameters, bias,
+# variance and training loss convergence. As this is a high-level library, the
+# freedom to finely tune a model, layer by layer, has been traded for simplicity
+# and extremely fast development time.
+################################################################################
 
-
-base-model: unet
+base-model: u-net
 max-layers: 6
-init-features: 16
+init-hidden: 16
+bottleneck-type: conv
+bottleneck-layers: 1
 bottleneck:
-    type: conv
-    num-layers: 1
+  [
+    [conv, [3, 3]],
+    [batch_norm],
+    [relu],
+  ]
 encoder:
-    scheme: [
-        [conv_k5, batch_norm, leaky_relu_0.2],
-    ]
-    down: conv
+  [
+    [conv, [5, 5]],
+    [batch_norm],
+    [leaky_relu, 0.2],
+    [skip],
+  ]
 decoder:
-    scheme: [
-        [conv_k5, batch_norm, dropout_0.5, relu],
-    ]
-    up: transpose
+  [
+    [transpose_conv, [5, 5]],
+    [batch_norm],
+    [droppout, 0.5],
+    [relu],
+    [skip],
+  ]
 num-dropouts: 3
 skip-connections: True
 mask-activation: sigmoid
@@ -28,112 +44,234 @@ input-norm: False
 output-norm: False
 targets: [vocals]
 
-
-###############################################################################
-# Arguments                                                                   #
-###############################################################################
-# base-model: The base model architecture.
-# -----------
+################################################################################
+# Arguments
+################################################################################
+# base-model (str): The base model architecture.
+# -----------------
 # max-layers (int): The max depth of the network.
-# -----------
-# init-features (int): The initial hidden number of feature or channels.
-# --------------
-# bottleneck:
-#   type (str): The bottleneck type. Options: [conv | lstm]
-#   -----
-#   num-layers (int): The number of layers within the bottleneck.
-#   -----------
-# encoder:
-#   scheme (List[List]): The scheme for a single encoder block.
-#   -------
-#   down (str): The method for downsampling. Options: [conv | max_pool]
-#   -----
-# decoder:
-#   scheme (List[List]]: The scheme for a single decoder block.
-#   -------
-#   up (str): The method for upsampling. Options: [transpose | upsample]
-#   -----
+# -----------------
+# init-hidden (int): The initial number of hidden feature or channels.
+# ------------------
+# bottleneck-type (str): The bottleneck type. Options: [conv | lstm]
+# ----------------------
+# bottleneck-layers (int): The number of layers within the bottleneck.
+# ------------------------
+# bottleneck (List[List]): The scheme for a bottleneck layer.
+# ------------------------
+# encoder: (List[List]): The scheme for a single encoder block.
+# ----------------------
+# decoder: (List[List]): The scheme for a single decoder block.
+# -----------------------
 # num-dropouts (int): The number of dropout layers starting from the bottom.
-# -------------
+# -------------------
 # skip-connections (bool): Whether to use skip connections or not.
-# -----------------
+# ------------------------
 # mask-activation (str): The final mask activation function.
-# ----------------
+# ----------------------
 # input-norm (bool): Whether to use input normalization.
-# -----------
+# ------------------
 # output-norm (bool): Whether to use output normalization.
-# ------------
-###############################################################################
-# Encoder/decoder scheme format                                               #
-###############################################################################
-# Instructions for specify encoder/decoder block schemes. You can combine these
-# layers however you like but some schemes will perform better than others
-# in terms of computational cost, model performance and loss convergence.
-#
-# Convolutions:
-# -------------
-#   * A convolutional block is denoted by conv_k{kernel_size}, where
-#     `kernel_size` is the kernel size.
-#
-#   * If down=`conv`, then the last conv of the last layer in the encoder
-#     scheme will halve the spatial dimensions, and the very first conv will
-#     double the number of channels. All other convs will preserve the shape
-#     and number of channels, such that in_channels = out_channels, and
-#     (h_in, w_in) = (h_out, w_out).
-#
-#   * If down=`max_pool`, then downsampling is performed by an additional max
-#     pooling layer instead of a convolutional layer.
-#
-#   * If up=`transpose`, then the very first conv of the first layer in the
-#     decoder scheme both doubles the spatial dimensions and halves the number
-#     of channels. All other convs do not change the size of either dimensions.
-#
-#   * If up=`upsample`, then an upsampling layer comes before the convolutional
-#     layers of the decoder scheme. This layer doubles the spatial dimensions,
-#     but another conv layer is is needed to decrease the number of channels.
-#
-# Skip connections:
-# -----------------
-#   * If using skip connections, the first conv following an upsampling layer
-#     receives the corresponding output of the encoder.
-#
-# Activations:
-# -------------
-#   Options:
-#     * sigmoid
-#     * relu
-#     * leaky_relu_{leak constant}
-#     * tanh
-#
-# Normalization:
-# -------------
-#   Options:
-#     * batch_norm
-#     * dropout_{dropout probability}
-#
-###############################################################################
-# Common architectures                                                        #
-###############################################################################
-# Below are some common U-Net architectures.
+# -------------------
+################################################################################
+# Walking through an example
+################################################################################
+
+# Q: How to create a layer?
+# -------------------------
+# A single layer is easily constructed by specifying a sequence of functions
+# as a list. For example, if we want an encoder block to use a 5x5 convolution,
+# followed by batch normalization and relu activation layers, we would write:
+
+tutorial_1a:
+    encoder:
+  [
+      [conv, [5, 5]],
+      [batch_norm],
+      [relu],
+  ]
+
+# For convolutions, we require an additional kernel size argument given as
+# [k_size, k_size]. Note that the following batch_norm and relu layers do not
+# require additional arguments.
+
+# We also need to specify a scheme for the decoder layers:
+
+    decoder:
+  [
+      [transpose_conv, [5, 5]],
+      [batch_norm],
+      [relu],
+      [dropout, 0.5],
+  ]
+
+# Here, we used a transpose convolution with a 5x5 kernel. Notice that the last
+# entry is a dropout layer, which requires a value for the dropout probability,
+# which we provided as 0.5.
+
+# Q: How to use skip connections?
+# -------------------------------
+# Skip connections tend to improve u-net models, so utilizing them is important.
+# However, skip connections require a little more attention to detail, as they
+# cannot be used anywhere. Wherever a skip connection is used in the encoder,
+# the shape of the skipped data tensor must match that of the decoder's with
+# which it will be concatenated with.
+
+# So far, our encoder block takes in input, passes through convolution,
+# normalization and activation layers, and outputs batched feature maps of an
+# unknown shape. When the encoder is specified plainly in this way, it will
+# always output data with twice the number of channels and half the size
+# in the spatial dimensions, such that if the input shape of x = (n, c, w, h),
+# encoder(x) = y, where y has the shape (n, 2 * c, w // 2, h // 2).
+
+# Therefore, when the decoder takes as input y, decoder(y) will produce an
+# output x' of shape (n, c, w, h), since we've designed it to perform the
+# opposite operation here, halving the number of channels and doubling the
+# sizes of the spatial dimensions. Since x and x' have the same shape, we can
+# concatenate the two to create x_cat, which has shape (n, 2 * c, h, w). At
+# this point, we would need to pass x_cat through another decoder block to
+# reduce the number of channels by half. When max_layers > 1, the input
+# channels for the next decoder block are doubled automatically.
+
+tutorial_1b:
+    encoder:
+  [
+      [conv, [5, 5]],
+      [batch_norm],
+      [relu],
+      [skip]
+  ]
+
+    decoder:
+  [
+      [transpose_conv, [5, 5]],
+      [batch_norm],
+      [relu],
+      [dropout, 0.5],
+      [skip]
+  ]
+
+# Again, in our example, the output of each encoder block is also sent to the
+# corresponding decoder block and is concatenated with the output of the
+# the decoder. The concatenated data is passed through the next decoder block
+# as input, is concatenated again with corresponding encoder's output, and so
+# forth.
+
+# Q: How to use multiple convolutions?
+# ------------------------------------
+# Using more than 1 convolutional layer within each block is very common. To
+# do so, just add them to the list.
+
+tutorial_1c:
+    encoder:
+  [
+      [conv, [3, 3], same],
+      [batch_norm],
+      [relu],
+      [conv, [4, 4], same],
+      [batch_norm],
+      [relu],
+      [conv, [5, 5], half],
+      [batch_norm],
+      [relu],
+      [skip]
+  ]
+
+    decoder:
+  [
+      [transpose_conv, [5, 5]],
+      [batch_norm],
+      [relu],
+      [dropout, 0.5],
+      [skip],
+      [conv, [4, 4], same],
+      [batch_norm],
+      [relu],
+      [conv, [4, 4], same],
+      [batch_norm],
+      [relu],
+  ]
+
+# There are a few differences that we need to account for with the addition
+# of more convolutional layers. Firstly, all convolutional layers preceding
+# the last one must specify the `same` argument, which denotes an output of
+# the same spatial size. The first convolutional will again double the number
+# of channels, but the proceeding convolutions will keep the number of channels
+# constant. The last convolution will also require the `half` argument, which
+# differentiates it as the downsampling convolutional layer, shrinking the
+# spatial dimensions in half.
+
+# Lastly, with the transpose convolution, we do not need to pass in an
+# additional argument since the transpose convolution will always double the
+# spatial dimensions.
+
+# Q: Other ways of downsampling/upsampling?
+# ------------------------------------
+# In the above example, we can interchange the last convolutional layer with a
+# max pool layer to perform the downsampling.
+
+tutorial_1d:
+    encoder:
+  [
+      [conv, [3, 3], same],
+      [batch_norm],
+      [relu],
+      [conv, [4, 4], same],
+      [batch_norm],
+      [relu],
+      [max_pool],
+      [batch_norm],
+      [relu],
+      [skip],
+  ]
+
+# Moreover, we can also interchange the transpose convolution with an
+# upsample layer, which uses a form of interpolation double the spatial
+# dimensions.
+
+    decoder:
+  [
+      [upsample],
+      [batch_norm],
+      [relu],
+      [dropout, 0.5],
+      [skip],
+      [conv, [4, 4], same],
+      [batch_norm],
+      [relu],
+      [conv, [4, 4], same],
+      [batch_norm],
+      [relu],
+  ]
+
+# And of course, there are other activation functions we can use, such as
+# leaky_relu, sigmoid and tanh.
+
+################################################################################
+# Common architectures
+################################################################################
 
 unet_like_1:
-    # enc: 5x5 conv -> bn -> leaky relu
-    # dec: 5x5 transposed conv -> bn -> dropout -> relu
     max-layers: 6
-    init-features: 16
-    bottleneck:
-        type: conv
-        num-layers: 1
+    init-hidden: 16
+    bottleneck-type: conv
+    bottleneck-layers: 0
+    bottleneck: [[]]
     encoder:
-        scheme: [
-            [conv_k5, batch_norm, leaky_relu_0.2],
-        ]
-        down: conv
+      [
+          [conv, [5, 5]],
+          [batch_norm],
+          [leaky_relu, 0.2],
+          [skip],
+      ]
     decoder:
-        scheme: [
-            [conv_k5, batch_norm, dropout_0.5, relu],
-        ]
-        up: transpose
+      [
+          [transpose_conv, [5, 5]],
+          [batch_norm],
+          [droppout, 0.5],
+          [relu],
+          [skip],
+      ]
     num-dropouts: 3
     skip-connections: True
     mask-activation: sigmoid
@@ -143,34 +281,40 @@ unet_like_1:
 
 
 unet_like_2:
-    # enc: 3x3 conv -> bn -> relu -> 3x3 conv -> bn -> relu -> maxpool
-    # dec: 5x5 transposed conv -> bn -> relu -> dropout -> 3x3 conv -> bn
-    #          ... -> relu -> 3x3 conv -> bn -> relu
-    max-layers: 5
-    init-features: 32
-    bottleneck:
-        type: conv
-        num-layers: 1
+    max-layers: 6
+    init-hidden: 16
+    bottleneck-type: conv
+    bottleneck-layers: 0
+    bottleneck: [[]]
     encoder:
-        scheme: [
-            [conv_k3, batch_norm, relu],
-            [conv_k3, batch_norm, relu]
-        ]
-        down: max_pool
+  [
+      [conv, [3, 3], same],
+      [batch_norm],
+      [relu],
+      [conv, [3, 3], same],
+      [batch_norm],
+      [relu],
+      [max_pool],
+  ]
     decoder:
-        scheme: [
-            [conv_k5, batch_norm, relu, dropout_0.4],
-            [conv_k3, batch_norm, relu],
-            [conv_k3, batch_norm, relu]
-        ]
-        up: transpose
+  [
+      [transpose_conv, [5, 5]],
+      [batch_norm],
+      [relu],
+      [dropout, 0.4],
+      [conv, [3, 3], same],
+      [batch_norm],
+      [relu],
+      [conv, [3, 3], same],
+      [batch_norm],
+      [relu]
+  ]
     num-dropouts: 3
     skip-connections: True
     mask-activation: sigmoid
     input-norm: False
     output-norm: False
     targets: [bass, drums, other, vocals]
-
 
 ###############################################################################
 # Have fun building your models!                                              #
