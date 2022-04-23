@@ -40,7 +40,7 @@ dataset:
 ################################################################################
 # More about data representation
 ################################################################################
-#
+
 # It's useful to know how exactly the data is transformed from time-dependent
 # signals to time-frequency-dependent signals. This is done by applying the
 # `Discrete Fourier Transform` algorithm, which extracts a 3rd frequency
