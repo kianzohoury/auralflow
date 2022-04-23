@@ -18,7 +18,7 @@ bottleneck-type: conv
 bottleneck-layers: 1
 bottleneck:
   [
-    [conv, [3, 3], same],
+    [conv, [3, 3]],
     [batch_norm],
     [relu],
   ]
