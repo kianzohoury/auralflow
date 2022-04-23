@@ -215,11 +215,11 @@ tutorial_1c:
 #      input —>│——>│-------------skip------------->│——>│———> output
 #                  ∨                               ^
 #              5x5 ∨  3x3 4x4             4x4 4x4  ^
-#                  │——>│——>│-----skip----->│——>│——>│ 5x5 transpose
-#                          ∨               ^
+#                  │——>│——>│-----skip----->│——>│——>│
+#                          ∨               ^      5x5 transpose
 #                      5x5 ∨  3x3 4x4      ^
-#                          │——>│——>│——>│——>│ 5x5 transpose
-
+#                          │——>│——>│——————>│
+#                                         5x5 transpose
 
 # Q: Other ways of downsampling/upsampling?
 # ------------------------------------
