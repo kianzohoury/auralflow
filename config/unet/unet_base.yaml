@@ -171,10 +171,10 @@ tutorial_1c:
       [conv, [4, 4], same],
       [batch_norm],
       [relu],
+      [skip]
       [conv, [5, 5], half],
       [batch_norm],
       [relu],
-      [skip]
   ]
 
     decoder:
