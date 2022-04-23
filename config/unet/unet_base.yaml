@@ -315,8 +315,8 @@ unet_like_2:
     output-norm: False
     targets: [bass, drums, other, vocals]
 
-###############################################################################
-# Have fun building your models!                                              #
-# Take a look at the official documentation on Github for full details:       #
-# https://github.com/kianzohoury/auralflow                                    #
-###############################################################################
+################################################################################
+# Have fun building your models!
+# Take a look at the official documentation on Github for full details:
+# https://github.com/kianzohoury/auralflow
+################################################################################

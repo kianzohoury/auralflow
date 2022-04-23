@@ -74,20 +74,21 @@ def get_all_config_contents(model_dir: Path) -> dict:
                         " restore the configuration files.")
 
 
-def build_model(config_dict: dict) -> nn.Module:
+def build_model(config_data: dict) -> nn.Module:
     """Implements a PyTorch model from the configuration files.
 
     Args:
-        config_dict (dict): Training configuration dictionary.
+        config_data (dict): Model, training and dataset configuration data.
 
     Returns:
         (nn.Module): Pytorch model.
     Raises:
         BuildFailure: Failed to execute Pytorch module creation.
     """
-    base_model = config_dict['model']['base_model']
-    build_config = {}
-    for _, config_map in config_dict.items():
+    model_config = config_data['model']
+    dataset_config = config_data['dataset']
+    build_instructions = {}
+    for _, config_item in config_data.items():
         for param_name, param_val in config_map.items():
             if param_name in REQUIRED_MODEL_KEYS:
                 build_config[param_name] = param_val
@@ -120,7 +121,7 @@ def build_audio_folder(config_dict: dict, dataset_dir: Path):
 
 def build_layers(config_dict: dict) -> List[dict]:
     d = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml'))
-    # d = compress_keys(d)
+    d = compress_keys(d['model'])
     pprint(d)
     return [{}]
 #

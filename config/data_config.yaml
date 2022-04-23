@@ -1,27 +1,77 @@
-# Dataset parameters.
-data:
-  # targets:
-  #   Target sources to separate. Pass in one or more sources as a list.
-  # num-channels:
-  #   Number of channels (mono = 1, stereo = 2). Default: 1.
-  # sample-rate:
-  #   Sampling rate of the audio files.
-  # num-fft:
-  #   Number of STFT bins to create.
-  # window-size:
-  #   Window size of the STFT window function.
-  # hop-length:
-  #   Hop length of the STFT window function.
-  # sample-length:
-  #   Duration of the sampled audio clips.
-  # backend:
-  #   Backend audio framework for loading audio files.
-  targets: [vocals]
-  num-channels: 1
-  sample-rate: 44100
-  num-fft: 1024
-  window-size: 1024
-  hop-length: 768
-  sample-length: 3
-  audio-format: wav
-  backend: soundfile
+################################################################################
+# Dataset configuration file
+################################################################################
+# The following arguments determine how the AudioFolder will be configured, as
+# well as the representation of the audio samples.
+################################################################################
+
+dataset:
+    targets: [vocals]
+    num-channels: 1
+    sample-rate: 44100
+    num-fft: 1024
+    window-size: 1024
+    hop-length: 768
+    sample-length: 3
+    audio-format: wav
+    backend: soundfile
+
+################################################################################
+# Arguments
+################################################################################
+# targets (List): The target sources to separate.
+# ---------------
+# num-channels (int): The number of channels (mono = 1, stereo = 2).
+# -------------------
+# sample-rate (int): The sampling rate of the audio signals.
+# ------------------
+# num-fft (int): The number of STFT bins to create.
+# --------------
+# window-size (int): The window size of the STFT window function. Note that
+#                    0 < window-size <= num-fft.
+# ------------------
+# hop-length (int): The hop length of the STFT window function. Note that
+#                   hop-length > 0.
+# -----------------
+# sample-length (float): The duration of the sampled audio clips.
+# ----------------------
+# backend (str): The backend audio framework for loading audio files.
+# --------------
+################################################################################
+# More about data representation
+################################################################################
+#
+# It's useful to know how exactly the data is transformed from time-dependent
+# signals to time-frequency-dependent signals. This is done by applying the
+# `Discrete Fourier Transform` algorithm, which extracts a 3rd frequency
+# dimension that is quite useful for the task of mask estimation which is
+# commonly utilized in source separation models. It's helpful to think about
+# about source separation as analogous to image segmentation, where the model
+# tries to classify the pixel-wise target source of a 3d image
+# (the time-frequency representation of an audio signal).
+
+# In practice, the `DFT` is actually implemented much like a convolutional
+# layer, where a window function operates over small chunks of the full signal.
+# This method is called to `Short Time Fourier Transform` or `STFT`.
+
+# Suppose we have a batch of 8 mono audio signals x, which has the shape
+# (8, 1, 132300), with the 2nd and 3rd dimensions being channels and time
+# (or number of samples) respectively. An STFT representation of x, STFT(x)
+# will look like (8, num-fft, t, 1), where num-fft is the number of fourier
+# bins that were created from the STFT algorithm, and t is the new time domain.
+# The batch and channels dimension are first and last respectively.
+
+# Note that since the STFT is a linear transformation, it also has an inverse,
+# called the `Inverse Short Time Fourier Transform`, or `iSTFT`. Applying the
+# inverse allows us to conveniently retrieve the original signal
+# (with the caveat that some noise and artifacts will be introduced).
+# This means that iSTFT(STFT(x)) ~= x. Therefore, it's important to note that
+# depending on the num-fft, window-size and hop-length, we may lose differential
+# amounts of information and precision when going back and forth between the
+# different domains.
+
+################################################################################
+# Have fun building your models!
+# Take a look at the official documentation on Github for full details:
+# https://github.com/kianzohoury/auralflow
+################################################################################
