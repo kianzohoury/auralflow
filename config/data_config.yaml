@@ -28,11 +28,9 @@ dataset:
 # num-fft (int): The number of STFT bins to create.
 # --------------
 # window-size (int): The window size of the STFT window function. Note that
-#                    0 < window-size <= num-fft.
-# ------------------
+# ------------------ 0 < window-size <= num-fft.
 # hop-length (int): The hop length of the STFT window function. Note that
-#                   hop-length > 0.
-# -----------------
+# ----------------- hop-length > 0.
 # sample-length (float): The duration of the sampled audio clips.
 # ----------------------
 # backend (str): The backend audio framework for loading audio files.
