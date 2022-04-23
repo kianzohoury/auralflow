@@ -301,14 +301,16 @@ class StackedBlock(nn.Module):
 
     def __init__(self, in_channels: int, out_channels: int, num_bins: int,
                  num_samples: int, scheme: List[List],
-                 block_type: str = 'encoder', skip_connections: bool = True):
+                 block_type: str = 'encoder', skip_connections: bool = True,
+                 h_out: int = 0, w_out: int = 0, last: bool = False):
         super(StackedBlock, self).__init__()
         assert len(scheme) > 0,\
             f"Must specify a non-empty block scheme, but received {scheme}."
         self.num_layers = len(scheme)
         self.block_type = block_type
         self.skip_connections = skip_connections
-        print(block_type, in_channels, out_channels)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
         spatial_resize_index = len(scheme) - 1 if block_type == 'encoder' else 0
         if block_type == 'encoder':
             while spatial_resize_index >= 0 and scheme[spatial_resize_index][0] not in ['conv', 'max_pool']:
@@ -348,7 +350,7 @@ class StackedBlock(nn.Module):
             elif layer_name == 'transpose_conv':
                 kernel_size = layer[-1]
                 h_in, w_in = num_bins, num_samples
-                h_out, w_out = num_bins * 2, num_samples * 2
+                h_out, w_out = h_out, w_out
                 padding = get_transpose_padding(
                     h_in=h_in, w_in=w_in, h_out=h_out, w_out=w_out,
                     kernel_size=kernel_size, stride=2
@@ -403,20 +405,21 @@ class StackedBlock(nn.Module):
             if layer_name == 'conv':
                 kernel_size = layer[-1]
                 if block_type == 'encoder':
-                    h_in, w_in = num_bins, num_samples
-                    h_out, w_out = h_in // 2, w_in // 2
-                    padding = get_conv_padding(
-                        h_in=h_in, w_in=w_in, h_out=h_out, w_out=w_out,
-                        kernel_size=kernel_size
-                    )
-                    stride = 2
-                    up.append(
-                        nn.Conv2d(in_channels,
-                                  out_channels,
-                                  kernel_size=kernel_size,
-                                  stride=stride,
-                                  padding=padding)
-                    )
+                    if not last:
+                        h_in, w_in = num_bins, num_samples
+                        h_out, w_out = h_in // 2, w_in // 2
+                        padding = get_conv_padding(
+                            h_in=h_in, w_in=w_in, h_out=h_out, w_out=w_out,
+                            kernel_size=kernel_size
+                        )
+                        stride = 2
+                        up.append(
+                            nn.Conv2d(in_channels,
+                                      out_channels,
+                                      kernel_size=kernel_size,
+                                      stride=stride,
+                                      padding=padding)
+                        )
                 else:
                     # if not decoder_stack:
                     #     in_channels = in_channels * (1 + int(skip_connections))
@@ -428,7 +431,7 @@ class StackedBlock(nn.Module):
                                       padding='same')
                     )
                 in_channels = out_channels
-            elif layer_name == 'max_pool':
+            elif layer_name == 'max_pool' and not last:
                 down.append(nn.MaxPool2d(2))
             elif layer_name == 'batch_norm':
                 if block_type == 'encoder':
@@ -473,19 +476,37 @@ class StackedBlock(nn.Module):
             self.down = nn.Sequential(*down)
         else:
             self.layers_stack = nn.Sequential(*decoder_stack)
-            self.up = nn.Sequential(*up)
+            self.deconv_pre = up[0]
+            self.deconv_post = nn.Sequential(*up[1:])
 
-    def forward(self, data: torch.Tensor) -> torch.Tensor:
-        """Forward method.
+    # def forward(self, data: torch.Tensor) -> torch.Tensor:
+    #     """Forward method.
+    #
+    #     Args:
+    #         data (tensor): Input feature map.
+    #     Returns:
+    #         (tensor): Output feature map.
+    #     """
+    #     output = self.layers_stack(data)
+    #     return output
 
-        Args:
-            data (tensor): Input feature map.
-        Returns:
-            (tensor): Output feature map.
-        """
-        output = self.layers_stack(data)
-        return output
 
+# class StackedDecoderBlock(StackedBlock):
+#     def __init__(self, **kwargs):
+#         super(StackedDecoderBlock, self).__init__(**kwargs)
+#
+#     def forward(self, data: torch.Tensor, output_size: torch.Size) -> torch.Tensor:
+#         """Forward method.
+#
+#         Args:
+#             data (tensor): Input feature map.
+#             output_size (torch.Size): Output size of this layer's output.
+#         Returns:
+#             (tensor): Output feature map.
+#         """
+#         x = self.up(data, output_size=output_size)
+#         output = self.conv_stack(x)
+#         return output
 
 # Very slow.
 class GLU2d(nn.Module):

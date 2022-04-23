@@ -1,9 +1,11 @@
+import torch
 import torch.nn as nn
 import sys
 from pprint import pprint
 
 from pathlib import Path
 import ruamel.yaml
+import torchinfo
 from yaml import YAMLError
 
 from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
@@ -147,11 +149,13 @@ def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
                                 "AudioFolder. Check the directory's path.")
 
 
-def build_layers(config_dict: dict) -> List[dict]:
+def build_layers(config_dict: dict):
     d1 = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml'))
     d2 = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/data_config.yaml'))
     # pprint(d1 | d2)
-    x = build_model(d1 | d2)
-    return [{}]
+    m = build_model(d1 | d2)
+    x = torch.rand((1, 512, 173, 1))
+    torchinfo.summary(m, x.size(), depth=8)
+    return
 #
 # def parse_layers(config_dict: dict):

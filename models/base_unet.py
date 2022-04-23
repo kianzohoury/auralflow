@@ -135,6 +135,11 @@ class BaseUNet(nn.Module):
         self.decoder = nn.ModuleList()
         in_channels, out_channels = num_channels, init_hidden
 
+        sizes = [[num_bins, num_samples]]
+        for i in range(1, self.max_layers):
+            sizes.append([num_bins >> i, num_samples >> i])
+
+        print(sizes)
 
         for layer in range(self.max_layers):
             if layer == 0:
@@ -153,7 +158,8 @@ class BaseUNet(nn.Module):
                     num_bins=num_bins >> layer,
                     num_samples=num_samples >> layer,
                     scheme=encoder,
-                    block_type='encoder'
+                    block_type='encoder',
+                    last=layer == self.max_layers - 1
                 )
             )
 
@@ -165,19 +171,25 @@ class BaseUNet(nn.Module):
             else:
                 dropout_p = 0
 
-            print(layer, 123, out_channels, in_channels)
-
-            self.decoder.append(
-                StackedBlock(
-                    in_channels=out_channels,
-                    out_channels=in_channels,
-                    scheme=decoder,
-                    num_bins=num_bins << layer,
-                    num_samples=num_samples << layer,
-                    block_type='decoder',
-                    skip_connections=True
+            if layer < self.max_layers - 1:
+                h_in, w_in = sizes[layer + 1][0], sizes[layer + 1][1]
+                h_out, w_out = sizes[layer][0], sizes[layer][1]
+                self.decoder.append(
+                    StackedBlock(
+                        in_channels=out_channels * 2,
+                        out_channels=in_channels * 2 if layer > 0 else init_hidden,
+                        scheme=decoder,
+                        num_bins=h_in,
+                        num_samples=w_in,
+                        h_out=h_out,
+                        w_out=w_out,
+                        block_type='decoder',
+                        skip_connections=True,
+                    )
                 )
-            )
+
+
+
         pprint(self.encoder)
         pprint(self.decoder)
         # Build the bottleneck.
@@ -207,16 +219,13 @@ class BaseUNet(nn.Module):
         # Build final 1x1 conv layer.
         final_num_channels = self.decoder[0].out_channels
 
-        # if self.final_conv_layer:
-        #     self.soft_conv = nn.Conv2d(
-        #         in_channels=final_num_channels,
-        #         out_channels=num_targets,
-        #         kernel_size=1,
-        #         stride=1,
-        #         padding='same'
-        #     )
-        # else:
-        #     self.soft_conv = nn.Identity()
+        self.soft_conv = nn.Conv2d(
+            in_channels=final_num_channels,
+            out_channels=len(self.targets),
+            kernel_size=1,
+            stride=1,
+            padding='same'
+        )
 
 
 
@@ -251,31 +260,48 @@ class BaseUNet(nn.Module):
 
         # Feed into the encoder layers.
         for layer in range(len(self.encoder)):
-            data = self.encoder[layer](data)
-            if layer < len(self.encoder) - 1 and self.skip_connections:
-                encodings.append(data)
+            data = self.encoder[layer].layers_stack(data)
+            encodings.append(data)
+            # if layer < len(self.encoder) - 1 and self.skip_connections:
 
-        # Pass through bottleneck.
-        data = self.bottleneck(data)
+            data = self.encoder[layer].down(data)
+        # # Pass through bottleneck.
+        # data = self.bottleneck(data)
+        print(0, data.shape)
+        for i in range(len(encodings)):
+            print(encodings[i].shape)
 
         # Feed into the decoder layers.
         for layer in range(len(self.decoder)):
             if layer < len(self.decoder) - 1:
-                output_size = encodings[-1 - layer].size()
-                if layer > 0 and self.skip_connections:
-                    data = torch.cat([data, encodings[-layer]], dim=1)
-                data = self.decoder[-1 - layer](data, output_size)
-            else:
+                output_size = encodings[-2 - layer].size()
+                print(123, output_size)
+                print(data.shape)
+                data = self.decoder[-1 - layer].deconv_pre(data, output_size=output_size)
+                data = self.decoder[-1 - layer].deconv_post(data)
+                print(1, data.shape)
                 if self.skip_connections:
-                    data = torch.cat([data, encodings[-layer]], dim=1)
-                data = self.decoder[-1 - layer](data, input_size)
+                    print(3, data.shape, encodings[-layer].shape)
+                    print(encodings[-1 -layer].shape)
+                    data = torch.cat([data, encodings[-2 - layer]], dim=1)
+                print(2, data.shape)
+                data = self.decoder[-1 - layer].layers_stack(data)
+                print(9, data.shape)
 
+            else:
+                print(data.shape)
+                data = self.decoder[0].deconv_pre(data, output_size=input_size)
+                data = self.decoder[0].deconv_post(data)
+                if self.skip_connections:
+                    data = torch.cat([data, encodings[0]], dim=1)
+                data = self.decoder[0].layers_stack(data)
         # Final conv + output normalization + mask activation.
         data = self.soft_conv(data)
         data = self.output_norm(data)
-        mask = self.activation(data)
+        mask = self.mask_activation(data)
 
         # Reshape to match the input size.
         mask = mask.permute(0, 2, 3, 1)
 
         return mask
+
