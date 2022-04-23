@@ -211,15 +211,15 @@ tutorial_1c:
 # Here is what the example network looks like visually:
 
 
-#             3x3 4x4                             4x4 4x4
+#            c3x3 c3x3                           c4x4 c4x4
 #      input —>│——>│-------------skip------------->│——>│———> output
 #                  ∨                               ^
-#              5x5 ∨  3x3 4x4             4x4 4x4  ^
-#                  │——>│——>│-----skip----->│——>│——>│
-#                          ∨               ^      5x5 transpose
-#                      5x5 ∨  3x3 4x4      ^
-#                          │——>│——>│——————>│
-#                                         5x5 transpose
+#                  ∨  3x3 4x4             4x4 4x4  ^
+#             c5x5 │——>│——>│-----skip----->│——>│——>│
+#                          ∨               ^     c_tr5x5
+#                          ∨  3x3 4x4      ^
+#                     c5x5 │——>│——>│——————>│
+#                                        c_tr5x5
 
 # Q: Other ways of downsampling/upsampling?
 # ------------------------------------
