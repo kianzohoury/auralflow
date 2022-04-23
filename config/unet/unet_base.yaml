@@ -115,7 +115,7 @@ tutorial_1a:
 # However, skip connections require a little more attention to detail, as they
 # cannot be used anywhere. Wherever a skip connection is used in the encoder,
 # the shape of the skipped data tensor must match that of the decoder's with
-# which it will be concatenated with.
+# which it will be concatenated.
 
 # So far, our encoder block takes in input, passes through convolution,
 # normalization and activation layers, and outputs batched feature maps of an
