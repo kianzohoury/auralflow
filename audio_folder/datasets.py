@@ -38,6 +38,7 @@ class AudioFolder(IterableDataset):
         num_channels (int): Number of audio channels. Default: 1.
             Default: True.
         backend (str): Torchaudio backend. Default: 'soundfile'.
+        transform (dict or None): Optional data transformations.
 
     Examples:
         >>> train_data = AudioFolder('src/wav', ['vocals'], subset='train')
@@ -53,6 +54,7 @@ class AudioFolder(IterableDataset):
         sample_rate: int = 44100,
         num_channels: int = 1,
         backend: str = 'soundfile',
+        transform: Optional[dict] = None,
     ):
         super(AudioFolder, self).__init__()
         self.path = path
@@ -63,6 +65,7 @@ class AudioFolder(IterableDataset):
         self.sample_rate = sample_rate
         self.num_channels = num_channels
         self.backend = backend
+        self.transform = transform
 
         root_dir = Path(path)
         subset_dir = root_dir / subset

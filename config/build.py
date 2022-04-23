@@ -14,7 +14,7 @@ import textwrap
 from ruamel.yaml.scanner import ScannerError
 import models
 
-from typing import List
+from typing import List, Optional
 import time
 
 yaml_parser = ruamel.yaml.YAML(typ='safe', pure=True)
@@ -24,8 +24,8 @@ session_logs_file = Path(__file__).parent / 'session_logs.yaml'
 class BuildFailure(Exception):
     def __init__(self, error):
         self.error = error
-        self.message = ("Cannot build model. Check configuration file or"
-                        "arguments to build().")
+        self.message = ("Cannot build model. Check configuration file for"
+                        "missing or invalid arguments.")
 
     def __repr__(self):
         return f"{self.error}. {self.message}"
@@ -82,28 +82,30 @@ def build_model(config_data: dict) -> nn.Module:
 
     Returns:
         (nn.Module): Pytorch model.
+
     Raises:
         BuildFailure: Failed to execute Pytorch module creation.
     """
     model_config = config_data['model']
     dataset_config = config_data['dataset']
-    build_instructions = {}
-    for _, config_item in config_data.items():
-        for param_name, param_val in config_map.items():
-            if param_name in REQUIRED_MODEL_KEYS:
-                build_config[param_name] = param_val
+    build_instructions = {**model_config, **dataset_config}
+    for _, config_item in build_instructions.items():
+        for param_name in build_instructions.keys():
+            if param_name not in REQUIRED_MODEL_KEYS:
+                build_instructions.pop(param_name)
     try:
-        return BASE_MODELS[base_model](**build_config)
+        return BASE_MODELS[config_data['base_model']](**build_instructions)
     except Exception as error:
         raise BuildFailure(error)
 
 
-def build_audio_folder(config_dict: dict, dataset_dir: Path):
-    """Creates an audio_folder for sampling audio from the dataset.
+def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
+    """Creates an AudioFolder for sampling audio from the dataset.
 
     Args:
-        config_dict (dict): Training configuration dictionary.
-        dataset_dir (Path): Path to the data set folder.
+        config_data (dict): Model, training and dataset configuration data.
+        dataset_dir (Path or None): Path to the dataset folder if it's not
+            specified within the dataset configuration file.
 
     Returns:
         (audio_folder): An audio_folder iterable dataset.
@@ -111,17 +113,27 @@ def build_audio_folder(config_dict: dict, dataset_dir: Path):
     Raises:
         FileNotFoundError: Path to dataset could not be found.
     """
-    data_config = config_dict['data']
+    dataset_config = compress_keys(config_data['dataset'])
+    audio_transform = {}
+    for key in ['num_fft', 'window_size', 'hop_length']:
+        try:
+            audio_transform[key] = dataset_config.pop(key)
+        except KeyError as error:
+            raise BuildFailure(error)
+    dataset_config['transform'] = audio_transform
     try:
-        return AudioFolder(str(dataset_dir), **data_config)
+        if dataset_dir is None:
+            dataset_dir = Path(dataset_config.pop('path') or "")
+        return AudioFolder(str(dataset_dir), **dataset_config)
     except FileNotFoundError:
         raise FileNotFoundError(f"Cannot load {str(dataset_dir)} into an "
-                                "audio_folder. Check the directory's path.")
+                                "AudioFolder. Check the directory's path.")
 
 
 def build_layers(config_dict: dict) -> List[dict]:
-    d = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml'))
-    d = compress_keys(d['model'])
+    d = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/data_config.yaml'))
+    # d = compress_keys(d['model'])
+    build_audio_folder(d)
     pprint(d)
     return [{}]
 #
