@@ -240,7 +240,7 @@ tutorial_1d:
   ]
 
 # Moreover, we can also interchange the transpose convolution with an
-# upsample layer, which uses a form of interpolation double the spatial
+# upsample layer, which uses a form of interpolation to double the spatial
 # dimensions.
 
     decoder:
