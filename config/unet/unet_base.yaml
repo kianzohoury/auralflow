@@ -208,6 +208,19 @@ tutorial_1c:
 # Also note that the kernel sizes of convolution and transpose convolution
 # layers do not need to match, as the padding is handled for you internally.
 
+# Here is what the example network looks like visually:
+
+
+#             3x3 4x4                             4x4 4x4
+#      input —>│——>│-------------skip------------->│——>│———> output
+#                  ∨                               ^
+#              5x5 ∨  3x3 4x4             4x4 4x4  ^
+#                  │——>│——>│-----skip----->│——>│——>│ 5x5 transpose
+#                          ∨               ^
+#                      5x5 ∨  3x3 4x4      ^
+#                          │——>│——>│——>│——>│ 5x5 transpose
+
+
 # Q: Other ways of downsampling/upsampling?
 # ------------------------------------
 # In the above example, we can interchange the last convolutional layer with a
