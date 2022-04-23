@@ -86,15 +86,15 @@ def build_model(config_data: dict) -> nn.Module:
     Raises:
         BuildFailure: Failed to execute Pytorch module creation.
     """
-    model_config = config_data['model']
-    dataset_config = config_data['dataset']
+    model_config = compress_keys(config_data['model'])
+    dataset_config = compress_keys(config_data['dataset'])
+    base_model = model_config.pop('base_model')
     build_instructions = {**model_config, **dataset_config}
-    for _, config_item in build_instructions.items():
-        for param_name in build_instructions.keys():
-            if param_name not in REQUIRED_MODEL_KEYS:
-                build_instructions.pop(param_name)
+    for config_key in build_instructions.copy():
+        if config_key not in REQUIRED_MODEL_KEYS:
+            build_instructions.pop(config_key)
     try:
-        return BASE_MODELS[config_data['base_model']](**build_instructions)
+        return BASE_MODELS[base_model](**build_instructions)
     except Exception as error:
         raise BuildFailure(error)
 
@@ -122,19 +122,19 @@ def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
             raise BuildFailure(error)
     dataset_config['transform'] = audio_transform
     try:
-        if dataset_dir is None:
-            dataset_dir = Path(dataset_config.pop('path') or "")
-        return AudioFolder(str(dataset_dir), **dataset_config)
+        dataset_dir = dataset_dir or Path(dataset_config.pop('path'))
+        dataset_config['path'] = str(dataset_dir)
+        return AudioFolder(**dataset_config)
     except FileNotFoundError:
         raise FileNotFoundError(f"Cannot load {str(dataset_dir)} into an "
                                 "AudioFolder. Check the directory's path.")
 
 
 def build_layers(config_dict: dict) -> List[dict]:
-    d = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/data_config.yaml'))
-    # d = compress_keys(d['model'])
-    build_audio_folder(d)
-    pprint(d)
+    d1 = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml'))
+    d2 = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/data_config.yaml'))
+    # pprint(d1 | d2)
+    x = build_model(d1 | d2)
     return [{}]
 #
 # def parse_layers(config_dict: dict):

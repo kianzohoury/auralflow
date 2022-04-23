@@ -32,6 +32,7 @@ class AudioFolder(IterableDataset):
     Args:
         path (str): Root directory path.
         targets (List[str]): Target sources. Default: ['vocals'].
+        sample_length (float): The duration of an audio sample.
         subset (str): Train or test set. Default: 'train'.
         audio_format (str): Audio format. Default: 'wav'.
         sample_rate (int): Sample rate. Default: 44100

@@ -14,7 +14,7 @@ dataset:
     sample-length: 3
     audio-format: wav
     backend: soundfile
-    path: replace/with/path/to/dataset
+    path: /Users/Kian/Downloads/wav
 
 ################################################################################
 # Arguments
@@ -29,8 +29,8 @@ dataset:
 # ------------------ 0 < window-size <= num-fft.
 # hop-length (int): The hop length of the STFT window function. Note that
 # ----------------- hop-length > 0.
-# sample-length (float): The duration of the sampled audio clips.
-# ----------------------
+# sample-length (int): The duration of the sampled audio clips.
+# --------------------
 # backend (str): The backend audio framework for loading audio files.
 # --------------
 # Path (str): The path to the dataset, either to be specified here or
