@@ -17,22 +17,30 @@ model:
     bottleneck-type: conv
     bottleneck-layers: 1
     bottleneck: [
-        [conv, [3, 3]],
+        [conv, 3],
         [batch_norm],
         [relu],
     ]
     encoder: [
-        [conv, [5, 5]],
+        [conv, 3],
         [batch_norm],
-        [leaky_relu, 0.2],
-        [skip],
+        [relu],
+        [conv, 3],
+        [batch_norm],
+        [relu],
+        [max_pool],
     ]
     decoder: [
-        [transpose_conv, [5, 5]],
+        [transpose_conv, 5],
         [batch_norm],
-        [droppout, 0.5],
         [relu],
-        [skip],
+        [dropout, 0.4],
+        [conv, 3],
+        [batch_norm],
+        [relu],
+        [conv, 3],
+        [batch_norm],
+        [relu],
     ]
     num-dropouts: 3
     skip-connections: True
@@ -85,7 +93,7 @@ tutorial:
 
     tutorial_1a:
         encoder: [
-            [conv, [5, 5]],
+            [conv, 5],
             [batch_norm],
             [relu],
         ]
@@ -97,7 +105,7 @@ tutorial:
 # We also need to specify a scheme for the decoder layers:
 
         decoder: [
-            [transpose_conv, [5, 5]],
+            [transpose_conv, 5],
             [batch_norm],
             [relu],
             [dropout, 0.5],
@@ -133,14 +141,14 @@ tutorial:
 
     tutorial_1b:
         encoder: [
-            [conv, [5, 5]],
+            [conv, 5],
             [batch_norm],
             [relu],
             [skip]
         ]
 
         decoder: [
-            [transpose_conv, [5, 5]],
+            [transpose_conv, 5],
             [batch_norm],
             [relu],
             [dropout, 0.5],
@@ -160,28 +168,28 @@ tutorial:
 
     tutorial_1c:
         encoder: [
-            [conv, [3, 3], same],
+            [conv, 3],
             [batch_norm],
             [relu],
-            [conv, [4, 4], same],
+            [conv, 4],
             [batch_norm],
             [relu],
             [skip],
-            [conv, [5, 5], half],
+            [conv, 5],
             [batch_norm],
             [relu],
         ]
 
         decoder: [
-            [transpose_conv, [5, 5]],
+            [transpose_conv, 5],
             [batch_norm],
             [relu],
             [dropout, 0.5],
             [skip],
-            [conv, [4, 4], same],
+            [conv, 4],
             [batch_norm],
             [relu],
-            [conv, [4, 4], same],
+            [conv, 4],
             [batch_norm],
             [relu],
         ]

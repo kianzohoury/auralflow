@@ -152,28 +152,34 @@ class BaseUNet(nn.Module):
                     out_channels=out_channels,
                     num_bins=num_bins >> layer,
                     num_samples=num_samples >> layer,
-                    scheme=encoder
+                    scheme=encoder,
+                    block_type='encoder'
                 )
             )
 
-            if layer == self.max_layers - 1:
-                out_channels = out_channels // 2
+            # if layer == self.max_layers - 1:
+            #     out_channels = out_channels // 2
 
-            # if self.max_layers - layer <= num_dropouts:
-            #     dropout_p = decoder_dropout
-            # else:
-            #     dropout_p = 0
-            #
-            # self.decoder.append(
-            #     StackedDecoderBlock(
-            #         in_channels=out_channels * (1 + int(skip_connections)),
-            #         out_channels=in_channels,
-            #         scheme=decoder_scheme,
-            #         dropout_p=dropout_p,
-            #         skip_block=skip_connections
-            #     )
-            # )
+            if self.max_layers - layer <= num_dropouts:
+                dropout_p = dropout_p
+            else:
+                dropout_p = 0
 
+            print(layer, 123, out_channels, in_channels)
+
+            self.decoder.append(
+                StackedBlock(
+                    in_channels=out_channels,
+                    out_channels=in_channels,
+                    scheme=decoder,
+                    num_bins=num_bins << layer,
+                    num_samples=num_samples << layer,
+                    block_type='decoder',
+                    skip_connections=True
+                )
+            )
+        pprint(self.encoder)
+        pprint(self.decoder)
         # Build the bottleneck.
         mid_channels = self.encoder[-1].out_channels
 
@@ -201,16 +207,16 @@ class BaseUNet(nn.Module):
         # Build final 1x1 conv layer.
         final_num_channels = self.decoder[0].out_channels
 
-        if self.final_conv_layer:
-            self.soft_conv = nn.Conv2d(
-                in_channels=final_num_channels,
-                out_channels=num_targets,
-                kernel_size=1,
-                stride=1,
-                padding='same'
-            )
-        else:
-            self.soft_conv = nn.Identity()
+        # if self.final_conv_layer:
+        #     self.soft_conv = nn.Conv2d(
+        #         in_channels=final_num_channels,
+        #         out_channels=num_targets,
+        #         kernel_size=1,
+        #         stride=1,
+        #         padding='same'
+        #     )
+        # else:
+        #     self.soft_conv = nn.Identity()
 
 
 

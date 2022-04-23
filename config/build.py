@@ -109,6 +109,7 @@ def build_model(config_data: dict) -> nn.Module:
         num_bins, num_samples = input_size[1:3]
         build_instructions['num_bins'] = num_bins
         build_instructions['num_samples'] = num_samples
+        pprint(build_instructions)
         return BaseUNet(**build_instructions)
         # return BASE_MODELS[base_model](**build_instructions)
     except Exception as error:

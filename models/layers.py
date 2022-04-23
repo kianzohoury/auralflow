@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 import math
-
+from pprint import pprint
 from typing import Optional, Union, List, Tuple
 
 
@@ -20,6 +20,10 @@ def get_conv_padding(h_in: int, w_in: int, h_out: int, w_out: int,
     h_pad = max(0, math.ceil((2 * h_out - 2 + kernel_size - h_in) / 2))
     w_pad = max(0, math.ceil((2 * w_out - 2 + kernel_size - w_in) / 2))
     return h_pad, w_pad
+
+
+
+
 
 
 class EncoderBlock(nn.Module):
@@ -249,6 +253,23 @@ decoder_scheme = [
 ]
 
 
+class UNetNode(object):
+    def __init__(self, layer_name: str = "",
+                 parameter: Union[int, float] = 0,
+                 next_layer=None):
+        self.layer_name = layer_name
+        self.parameter = parameter
+        self.next_layer = next_layer
+
+    def __str__(self):
+        head = self
+        result = []
+        while head:
+            result.append(f"<{head.layer_name}, {head.parameter or ''}>")
+            head = head.next_layer
+        return "\n".join(result)
+
+
 class StackedBlock(nn.Module):
     """Stacks multiple encoder/decoder blocks together.
 
@@ -280,55 +301,179 @@ class StackedBlock(nn.Module):
 
     def __init__(self, in_channels: int, out_channels: int, num_bins: int,
                  num_samples: int, scheme: List[List],
-                 block_type: str = 'encoder'):
+                 block_type: str = 'encoder', skip_connections: bool = True):
         super(StackedBlock, self).__init__()
         assert len(scheme) > 0,\
             f"Must specify a non-empty block scheme, but received {scheme}."
-        # for layer_scheme in scheme:
-        #     for key in layer_scheme.keys():
-        #         assert key in self._keys, f"{key} is not a valid key."
         self.num_layers = len(scheme)
         self.block_type = block_type
-        stack = []
-        for layer in scheme:
-            if layer[0] == 'conv':
-                conv_stack = []
-                if len(layer) == 2 or layer[-1] == 'half':
-                    h_out, w_out = num_bins // 2, num_samples // 2
+        self.skip_connections = skip_connections
+        print(block_type, in_channels, out_channels)
+        spatial_resize_index = len(scheme) - 1 if block_type == 'encoder' else 0
+        if block_type == 'encoder':
+            while spatial_resize_index >= 0 and scheme[spatial_resize_index][0] not in ['conv', 'max_pool']:
+                spatial_resize_index -= 1
+        else:
+            while spatial_resize_index < len(scheme) and scheme[spatial_resize_index][0] != 'conv':
+                spatial_resize_index += 1
+
+
+        encoder_stack = []
+        decoder_stack = []
+        down = []
+        up = []
+
+        for layer in scheme[:spatial_resize_index]:
+            layer_name = layer[0]
+            if layer_name == 'conv':
+                kernel_size = layer[-1]
+                if block_type == 'encoder':
+                    encoder_stack.append(
+                        nn.Conv2d(in_channels,
+                                  out_channels,
+                                  kernel_size=kernel_size,
+                                  stride=1,
+                                  padding='same')
+                    )
                 else:
-                    h_out, w_out = num_bins, num_samples
-                h_pad, w_pad = get_conv_padding(
-                    h_in=num_bins,
-                    w_in=num_samples,
-                    h_out=h_out,
-                    w_out=w_out,
-                    kernel_size=layer[1][0]
+
+                    up.append(
+                        nn.Conv2d(in_channels,
+                                  out_channels,
+                                  kernel_size=kernel_size,
+                                  stride=1,
+                                  padding='same')
+                    )
+                in_channels = out_channels
+            elif layer_name == 'transpose_conv':
+                kernel_size = layer[-1]
+                h_in, w_in = num_bins, num_samples
+                h_out, w_out = num_bins * 2, num_samples * 2
+                padding = get_transpose_padding(
+                    h_in=h_in, w_in=w_in, h_out=h_out, w_out=w_out,
+                    kernel_size=kernel_size, stride=2
                 )
-                conv_stack.append(nn.Conv2d(in_channels, out_channels,
-                                            kernel_size=layer[1][0],
-                                            stride=2, padding=(h_pad, w_pad)))
-                i = 1
-                while i < len(layer) - 1 and layer[i][0] != ('conv' or 'skip'):
-                    if layer[i][0] == 'batch_norm':
-                        conv_stack.append(nn.BatchNorm2d(out_channels))
-                    elif layer[i][0] == 'relu':
-                        conv_stack.append(nn.ReLU())
-                    elif layer[i][0] == 'leaky_relu':
-                        conv_stack.append(nn.LeakyReLU(layer[i][1]))
-                    i += 1
-                print(conv_stack)
+                up.append(
+                    nn.ConvTranspose2d(in_channels, out_channels,
+                                       kernel_size=kernel_size, stride=2,
+                                       padding=padding
+                    )
+                )
 
+            elif layer_name == 'batch_norm':
+                if block_type == 'encoder':
+                    encoder_stack.append(nn.BatchNorm2d(out_channels))
+                else:
+                    up.append(nn.BatchNorm2d(out_channels))
+            elif layer_name == 'dropout':
+                dropout_p = layer[-1]
+                if block_type == 'encoder':
+                    encoder_stack.append(nn.Dropout2d(dropout_p))
+                else:
+                    up.append(nn.Dropout2d(dropout_p))
+            elif layer_name == 'leaky_relu':
+                leak = layer[-1]
+                if block_type == 'encoder':
+                    encoder_stack.append(nn.LeakyReLU(leak))
+                else:
+                    up.append(nn.LeakyReLU(leak))
+            elif layer_name == 'relu':
+                if block_type == 'encoder':
+                    encoder_stack.append(nn.ReLU())
+                else:
+                    up.append(nn.ReLU())
+            elif layer_name == 'tanh':
+                if block_type == 'encoder':
+                    encoder_stack.append(nn.Tanh())
+                else:
+                    up.append(nn.Tanh())
+            elif layer_name == 'sigmoid':
+                if block_type == 'encoder':
+                    encoder_stack.append(nn.Sigmoid())
+                else:
+                    up.append(nn.Sigmoid())
+            else:
+                if block_type == 'encoder':
+                    encoder_stack.append(nn.Identity())
+                else:
+                    up.append(nn.Identity())
 
+        for layer in scheme[spatial_resize_index:]:
+            layer_name = layer[0]
+            if layer_name == 'conv':
+                kernel_size = layer[-1]
+                if block_type == 'encoder':
+                    h_in, w_in = num_bins, num_samples
+                    h_out, w_out = h_in // 2, w_in // 2
+                    padding = get_conv_padding(
+                        h_in=h_in, w_in=w_in, h_out=h_out, w_out=w_out,
+                        kernel_size=kernel_size
+                    )
+                    stride = 2
+                    up.append(
+                        nn.Conv2d(in_channels,
+                                  out_channels,
+                                  kernel_size=kernel_size,
+                                  stride=stride,
+                                  padding=padding)
+                    )
+                else:
+                    # if not decoder_stack:
+                    #     in_channels = in_channels * (1 + int(skip_connections))
+                    decoder_stack.append(
+                            nn.Conv2d(in_channels=in_channels,
+                                      out_channels=out_channels,
+                                      kernel_size=kernel_size,
+                                      stride=1,
+                                      padding='same')
+                    )
+                in_channels = out_channels
+            elif layer_name == 'max_pool':
+                down.append(nn.MaxPool2d(2))
+            elif layer_name == 'batch_norm':
+                if block_type == 'encoder':
+                    down.append(nn.BatchNorm2d(out_channels))
+                else:
+                    decoder_stack.append(nn.BatchNorm2d(out_channels))
+            elif layer_name == 'dropout':
+                dropout_p = layer[-1]
+                if block_type == 'encoder':
+                    down.append(nn.Dropout2d(dropout_p))
+                else:
+                    decoder_stack.append(nn.Dropout2d(dropout_p))
+            elif layer_name == 'leaky_relu':
+                leak = layer[-1]
+                if block_type == 'encoder':
+                    down.append(nn.LeakyReLU(leak))
+                else:
+                    decoder_stack.append(nn.LeakyReLU(leak))
+            elif layer_name == 'relu':
+                if block_type == 'encoder':
+                    down.append(nn.ReLU())
+                else:
+                    decoder_stack.append(nn.ReLU())
+            elif layer_name == 'tanh':
+                if block_type == 'encoder':
+                    down.append(nn.Tanh())
+                else:
+                    decoder_stack.append(nn.Tanh())
+            elif layer_name == 'sigmoid':
+                if block_type == 'encoder':
+                    down.append(nn.Sigmoid())
+                else:
+                    decoder_stack.append(nn.Sigmoid())
+            else:
+                if block_type == 'encoder':
+                    down.append(nn.Identity())
+                else:
+                    decoder_stack.append(nn.Identity())
 
-
-        # for layer_scheme in scheme:
-        #     if block_type == 'encoder':
-        #         print(123123123, layer_scheme)
-        #         stack.append(EncoderBlock(**layer_scheme))
-        #     else:
-        #         stack.append(DecoderBlock(**layer_scheme))
-        # Register layers.
-        self.layers_stack = nn.Sequential(*stack)
+        if block_type == 'encoder':
+            self.layers_stack = nn.Sequential(*encoder_stack)
+            self.down = nn.Sequential(*down)
+        else:
+            self.layers_stack = nn.Sequential(*decoder_stack)
+            self.up = nn.Sequential(*up)
 
     def forward(self, data: torch.Tensor) -> torch.Tensor:
         """Forward method.
