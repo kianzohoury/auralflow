@@ -14,6 +14,7 @@ REQUIRED_MODEL_KEYS = {
     'decoder',
     'num_dropouts',
     'skip_connections',
+    'soft_conv',
     'mask_activation',
     'input_norm',
     'output_norm',

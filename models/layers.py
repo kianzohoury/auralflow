@@ -1,8 +1,25 @@
 
 import torch
 import torch.nn as nn
+import math
 
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Tuple
+
+
+def get_transpose_padding(h_in: int, w_in: int, h_out: int, w_out: int,
+                          stride: int, kernel_size: int) -> Tuple:
+    """Computes the required transpose conv padding for a target shape."""
+    h_pad = math.ceil((kernel_size - h_out + stride * (h_in - 1)) / 2)
+    w_pad = math.ceil((kernel_size - w_out + stride * (w_in - 1)) / 2)
+    return h_pad, w_pad
+
+
+def get_conv_padding(h_in: int, w_in: int, h_out: int, w_out: int,
+                     kernel_size: int) -> Tuple:
+    """Computes the required conv padding."""
+    h_pad = max(0, math.ceil((2 * h_out - 2 + kernel_size - h_in) / 2))
+    w_pad = max(0, math.ceil((2 * w_out - 2 + kernel_size - w_in) / 2))
+    return h_pad, w_pad
 
 
 class EncoderBlock(nn.Module):
@@ -261,21 +278,55 @@ class StackedBlock(nn.Module):
         'bias',
     }
 
-    def __init__(self, scheme: List[dict], block_type: str = 'encoder'):
+    def __init__(self, in_channels: int, out_channels: int, num_bins: int,
+                 num_samples: int, scheme: List[List],
+                 block_type: str = 'encoder'):
         super(StackedBlock, self).__init__()
         assert len(scheme) > 0,\
             f"Must specify a non-empty block scheme, but received {scheme}."
-        for layer_scheme in scheme:
-            for key in layer_scheme.keys():
-                assert key in self._keys, f"{key} is not a valid key."
+        # for layer_scheme in scheme:
+        #     for key in layer_scheme.keys():
+        #         assert key in self._keys, f"{key} is not a valid key."
         self.num_layers = len(scheme)
         self.block_type = block_type
         stack = []
-        for layer_scheme in scheme:
-            if block_type == 'encoder':
-                stack.append(EncoderBlock(**layer_scheme))
-            else:
-                stack.append(DecoderBlock(**layer_scheme))
+        for layer in scheme:
+            if layer[0] == 'conv':
+                conv_stack = []
+                if len(layer) == 2 or layer[-1] == 'half':
+                    h_out, w_out = num_bins // 2, num_samples // 2
+                else:
+                    h_out, w_out = num_bins, num_samples
+                h_pad, w_pad = get_conv_padding(
+                    h_in=num_bins,
+                    w_in=num_samples,
+                    h_out=h_out,
+                    w_out=w_out,
+                    kernel_size=layer[1][0]
+                )
+                conv_stack.append(nn.Conv2d(in_channels, out_channels,
+                                            kernel_size=layer[1][0],
+                                            stride=2, padding=(h_pad, w_pad)))
+                i = 1
+                while i < len(layer) - 1 and layer[i][0] != ('conv' or 'skip'):
+                    if layer[i][0] == 'batch_norm':
+                        conv_stack.append(nn.BatchNorm2d(out_channels))
+                    elif layer[i][0] == 'relu':
+                        conv_stack.append(nn.ReLU())
+                    elif layer[i][0] == 'leaky_relu':
+                        conv_stack.append(nn.LeakyReLU(layer[i][1]))
+                    i += 1
+                print(conv_stack)
+
+
+
+
+        # for layer_scheme in scheme:
+        #     if block_type == 'encoder':
+        #         print(123123123, layer_scheme)
+        #         stack.append(EncoderBlock(**layer_scheme))
+        #     else:
+        #         stack.append(DecoderBlock(**layer_scheme))
         # Register layers.
         self.layers_stack = nn.Sequential(*stack)
 

@@ -9,6 +9,8 @@ from yaml import YAMLError
 from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
 from audio_folder.datasets import AudioFolder
 from ruamel.yaml.error import MarkedYAMLError
+from models.base_unet import BaseUNet
+from transforms import get_data_shape
 from models.layers import StackedBlock
 import textwrap
 from ruamel.yaml.scanner import ScannerError
@@ -94,7 +96,21 @@ def build_model(config_data: dict) -> nn.Module:
         if config_key not in REQUIRED_MODEL_KEYS:
             build_instructions.pop(config_key)
     try:
-        return BASE_MODELS[base_model](**build_instructions)
+        input_size = get_data_shape(
+            batch_size=1,
+            sample_rate=dataset_config['sample_rate'],
+            sample_length=dataset_config['sample_length'],
+            num_fft=dataset_config['num_fft'],
+            window_size=dataset_config['window_size'],
+            hop_length=dataset_config['hop_length'],
+            num_channels=dataset_config['num_channels'],
+            targets=build_instructions['targets']
+        )
+        num_bins, num_samples = input_size[1:3]
+        build_instructions['num_bins'] = num_bins
+        build_instructions['num_samples'] = num_samples
+        return BaseUNet(**build_instructions)
+        # return BASE_MODELS[base_model](**build_instructions)
     except Exception as error:
         raise BuildFailure(error)
 

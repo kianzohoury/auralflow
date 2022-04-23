@@ -36,6 +36,7 @@ model:
     ]
     num-dropouts: 3
     skip-connections: True
+    soft-conv: False
     mask-activation: sigmoid
     input-norm: False
     output-norm: False
@@ -64,6 +65,8 @@ model:
 # -------------------
 # skip-connections (bool): Whether to use skip connections or not.
 # ------------------------
+# soft-conv (bool): Whether to use a final 1x1 convolution layer.
+# -----------------
 # mask-activation (str): The final mask activation function.
 # ----------------------
 # input-norm (bool): Whether to use input normalization.
@@ -275,6 +278,7 @@ unet_like_1:
     ]
     num-dropouts: 3
     skip-connections: True
+    soft-conv: False
     mask-activation: sigmoid
     input-norm: False
     output-norm: False
@@ -310,6 +314,7 @@ unet_like_2:
     ]
     num-dropouts: 3
     skip-connections: True
+    soft-conv: True
     mask-activation: sigmoid
     input-norm: False
     output-norm: False
