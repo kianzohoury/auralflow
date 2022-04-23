@@ -222,10 +222,8 @@ tutorial_1d:
       [conv, [4, 4], same],
       [batch_norm],
       [relu],
-      [max_pool],
-      [batch_norm],
-      [relu],
       [skip],
+      [max_pool],
   ]
 
 # Moreover, we can also interchange the transpose convolution with an
