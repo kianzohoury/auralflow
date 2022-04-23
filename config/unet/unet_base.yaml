@@ -22,25 +22,17 @@ model:
         [relu],
     ]
     encoder: [
-        [conv, 3],
+        [conv, [5, 5]],
         [batch_norm],
-        [relu],
-        [conv, 3],
-        [batch_norm],
-        [relu],
-        [max_pool],
+        [leaky_relu, 0.2],
+        [skip],
     ]
     decoder: [
-        [transpose_conv, 5],
+        [transpose_conv, [5, 5]],
         [batch_norm],
+        [droppout, 0.5],
         [relu],
-        [dropout, 0.4],
-        [conv, 3],
-        [batch_norm],
-        [relu],
-        [conv, 3],
-        [batch_norm],
-        [relu],
+        [skip],
     ]
     num-dropouts: 3
     skip-connections: True
