@@ -209,18 +209,18 @@ tutorial_1c:
 # layers do not need to match, as the padding is handled for you internally.
 
 # Here is what the example network looks like visually:
-
-
-#            c3x3 c3x3                           c4x4 c4x4
+#
+#
+#            c3x3 c4x4                           c4x4 c4x4
 #      input —>│——>│-------------skip------------->│——>│———> output
 #                  ∨                               ^
-#                  ∨  3x3 4x4             4x4 4x4  ^
-#             c5x5 │——>│——>│-----skip----->│——>│——>│
-#                          ∨               ^     c_tr5x5
-#                          ∨  3x3 4x4      ^
-#                     c5x5 │——>│——>│——————>│
-#                                        c_tr5x5
-
+#                  ∨ c3x3 c4x4           c4x4 c4x4 ^
+#             c5x5 │——>│——>│-----skip----->│——>│——>│ c_tr5x5
+#                          ∨               ^
+#                          ∨ c3x3 c4x4     ^
+#                     c5x5 │——>│——>│——————>│ c_tr5x5
+#
+#
 # Q: Other ways of downsampling/upsampling?
 # ------------------------------------
 # In the above example, we can interchange the last convolutional layer with a
