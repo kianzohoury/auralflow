@@ -22,8 +22,6 @@ model:
         [relu],
     ]
     encoder: [
-#        [downsample, 2],
-#        [conv, 5],
         [conv, 3],
         [batch_norm],
         [leaky_relu, 0.2],
@@ -33,11 +31,6 @@ model:
         [max_pool, 2]
     ]
     decoder: [
-#        [conv, 3],
-#        [upsample, nearest],
-#        [conv, 5],
-#        [batch_norm],
-#        [relu],
         [transpose_conv, 5],
         [batch_norm],
         [relu],

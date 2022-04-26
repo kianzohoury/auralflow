@@ -390,147 +390,13 @@ class StackedDecoderBlock(nn.Module):
             output = self.decoder(data)
         return output
 
-    def is_single_block(self):
+    def is_single_block(self) -> bool:
         """Returns True if downsampling and conv layers are not separate."""
         return not len(list(self.decoder.children()))
 
     def has_transpose_block(self) -> bool:
         """Returns True if up method uses transpose and False otherwise."""
         return self._use_transpose
-
-
-
-
-
-        # while downsampling_head:
-        #     if downsampling_head.layer_type == 'conv':
-        #         padding = get_conv_padding(
-        #             h_in=h_in,
-        #             w_in=w_in,
-        #             h_out=h_out,
-        #             w_out=w_out,
-        #             kernel_size=downsampling_head.param
-        #         )
-        #         layer_module = nn.Conv2d(
-        #             in_channels=in_channels,
-        #             out_channels=out_channels,
-        #             kernel_size=downsampling_head.param,
-        #             stride=2,
-        #             padding=padding
-        #         )
-        #     elif downsampling_head.layer_type == 'max_pool':
-        #         layer_module = nn.MaxPool2d(
-        #             kernel_size=downsampling_head.param
-        #         )
-        #     elif downsampling_head.layer_type == 'downsample':
-        #         layer_module = DownSample2D(
-        #             input_size=(h_out, w_out),
-        #             scale_factor=downsampling_head.param
-        #         )
-        #     else:
-        #         layer_module = get_layer(
-        #             downsampling_head.layer_type,
-        #             downsampling_head.param
-        #         )
-        # encoding_layers.append(layer_module)
-        # encoding_head = encoding_head.next_layer
-        #
-        #     if layer_type == 'conv':
-        #         kernel_size = layer['param']
-        #         if is_encoder:
-        #             if layer.get('down', False):
-        #                 padding = get_conv_padding(
-        #                     h_in=h_in,
-        #                     w_in=w_in,
-        #                     h_out=h_out,
-        #                     w_out=w_out,
-        #                     kernel_size=kernel_size
-        #                 )
-        #                 stride = 2
-        #             else:
-        #                 padding = 'same'
-        #                 stride = 1
-        #         else:
-        #             if skip_connections and len(conv_stack) == 0 and not skip_last:
-        #                 in_channels = in_channels * 2
-        #
-        #             padding = 'same'
-        #             stride = 1
-        #
-        #         layer_module = nn.Conv2d(
-        #             in_channels=in_channels,
-        #             out_channels=out_channels,
-        #             kernel_size=kernel_size,
-        #             stride=stride,
-        #             padding=padding
-        #         )
-        #
-        #         in_channels = out_channels
-        #
-        #     elif layer_type == 'transpose_conv':
-        #         kernel_size = layer['param']
-        #         padding = get_transpose_padding(
-        #             h_in=h_in,
-        #             w_in=w_in,
-        #             h_out=h_out,
-        #             w_out=w_out,
-        #             stride=2,
-        #             kernel_size=kernel_size
-        #         )
-        #         print(h_in, w_in, h_out, w_out, padding)
-        #         print(in_channels)
-        #         if skip_connections and not first_decoder and len(scheme['conv_stack']) == 0:
-        #             in_channels *= 2
-        #
-        #         layer_module = nn.ConvTranspose2d(
-        #             in_channels=in_channels,
-        #             out_channels=out_channels,
-        #             kernel_size=kernel_size,
-        #             stride=2,
-        #             padding=padding
-        #         )
-        #
-        #         in_channels = out_channels
-        #     elif layer_type == 'upsample':
-        #         layer_module = nn.Upsample(
-        #             size=torch.Size((h_in, w_in)),
-        #             scale_factor=2
-        #         )
-        #     elif layer_type == 'max_pool':
-        #         kernel_size = layer['param']
-        #         layer_module = nn.MaxPool2d(kernel_size)
-        #     elif layer_type == 'batch_norm':
-        #         layer_module = nn.BatchNorm2d(out_channels)
-        #     elif layer_type == 'dropout' and use_dropout:
-        #         dropout_p = layer['param']
-        #         layer_module = nn.Dropout2d(dropout_p)
-        #     elif layer_type in {'relu', 'leaky_relu', 'sigmoid', 'tanh'}:
-        #         layer_module = get_activation(layer_type, layer['param'])
-        #     else:
-        #         layer_module = nn.Identity()
-        #
-        #
-        #     if is_encoder:
-        #         print(i, 123, layer_type, split_index)
-        #         if i >= split_index:
-        #             down.append(layer_module)
-        #         else:
-        #             conv_stack.append(layer_module)
-        #     else:
-        #         if i < split_index:
-        #             up.append(layer_module)
-        #         else:
-        #             conv_stack.append(layer_module)
-        #
-        #
-        #
-        # self.conv_stack = nn.Sequential(*conv_stack)
-        #
-        # if is_encoder:
-        #     self.down = DownSampler(down)
-        # else:
-        #     self.deconv_pre = up[0]
-        #     self.deconv_post = nn.Sequential(*up[1:])
 
 
 def get_transpose_padding(h_in: int,
@@ -744,12 +610,5 @@ def process_block(block_scheme: List,
                             break
                         ptr = ptr.next_layer
                     break
-                    # if not ptr or not ptr.split_point:
-                    #     temp.split_point = True
-                    #     break
             ptr = ptr.next_layer
-        p = head
-        while p:
-            print(p, p.split_point)
-            p = p.next_layer
     return head
