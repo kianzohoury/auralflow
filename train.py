@@ -227,25 +227,16 @@ if __name__ == "__main__":
 
     args = vars(parser.parse_args())
 
-    model_name = args['model']
-    logs = config.utils.get_session_logs(session_logs_file)
-    session_dir = Path(logs['current']['location'])
-    model_dir = session_dir / model_name
-    config_dict = config.build.get_all_config_contents(model_dir)
     try:
-        model = config.build.build_model(config_dict)
-        print("Success: PyTorch model was built.")
-        data_config_copy = dict(config_dict['dataset'])
-        for key in ['backend', 'audio_format']:
-            data_config_copy.pop(key)
-        data_config_copy['batch_size'] = config_dict['training']['batch_size']
-        input_shape = transforms.get_data_shape(**data_config_copy)
-        torchinfo.summary(model, input_size=input_shape[:-1], depth=8)
+        model_name = args['model']
+        logs = config.utils.get_session_logs(session_logs_file)
+        session_dir = Path(logs['current']['location'])
+        model_dir = session_dir / model_name
+        model = config.build.load_model(model_dir)
     except Exception as e:
-        print(e)
         raise e
-
     try:
+        config_dict = config.build.get_all_config_contents(model_dir)
         dataset = config.build.build_audio_folder(config_dict, args['dataset'])
     except FileNotFoundError as e:
         raise e
