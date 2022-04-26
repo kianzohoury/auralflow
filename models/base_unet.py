@@ -145,6 +145,7 @@ class BaseUNet(nn.Module):
             sizes.append([h_out, w_out])
         if not self.encoder[-1].is_single_block() and skip_connections:
             self.encoder[-1].pop_layer()
+            sizes.pop()
 
         bypass_first_skip = self.encoder[-1].is_single_block()
 
@@ -161,12 +162,12 @@ class BaseUNet(nn.Module):
             # else:
             #     dropout_p = 0
 
+            print(sizes)
+
             h_in, w_in = sizes[-1 - layer]
             h_out, w_out = sizes[-2 - layer]
 
-            print(123, in_channels, out_channels)
-            skip_last = (layer == len(sizes) - 2) and len(list(self.encoder[0].conv_stack.children())) == 0
-            print("SKIP LAST", skip_last)
+            # skip_last = (layer == len(sizes) - 2) and len(list(self.encoder[0].conv_stack.children())) == 0
 
             self.decoder.append(
                 StackedDecoderBlock(
@@ -177,15 +178,12 @@ class BaseUNet(nn.Module):
                     h_out=h_out,
                     w_out=w_out,
                     block_scheme=decoder,
-                    use_skip=bypass_first_skip if layer == 0 else skip_connections,
+                    use_skip=not bypass_first_skip if layer == 0 else skip_connections,
                     # first_decoder=layer == 0,
-                    use_dropout=(self.max_layers - layer <= num_dropouts),
+                    use_dropout=(self.max_layers - layer > num_dropouts),
                     # skip_last=skip_last
                 )
             )
-
-        self.decoder = self.decoder[::-1]
-
 
         pprint(self.encoder)
         pprint(self.decoder)
@@ -214,9 +212,8 @@ class BaseUNet(nn.Module):
         #     self.bottleneck = nn.Identity()
 
         # Build final 1x1 conv layer.
-        first_encoder_skip = len(list(self.encoder[0].conv_stack.children())) > 0
-        last_decoder_skip = len(list(self.decoder[-1].conv_stack.children())) > 0
-        print(out_channels)
+        first_encoder_skip = not self.encoder[0].is_single_block()
+        last_decoder_skip = not self.decoder[-1].is_single_block()
         if skip_connections and first_encoder_skip:
             if last_decoder_skip:
                 final_num_channels = out_channels
@@ -226,8 +223,6 @@ class BaseUNet(nn.Module):
             final_num_channels = out_channels
         else:
             final_num_channels = out_channels
-
-        print(final_num_channels)
 
         self.soft_conv = nn.Conv2d(
             in_channels=final_num_channels,
@@ -250,10 +245,6 @@ class BaseUNet(nn.Module):
             self.mask_activation = nn.Tanh()
         else:
             self.mask_activation = nn.Identity()
-
-
-
-
 
     def forward(self, data: torch.Tensor) -> dict:
         """
@@ -280,15 +271,13 @@ class BaseUNet(nn.Module):
         input_size = data.shape
 
         # Store intermediate feature maps if utilizing skip connections.
-        encodings = []
+        encodings = [data]
 
         # Feed into the encoder layers.
         for layer in range(len(self.encoder)):
             data, encoding = self.encoder[layer](data)
-            if len(list(self.encoder[layer].down.children())) > 0:
+            if layer < len(self.encoder) - 1:
                 encodings.append(encoding)
-            # if layer < len(self.encoder) - 1 and self.skip_connections:
-
 
         # # Pass through bottleneck.
         # data = self.bottleneck(data)
@@ -298,26 +287,19 @@ class BaseUNet(nn.Module):
 
         print('hidden', data.shape)
 
+
         # Feed into the decoder layers.
         for layer in range(len(self.decoder)):
-            if layer < len(self.decoder) - 1:
-                output_size = encodings[-1 - layer].size()
-                data = self.decoder[-1 - layer].deconv_pre(data, output_size=output_size)
-
-                data = self.decoder[-1 - layer].deconv_post(data)
-                if self.skip_connections:
-                    data = torch.cat([data, encodings[-1 - layer]], dim=1)
-                data = self.decoder[-1 - layer].conv_stack(data)
+            if not self.decoder[layer].is_single_block():
+                print(self.decoder[layer])
+                data = self.decoder[layer](
+                    data,
+                    skip_data=encodings[-1 - layer],
+                    output_size=encodings[-1 - layer].size()
+                )
             else:
-                data = self.decoder[0].deconv_pre(data, output_size=input_size)
-                data = self.decoder[0].deconv_post(data)
-                if self.skip_connections:
-                    if len(list(self.encoder[0].conv_stack.children())) > 0:
-                        print("fuck")
-                        data = torch.cat([data, encodings[0]], dim=1)
-                data = self.decoder[0].conv_stack(data)
-            print(layer, data.shape)
-        print("out", data.shape)
+                data = self.decoder[layer](encodings[-1 - layer])
+
         # Final conv + output normalization + mask activation.
         data = self.soft_conv(data)
         data = self.output_norm(data)
