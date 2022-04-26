@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import transforms
 import sys
 from pprint import pprint
 
@@ -161,6 +162,44 @@ def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
         raise FileNotFoundError(f"Cannot load {str(dataset_dir)} into an "
                                 "AudioFolder. Check the directory's path.")
 
+
+def load_model(model_dir: Path,
+               visualize: bool = False,
+               visual_depth: int = 8) -> nn.Module:
+    """Loads a source separation model into memory.
+
+    Args:
+        model_dir (Path): Model directory to load the model from.
+        visualize (bool): Uses torchinfo.summary to visualize the model.
+            Default: False.
+        visual_depth (int): The layer depth parameter for visualization.
+            Default: 8.
+
+    Returns:
+        (nn.Module): The Pytorch model.
+
+    Raises:
+        BuildFailure: Failed to execute Pytorch module creation.
+    """
+    config_dict = get_all_config_contents(model_dir)
+    try:
+        model = build_model(config_dict)
+        print("Success: PyTorch model was built.")
+        if visualize:
+            data_config_copy = dict(config_dict['dataset'])
+            for key in ['backend', 'audio_format']:
+                data_config_copy.pop(key)
+            data_config_copy['batch_size'] \
+                = config_dict['training']['batch_size']
+            input_shape = transforms.get_data_shape(**data_config_copy)
+            torchinfo.summary(
+                model=model,
+                input_size=input_shape[:-1],
+                depth=visual_depth
+            )
+        return model
+    except Exception as error:
+        raise BuildFailure(error)
 
 
 

@@ -11,7 +11,6 @@ from utils.utils import checkpoint_handler
 from pathlib import Path
 
 import config.utils
-from models.base_unet import UNet
 from trainer.trainer import cross_validate
 from utils.progress_bar import ProgressBar
 from torch.utils.data.dataloader import DataLoader
@@ -235,10 +234,8 @@ if __name__ == "__main__":
     config_dict = config.build.get_all_config_contents(model_dir)
     try:
         model = config.build.build_model(config_dict)
-        # model = UNet()
-        print("Success: PyTorch model was built. Visualizing model...")
-        # time.sleep(3)
-        data_config_copy = dict(config_dict['data'])
+        print("Success: PyTorch model was built.")
+        data_config_copy = dict(config_dict['dataset'])
         for key in ['backend', 'audio_format']:
             data_config_copy.pop(key)
         data_config_copy['batch_size'] = config_dict['training']['batch_size']
