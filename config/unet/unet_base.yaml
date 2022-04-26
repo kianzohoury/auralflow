@@ -22,17 +22,19 @@ model:
         [relu],
     ]
     encoder: [
-        [conv, [5, 5]],
+        [conv, 5],
         [batch_norm],
         [leaky_relu, 0.2],
-        [skip],
+        [conv, 3],
+        [max_pool, 2],
+        [relu]
     ]
     decoder: [
-        [transpose_conv, [5, 5]],
+        [transpose_conv, 5],
         [batch_norm],
-        [droppout, 0.5],
         [relu],
-        [skip],
+        [dropout, 0.4],
+        [conv, 3]
     ]
     num-dropouts: 3
     skip-connections: True
@@ -258,23 +260,26 @@ tutorial:
 ################################################################################
 
 unet_like_1:
+    base-model: u-net
     max-layers: 6
     init-hidden: 16
     bottleneck-type: conv
-    bottleneck-layers: 0
-    bottleneck: [[]]
+    bottleneck-layers: 1
+    bottleneck: [
+        [conv, 3],
+        [batch_norm],
+        [relu],
+    ]
     encoder: [
-        [conv, [5, 5]],
+        [conv, 5],
         [batch_norm],
         [leaky_relu, 0.2],
-        [skip],
     ]
     decoder: [
-        [transpose_conv, [5, 5]],
+        [transpose_conv, 5],
         [batch_norm],
-        [droppout, 0.5],
+        [dropout, 0.5],
         [relu],
-        [skip],
     ]
     num-dropouts: 3
     skip-connections: True

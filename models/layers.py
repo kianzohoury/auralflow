@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import math
 from pprint import pprint
+from collections import OrderedDict
 from typing import Optional, Union, List, Tuple
 
 
@@ -22,99 +23,109 @@ def get_conv_padding(h_in: int, w_in: int, h_out: int, w_out: int,
     return h_pad, w_pad
 
 
+def get_activation(activation_fn: str, param: Optional[float] = None):
+    if activation_fn == 'relu':
+        return nn.ReLU()
+    elif activation_fn == 'leaky_relu':
+        return nn.LeakyReLU(param)
+    elif activation_fn == 'sigmoid':
+        return nn.Sigmoid()
+    elif activation_fn == 'tanh':
+        return nn.Tanh()
+    else:
+        return nn.Identity()
 
 
 
-
-class EncoderBlock(nn.Module):
-    """Fully-customizable encoder block layer for base separation models.
-
-    By default, this block doubles the feature dimension (channels)
-    but halves the spatial dimensions of the input (freq and time).
-
-    Args:
-        in_channels (int): Number of input channels.
-        out_channels (int or None): Number of output channels. If None,
-            defaults to 2 * in_channels.
-        kernel_size (int or tuple): Size or shape of the convolutional filter.
-            Default: 5.
-        stride (int or tuple): Size or shape of the stride. Default: 2.
-        padding (int or str): Size of zero-padding added to each side.
-            Default: 2.
-        activation_fn (str or None): Activation function. Default: 'relu'.
-        batch_norm (bool): Whether to apply batch normalization. Default: True.
-        bias (bool): Whether to include a bias term in the conv layer.
-            Default: False.
-        leak (float): Negative slope value if using leaky ReLU. Default: 0.2.
-        max_pool (bool): Whether to use maxpool. Default: False.
-    Examples:
-        >>> from models.layers import EncoderBlock
-        >>> encoder = EncoderBlock(16, 32, 5, 2, 2, 'relu', batch_norm=True)
-        >>> data = torch.rand((1, 16, 4, 1))
-        >>> output = encoder(data)
-    """
-    def __init__(
-        self,
-        in_channels: int,
-        out_channels: Optional[int] = None,
-        kernel_size: Union[int, tuple] = 5,
-        stride: Union[int, tuple] = 2,
-        padding: Union[int, str] = 2,
-        activation_fn: Optional[str] = 'relu',
-        batch_norm: bool = True,
-        bias: bool = False,
-        leak: Optional[float] = None,
-        max_pool: bool = False
-    ):
-        super(EncoderBlock, self).__init__()
-        self.in_channels = in_channels
-        if out_channels is not None:
-            self.out_channels = out_channels
-        else:
-            self.out_channels = out_channels = in_channels * 2
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
-        self.bias = bias
-        self.leak = leak if leak is not None else 0
-        self.maxpool = nn.MaxPool2d(2) if max_pool else nn.Identity()
-        self.conv = nn.Conv2d(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            bias=bias
-        )
-        if activation_fn == 'leaky_relu' and self.leak > 0:
-            self.activation = nn.LeakyReLU(leak)
-        elif activation_fn == 'relu':
-            self.activation = nn.ReLU()
-        elif activation_fn == 'sigmoid':
-            self.activation = nn.Sigmoid()
-        elif activation_fn == 'tanh':
-            self.activation = nn.Tanh()
-        else:
-            self.activation = nn.Identity()
-        if batch_norm:
-            self.batchnorm = nn.BatchNorm2d(out_channels)
-        else:
-            self.batchnorm = nn.Identity()
-
-    def forward(self, data: torch.Tensor) -> torch.Tensor:
-        """Forward method.
-
-        Args:
-            data (tensor): Input feature map.
-        Returns:
-            (tensor): Output feature map.
-        """
-        x = self.conv(data)
-        x = self.batchnorm(x)
-        x = self.activation(x)
-        output = self.maxpool(x)
-        return output
-
+# class EncoderBlock(nn.Module):
+#     """Fully-customizable encoder block layer for base separation models.
+#
+#     By default, this block doubles the feature dimension (channels)
+#     but halves the spatial dimensions of the input (freq and time).
+#
+#     Args:
+#         in_channels (int): Number of input channels.
+#         out_channels (int or None): Number of output channels. If None,
+#             defaults to 2 * in_channels.
+#         kernel_size (int or tuple): Size or shape of the convolutional filter.
+#             Default: 5.
+#         stride (int or tuple): Size or shape of the stride. Default: 2.
+#         padding (int or str): Size of zero-padding added to each side.
+#             Default: 2.
+#         activation_fn (str or None): Activation function. Default: 'relu'.
+#         batch_norm (bool): Whether to apply batch normalization. Default: True.
+#         bias (bool): Whether to include a bias term in the conv layer.
+#             Default: False.
+#         leak (float): Negative slope value if using leaky ReLU. Default: 0.2.
+#         max_pool (bool): Whether to use maxpool. Default: False.
+#     Examples:
+#         >>> from models.layers import EncoderBlock
+#         >>> encoder = EncoderBlock(16, 32, 5, 2, 2, 'relu', batch_norm=True)
+#         >>> data = torch.rand((1, 16, 4, 1))
+#         >>> output = encoder(data)
+#     """
+#     def __init__(
+#         self,
+#         in_channels: int,
+#         out_channels: Optional[int] = None,
+#         kernel_size: Union[int, tuple] = 5,
+#         stride: Union[int, tuple] = 2,
+#         padding: Union[int, str] = 2,
+#         activation_fn: Optional[str] = 'relu',
+#         batch_norm: bool = True,
+#         bias: bool = False,
+#         leak: Optional[float] = None,
+#         max_pool: bool = False
+#     ):
+#         super(EncoderBlock, self).__init__()
+#         self.in_channels = in_channels
+#         if out_channels is not None:
+#             self.out_channels = out_channels
+#         else:
+#             self.out_channels = out_channels = in_channels * 2
+#         self.kernel_size = kernel_size
+#         self.stride = stride
+#         self.padding = padding
+#         self.bias = bias
+#         self.leak = leak if leak is not None else 0
+#         self.maxpool = nn.MaxPool2d(2) if max_pool else nn.Identity()
+#         self.conv = nn.Conv2d(
+#             in_channels=in_channels,
+#             out_channels=out_channels,
+#             kernel_size=kernel_size,
+#             stride=stride,
+#             padding=padding,
+#             bias=bias
+#         )
+#         if activation_fn == 'leaky_relu' and self.leak > 0:
+#             self.activation = nn.LeakyReLU(leak)
+#         elif activation_fn == 'relu':
+#             self.activation = nn.ReLU()
+#         elif activation_fn == 'sigmoid':
+#             self.activation = nn.Sigmoid()
+#         elif activation_fn == 'tanh':
+#             self.activation = nn.Tanh()
+#         else:
+#             self.activation = nn.Identity()
+#         if batch_norm:
+#             self.batchnorm = nn.BatchNorm2d(out_channels)
+#         else:
+#             self.batchnorm = nn.Identity()
+#
+#     def forward(self, data: torch.Tensor) -> torch.Tensor:
+#         """Forward method.
+#
+#         Args:
+#             data (tensor): Input feature map.
+#         Returns:
+#             (tensor): Output feature map.
+#         """
+#         x = self.conv(data)
+#         x = self.batchnorm(x)
+#         x = self.activation(x)
+#         output = self.maxpool(x)
+#         return output
+#
 
 class DecoderBlock(nn.Module):
     """Fully-customizable decoder block layer for base separation models.
@@ -298,198 +309,154 @@ class StackedBlock(nn.Module):
         'max_pool',
         'bias',
     }
-
-    def __init__(self, in_channels: int, out_channels: int, num_bins: int,
-                 num_samples: int, scheme: List[List],
-                 block_type: str = 'encoder', skip_connections: bool = True,
-                 h_out: int = 0, w_out: int = 0, last: bool = False):
+    def __init__(self,
+                 in_channels: int,
+                 out_channels: int,
+                 h_in: int,
+                 w_in: int,
+                 h_out: int,
+                 w_out: int,
+                 scheme: dict,
+                 skip_connections: bool = True,
+                 last: bool = False, is_encoder: bool = True,
+                 first_decoder: bool = False,
+                 use_dropout: bool = True,
+                 skip_last: bool = True
+                 ):
         super(StackedBlock, self).__init__()
         assert len(scheme) > 0,\
             f"Must specify a non-empty block scheme, but received {scheme}."
-        self.num_layers = len(scheme)
-        self.block_type = block_type
-        self.skip_connections = skip_connections
         self.in_channels = in_channels
         self.out_channels = out_channels
-        spatial_resize_index = len(scheme) - 1 if block_type == 'encoder' else 0
-        if block_type == 'encoder':
-            while spatial_resize_index >= 0 and scheme[spatial_resize_index][0] not in ['conv', 'max_pool']:
-                spatial_resize_index -= 1
+        down, up = [], []
+        conv_stack = []
+        if is_encoder:
+            layers = scheme['conv_stack'] + scheme['downsampling_stack']
+            split_index = len(scheme['conv_stack'])
         else:
-            while spatial_resize_index < len(scheme) and scheme[spatial_resize_index][0] != 'conv':
-                spatial_resize_index += 1
-
-
-        encoder_stack = []
-        decoder_stack = []
-        down = []
-        up = []
-
-        for layer in scheme[:spatial_resize_index]:
-            layer_name = layer[0]
-            if layer_name == 'conv':
-                kernel_size = layer[-1]
-                if block_type == 'encoder':
-                    encoder_stack.append(
-                        nn.Conv2d(in_channels,
-                                  out_channels,
-                                  kernel_size=kernel_size,
-                                  stride=1,
-                                  padding='same')
-                    )
-                else:
-
-                    up.append(
-                        nn.Conv2d(in_channels,
-                                  out_channels,
-                                  kernel_size=kernel_size,
-                                  stride=1,
-                                  padding='same')
-                    )
-                in_channels = out_channels
-            elif layer_name == 'transpose_conv':
-                kernel_size = layer[-1]
-                h_in, w_in = num_bins, num_samples
-                h_out, w_out = h_out, w_out
-                padding = get_transpose_padding(
-                    h_in=h_in, w_in=w_in, h_out=h_out, w_out=w_out,
-                    kernel_size=kernel_size, stride=2
-                )
-                up.append(
-                    nn.ConvTranspose2d(in_channels, out_channels,
-                                       kernel_size=kernel_size, stride=2,
-                                       padding=padding
-                    )
-                )
-
-            elif layer_name == 'batch_norm':
-                if block_type == 'encoder':
-                    encoder_stack.append(nn.BatchNorm2d(out_channels))
-                else:
-                    up.append(nn.BatchNorm2d(out_channels))
-            elif layer_name == 'dropout':
-                dropout_p = layer[-1]
-                if block_type == 'encoder':
-                    encoder_stack.append(nn.Dropout2d(dropout_p))
-                else:
-                    up.append(nn.Dropout2d(dropout_p))
-            elif layer_name == 'leaky_relu':
-                leak = layer[-1]
-                if block_type == 'encoder':
-                    encoder_stack.append(nn.LeakyReLU(leak))
-                else:
-                    up.append(nn.LeakyReLU(leak))
-            elif layer_name == 'relu':
-                if block_type == 'encoder':
-                    encoder_stack.append(nn.ReLU())
-                else:
-                    up.append(nn.ReLU())
-            elif layer_name == 'tanh':
-                if block_type == 'encoder':
-                    encoder_stack.append(nn.Tanh())
-                else:
-                    up.append(nn.Tanh())
-            elif layer_name == 'sigmoid':
-                if block_type == 'encoder':
-                    encoder_stack.append(nn.Sigmoid())
-                else:
-                    up.append(nn.Sigmoid())
-            else:
-                if block_type == 'encoder':
-                    encoder_stack.append(nn.Identity())
-                else:
-                    up.append(nn.Identity())
-
-        for layer in scheme[spatial_resize_index:]:
-            layer_name = layer[0]
-            if layer_name == 'conv':
-                kernel_size = layer[-1]
-                if block_type == 'encoder':
-                    if not last:
-                        h_in, w_in = num_bins, num_samples
-                        h_out, w_out = h_in // 2, w_in // 2
+            layers = scheme['upsampling_stack'] + scheme['conv_stack']
+            split_index = len(scheme['upsampling_stack'])
+        for i, layer in enumerate(layers):
+            layer_type = layer['layer_type']
+            if layer_type == 'conv':
+                kernel_size = layer['param']
+                if is_encoder:
+                    if layer.get('down', False):
                         padding = get_conv_padding(
-                            h_in=h_in, w_in=w_in, h_out=h_out, w_out=w_out,
+                            h_in=h_in,
+                            w_in=w_in,
+                            h_out=h_out,
+                            w_out=w_out,
                             kernel_size=kernel_size
                         )
                         stride = 2
-                        up.append(
-                            nn.Conv2d(in_channels,
-                                      out_channels,
-                                      kernel_size=kernel_size,
-                                      stride=stride,
-                                      padding=padding)
-                        )
+                    else:
+                        padding = 'same'
+                        stride = 1
                 else:
-                    # if not decoder_stack:
-                    #     in_channels = in_channels * (1 + int(skip_connections))
-                    decoder_stack.append(
-                            nn.Conv2d(in_channels=in_channels,
-                                      out_channels=out_channels,
-                                      kernel_size=kernel_size,
-                                      stride=1,
-                                      padding='same')
-                    )
-                in_channels = out_channels
-            elif layer_name == 'max_pool' and not last:
-                down.append(nn.MaxPool2d(2))
-            elif layer_name == 'batch_norm':
-                if block_type == 'encoder':
-                    down.append(nn.BatchNorm2d(out_channels))
-                else:
-                    decoder_stack.append(nn.BatchNorm2d(out_channels))
-            elif layer_name == 'dropout':
-                dropout_p = layer[-1]
-                if block_type == 'encoder':
-                    down.append(nn.Dropout2d(dropout_p))
-                else:
-                    decoder_stack.append(nn.Dropout2d(dropout_p))
-            elif layer_name == 'leaky_relu':
-                leak = layer[-1]
-                if block_type == 'encoder':
-                    down.append(nn.LeakyReLU(leak))
-                else:
-                    decoder_stack.append(nn.LeakyReLU(leak))
-            elif layer_name == 'relu':
-                if block_type == 'encoder':
-                    down.append(nn.ReLU())
-                else:
-                    decoder_stack.append(nn.ReLU())
-            elif layer_name == 'tanh':
-                if block_type == 'encoder':
-                    down.append(nn.Tanh())
-                else:
-                    decoder_stack.append(nn.Tanh())
-            elif layer_name == 'sigmoid':
-                if block_type == 'encoder':
-                    down.append(nn.Sigmoid())
-                else:
-                    decoder_stack.append(nn.Sigmoid())
-            else:
-                if block_type == 'encoder':
-                    down.append(nn.Identity())
-                else:
-                    decoder_stack.append(nn.Identity())
+                    if skip_connections and len(conv_stack) == 0 and not skip_last:
+                        in_channels = in_channels * 2
 
-        if block_type == 'encoder':
-            self.layers_stack = nn.Sequential(*encoder_stack)
-            self.down = nn.Sequential(*down)
+                    padding = 'same'
+                    stride = 1
+
+                layer_module = nn.Conv2d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=kernel_size,
+                    stride=stride,
+                    padding=padding
+                )
+
+                in_channels = out_channels
+
+            elif layer_type == 'transpose_conv':
+                kernel_size = layer['param']
+                padding = get_transpose_padding(
+                    h_in=h_in,
+                    w_in=w_in,
+                    h_out=h_out,
+                    w_out=w_out,
+                    stride=2,
+                    kernel_size=kernel_size
+                )
+                print(h_in, w_in, h_out, w_out, padding)
+                print(in_channels)
+                if skip_connections and not first_decoder and len(scheme['conv_stack']) == 0:
+                    in_channels *= 2
+
+                layer_module = nn.ConvTranspose2d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=kernel_size,
+                    stride=2,
+                    padding=padding
+                )
+
+                in_channels = out_channels
+            elif layer_type == 'upsample':
+                layer_module = nn.Upsample(
+                    size=torch.Size((h_in, w_in)),
+                    scale_factor=2
+                )
+            elif layer_type == 'max_pool':
+                kernel_size = layer['param']
+                layer_module = nn.MaxPool2d(kernel_size)
+            elif layer_type == 'batch_norm':
+                layer_module = nn.BatchNorm2d(out_channels)
+            elif layer_type == 'dropout' and use_dropout:
+                dropout_p = layer['param']
+                layer_module = nn.Dropout2d(dropout_p)
+            elif layer_type in {'relu', 'leaky_relu', 'sigmoid', 'tanh'}:
+                layer_module = get_activation(layer_type, layer['param'])
+            else:
+                layer_module = nn.Identity()
+
+
+            if is_encoder:
+                print(i, 123, layer_type, split_index)
+                if i >= split_index:
+                    down.append(layer_module)
+                else:
+                    conv_stack.append(layer_module)
+            else:
+                if i < split_index:
+                    up.append(layer_module)
+                else:
+                    conv_stack.append(layer_module)
+
+
+
+        self.conv_stack = nn.Sequential(*conv_stack)
+
+        if is_encoder:
+            self.down = DownSampler(down)
         else:
-            self.layers_stack = nn.Sequential(*decoder_stack)
             self.deconv_pre = up[0]
             self.deconv_post = nn.Sequential(*up[1:])
 
-    # def forward(self, data: torch.Tensor) -> torch.Tensor:
-    #     """Forward method.
-    #
-    #     Args:
-    #         data (tensor): Input feature map.
-    #     Returns:
-    #         (tensor): Output feature map.
-    #     """
-    #     output = self.layers_stack(data)
-    #     return output
+class DownSampler(nn.Module):
+    def __init__(self, layers):
+        super(DownSampler, self).__init__()
+        self.down = nn.Sequential(*layers)
 
+    def forward(self, data):
+        return self.down(data)
+
+
+class StackedEncoderBlock(StackedBlock):
+    def __init__(self, **kwargs):
+        super(StackedEncoderBlock, self).__init__(**kwargs)
+
+    def forward(self, data):
+        encoding = self.conv_stack(data)
+        output = self.down(encoding)
+        return output, encoding
+
+
+class StackedDecoderBlock(StackedBlock):
+    def __init__(self, **kwargs):
+        super(StackedDecoderBlock, self).__init__(**kwargs)
 
 # class StackedDecoderBlock(StackedBlock):
 #     def __init__(self, **kwargs):

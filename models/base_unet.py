@@ -5,8 +5,9 @@ import math
 
 import numpy as np
 from typing import Optional, Union, List, Tuple
+from collections import OrderedDict
 from pprint import pprint
-from models.layers import StackedBlock
+from models.layers import StackedBlock, StackedDecoderBlock, StackedEncoderBlock
 
 
 # def get_padding(kernel_size: int, stride: int, in_size: Tuple, out_size: Tuple):
@@ -52,8 +53,8 @@ class BaseUNet(nn.Module):
     """
     def __init__(
         self,
-        encoder: List[List],
-        decoder: List[List],
+        encoder: OrderedDict,
+        decoder: OrderedDict,
         num_bins: int,
         num_samples: int,
         init_hidden: int = 16,
@@ -109,115 +110,140 @@ class BaseUNet(nn.Module):
             int(np.log2(num_bins // init_hidden + 1e-6) + 1)
         )
 
-        if mask_activation == 'sigmoid':
-            self.mask_activation = nn.Sigmoid()
-        elif mask_activation == 'relu':
-            self.mask_activation = nn.ReLU()
-        elif mask_activation == 'tanh':
-            self.mask_activation = nn.Tanh()
-        else:
-            self.mask_activation = nn.Identity()
+        self.max_layers = max(self.max_layers, 2)
+
+        pprint(encoder)
+        pprint(decoder)
+
+
         if input_norm:
             self.input_norm = nn.BatchNorm2d(num_fft)
         else:
             self.input_norm = nn.Identity()
-        if output_norm:
-            self.output_norm = nn.BatchNorm2d(num_fft)
-        else:
-            self.output_norm = nn.Identity()
+
 
         # self.residual = residual
-        pprint(encoder)
-        pprint(decoder)
 
         # Build the autoencoder.
         self.encoder = nn.ModuleList()
         self.decoder = nn.ModuleList()
         in_channels, out_channels = num_channels, init_hidden
-
         sizes = [[num_bins, num_samples]]
-        for i in range(1, self.max_layers):
-            sizes.append([num_bins >> i, num_samples >> i])
-
-        print(sizes)
-
         for layer in range(self.max_layers):
             if layer == 0:
+                h_in, w_in = num_bins, num_samples
                 in_channels = num_channels
                 out_channels = init_hidden
             else:
+                h_in, w_in = h_out, w_out
                 in_channels = out_channels
                 out_channels = in_channels * 2
 
-
-
+            h_out, w_out = h_in // 2, w_in // 2
             self.encoder.append(
-                StackedBlock(
+                StackedEncoderBlock(
                     in_channels=in_channels,
                     out_channels=out_channels,
-                    num_bins=num_bins >> layer,
-                    num_samples=num_samples >> layer,
+                    h_in=h_in,
+                    w_in=w_in,
+                    h_out=h_out,
+                    w_out=w_out,
                     scheme=encoder,
-                    block_type='encoder',
-                    last=layer == self.max_layers - 1
+                    skip_connections=skip_connections,
+                    is_encoder=True,
+                    last=layer == self.max_layers - 1,
+                )
+            )
+            sizes.append([h_out, w_out])
+        print(sizes)
+        if len(list(self.encoder[-1].conv_stack.children())) > 0 and skip_connections:
+            self.encoder[-1].down = nn.Sequential(*list(self.encoder[-1].down.children())[:-1])
+            sizes.pop()
+        print(sizes)
+
+
+        for layer in range(len(sizes) - 1):
+
+            in_channels = out_channels
+            out_channels = in_channels // 2
+
+            #
+            # if layer == self.max_layers - 1:
+            #     out_channels = init_hidden
+
+            # if self.max_layers - layer <= num_dropouts:
+            #     dropout_p = dropout_p
+            # else:
+            #     dropout_p = 0
+
+            h_in, w_in = sizes[-1 - layer]
+            h_out, w_out = sizes[-2 - layer]
+
+            print(123, in_channels, out_channels)
+            skip_last = (layer == len(sizes) - 2) and len(list(self.encoder[0].conv_stack.children())) == 0
+            print("SKIP LAST", skip_last)
+
+            self.decoder.append(
+                StackedDecoderBlock(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    h_in=h_in,
+                    w_in=w_in,
+                    h_out=h_out,
+                    w_out=w_out,
+                    scheme=decoder,
+                    skip_connections=skip_connections,
+                    is_encoder=False,
+                    first_decoder=layer == 0,
+                    use_dropout=(self.max_layers - layer <= num_dropouts),
+                    skip_last=skip_last
                 )
             )
 
-            # if layer == self.max_layers - 1:
-            #     out_channels = out_channels // 2
-
-            if self.max_layers - layer <= num_dropouts:
-                dropout_p = dropout_p
-            else:
-                dropout_p = 0
-
-            if layer < self.max_layers - 1:
-                h_in, w_in = sizes[layer + 1][0], sizes[layer + 1][1]
-                h_out, w_out = sizes[layer][0], sizes[layer][1]
-                self.decoder.append(
-                    StackedBlock(
-                        in_channels=out_channels * 2,
-                        out_channels=in_channels * 2 if layer > 0 else init_hidden,
-                        scheme=decoder,
-                        num_bins=h_in,
-                        num_samples=w_in,
-                        h_out=h_out,
-                        w_out=w_out,
-                        block_type='decoder',
-                        skip_connections=True,
-                    )
-                )
-
+        self.decoder = self.decoder[::-1]
 
 
         pprint(self.encoder)
         pprint(self.decoder)
         # Build the bottleneck.
-        mid_channels = self.encoder[-1].out_channels
-
-        if bottleneck_type == 'conv':
-            self.bottleneck = nn.ModuleList()
-            for _ in range(bottleneck_layers):
-                self.bottleneck.append(nn.Sequential(
-                    nn.Conv2d(
-                        in_channels=mid_channels,
-                        out_channels=mid_channels,
-                        kernel_size=3,
-                        stride=1,
-                        padding='same'
-                    ),
-                    nn.BatchNorm2d(mid_channels),
-                    nn.ReLU())
-                )
-        elif bottleneck_type == 'lstm':
-            self.bottleneck = nn.Identity()
-        elif bottleneck_type == 'linear':
-            self.bottleneck = nn.Identity()
-        else:
-            self.bottleneck = nn.Identity()
+        # mid_channels = self.encoder[-1].out_channels
+        #
+        # if bottleneck_type == 'conv':
+        #     self.bottleneck = nn.ModuleList()
+        #     for _ in range(bottleneck_layers):
+        #         self.bottleneck.append(nn.Sequential(
+        #             nn.Conv2d(
+        #                 in_channels=mid_channels,
+        #                 out_channels=mid_channels,
+        #                 kernel_size=3,
+        #                 stride=1,
+        #                 padding='same'
+        #             ),
+        #             nn.BatchNorm2d(mid_channels),
+        #             nn.ReLU())
+        #         )
+        # elif bottleneck_type == 'lstm':
+        #     self.bottleneck = nn.Identity()
+        # elif bottleneck_type == 'linear':
+        #     self.bottleneck = nn.Identity()
+        # else:
+        #     self.bottleneck = nn.Identity()
 
         # Build final 1x1 conv layer.
-        final_num_channels = self.decoder[0].out_channels
+        first_encoder_skip = len(list(self.encoder[0].conv_stack.children())) > 0
+        last_decoder_skip = len(list(self.decoder[-1].conv_stack.children())) > 0
+        print(out_channels)
+        if skip_connections and first_encoder_skip:
+            if last_decoder_skip:
+                final_num_channels = out_channels
+            else:
+                final_num_channels = out_channels * 2
+        elif skip_connections and last_decoder_skip:
+            final_num_channels = out_channels
+        else:
+            final_num_channels = out_channels
+
+        print(final_num_channels)
 
         self.soft_conv = nn.Conv2d(
             in_channels=final_num_channels,
@@ -226,6 +252,20 @@ class BaseUNet(nn.Module):
             stride=1,
             padding='same'
         )
+
+        if output_norm:
+            self.output_norm = nn.BatchNorm2d(num_fft)
+        else:
+            self.output_norm = nn.Identity()
+
+        if mask_activation == 'sigmoid':
+            self.mask_activation = nn.Sigmoid()
+        elif mask_activation == 'relu':
+            self.mask_activation = nn.ReLU()
+        elif mask_activation == 'tanh':
+            self.mask_activation = nn.Tanh()
+        else:
+            self.mask_activation = nn.Identity()
 
 
 
@@ -260,41 +300,40 @@ class BaseUNet(nn.Module):
 
         # Feed into the encoder layers.
         for layer in range(len(self.encoder)):
-            data = self.encoder[layer].layers_stack(data)
-            encodings.append(data)
+            data, encoding = self.encoder[layer](data)
+            if len(list(self.encoder[layer].down.children())) > 0:
+                encodings.append(encoding)
             # if layer < len(self.encoder) - 1 and self.skip_connections:
 
-            data = self.encoder[layer].down(data)
+
         # # Pass through bottleneck.
         # data = self.bottleneck(data)
-        print(0, data.shape)
+
         for i in range(len(encodings)):
-            print(encodings[i].shape)
+            print(i, encodings[i].shape)
+
+        print('hidden', data.shape)
 
         # Feed into the decoder layers.
         for layer in range(len(self.decoder)):
             if layer < len(self.decoder) - 1:
-                output_size = encodings[-2 - layer].size()
-                print(123, output_size)
-                print(data.shape)
+                output_size = encodings[-1 - layer].size()
                 data = self.decoder[-1 - layer].deconv_pre(data, output_size=output_size)
-                data = self.decoder[-1 - layer].deconv_post(data)
-                print(1, data.shape)
-                if self.skip_connections:
-                    print(3, data.shape, encodings[-layer].shape)
-                    print(encodings[-1 -layer].shape)
-                    data = torch.cat([data, encodings[-2 - layer]], dim=1)
-                print(2, data.shape)
-                data = self.decoder[-1 - layer].layers_stack(data)
-                print(9, data.shape)
 
+                data = self.decoder[-1 - layer].deconv_post(data)
+                if self.skip_connections:
+                    data = torch.cat([data, encodings[-1 - layer]], dim=1)
+                data = self.decoder[-1 - layer].conv_stack(data)
             else:
-                print(data.shape)
                 data = self.decoder[0].deconv_pre(data, output_size=input_size)
                 data = self.decoder[0].deconv_post(data)
                 if self.skip_connections:
-                    data = torch.cat([data, encodings[0]], dim=1)
-                data = self.decoder[0].layers_stack(data)
+                    if len(list(self.encoder[0].conv_stack.children())) > 0:
+                        print("fuck")
+                        data = torch.cat([data, encodings[0]], dim=1)
+                data = self.decoder[0].conv_stack(data)
+            print(layer, data.shape)
+        print("out", data.shape)
         # Final conv + output normalization + mask activation.
         data = self.soft_conv(data)
         data = self.output_norm(data)
