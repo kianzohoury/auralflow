@@ -158,11 +158,10 @@ def visualize_handler(**visualize_args):
     """Visualizes a model with torchinfo."""
     try:
         logs = config.utils.get_session_logs(session_logs_file)
-        session_dir = Path(logs.get(logs['current']['location']))
-        model_name = visualize_args['model']
+        session_dir = Path(logs['current']['location'])
+        model_name = visualize_args['name']
         model_dir = session_dir / model_name
         load_model(model_dir=model_dir, visualize=True)
-
     except (IOError, YAMLError) as e:
         print(str(e))
         sys.exit(1)
@@ -236,18 +235,19 @@ if __name__ == '__main__':
     )
 
     visualize_parser.add_argument(
-        'model',
+        '--name',
         type=str,
-        help="Visualize a model.",
-        metavar=''
+        help="The name of the model to visualize.",
+        metavar='',
+        required=True
     )
 
     create_parser.set_defaults(func=new_session_handler)
     activate_parser.set_defaults(func=activate_session_handler)
     config_parser.set_defaults(func=model_config_handler)
     clear_parser.set_defaults(func=clear_session_handler)
+    visualize_parser.set_defaults(func=visualize_handler)
     parser.set_defaults(func=list_handler)
-    parser.set_defaults(func=visualize_handler)
 
     # Parse and handle the command arguments.
     args = parser.parse_args()

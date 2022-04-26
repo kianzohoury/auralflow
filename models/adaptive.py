@@ -331,7 +331,7 @@ class StackedDecoderBlock(nn.Module):
                 )
                 in_channels = out_channels
             elif decoding_head.layer_type == 'upsample':
-                print(in_channels, out_channels)
+                # print(in_channels, out_channels)
 
                 layer_module = nn.Upsample(
                     size=(h_out, w_out),
@@ -379,7 +379,7 @@ class StackedDecoderBlock(nn.Module):
             (tuple): A tuple of the output and intermediate skip data.
         """
         if self.has_transpose_block() and output_size is not None:
-            print(self.up, data.shape, skip_data.shape, output_size)
+            # print(self.up, data.shape, skip_data.shape, output_size)
             data = self.up(data, output_size=output_size)
         else:
             data = self.up(data)

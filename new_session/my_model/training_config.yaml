@@ -1,0 +1,44 @@
+# Training parameters.
+training:
+  # max-iters:
+  #   Max number of iterations per epoch. 1 iter = 1 batch
+  # batch-size:
+  #   Batch size.
+  # val-split:
+  #   Validation split.
+  # epochs:
+  #   Number of epochs.
+  # optimizer:
+  #   Optimizer algorithm.
+  # lr:
+  #   Learning rate.
+  # loss:
+  #   Loss function.
+  # patience:
+  #   Epochs to wait before early stopping if val loss stops decreasing.
+  # num-workers:
+  #   Number of worker processes to retrieve data.
+  # pin-memory:
+  #   Improves data transfer speed from cpu to gpu (recommended).
+  # persistent-workers:
+  #   Avoids creating new worker processes (recommended).
+  # cuda:
+  #   Enables GPU usage if available (recommended).
+  # gpus:
+  #   Number of GPUs to use for multi-node distributed parallel training.
+  # tensorboard:
+  #   Enables tensorboard for visualizing training runs.
+  max-iters: 1000
+  batch-size: 8
+  val-split: 0.2
+  epochs: 100
+  optimizer: adam
+  lr: 0.001
+  loss: l1
+  patience: 10
+  num-workers: 8
+  pin-memory: true
+  persistent-workers: true
+  cuda: true
+  gpus: 1
+  tensorboard: true

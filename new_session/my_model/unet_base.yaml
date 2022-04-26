@@ -11,41 +11,23 @@
 # and extremely fast development time.
 ################################################################################
 model:
-    base-model: u-net
-    max-layers: 6
-    init-hidden: 16
-    bottleneck-type: conv
-    bottleneck-layers: 1
-    bottleneck: [
-        [conv, 3],
-        [batch_norm],
-        [relu],
-    ]
-    encoder: [
-        [conv, 3],
-        [batch_norm],
-        [leaky_relu, 0.2],
-        [conv, 3],
-        [batch_norm],
-        [leaky_relu, 0.2],
-        [max_pool, 2]
-    ]
-    decoder: [
-        [transpose_conv, 5],
-        [batch_norm],
-        [relu],
-        [dropout, 0.4],
-        [conv, 3],
-        [batch_norm],
-        [relu]
-    ]
-    num-dropouts: 3
-    use-skip-connections: True
-    soft-conv: False
-    mask-activation: sigmoid
-    normalize-input: True
-    normalize-output: False
-    targets: [vocals]
+  base-model: u-net
+  max-layers: 6
+  init-hidden: 16
+  bottleneck-type: conv
+  bottleneck-layers: 1
+  bottleneck: [[conv, 3], [batch_norm], [relu]]
+  encoder: [[conv, 3], [batch_norm], [leaky_relu, 0.2], [conv, 3], [batch_norm], [
+      leaky_relu, 0.2], [max_pool, 2]]
+  decoder: [[transpose_conv, 5], [batch_norm], [relu], [dropout, 0.4], [conv, 3],
+    [batch_norm], [relu]]
+  num-dropouts: 3
+  use-skip-connections: true
+  soft-conv: false
+  mask-activation: sigmoid
+  normalize-input: true
+  normalize-output: false
+  targets: [vocals]
 
 ################################################################################
 # Arguments
@@ -88,12 +70,8 @@ tutorial:
 # as a list. For example, if we want an encoder block to use a 5x5 convolution,
 # followed by batch normalization and relu activation layers, we would write:
 
-    tutorial_1a:
-        encoder: [
-            [conv, 5],
-            [batch_norm],
-            [relu],
-        ]
+  tutorial_1a:
+    encoder: [[conv, 5], [batch_norm], [relu]]
 
 # For convolutions, we require an additional kernel size argument given as
 # [k_size, k_size]. Note that the following batch_norm and relu layers do not
@@ -101,12 +79,7 @@ tutorial:
 
 # We also need to specify a scheme for the decoder layers:
 
-        decoder: [
-            [transpose_conv, 5],
-            [batch_norm],
-            [relu],
-            [dropout, 0.5],
-        ]
+    decoder: [[transpose_conv, 5], [batch_norm], [relu], [dropout, 0.5]]
 
 # Here, we used a transpose convolution with a 5x5 kernel. Notice that the last
 # entry is a dropout layer, which requires a value for the dropout probability,
@@ -136,21 +109,10 @@ tutorial:
 # reduce the number of channels by half. When max_layers > 1, the input
 # channels for the next decoder block are doubled automatically.
 
-    tutorial_1b:
-        encoder: [
-            [conv, 5],
-            [batch_norm],
-            [relu],
-            [skip]
-        ]
+  tutorial_1b:
+    encoder: [[conv, 5], [batch_norm], [relu], [skip]]
 
-        decoder: [
-            [transpose_conv, 5],
-            [batch_norm],
-            [relu],
-            [dropout, 0.5],
-            [skip]
-        ]
+    decoder: [[transpose_conv, 5], [batch_norm], [relu], [dropout, 0.5], [skip]]
 
 # Again, in our example, the output of each encoder block is also sent to the
 # corresponding decoder block and is concatenated with the output of the
@@ -163,33 +125,12 @@ tutorial:
 # Using more than 1 convolutional layer within each block is very common. To
 # do so, just add them to the list.
 
-    tutorial_1c:
-        encoder: [
-            [conv, 3],
-            [batch_norm],
-            [relu],
-            [conv, 4],
-            [batch_norm],
-            [relu],
-            [skip],
-            [conv, 5],
-            [batch_norm],
-            [relu],
-        ]
+  tutorial_1c:
+    encoder: [[conv, 3], [batch_norm], [relu], [conv, 4], [batch_norm], [relu], [
+        skip], [conv, 5], [batch_norm], [relu]]
 
-        decoder: [
-            [transpose_conv, 5],
-            [batch_norm],
-            [relu],
-            [dropout, 0.5],
-            [skip],
-            [conv, 4],
-            [batch_norm],
-            [relu],
-            [conv, 4],
-            [batch_norm],
-            [relu],
-        ]
+    decoder: [[transpose_conv, 5], [batch_norm], [relu], [dropout, 0.5], [skip], [
+        conv, 4], [batch_norm], [relu], [conv, 4], [batch_norm], [relu]]
 
 # There are a few differences that we need to account for with the addition
 # of more convolutional layers. Firstly, all convolutional layers preceding
@@ -225,35 +166,16 @@ tutorial:
 # In the above example, we can interchange the last convolutional layer with a
 # max pool layer to perform the downsampling.
 
-    tutorial_1d:
-        encoder: [
-            [conv, [3, 3], same],
-            [batch_norm],
-            [relu],
-            [conv, [4, 4], same],
-            [batch_norm],
-            [relu],
-            [skip],
-            [max_pool],
-        ]
+  tutorial_1d:
+    encoder: [[conv, [3, 3], same], [batch_norm], [relu], [conv, [4, 4], same], [
+        batch_norm], [relu], [skip], [max_pool]]
 
 # Moreover, we can also interchange the transpose convolution with an
 # upsample layer, which uses a form of interpolation to double the spatial
 # dimensions.
 
-        decoder: [
-            [upsample],
-            [batch_norm],
-            [relu],
-            [dropout, 0.5],
-            [skip],
-            [conv, [4, 4], same],
-            [batch_norm],
-            [relu],
-            [conv, [4, 4], same],
-            [batch_norm],
-            [relu],
-        ]
+    decoder: [[upsample], [batch_norm], [relu], [dropout, 0.5], [skip], [conv, [4,
+          4], same], [batch_norm], [relu], [conv, [4, 4], same], [batch_norm], [relu]]
 
 # And of course, there are other activation functions we can use, such as
 # leaky_relu, sigmoid and tanh.
@@ -263,70 +185,40 @@ tutorial:
 ################################################################################
 
 unet_like_1:
-    base-model: u-net
-    max-layers: 6
-    init-hidden: 16
-    bottleneck-type: conv
-    bottleneck-layers: 1
-    bottleneck: [
-        [conv, 3],
-        [batch_norm],
-        [relu],
-    ]
-    encoder: [
-        [conv, 5],
-        [batch_norm],
-        [leaky_relu, 0.2],
-    ]
-    decoder: [
-        [transpose_conv, 5],
-        [batch_norm],
-        [dropout, 0.5],
-        [relu],
-    ]
-    num-dropouts: 3
-    skip-connections: True
-    soft-conv: False
-    mask-activation: sigmoid
-    input-norm: False
-    output-norm: False
-    targets: [vocals]
+  base-model: u-net
+  max-layers: 6
+  init-hidden: 16
+  bottleneck-type: conv
+  bottleneck-layers: 1
+  bottleneck: [[conv, 3], [batch_norm], [relu]]
+  encoder: [[conv, 5], [batch_norm], [leaky_relu, 0.2]]
+  decoder: [[transpose_conv, 5], [batch_norm], [dropout, 0.5], [relu]]
+  num-dropouts: 3
+  skip-connections: true
+  soft-conv: false
+  mask-activation: sigmoid
+  input-norm: false
+  output-norm: false
+  targets: [vocals]
 
 
 unet_like_2:
-    max-layers: 6
-    init-hidden: 16
-    bottleneck-type: conv
-    bottleneck-layers: 0
-    bottleneck: [[]]
-    encoder: [
-        [conv, [3, 3], same],
-        [batch_norm],
-        [relu],
-        [conv, [3, 3], same],
-        [batch_norm],
-        [relu],
-        [max_pool],
-    ]
-    decoder: [
-        [transpose_conv, [5, 5]],
-        [batch_norm],
-        [relu],
-        [dropout, 0.4],
-        [conv, [3, 3], same],
-        [batch_norm],
-        [relu],
-        [conv, [3, 3], same],
-        [batch_norm],
-        [relu],
-    ]
-    num-dropouts: 3
-    skip-connections: True
-    soft-conv: True
-    mask-activation: sigmoid
-    input-norm: False
-    output-norm: False
-    targets: [bass, drums, other, vocals]
+  max-layers: 6
+  init-hidden: 16
+  bottleneck-type: conv
+  bottleneck-layers: 0
+  bottleneck: [[]]
+  encoder: [[conv, [3, 3], same], [batch_norm], [relu], [conv, [3, 3], same], [batch_norm],
+    [relu], [max_pool]]
+  decoder: [[transpose_conv, [5, 5]], [batch_norm], [relu], [dropout, 0.4], [conv,
+      [3, 3], same], [batch_norm], [relu], [conv, [3, 3], same], [batch_norm], [relu]]
+  num-dropouts: 3
+  skip-connections: true
+  soft-conv: true
+  mask-activation: sigmoid
+  input-norm: false
+  output-norm: false
+  targets: [bass, drums, other, vocals]
 
 ################################################################################
 # Have fun building your models!

@@ -87,7 +87,7 @@ class BaseUNet(nn.Module):
             f"Bottleneck type must be one of the following: 'conv', 'lstm', 'linear'."
 
         # Register model attributes.
-        print(num_fft, window_size, hop_length)
+        # print(num_fft, window_size, hop_length)
 
         self.init_hidden = init_hidden
         self.num_bins = num_bins
@@ -174,8 +174,6 @@ class BaseUNet(nn.Module):
             # else:
             #     dropout_p = 0
 
-            print(sizes)
-
             h_in, w_in = sizes[-1 - layer]
             h_out, w_out = sizes[-2 - layer]
 
@@ -197,10 +195,6 @@ class BaseUNet(nn.Module):
                 )
             )
 
-
-
-        pprint(self.encoder)
-        pprint(self.decoder)
         # Build the bottleneck.
         # mid_channels = self.encoder[-1].out_channels
         #
@@ -295,11 +289,11 @@ class BaseUNet(nn.Module):
 
         # # Pass through bottleneck.
         # data = self.bottleneck(data)
-
-        for i in range(len(encodings)):
-            print(i, encodings[i].shape)
-
-        print('hidden', data.shape)
+        #
+        # for i in range(len(encodings)):
+        #     print(i, encodings[i].shape)
+        #
+        # print('hidden', data.shape)
 
         # Feed into the decoder layers.
         for layer in range(len(self.decoder)):
@@ -312,15 +306,15 @@ class BaseUNet(nn.Module):
                         output_size=skip_data.size()
                     )
                 elif self.decoder[layer].has_transpose_block():
-                    print(1, data.shape, skip_data.shape)
+                    # print(1, data.shape, skip_data.shape)
                     data = self.decoder[layer](
                         data=data,
                         skip_data=skip_data,
                         output_size=skip_data.size()
                     )
-                    print(2, data.shape)
+                    # print(2, data.shape)
                 elif not self.decoder[layer].has_transpose_block():
-                    print(self.direct_skip, data.shape)
+                    # print(self.direct_skip, data.shape)
                     data = self.decoder[layer](
                         data=data,
                         skip_data=skip_data,
@@ -331,7 +325,7 @@ class BaseUNet(nn.Module):
 
         # Final conv + output normalization + mask activation.
         data = self.soft_conv(data)
-        print(data.shape)
+        # print(data.shape)
         if self.normalize_output:
             data = self.output_norm(data.permute(0, 2, 3, 1))
             data = data.permute(0, 2, 3, 1)
@@ -341,5 +335,3 @@ class BaseUNet(nn.Module):
         mask = mask.permute(0, 2, 3, 1)
 
         return mask
-
-# %%

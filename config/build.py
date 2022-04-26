@@ -72,8 +72,10 @@ def get_all_config_contents(model_dir: Path) -> dict:
             for label in config_data.keys():
                 frmt_config_data[label] = compress_keys(config_data[label])
         # Make sure only keys are 'model', 'data' and 'training'.
-        if set(frmt_config_data.keys()) == {'data', 'model', 'training'}:
-            return frmt_config_data
+        for key in list(frmt_config_data.keys()):
+            if key not in {'dataset', 'model', 'training'}:
+                frmt_config_data.pop(key)
+        return frmt_config_data
     except MarkedYAMLError as e:
         raise YAMLError(f"Cannot read files {e.context}. Check the formatting"
                         " of your configuration files, or create a new model to" 
@@ -184,13 +186,14 @@ def load_model(model_dir: Path,
     config_dict = get_all_config_contents(model_dir)
     try:
         model = build_model(config_dict)
-        print("Success: PyTorch model was built.")
+        print("Success: PyTorch model was built. Printing model...")
         if visualize:
             data_config_copy = dict(config_dict['dataset'])
-            for key in ['backend', 'audio_format']:
+            for key in ['backend', 'audio_format', 'path']:
                 data_config_copy.pop(key)
             data_config_copy['batch_size'] \
                 = config_dict['training']['batch_size']
+            data_config_copy['targets'] = config_dict['model']['targets']
             input_shape = transforms.get_data_shape(**data_config_copy)
             torchinfo.summary(
                 model=model,
