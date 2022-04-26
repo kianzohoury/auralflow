@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import math
@@ -51,27 +50,28 @@ class BaseUNet(nn.Module):
     convolutional networks. Paper presented at the 18th International Society
     for Music Information Retrieval Conference, 23-27 Oct 2017, Suzhou, China.
     """
+
     def __init__(
-        self,
-        encoder: AdaptiveLayerNode,
-        decoder: AdaptiveLayerNode,
-        num_bins: int,
-        num_samples: int,
-        init_hidden: int = 16,
-        max_layers: int = 6,
-        num_fft: int = 1024,
-        window_size: int = 1024,
-        hop_length: int = 768,
-        num_channels: int = 1,
-        targets: Optional[List[str]] = None,
-        bottleneck_layers: int = 0,
-        bottleneck_type: str = 'conv',
-        num_dropouts: int = 3,
-        skip_connections: bool = True,
-        soft_conv=False,
-        mask_activation: str = 'sigmoid',
-        input_norm: bool = False,
-        output_norm: bool = False
+            self,
+            encoder: AdaptiveLayerNode,
+            decoder: AdaptiveLayerNode,
+            num_bins: int,
+            num_samples: int,
+            init_hidden: int = 16,
+            max_layers: int = 6,
+            num_fft: int = 1024,
+            window_size: int = 1024,
+            hop_length: int = 768,
+            num_channels: int = 1,
+            targets: Optional[List[str]] = None,
+            bottleneck_layers: int = 0,
+            bottleneck_type: str = 'conv',
+            num_dropouts: int = 3,
+            use_skip_connections: bool = True,
+            soft_conv=False,
+            mask_activation: str = 'sigmoid',
+            normalize_input: bool = False,
+            normalize_output: bool = False
     ):
         super(BaseUNet, self).__init__()
 
@@ -101,17 +101,18 @@ class BaseUNet(nn.Module):
         self.bottleneck_layers = bottleneck_layers
         self.bottleneck_type = bottleneck_type
         self.num_channels = num_channels
-        self.skip_connections = skip_connections
+        self.use_skip_connections = use_skip_connections
+        self.normalize_input = normalize_input
+        self.normalize_output = normalize_output
+        self.direct_skip = False
 
         # Correct the minimum and maximum depth of the model if needed.
         self.max_layers = max(min(
             max_layers, int(np.log2(num_bins // init_hidden + 1e-6) + 1)), 2
         )
 
-        if input_norm:
-            self.input_norm = nn.BatchNorm2d(num_fft)
-        else:
-            self.input_norm = nn.Identity()
+        if normalize_input:
+            self.input_norm = nn.BatchNorm2d(num_bins)
 
         # self.residual = residual
 
@@ -143,15 +144,26 @@ class BaseUNet(nn.Module):
             )
 
             sizes.append([h_out, w_out])
-        if not self.encoder[-1].is_single_block() and skip_connections:
+        if not self.encoder[-1].is_single_block():
             self.encoder[-1].pop_layer()
             sizes.pop()
+            self.direct_skip = True
 
         bypass_first_skip = self.encoder[-1].is_single_block()
 
         for layer in range(len(sizes) - 1):
             in_channels = out_channels
             out_channels = in_channels // 2
+
+            if layer == 0:
+                use_skip = not bypass_first_skip and use_skip_connections
+            elif layer == len(sizes) - 2:
+                use_skip = self.direct_skip and use_skip_connections
+            else:
+                use_skip = use_skip_connections
+                if (self.decoder[-1].is_single_block()
+                        and not self.decoder[-1].has_transpose_block()):
+                    in_channels *= 2
 
             #
             # if layer == self.max_layers - 1:
@@ -178,12 +190,14 @@ class BaseUNet(nn.Module):
                     h_out=h_out,
                     w_out=w_out,
                     block_scheme=decoder,
-                    use_skip=not bypass_first_skip if layer == 0 else skip_connections,
+                    use_skip=use_skip,
                     # first_decoder=layer == 0,
                     use_dropout=(self.max_layers - layer > num_dropouts),
                     # skip_last=skip_last
                 )
             )
+
+
 
         pprint(self.encoder)
         pprint(self.decoder)
@@ -214,12 +228,12 @@ class BaseUNet(nn.Module):
         # Build final 1x1 conv layer.
         first_encoder_skip = not self.encoder[0].is_single_block()
         last_decoder_skip = not self.decoder[-1].is_single_block()
-        if skip_connections and first_encoder_skip:
+        if use_skip_connections and first_encoder_skip:
             if last_decoder_skip:
                 final_num_channels = out_channels
             else:
                 final_num_channels = out_channels * 2
-        elif skip_connections and last_decoder_skip:
+        elif use_skip_connections and last_decoder_skip:
             final_num_channels = out_channels
         else:
             final_num_channels = out_channels
@@ -232,10 +246,8 @@ class BaseUNet(nn.Module):
             padding='same'
         )
 
-        if output_norm:
-            self.output_norm = nn.BatchNorm2d(num_fft)
-        else:
-            self.output_norm = nn.Identity()
+        if normalize_output:
+            self.output_norm = nn.BatchNorm2d(num_bins)
 
         if mask_activation == 'sigmoid':
             self.mask_activation = nn.Sigmoid()
@@ -263,12 +275,11 @@ class BaseUNet(nn.Module):
             output (tensor): source estimate matching the shape of input
         """
 
-        data = self.input_norm(data)
+        if self.normalize_input:
+            data = self.input_norm(data)
 
         # Switch audio channel to the first non-batch dimension.
         data = data.permute(0, 3, 1, 2)
-        # Store the input shape for later.
-        input_size = data.shape
 
         # Store intermediate feature maps if utilizing skip connections.
         encodings = [data]
@@ -277,7 +288,10 @@ class BaseUNet(nn.Module):
         for layer in range(len(self.encoder)):
             data, encoding = self.encoder[layer](data)
             if layer < len(self.encoder) - 1:
-                encodings.append(encoding)
+                if encoding is not None:
+                    encodings.append(encoding)
+                else:
+                    encodings.append(data)
 
         # # Pass through bottleneck.
         # data = self.bottleneck(data)
@@ -287,22 +301,40 @@ class BaseUNet(nn.Module):
 
         print('hidden', data.shape)
 
-
         # Feed into the decoder layers.
         for layer in range(len(self.decoder)):
-            if not self.decoder[layer].is_single_block():
-                print(self.decoder[layer])
-                data = self.decoder[layer](
-                    data,
-                    skip_data=encodings[-1 - layer],
-                    output_size=encodings[-1 - layer].size()
-                )
+            if self.use_skip_connections:
+                skip_data = encodings[-1 - layer]
+                if layer == len(self.decoder) - 1 and not self.direct_skip:
+                    data = self.decoder[layer](
+                        data=data,
+                        skip_data=None,
+                        output_size=skip_data.size()
+                    )
+                elif self.decoder[layer].has_transpose_block():
+                    print(1, data.shape, skip_data.shape)
+                    data = self.decoder[layer](
+                        data=data,
+                        skip_data=skip_data,
+                        output_size=skip_data.size()
+                    )
+                    print(2, data.shape)
+                elif not self.decoder[layer].has_transpose_block():
+                    print(self.direct_skip, data.shape)
+                    data = self.decoder[layer](
+                        data=data,
+                        skip_data=skip_data,
+                    )
+
             else:
-                data = self.decoder[layer](encodings[-1 - layer])
+                data = self.decoder[layer](data)
 
         # Final conv + output normalization + mask activation.
         data = self.soft_conv(data)
-        data = self.output_norm(data)
+        print(data.shape)
+        if self.normalize_output:
+            data = self.output_norm(data.permute(0, 2, 3, 1))
+            data = data.permute(0, 2, 3, 1)
         mask = self.mask_activation(data)
 
         # Reshape to match the input size.
@@ -310,3 +342,4 @@ class BaseUNet(nn.Module):
 
         return mask
 
+# %%

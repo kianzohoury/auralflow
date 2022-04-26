@@ -45,6 +45,7 @@ class DownSample2D(nn.Module):
         )
         return output
 
+
 class TransposeConv2D(nn.Module):
     """Wrapper class for nn.ConvTranspose2d."""
     def __init__(self, layers: List[nn.Module]):
@@ -84,7 +85,7 @@ class AdaptiveLayerNode(object):
     def __init__(self,
                  layer_type: Optional[str] = None,
                  block_type: str = 'encoder',
-                 param: Optional[Union[int, float]] = None,
+                 param: Optional[Union[str, int, float]] = None,
                  next_layer: 'AdaptiveLayerNode' = None):
 
         super(AdaptiveLayerNode, self).__init__()
@@ -97,7 +98,6 @@ class AdaptiveLayerNode(object):
             'conv',
             'transpose_conv',
             'max_pool',
-            'upsample',
             'downsample'
         }:
             assert isinstance(param, int), \
@@ -107,6 +107,9 @@ class AdaptiveLayerNode(object):
             assert isinstance(param, float), \
                 (f"Value for layer {layer_type} must be a float, but received"
                  f"a value of type {type(param)}.")
+        elif layer_type == 'upsample':
+            assert param in {'nearest', 'linear', 'bilinear', 'bicubic'}, \
+                f"Upsampling mode {param} is not valid."
         self.param = param
         if block_type == 'encoder':
             self.downsampling_head = False
@@ -216,12 +219,16 @@ class StackedEncoderBlock(nn.Module):
         Returns:
             (tuple): A tuple of the output and intermediate skip data.
         """
-        skip_data = self.encoder(data)
-        output = self.down(skip_data)
+        if not self.is_single_block():
+            skip_data = self.encoder(data)
+            output = self.down(skip_data)
+        else:
+            output = self.down(data)
+            skip_data = None
         return output, skip_data
 
     def is_single_block(self) -> bool:
-        """Returns True if more than one convolutional layer is used."""
+        """Returns True if upsampling and conv layers are not separate."""
         return not len(list(self.encoder.children()))
 
     def pop_layer(self) -> None:
@@ -273,15 +280,19 @@ class StackedDecoderBlock(nn.Module):
             next_layer=block_scheme
         )
 
+        num_convs = 0
         has_decoder_layers = False
         ptr = decoding_head
         while ptr.next_layer:
             if ptr.next_layer.layer_type == 'transpose_conv':
                 self._use_transpose = True
             elif ptr.next_layer.layer_type == 'conv':
-                has_decoder_layers = True
-                break
+                num_convs += 1
             ptr = ptr.next_layer
+
+        if (self._use_transpose and num_convs > 0) or \
+                (not self._use_transpose and num_convs > 1):
+            has_decoder_layers = True
 
         up_phase = True
         while decoding_head:
@@ -320,9 +331,11 @@ class StackedDecoderBlock(nn.Module):
                 )
                 in_channels = out_channels
             elif decoding_head.layer_type == 'upsample':
+                print(in_channels, out_channels)
+
                 layer_module = nn.Upsample(
-                    size=torch.Size((h_in, w_in)),
-                    scale_factor=decoding_head.param
+                    size=(h_out, w_out),
+                    mode=decoding_head.param
                 )
             elif decoding_head.layer_type in LAYER_TYPES:
                 if decoding_head.layer_type == 'batch_norm':
@@ -365,7 +378,8 @@ class StackedDecoderBlock(nn.Module):
         Returns:
             (tuple): A tuple of the output and intermediate skip data.
         """
-        if self._use_transpose and output_size is not None:
+        if self.has_transpose_block() and output_size is not None:
+            print(self.up, data.shape, skip_data.shape, output_size)
             data = self.up(data, output_size=output_size)
         else:
             data = self.up(data)
@@ -377,8 +391,12 @@ class StackedDecoderBlock(nn.Module):
         return output
 
     def is_single_block(self):
-        """Returns True if more than one convolutional layer is used."""
+        """Returns True if downsampling and conv layers are not separate."""
         return not len(list(self.decoder.children()))
+
+    def has_transpose_block(self) -> bool:
+        """Returns True if up method uses transpose and False otherwise."""
+        return self._use_transpose
 
 
 
@@ -603,7 +621,6 @@ def process_block(block_scheme: List,
     Returns:
         (AdaptiveLayerNode): The processed block.
     """
-
     assert len(block_scheme) > 0, f"Must specify at least 1 layer."
     head = prev = AdaptiveLayerNode(block_type=block_type)
 
@@ -715,6 +732,24 @@ def process_block(block_scheme: List,
         # Mark the next conv layer to get stopping point for `up` layers.
         while ptr:
             if ptr.layer_type == 'conv':
-                ptr.split_point = True
+                if first_layer == 'transpose_conv':
+                    ptr.split_point = True
+                    break
+                elif first_layer == 'upsample':
+                    temp = ptr
+                    ptr = ptr.next_layer
+                    while ptr:
+                        if ptr.layer_type == 'conv':
+                            ptr.split_point = True
+                            break
+                        ptr = ptr.next_layer
+                    break
+                    # if not ptr or not ptr.split_point:
+                    #     temp.split_point = True
+                    #     break
             ptr = ptr.next_layer
+        p = head
+        while p:
+            print(p, p.split_point)
+            p = p.next_layer
     return head

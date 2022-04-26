@@ -13,11 +13,11 @@ REQUIRED_MODEL_KEYS = {
     'encoder',
     'decoder',
     'num_dropouts',
-    'skip_connections',
+    'use_skip_connections',
     'soft_conv',
     'mask_activation',
-    'input_norm',
-    'output_norm',
+    'normalize_input',
+    'normalize_output',
 }
 
 LAYER_TYPES = {

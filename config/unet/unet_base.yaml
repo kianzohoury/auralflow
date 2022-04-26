@@ -23,16 +23,21 @@ model:
     ]
     encoder: [
 #        [downsample, 2],
-        [conv, 5],
+#        [conv, 5],
+        [conv, 3],
         [batch_norm],
         [leaky_relu, 0.2],
         [conv, 3],
-        [max_pool, 2],
-        [relu]
+        [batch_norm],
+        [leaky_relu, 0.2],
+        [max_pool, 2]
     ]
     decoder: [
 #        [conv, 3],
-#        [upsample, 2],
+#        [upsample, nearest],
+#        [conv, 5],
+#        [batch_norm],
+#        [relu],
         [transpose_conv, 5],
         [batch_norm],
         [relu],
@@ -42,11 +47,11 @@ model:
         [relu]
     ]
     num-dropouts: 3
-    skip-connections: True
+    use-skip-connections: True
     soft-conv: False
     mask-activation: sigmoid
-    input-norm: False
-    output-norm: False
+    normalize-input: True
+    normalize-output: True
     targets: [vocals]
 
 ################################################################################
@@ -70,15 +75,15 @@ model:
 # -----------------------
 # num-dropouts (int): The number of dropout layers starting from the bottom.
 # -------------------
-# skip-connections (bool): Whether to use skip connections or not.
+# use-skip-connections (bool): Whether to use skip connections or not.
 # ------------------------
 # soft-conv (bool): Whether to use a final 1x1 convolution layer.
 # -----------------
 # mask-activation (str): The final mask activation function.
 # ----------------------
-# input-norm (bool): Whether to use input normalization.
+# normalize-input (bool): Whether to use input normalization.
 # ------------------
-# output-norm (bool): Whether to use output normalization.
+# normalize-output (bool): Whether to use output normalization.
 # -------------------
 ################################################################################
 # Walking through an example
