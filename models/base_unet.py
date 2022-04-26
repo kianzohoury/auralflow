@@ -8,6 +8,7 @@ from typing import Optional, Union, List, Tuple
 from collections import OrderedDict
 from pprint import pprint
 from models.layers import StackedBlock, StackedDecoderBlock, StackedEncoderBlock
+from config.build import LayerNode
 
 
 # def get_padding(kernel_size: int, stride: int, in_size: Tuple, out_size: Tuple):
@@ -53,8 +54,8 @@ class BaseUNet(nn.Module):
     """
     def __init__(
         self,
-        encoder: OrderedDict,
-        decoder: OrderedDict,
+        encoder: LayerNode,
+        decoder: LayerNode,
         num_bins: int,
         num_samples: int,
         init_hidden: int = 16,
@@ -103,18 +104,11 @@ class BaseUNet(nn.Module):
         self.num_channels = num_channels
         self.skip_connections = skip_connections
 
-
-        # Correct the maximum depth of the model if needed.
-        self.max_layers = min(
-            max_layers,
-            int(np.log2(num_bins // init_hidden + 1e-6) + 1)
+        # Correct the minimum and maximum depth of the model if needed.
+        self.max_layers = max(
+            min(max_layers, int(np.log2(num_bins // init_hidden + 1e-6) + 1)
+                ), 2
         )
-
-        self.max_layers = max(self.max_layers, 2)
-
-        pprint(encoder)
-        pprint(decoder)
-
 
         if input_norm:
             self.input_norm = nn.BatchNorm2d(num_fft)

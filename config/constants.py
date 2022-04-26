@@ -20,6 +20,20 @@ REQUIRED_MODEL_KEYS = {
     'output_norm',
 }
 
+LAYER_TYPES = {
+    'conv',
+    'transpose_conv',
+    'max_pool',
+    'upsample',
+    'downsample',
+    'batch_norm',
+    'dropout',
+    'leaky_relu',
+    'relu',
+    'sigmoid',
+    'tanh'
+}
+
 BASE_MODELS = {
     "u-net": BaseUNet
 }

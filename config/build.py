@@ -8,7 +8,7 @@ import ruamel.yaml
 import torchinfo
 from yaml import YAMLError
 
-from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
+from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS, LAYER_TYPES
 from audio_folder.datasets import AudioFolder
 from ruamel.yaml.error import MarkedYAMLError
 from models.base_unet import BaseUNet
@@ -19,7 +19,7 @@ import textwrap
 from ruamel.yaml.scanner import ScannerError
 import models
 
-from typing import List, Optional
+from typing import List, Optional, Union
 import time
 
 yaml_parser = ruamel.yaml.YAML(typ='safe', pure=True)
@@ -162,106 +162,236 @@ def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
                                 "AudioFolder. Check the directory's path.")
 
 
-def process_block(block_scheme: List, block_type: str = 'encoder') -> dict:
+class LayerNode(object):
+
+    def __init__(
+            self,
+            layer_type: str = 'head',
+            block_type: str = 'encoder',
+            param: Optional[Union[int, float]] = None,
+            next_layer: 'LayerNode' = None,
+    ):
+        super(LayerNode, self).__init__()
+
+        assert layer_type in self._layer_types,\
+            f"Unknown layer {layer_type} was passed in."
+        self.layer_type = layer_type
+        self.block_type = block_type
+        self.next_layer = next_layer
+        self.conv_stack = None
+
+        if layer_type in {'conv', 'transpose_conv', 'max_pool', 'upsample',
+                          'downsample'}:
+            assert isinstance(param, int),\
+                (f"Value for layer {layer_type} must be an int, but received"
+                 f" a value of type {type(param)}.")
+
+        elif layer_type in {'dropout', 'leaky_relu'}:
+            assert isinstance(param, float),\
+                (f"Value for layer {layer_type} must be a float, but received"
+                 f"a value of type {type(param)}.")
+
+    def __repr__(self):
+        return f"<Type: {self.layer_type}, Block: {self.block_type}>"
+
+
+def process_block(block_scheme: List, block_type: str = 'encoder') -> LayerNode:
     """Processes raw autoencoder structures."""
 
     assert len(block_scheme) > 0, f"Must specify at least 1 layer."
 
-    processed_block = []
-    use_max_pool = False
-    use_upsample = False
-    num_convs = 0
-    num_transpose = 0
+    head = prev = LayerNode('head', block_type=block_type)
 
+    # Append a placeholder value for non-parameterized layers.
     for layer in block_scheme:
         if len(layer) == 1:
             layer.append(None)
 
     for i, (layer_type, param) in enumerate(block_scheme):
-        layer = {
-            'layer_type': layer_type,
-            'block_type': block_type,
-            'param': param,
-        }
+        layer_node = LayerNode(
+            layer_type=layer_type,
+            block_type=block_type,
+            param=param
+        )
 
-        if layer_type in {'conv', 'transpose_conv', 'max_pool', 'upsample'}:
+        prev.next_layer = layer_node
+        prev = prev.next_layer
 
-            if not isinstance(param, int):
-                raise ValueError(
-                    f"Kernel size must be an int, but received a "
-                    f"value of type {type(param)}."
-                )
+    ptr = head.next_layer
 
-            use_max_pool = True if layer_type == 'max_pool' else use_max_pool
-            use_upsample = True if layer_type == 'upsample' else use_upsample
-            num_convs += 1 if layer_type in {'conv', 'max_pool'} else 0
+    use_max_pool = False
+    use_downsample = False
+    use_upsample = False
+    use_conv = False
+    use_transpose = False
 
-            if layer_type in {'upsample', 'transpose_conv'}:
-                num_transpose += 1
-
-            is_first_conv = num_convs == 1 and block_type == 'encoder'
-            is_first_transpose = num_transpose == 1 and block_type == 'decoder'
-
-            if (layer_type == 'conv' and is_first_conv) \
-                    or (layer_type == 'transpose' and is_first_transpose):
-                processed_block = [layer] + processed_block
-                continue
-
-        elif layer_type == 'dropout' or layer_type == 'leaky_relu':
-            if not isinstance(param, float):
-                raise ValueError(
-                    f"Value for {layer_type} must be a float, but "
-                    f"received a value of type {type(param)}."
-                )
+    while ptr:
+        if ptr.layer_type == 'conv':
+            use_conv = True
+        if block_type == 'encoder':
+            if ptr.layer_type == 'max_pool':
+                use_max_pool = True
+            elif ptr.layer_type == 'downsample':
+                use_downsample = True
         else:
-            assert layer_type in {'batch_norm', 'relu', 'sigmoid', 'tanh'}, \
-                f"Unknown layer {layer_type} was passed in."
+            if ptr.layer_type == 'transpose_conv':
+                use_transpose = True
+            elif ptr.layer_type == 'upsample':
+                use_upsample = True
+        ptr = ptr.next_layer
 
-        processed_block.append(layer)
-
-    num_layers = len(processed_block)
+    valid_encoder = use_conv
+    valid_decoder = (use_conv and use_upsample) or use_transpose
     if block_type == 'encoder':
-        assert num_convs > 0 and num_layers > 0, \
-            f"Must specify at least 1 convolutional layer."
-    elif block_type == 'decoder':
-        assert num_transpose > 0 and num_layers > 0, \
-            f"Must specify at least 1 transpose convolution or upsample layer."
-
-    processed_block = processed_block
-    if block_type == 'encoder':
-        down_sampling_stack = []
-        stop_layer = 'max_pool' if use_max_pool else 'conv'
-        while len(processed_block) > 0:
-            layer = processed_block.pop()
-            down_sampling_stack.append(layer)
-            if layer['layer_type'] == stop_layer:
-                layer['down'] = True
-                if num_convs > 1:
-                    break
-        processed_block = {
-            'conv_stack': processed_block,
-            'downsampling_stack': down_sampling_stack[::-1]
-        }
-    elif block_type == 'decoder':
-        up_sampling_stack = []
-        stop_layer = 'upsample' if use_upsample else 'transpose_conv'
-        while len(processed_block) > 0:
-            layer = processed_block[0]
-            if layer['layer_type'] == stop_layer:
-                if stop_layer in {'transpose_conv', 'upsample'}:
-                    layer['up'] = True
-                elif stop_layer == 'conv':
-                    break
-                stop_layer = 'conv'
-            up_sampling_stack.append(processed_block.pop(0))
-        processed_block = {
-            'conv_stack': processed_block,
-            'upsampling_stack': up_sampling_stack
-        }
+        assert valid_encoder, (
+            f"Encoder must specify at least 1 valid convolutional layer."
+        )
+        assert use_max_pool ^ use_downsample or not \
+            (use_max_pool and use_downsample), (
+                f"Cannot use max_pool and downsample simultaneously."
+            )
     else:
-        pass
+        assert valid_decoder, (
+            f"Decoder must specify at least 1 valid de-convolutional layer."
+        )
+        assert use_upsample ^ use_transpose or not \
+            (use_upsample and use_transpose), (
+                f"Cannot use transpose_conv and upsample simultaneously."
+            )
 
-    return processed_block
+    ptr = head
+    if block_type == 'encoder':
+
+        last_layer = 'max_pool' if use_max_pool else 'downsample'
+        while ptr.next_layer and ptr.next_layer.layer_type != last_layer:
+            ptr = ptr.next_layer
+
+        if ptr.next_layer:
+            temp = ptr.next_layer
+            ptr.next_layer = ptr.next_layer.next_layer
+            temp.next_layer = None
+            while ptr.next_layer:
+                ptr = ptr.next_layer
+            ptr.next_layer = temp
+
+        head = head.next_layer
+    else:
+
+        first_layer = 'transpose_conv' if use_transpose else 'upsample'
+        while ptr.next_layer and ptr.next_layer.layer_type != first_layer:
+            ptr = ptr.next_layer
+
+        if ptr.next_layer:
+            temp = ptr.next_layer
+            ptr.next_layer = ptr.next_layer.next_layer
+            temp.next_layer = None
+            temp.next_layer = head.next_layer
+            head = temp
+
+    return head
+
+
+#
+# def process_block(block_scheme: List, block_type: str = 'encoder') -> dict:
+#     """Processes raw autoencoder structures."""
+#
+#     assert len(block_scheme) > 0, f"Must specify at least 1 layer."
+#
+#     processed_block = []
+#     use_max_pool = False
+#     use_upsample = False
+#     num_convs = 0
+#     num_transpose = 0
+#
+#     for layer in block_scheme:
+#         if len(layer) == 1:
+#             layer.append(None)
+#
+#     for i, (layer_type, param) in enumerate(block_scheme):
+#         layer = {
+#             'layer_type': layer_type,
+#             'block_type': block_type,
+#             'param': param,
+#         }
+#
+#         if layer_type in {'conv', 'transpose_conv', 'max_pool', 'upsample'}:
+#
+#             if not isinstance(param, int):
+#                 raise ValueError(
+#                     f"Kernel size must be an int, but received a "
+#                     f"value of type {type(param)}."
+#                 )
+#
+#             use_max_pool = True if layer_type == 'max_pool' else use_max_pool
+#             use_upsample = True if layer_type == 'upsample' else use_upsample
+#             num_convs += 1 if layer_type in {'conv', 'max_pool'} else 0
+#
+#             if layer_type in {'upsample', 'transpose_conv'}:
+#                 num_transpose += 1
+#
+#             is_first_conv = num_convs == 1 and block_type == 'encoder'
+#             is_first_transpose = num_transpose == 1 and block_type == 'decoder'
+#
+#             if (layer_type == 'conv' and is_first_conv) \
+#                     or (layer_type == 'transpose' and is_first_transpose):
+#                 processed_block = [layer] + processed_block
+#                 continue
+#
+#         elif layer_type == 'dropout' or layer_type == 'leaky_relu':
+#             if not isinstance(param, float):
+#                 raise ValueError(
+#                     f"Value for {layer_type} must be a float, but "
+#                     f"received a value of type {type(param)}."
+#                 )
+#         else:
+#             assert layer_type in {'batch_norm', 'relu', 'sigmoid', 'tanh'}, \
+#                 f"Unknown layer {layer_type} was passed in."
+#
+#         processed_block.append(layer)
+#
+#     num_layers = len(processed_block)
+#     if block_type == 'encoder':
+#         assert num_convs > 0 and num_layers > 0, \
+#             f"Must specify at least 1 convolutional layer."
+#     elif block_type == 'decoder':
+#         assert num_transpose > 0 and num_layers > 0, \
+#             f"Must specify at least 1 transpose convolution or upsample layer."
+#
+#     processed_block = processed_block
+#     if block_type == 'encoder':
+#         down_sampling_stack = []
+#         stop_layer = 'max_pool' if use_max_pool else 'conv'
+#         while len(processed_block) > 0:
+#             layer = processed_block.pop()
+#             down_sampling_stack.append(layer)
+#             if layer['layer_type'] == stop_layer:
+#                 layer['down'] = True
+#                 if num_convs > 1:
+#                     break
+#         processed_block = {
+#             'conv_stack': processed_block,
+#             'downsampling_stack': down_sampling_stack[::-1]
+#         }
+#     elif block_type == 'decoder':
+#         up_sampling_stack = []
+#         stop_layer = 'upsample' if use_upsample else 'transpose_conv'
+#         while len(processed_block) > 0:
+#             layer = processed_block[0]
+#             if layer['layer_type'] == stop_layer:
+#                 if stop_layer in {'transpose_conv', 'upsample'}:
+#                     layer['up'] = True
+#                 elif stop_layer == 'conv':
+#                     break
+#                 stop_layer = 'conv'
+#             up_sampling_stack.append(processed_block.pop(0))
+#         processed_block = {
+#             'conv_stack': processed_block,
+#             'upsampling_stack': up_sampling_stack
+#         }
+#     else:
+#         pass
+#
+#     return processed_block
 
 
 def build_layers(config_dict: dict):
