@@ -334,4 +334,9 @@ class BaseUNet(nn.Module):
         # Reshape to match the input size.
         mask = mask.permute(0, 2, 3, 1)
 
-        return mask
+        output = {
+            'mask': mask
+        }
+
+        return output
+

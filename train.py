@@ -262,7 +262,7 @@ if __name__ == "__main__":
         training_session = {
             'model': model,
             'dataset': dataset,
-            'data': config_dict['data'],
+            'data': config_dict['dataset'],
             'parameters': training_settings,
             'session_dir': session_dir,
             'model_dir': model_dir,
