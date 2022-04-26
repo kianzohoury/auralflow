@@ -21,6 +21,7 @@ REQUIRED_MODEL_KEYS = {
 }
 
 LAYER_TYPES = {
+    'head',
     'conv',
     'transpose_conv',
     'max_pool',

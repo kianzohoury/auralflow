@@ -8,13 +8,13 @@ import ruamel.yaml
 import torchinfo
 from yaml import YAMLError
 
-from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS, LAYER_TYPES
+from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
 from audio_folder.datasets import AudioFolder
 from ruamel.yaml.error import MarkedYAMLError
 from models.base_unet import BaseUNet
 from transforms import get_data_shape
+from models.adaptive import process_block
 from collections import OrderedDict
-from models.layers import StackedBlock
 import textwrap
 from ruamel.yaml.scanner import ScannerError
 import models
@@ -162,133 +162,6 @@ def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
                                 "AudioFolder. Check the directory's path.")
 
 
-class LayerNode(object):
-
-    def __init__(
-            self,
-            layer_type: str = 'head',
-            block_type: str = 'encoder',
-            param: Optional[Union[int, float]] = None,
-            next_layer: 'LayerNode' = None,
-    ):
-        super(LayerNode, self).__init__()
-
-        assert layer_type in self._layer_types,\
-            f"Unknown layer {layer_type} was passed in."
-        self.layer_type = layer_type
-        self.block_type = block_type
-        self.next_layer = next_layer
-        self.conv_stack = None
-
-        if layer_type in {'conv', 'transpose_conv', 'max_pool', 'upsample',
-                          'downsample'}:
-            assert isinstance(param, int),\
-                (f"Value for layer {layer_type} must be an int, but received"
-                 f" a value of type {type(param)}.")
-
-        elif layer_type in {'dropout', 'leaky_relu'}:
-            assert isinstance(param, float),\
-                (f"Value for layer {layer_type} must be a float, but received"
-                 f"a value of type {type(param)}.")
-
-    def __repr__(self):
-        return f"<Type: {self.layer_type}, Block: {self.block_type}>"
-
-
-def process_block(block_scheme: List, block_type: str = 'encoder') -> LayerNode:
-    """Processes raw autoencoder structures."""
-
-    assert len(block_scheme) > 0, f"Must specify at least 1 layer."
-
-    head = prev = LayerNode('head', block_type=block_type)
-
-    # Append a placeholder value for non-parameterized layers.
-    for layer in block_scheme:
-        if len(layer) == 1:
-            layer.append(None)
-
-    for i, (layer_type, param) in enumerate(block_scheme):
-        layer_node = LayerNode(
-            layer_type=layer_type,
-            block_type=block_type,
-            param=param
-        )
-
-        prev.next_layer = layer_node
-        prev = prev.next_layer
-
-    ptr = head.next_layer
-
-    use_max_pool = False
-    use_downsample = False
-    use_upsample = False
-    use_conv = False
-    use_transpose = False
-
-    while ptr:
-        if ptr.layer_type == 'conv':
-            use_conv = True
-        if block_type == 'encoder':
-            if ptr.layer_type == 'max_pool':
-                use_max_pool = True
-            elif ptr.layer_type == 'downsample':
-                use_downsample = True
-        else:
-            if ptr.layer_type == 'transpose_conv':
-                use_transpose = True
-            elif ptr.layer_type == 'upsample':
-                use_upsample = True
-        ptr = ptr.next_layer
-
-    valid_encoder = use_conv
-    valid_decoder = (use_conv and use_upsample) or use_transpose
-    if block_type == 'encoder':
-        assert valid_encoder, (
-            f"Encoder must specify at least 1 valid convolutional layer."
-        )
-        assert use_max_pool ^ use_downsample or not \
-            (use_max_pool and use_downsample), (
-                f"Cannot use max_pool and downsample simultaneously."
-            )
-    else:
-        assert valid_decoder, (
-            f"Decoder must specify at least 1 valid de-convolutional layer."
-        )
-        assert use_upsample ^ use_transpose or not \
-            (use_upsample and use_transpose), (
-                f"Cannot use transpose_conv and upsample simultaneously."
-            )
-
-    ptr = head
-    if block_type == 'encoder':
-
-        last_layer = 'max_pool' if use_max_pool else 'downsample'
-        while ptr.next_layer and ptr.next_layer.layer_type != last_layer:
-            ptr = ptr.next_layer
-
-        if ptr.next_layer:
-            temp = ptr.next_layer
-            ptr.next_layer = ptr.next_layer.next_layer
-            temp.next_layer = None
-            while ptr.next_layer:
-                ptr = ptr.next_layer
-            ptr.next_layer = temp
-
-        head = head.next_layer
-    else:
-
-        first_layer = 'transpose_conv' if use_transpose else 'upsample'
-        while ptr.next_layer and ptr.next_layer.layer_type != first_layer:
-            ptr = ptr.next_layer
-
-        if ptr.next_layer:
-            temp = ptr.next_layer
-            ptr.next_layer = ptr.next_layer.next_layer
-            temp.next_layer = None
-            temp.next_layer = head.next_layer
-            head = temp
-
-    return head
 
 
 #

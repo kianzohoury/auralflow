@@ -7,8 +7,7 @@ import numpy as np
 from typing import Optional, Union, List, Tuple
 from collections import OrderedDict
 from pprint import pprint
-from models.layers import StackedBlock, StackedDecoderBlock, StackedEncoderBlock
-from config.build import LayerNode
+from .adaptive import AdaptiveLayerNode, StackedEncoderBlock, StackedDecoderBlock
 
 
 # def get_padding(kernel_size: int, stride: int, in_size: Tuple, out_size: Tuple):
@@ -54,8 +53,8 @@ class BaseUNet(nn.Module):
     """
     def __init__(
         self,
-        encoder: LayerNode,
-        decoder: LayerNode,
+        encoder: AdaptiveLayerNode,
+        decoder: AdaptiveLayerNode,
         num_bins: int,
         num_samples: int,
         init_hidden: int = 16,
@@ -105,16 +104,14 @@ class BaseUNet(nn.Module):
         self.skip_connections = skip_connections
 
         # Correct the minimum and maximum depth of the model if needed.
-        self.max_layers = max(
-            min(max_layers, int(np.log2(num_bins // init_hidden + 1e-6) + 1)
-                ), 2
+        self.max_layers = max(min(
+            max_layers, int(np.log2(num_bins // init_hidden + 1e-6) + 1)), 2
         )
 
         if input_norm:
             self.input_norm = nn.BatchNorm2d(num_fft)
         else:
             self.input_norm = nn.Identity()
-
 
         # self.residual = residual
 
@@ -126,14 +123,13 @@ class BaseUNet(nn.Module):
         for layer in range(self.max_layers):
             if layer == 0:
                 h_in, w_in = num_bins, num_samples
-                in_channels = num_channels
-                out_channels = init_hidden
             else:
                 h_in, w_in = h_out, w_out
                 in_channels = out_channels
                 out_channels = in_channels * 2
 
             h_out, w_out = h_in // 2, w_in // 2
+
             self.encoder.append(
                 StackedEncoderBlock(
                     in_channels=in_channels,
@@ -142,22 +138,17 @@ class BaseUNet(nn.Module):
                     w_in=w_in,
                     h_out=h_out,
                     w_out=w_out,
-                    scheme=encoder,
-                    skip_connections=skip_connections,
-                    is_encoder=True,
-                    last=layer == self.max_layers - 1,
+                    block_scheme=encoder,
                 )
             )
-            sizes.append([h_out, w_out])
-        print(sizes)
-        if len(list(self.encoder[-1].conv_stack.children())) > 0 and skip_connections:
-            self.encoder[-1].down = nn.Sequential(*list(self.encoder[-1].down.children())[:-1])
-            sizes.pop()
-        print(sizes)
 
+            sizes.append([h_out, w_out])
+        if not self.encoder[-1].is_single_block() and skip_connections:
+            self.encoder[-1].pop_layer()
+
+        bypass_first_skip = self.encoder[-1].is_single_block()
 
         for layer in range(len(sizes) - 1):
-
             in_channels = out_channels
             out_channels = in_channels // 2
 
@@ -185,12 +176,11 @@ class BaseUNet(nn.Module):
                     w_in=w_in,
                     h_out=h_out,
                     w_out=w_out,
-                    scheme=decoder,
-                    skip_connections=skip_connections,
-                    is_encoder=False,
-                    first_decoder=layer == 0,
+                    block_scheme=decoder,
+                    use_skip=bypass_first_skip if layer == 0 else skip_connections,
+                    # first_decoder=layer == 0,
                     use_dropout=(self.max_layers - layer <= num_dropouts),
-                    skip_last=skip_last
+                    # skip_last=skip_last
                 )
             )
 
