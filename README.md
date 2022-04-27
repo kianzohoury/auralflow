@@ -287,12 +287,52 @@ prg - short program summary
 
 
 ```python  
-import Auralate  
+import auralflow
 import torch  
 import torch.nn as nn  
   
-UNet = Auralate.models.UNet(  
- ...)  
+# 1. Define encoder, decoder and bottleneck layers.
+encoder = [
+    ['conv', 3],
+    ['batch_norm'],
+    ['leaky_relu', 0.2],
+    ['conv', 3],
+    ['batch_norm'],
+    ['leaky_relu', 0.2],
+    ['max_pool', 2]
+]
+
+decoder = [
+    ['transpose_conv', 3],
+    ['batch_norm'],
+    ['relu',],
+    ['dropout', 0.4],
+    ['conv', 3],
+    ['batch_norm'],
+    ['relu'],
+]
+
+bottleneck = [
+    ['conv', 3],
+    ['batch_norm'],
+    ['relu']
+]
+
+# 2. Constuct your model (with additional arguments as well).
+u_net = auralflow.models.build.UNet(
+    max_layers=6,
+    init_hidden=16,
+    encoder=encoder,
+    decoder=decoder,
+    bottleneck=bottleneck,
+    bottleneck_layers=1,
+    num_dropout=3,
+    use_skip=True,
+    mask_activation='sigmoid',
+    normalize_input=True,
+    normalize_output=False,
+    targets=['vocals']
+)  
   
 # Load a pretrained model.  
 UNetSmall = Auralate.models.UNet(pretrained=True)  

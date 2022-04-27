@@ -14,7 +14,6 @@ model:
     base-model: u-net
     max-layers: 6
     init-hidden: 16
-    bottleneck-type: conv
     bottleneck-layers: 1
     bottleneck: [
         [conv, 3],
@@ -41,7 +40,6 @@ model:
     ]
     num-dropouts: 3
     use-skip-connections: True
-    soft-conv: False
     mask-activation: sigmoid
     normalize-input: True
     normalize-output: False
