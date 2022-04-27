@@ -209,6 +209,7 @@ class StackedEncoderBlock(nn.Module):
 
         self.encoder = nn.Sequential(*encoding_layers)
         self.down = nn.Sequential(*downsampling_layers)
+        self._is_single_block = not len(list(self.encoder.children()))
 
     def forward(self, data: torch.Tensor) -> Tuple:
         """Forward method.
@@ -229,7 +230,7 @@ class StackedEncoderBlock(nn.Module):
 
     def is_single_block(self) -> bool:
         """Returns True if upsampling and conv layers are not separate."""
-        return not len(list(self.encoder.children()))
+        return self._is_single_block
 
     def pop_layer(self) -> None:
         """Removes the last downsampling layer."""
@@ -378,16 +379,19 @@ class StackedDecoderBlock(nn.Module):
         Returns:
             (tuple): A tuple of the output and intermediate skip data.
         """
-        if self.has_transpose_block() and output_size is not None:
-            # print(self.up, data.shape, skip_data.shape, output_size)
-            data = self.up(data, output_size=output_size)
-        else:
-            data = self.up(data)
-        if self._use_skip and skip_data is not None:
-            data = torch.cat([data, skip_data], dim=1)
-            output = self.decoder(data)
-        else:
-            output = self.decoder(data)
+        data = self.up(data, output_size=output_size)
+        data = torch.cat([data, skip_data], dim=1)
+        output = self.decoder(data)
+        # if self.has_transpose_block() and output_size is not None:
+        #     # print(self.up, data.shape, skip_data.shape, output_size)
+        #     data = self.up(data, output_size=output_size)
+        # else:
+        #     data = self.up(data)
+        # if self._use_skip and skip_data is not None:
+        #     data = torch.cat([data, skip_data], dim=1)
+        #     output = self.decoder(data)
+        # else:
+        #     output = self.decoder(data)
         return output
 
     def is_single_block(self) -> bool:

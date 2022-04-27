@@ -282,10 +282,11 @@ class BaseUNet(nn.Module):
         for layer in range(len(self.encoder)):
             data, encoding = self.encoder[layer](data)
             if layer < len(self.encoder) - 1:
-                if encoding is not None:
-                    encodings.append(encoding)
-                else:
-                    encodings.append(data)
+                encodings.append(encoding)
+                # if encoding is not None:
+                #     encodings.append(encoding)
+                # else:
+                #     encodings.append(data)
 
         # # Pass through bottleneck.
         # data = self.bottleneck(data)
@@ -297,38 +298,48 @@ class BaseUNet(nn.Module):
 
         # Feed into the decoder layers.
         for layer in range(len(self.decoder)):
-            if self.use_skip_connections:
-                skip_data = encodings[-1 - layer]
-                if layer == len(self.decoder) - 1 and not self.direct_skip:
-                    data = self.decoder[layer](
-                        data=data,
-                        skip_data=None,
-                        output_size=skip_data.size()
-                    )
-                elif self.decoder[layer].has_transpose_block():
-                    # print(1, data.shape, skip_data.shape)
-                    data = self.decoder[layer](
-                        data=data,
-                        skip_data=skip_data,
-                        output_size=skip_data.size()
-                    )
-                    # print(2, data.shape)
-                elif not self.decoder[layer].has_transpose_block():
-                    # print(self.direct_skip, data.shape)
-                    data = self.decoder[layer](
-                        data=data,
-                        skip_data=skip_data,
-                    )
-
-            else:
-                data = self.decoder[layer](data)
+            skip_data = encodings[-1 - layer]
+            data = self.decoder[layer](
+                data=data,
+                skip_data=skip_data,
+                output_size=skip_data.size()
+            )
+            # if self.use_skip_connections:
+            #     skip_data = encodings[-1 - layer]
+                # if layer == len(self.decoder) - 1 and not self.direct_skip:
+                #     data = self.decoder[layer](
+                #         data=data,
+                #         skip_data=None,
+                #         output_size=skip_data.size()
+                #     )
+                # elif self.decoder[layer].has_transpose_block():
+                #     # print(1, data.shape, skip_data.shape)
+                #     data = self.decoder[layer](
+                #         data=data,
+                #         skip_data=skip_data,
+                #         output_size=skip_data.size()
+                #     )
+                #     # print(2, data.shape)
+                # elif not self.decoder[layer].has_transpose_block():
+                #     # print(self.direct_skip, data.shape)
+                #     data = self.decoder[layer](
+                #         data=data,
+                #         skip_data=skip_data,
+                #     )
+                # data = self.decoder[layer](
+                #     data=data,
+                #     skip_data=skip_data,
+                #     output_size=skip_data.size()
+                # )
+            # else:
+            #     data = self.decoder[layer](data)
 
         # Final conv + output normalization + mask activation.
         data = self.soft_conv(data)
         # print(data.shape)
-        if self.normalize_output:
-            data = self.output_norm(data.permute(0, 2, 3, 1))
-            data = data.permute(0, 2, 3, 1)
+        # if self.normalize_output:
+        #     data = self.output_norm(data.permute(0, 2, 3, 1))
+        #     data = data.permute(0, 2, 3, 1)
         mask = self.mask_activation(data)
 
         # Reshape to match the input size.

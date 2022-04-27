@@ -25,9 +25,9 @@ model:
         [conv, 3],
         [batch_norm],
         [leaky_relu, 0.2],
-        [conv, 3],
-        [batch_norm],
-        [leaky_relu, 0.2],
+#        [conv, 3],
+#        [batch_norm],
+#        [leaky_relu, 0.2],
         [max_pool, 2]
     ]
     decoder: [
