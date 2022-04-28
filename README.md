@@ -285,38 +285,64 @@ prg - short program summary
 
 * ``--tensorboard``: Enables tensorboard for visualizing model performance.
 
+# Usage
+### Initializing a model
+Creating an autoencoder-based network architecture is extremely simple. The 
+`auralflow.models.build.AdaptiveUNet` class allows one to construct a custom
+U-Net-like network architecture as a `torch.nn.Module`, without needing to
+explicitly write code for it. Among the arguments to its constructor method,
+`AdaptiveUNet()` accepts specifications for encoder, decoder and bottleneck
+layers as nested lists.
 
-```python  
-import auralflow
-import torch  
-import torch.nn as nn  
-  
-# 1. Define encoder, decoder and bottleneck layers.
+Each entry is a pair that specifies the layer type along with a value
+(e.g. the kernel size or dropout probability). For example, we can choose to
+use the following stack of layers for each encoder block, which translates
+to 3x3 conv + batch norm + leaky relu + 2x2 maxpool.
+```python    
 encoder = [
-    ['conv', 3],
-    ['batch_norm'],
-    ['leaky_relu', 0.2],
     ['conv', 3],
     ['batch_norm'],
     ['leaky_relu', 0.2],
     ['max_pool', 2]
 ]
-
+```
+Similarly, we can use a 2x2 transpose conv and an extra dropout layer for each
+decoder block.
+```python
 decoder = [
-    ['transpose_conv', 3],
-    ['batch_norm'],
-    ['relu',],
-    ['dropout', 0.4],
+    ['transpose_conv', 2],
     ['conv', 3],
     ['batch_norm'],
     ['relu'],
+    ['dropout', 0.4]
 ]
+```
+Unlike encoder/decoder blocks, bottlenecks are optional. To learn temporal
+features, we can use a stack of 3 recurrent layers as an lstm. 
+```python
+bottleneck = [['lstm', 3]]
+```
+Finally, we call the constructor method to initialize our model.
+```python
+from auralflow.models.build import AdaptiveUNet
 
-bottleneck = [
-    ['conv', 3],
-    ['batch_norm'],
-    ['relu']
-]
+unet_lstm = AdaptiveUNet(
+    max_layers=6,
+    encoder=encoder,
+    decoder=decoder,
+    bottleneck=bottleneck,
+    mask_activation='sigmoid',
+    use_skip=True,
+    targets=['vocals']
+}
+```
+Here we've passed in additional arguments, such as `max_layers`,
+`mask_activation`, `use_skip` and `targets`. These entail the maximum depth of
+the model, the activation function for target-source mask estimation, whether
+to use skip connections and the target stems to separate.
+
+The model is just like any Pytorch model, which means that one could write
+their own training script.
 
 # 2. Constuct your model (with additional arguments as well).
 u_net = auralflow.models.build.UNet(

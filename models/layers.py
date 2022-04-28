@@ -2,131 +2,563 @@
 import torch
 import torch.nn as nn
 import math
+import numpy as np
+import torch.nn.functional as functional
 from pprint import pprint
 from collections import OrderedDict
 from typing import Optional, Union, List, Tuple
+from abc import ABCMeta, abstractmethod
+
+_MIN_BLOCK_SIZE = 1
+_MAX_BLOCK_SIZE = 10
+_MIN_AUTOENCODER_DEPTH = 2
+_MAX_AUTOENCODER_DEPTH = 10
+_ACTIVATIONS = {
+    'relu',
+    'leaky_relu',
+    'sigmoid',
+    'tanh',
+    'elu',
+    'prelu',
+    'glu'
+}
+
+_DOWN_LAYERS = {
+    'max_pool',
+    'avg_pool',
+    'conv',
+    'downsample',
+}
+_UP_LAYERS = {
+    'transpose',
+    'upsample',
+}
+_INTERPOLATE_MODES = {
+    'nearest',
+    'linear',
+    'bilinear',
+    'trilinear',
+    'cubic'
+}
 
 
+def get_conv_output_size(
+    h_in: int,
+    w_in: int,
+    stride: int,
+    kernel_size: int
+) -> Tuple[int, int]:
+    """Computes the non-zero padded output of a conv layer.
 
-def get_transpose_padding(h_in: int, w_in: int, h_out: int, w_out: int,
-                          stride: int, kernel_size: int) -> Tuple:
-    """Computes the required transpose conv padding for a target shape."""
+    Returns:
+        (tuple): Output size.
+    """
+    h_out = math.floor((h_in - kernel_size // stride) + 1)
+    w_out = math.floor((w_in - kernel_size // stride) + 1)
+    assert h_out >= 0 and w_out >= 0
+    return h_out, w_out
+
+
+def get_transpose_padding(
+    h_in: int,
+    w_in: int,
+    h_out: int,
+    w_out: int,
+    stride: int,
+    kernel_size: int
+) -> Tuple[int, int]:
+    """Computes the required transpose conv padding for a target shape.
+
+    Returns:
+        (tuple): Transpose padding.
+    """
     h_pad = math.ceil((kernel_size - h_out + stride * (h_in - 1)) / 2)
     w_pad = math.ceil((kernel_size - w_out + stride * (w_in - 1)) / 2)
+    assert h_pad >= 0 and w_pad >= 0
     return h_pad, w_pad
 
 
-def get_conv_padding(h_in: int, w_in: int, h_out: int, w_out: int,
-                     kernel_size: int) -> Tuple:
-    """Computes the required conv padding."""
+def get_conv_padding(
+    h_in: int,
+    w_in: int,
+    h_out: int,
+    w_out: int,
+    kernel_size: int
+) -> Tuple[int, int]:
+    """Computes the required conv padding.
+
+    Returns:
+        (tuple): Convolutional padding.
+    """
     h_pad = max(0, math.ceil((2 * h_out - 2 + kernel_size - h_in) / 2))
     w_pad = max(0, math.ceil((2 * w_out - 2 + kernel_size - w_in) / 2))
+    assert h_pad >= 0 and w_pad >= 0
     return h_pad, w_pad
 
 
-def get_activation(activation_fn: str, param: Optional[float] = None):
-    if activation_fn == 'relu':
-        return nn.ReLU()
-    elif activation_fn == 'leaky_relu':
-        return nn.LeakyReLU(param)
-    elif activation_fn == 'sigmoid':
-        return nn.Sigmoid()
-    elif activation_fn == 'tanh':
-        return nn.Tanh()
-    else:
-        return nn.Identity()
+def get_activation(
+    activation_fn: str,
+    param: Optional[int, float] = None
+) -> nn.Module:
+    """Returns an instantiation of an activation layer.
+
+    Args:
+        activation_fn (str): Name of the activation function.
+        param (int or float or None): An optional parameter.
+
+    Returns:
+        (nn.Module): The activation function.
+
+    Raises:
+        ValueError: Raised when the activation is not valid or not accepted.
+    """
+    if activation_fn in _ACTIVATIONS:
+        if activation_fn == 'relu':
+            return nn.ReLU()
+        elif activation_fn == 'leaky_relu':
+            return nn.LeakyReLU(negative_slope=param)
+        elif activation_fn == 'elu':
+            return nn.ELU(alpha=param)
+        elif activation_fn == 'prelu':
+            return nn.PReLU(num_parameters=param)
+        elif activation_fn == 'glu':
+            return nn.GLU()
+        elif activation_fn == 'sigmoid':
+            return nn.Sigmoid()
+        elif activation_fn == 'tanh':
+            return nn.Tanh()
+    raise ValueError(
+        f"Activation function must be one of {_ACTIVATIONS},"
+        f" but received {activation_fn}."
+    )
+
+
+class DownSample(nn.Module):
+    """Wrapper class for Pytorch's interpolation module.
+
+    Args:
+        scale_factor (float): Factor to scale down by. Default: 0.5.
+
+    Raises:
+        ValueError: Raised when the scaling factor is impossible.
+    """
+    def __init__(self, scale_factor: float = 0.5):
+        super(DownSample, self).__init__()
+        if scale_factor < 0 or scale_factor > 1.0:
+            raise ValueError(
+                "Scale factor must be between 0 and 1,"
+                f"but received a value of {scale_factor}."
+            )
+        self._scale_factor = scale_factor
+
+    def forward(self, data: torch.Tensor) -> torch.Tensor:
+        """Forward method."""
+        output = functional.interpolate(
+            input=data,
+            size=self._output_size,
+        )
+        return output
+
+
+class AutoEncoder2d(nn.Module):
+    def __init__(
+        self,
+        num_bins: int,
+        num_samples: int,
+        num_channels: int,
+        max_depth: int,
+        hidden_size: int = 16,
+        kernel_sizes: Union[Tuple, int] = 3,
+        same_padding: bool = True,
+        block_size: int = 1,
+        downsampler: str = 'max_pool',
+        upsampler: str = 'transpose',
+        batch_norm: bool = True,
+        activation: str = 'relu',
+        leak: Optional[float] = None,
+        dropout_p: float = 0,
+        num_dropouts: int = 0,
+        use_skip: bool = True
+    ):
+        super(AutoEncoder2d, self).__init__()
+        self.num_bins = num_bins
+        self.num_samples = num_samples
+        assert 1 <= num_channels <= 2, (
+            f"Channels must be 1 (mono) or 2 (stereo)."
+        )
+        self.num_channels = num_channels
+        # Correct the depth if needed.
+        self.max_depth = max(min(
+            max_depth, int(np.log2(num_bins // hidden_size + 1e-6) + 1)),
+            _MIN_AUTOENCODER_DEPTH
+        )
+        assert hidden_size > 0, f"Hidden size must be at least 1."
+        self.hidden_size = hidden_size
+        if isinstance(kernel_sizes, int):
+            kernel_sizes = [kernel_sizes] * 4
+        else:
+            assert len(kernel_sizes) == 4, (
+                "Must specify 4 kernel sizes, but received only"
+                f"{len(kernel_sizes)}."
+            )
+
+        assert 0 < block_size < 10, f"Block size"
+        assert _MIN_BLOCK_SIZE <= block_size <= _MAX_BLOCK_SIZE, (
+            f"Block size must be between {_MIN_BLOCK_SIZE} and"
+            f" {_MAX_BLOCK_SIZE}, but requested {block_size}"
+        )
+        assert upsampler in _UP_LAYERS, (
+            f"Upsampler must be one of {_UP_LAYERS}, but received"
+            f" {upsampler}."
+        )
+
+        encoder = nn.ModuleList()
+        decoder = nn.ModuleList()
+        output_sizes = [[num_bins, num_samples]]
+        in_channels, out_channels = num_channels, hidden_size
+
+        for layer in range(self.max_depth):
+            encoder_block = []
+
+            for sub_layer in range(block_size):
+                is_last = sub_layer == self.max_depth - 1
+                encoder_block.append(
+                    EncoderBlock2d(
+                        in_channels=out_channels if sub_layer else in_channels,
+                        out_channels=out_channels,
+                        kernel_size=kernel_sizes[0],
+                        padding='same' if same_padding else 0,
+                        activation_fn=activation,
+                        batch_norm=batch_norm,
+                        bias=not batch_norm,
+                        leak=leak,
+                        down_method=downsampler if is_last else None,
+                        down_kernel_size=kernel_sizes[1] if is_last else None,
+                        num_bins=output_sizes[-1][0],
+                        num_samples=output_sizes[-1][1]
+                    )
+                )
+
+                output_sizes.append(
+                    encoder_block[-1].output_size((num_bins, num_samples))
+                )
+            encoder.append(nn.Sequential(*encoder_block))
+            in_channels *= 2
+            out_channels *= 2
+
+        for layer in range(self.max_depth):
+            decoder_block = []
+
+            for sub_layer in range(block_size):
+                is_first = sub_layer == 0
+                if is_first:
+                    h_in, w_in = output_sizes[-(layer + 1) * block_size]
+                    h_out, w_out = output_sizes[-(layer + 1) * block_size - 1]
+                    padding = get_transpose_padding(
+                        h_in=h_in,
+                        w_in=w_in,
+                        h_out=h_out,
+                        w_out=w_out,
+                        stride=2,
+                        kernel_size=kernel_sizes[3]
+                    )
+                else:
+                    padding = 'same'
+
+                decoder_block.append(
+                    DecoderBlock2d(
+                        in_channels=in_channels,
+                        out_channels=out_channels,
+                        kernel_size=kernel_sizes[2],
+                        padding=padding,
+                        activation_fn=activation,
+                        batch_norm=batch_norm,
+                        bias=not batch_norm,
+                        up_method=upsampler if is_first else None,
+                        up_kernel_size=kernel_sizes[3] if is_first else None,
+                        upsample_mode=upsampler,
+                        use_skip=use_skip,
+                        dropout_p=dropout_p
+                    )
+                )
+
+            decoder.append(nn.Sequential(*decoder_block))
+            in_channels //= 2
+            out_channels //= 2
+
+        self.encoder = encoder
+        self.decoder = decoder
+        # self.encoder.fo
+
+    # def forward(self, ):
+
+#
+# class EncoderModule(nn.Module):
+#     def __init__(self, encoder_list: nn.ModuleList):
+#         self.encoder =
+
+class AutoEncoderBlock(metaclass=ABCMeta, nn.Module):
+    """Base class for autoencoder layers.
+
+    EncoderBlock1d, EncoderBlock2d, DecoderBlock1d and DecoderBlock2d
+    implement this class.
+
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        kernel_size (int): Size or shape of the kernel. Default: 5.
+        stride (int): Stride length. Default: 1.
+        padding (tuple or str or int or None): Size of zero-padding.
+            Default: None.
+        activation_fn (str): Activation function. Default: 'relu'.
+        batch_norm (bool): Whether to apply batch normalization. Default: True.
+        bias (bool): True if the convolution's bias term should be learned.
+            Default: False.
+        leak (float or None): Negative slope value if using leaky ReLU.
+            Default: 0.2.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int = 5,
+        stride: int = 1,
+        padding: Optional[tuple, str, int] = 0,
+        activation_fn: str = 'relu',
+        batch_norm: bool = True,
+        bias: bool = False,
+        leak: Optional[float] = None,
+    ):
+        super(AutoEncoderBlock, self).__init__()
+        self._in_channels = in_channels
+        self._out_channels = out_channels
+        self._kernel_size = kernel_size
+        self._stride = stride
+        self._padding = padding
+        self._activation_fn = activation_fn
+        self._batch_norm = batch_norm
+        self._bias = bias
+        self._leak = leak
+
+
+class EncoderBlock2d(AutoEncoderBlock):
+    """Encoder block.
+
+    By default, this block doubles the feature dimension (channels)
+    but halves the spatial dimensions of the input (freq and time).
+
+    Args:
+        down_method (str or None): The downsampling method.
+        down_kernel_size
+
+    Raises:
+        ValueError: Raised if the downsampling method or arguments are invalid.
+
+    Examples:
+        >>> from models.layers import EncoderBlock2d
+        >>> encoder = EncoderBlock2d(
+        ...     in_channels=16,
+        ...     out_channels=32,
+        ...     kernel_size=5,
+        ...     stride=2,
+        ...     padding=2,
+        ...     activation_fn='relu',
+        ...     batch_norm=True,
+        ...     down_method='max_pool'
+        ... )
+        >>> data = torch.rand((1, 16, 4, 1))
+        >>> output = encoder(data)
+    """
+    def __init__(
+        self,
+        down_method: Optional[str],
+        down_kernel_size: Optional[int] = None,
+        num_bins: Optional[int] = None,
+        num_samples: Optional[int] = None,
+        **kwargs
+    ):
+        super(EncoderBlock2d, self).__init__(**kwargs)
+        self.conv = nn.Conv2d(
+            in_channels=self._in_channels,
+            out_channels=self._out_channels,
+            kernel_size=self._kernel_size,
+            stride=self._stride,
+            padding=self._padding,
+            bias=self._bias
+        )
+        if self._batch_norm:
+            self.batchnorm = nn.BatchNorm2d(self._out_channels)
+        else:
+            self.batchnorm = nn.Identity()
+        self.activation = get_activation(self._activation_fn, self._leak)
+        if down_method is None:
+            self.down = nn.Identity()
+        elif down_method not in _DOWN_LAYERS:
+            raise ValueError(
+                f"Downsampler must be one of {_DOWN_LAYERS}, but received"
+                f" {down_method}."
+            )
+        elif down_method != 'downsample' and down_kernel_size is None:
+            raise ValueError(
+                f"Kernel size for {down_method} must be specified."
+            )
+        elif down_method == 'max_pool':
+            self.down = nn.MaxPool2d(self._down_kernel_size)
+        elif down_method == 'avg_pool':
+            self.down = nn.AvgPool2d(self._down_kernel_size)
+        else:
+            if num_bins is None or num_samples is None:
+                raise ValueError(
+                    "Spatial dimensions must be specified for convolutional"
+                    " downsampling."
+                )
+            down_padding = get_conv_padding(
+                h_in=num_bins,
+                w_in=num_samples,
+                h_out=num_bins // 2,
+                w_out=num_bins // 2,
+                kernel_size=down_kernel_size
+            )
+            self.down = nn.Conv2d(
+                in_channels=self._out_channels,
+                out_channels=self._out_channels,
+                kernel_size=down_kernel_size,
+                stride=2,
+                padding=down_padding,
+            )
+
+    def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
+        """Forward method.
+
+        Args:
+            data (tensor): Input feature map.
+        Returns:
+            (tensor): Downsampled feature map.
+        """
+        data = self.conv(data)
+        data = self.batchnorm(data)
+        data = self.activation(data)
+        output = self.down(data)
+        return output
+
+    def output_size(self, input_size: Tuple[int, int]) -> Tuple[int, int]:
+        """Returns the shape of the encoder's output."""
+        test_data = torch.rand((1, self._in_channels, *input_size)).float()
+        output = self.forward(test_data)
+        h_out, w_out = output[-2:]
+        return h_out, w_out
+
+
+class DecoderBlock2d(AutoEncoderBlock):
+    """Encoder block.
+
+    By default, this block doubles the feature dimension (channels)
+    but halves the spatial dimensions of the input (freq and time).
+
+    Args:
+        down_method (str or None): The downsampling method.
+        down_kernel_size
+
+    Raises:
+        ValueError: Raised if the downsampling method or arguments are invalid.
+
+    Examples:
+        >>> from models.layers import DecoderBlock2d
+        >>> decoder = DecoderBlock2d(
+        ...     in_channels=16,
+        ...     out_channels=1,
+        ...     kernel_size=5,
+        ...     stride=2,
+        ...     padding=2,
+        ...     activation_fn='relu',
+        ...     up_method='transpose',
+        ...     up_kernel_size=5,
+        ...     dropout_p=0.4
+        ... )
+        >>> data = torch.rand((1, 16, 4, 1))
+        >>> out = decoder(data, output_size=(1, 1, 8, 2))
+    """
+    def __init__(
+        self,
+        up_method: Optional[str],
+        up_kernel_size: Optional[int] = None,
+        upsample_mode: Optional[str] = None,
+        use_skip: bool = True,
+        dropout_p: float = 0,
+        **kwargs
+    ):
+        super(DecoderBlock2d, self).__init__(**kwargs)
+        self._up_method = up_method
+        if up_method is None:
+            self.up = nn.Identity()
+        elif up_kernel_size is None:
+            raise ValueError(
+                f"Kernel size for {up_method} must be specified."
+            )
+        elif up_method == 'upsample':
+            if upsample_mode is None:
+                raise ValueError(
+                    "Upsampling requires a mode to be specified from"
+                    f" {_INTERPOLATE_MODES}."
+                )
+            self.up = nn.Upsample(scale_factor=2, mode=upsample_mode)
+        else:
+            self.up = nn.ConvTranspose2d(
+                in_channels=self._in_channels,
+                out_channels=self._out_channels,
+                kernel_size=self._kernel_size,
+                stride=self._stride,
+                padding=self._padding
+            )
+        if self._batch_norm:
+            self.batchnorm = nn.BatchNorm2d(self._out_channels)
+        else:
+            self.batchnorm = nn.Identity()
+        self.activation = get_activation(self._activation_fn)
+        self._use_skip = use_skip
+        if dropout_p > 0:
+            self.dropout = nn.Dropout2d(dropout_p)
+        else:
+            self.dropout = nn.Identity()
+        self.conv = nn.Conv2d(
+            in_channels=self._out_channels * (1 + bool(use_skip)),
+            out_channels=self._out_channels,
+            kernel_size=self._kernel_size,
+            stride=self._stride,
+            padding=self._padding,
+            bias=self._bias
+        )
+
+    def forward(
+        self,
+        data: torch.Tensor,
+        skip_data: torch.FloatTensor
+    ) -> torch.FloatTensor:
+        """Forward method.
+
+        Args:
+            data (tensor): Input feature map.
+        Returns:
+            (tensor): Upsampled feature map.
+        """
+        if self._up_method == 'transpose':
+            data = self.up(data, output_size=skip_data.size())
+        else:
+            data = self.up(data)
+        if self._use_skip:
+            data = torch.cat([data, skip_data], dim=1)
+        data = self.conv(data)
+        data = self.batchnorm(data)
+        data = self.activation(data)
+        output = self.dropout(data)
+        return output
 
 
 
-# class EncoderBlock(nn.Module):
-#     """Fully-customizable encoder block layer for base separation models.
-#
-#     By default, this block doubles the feature dimension (channels)
-#     but halves the spatial dimensions of the input (freq and time).
-#
-#     Args:
-#         in_channels (int): Number of input channels.
-#         out_channels (int or None): Number of output channels. If None,
-#             defaults to 2 * in_channels.
-#         kernel_size (int or tuple): Size or shape of the convolutional filter.
-#             Default: 5.
-#         stride (int or tuple): Size or shape of the stride. Default: 2.
-#         padding (int or str): Size of zero-padding added to each side.
-#             Default: 2.
-#         activation_fn (str or None): Activation function. Default: 'relu'.
-#         batch_norm (bool): Whether to apply batch normalization. Default: True.
-#         bias (bool): Whether to include a bias term in the conv layer.
-#             Default: False.
-#         leak (float): Negative slope value if using leaky ReLU. Default: 0.2.
-#         max_pool (bool): Whether to use maxpool. Default: False.
-#     Examples:
-#         >>> from models.layers import EncoderBlock
-#         >>> encoder = EncoderBlock(16, 32, 5, 2, 2, 'relu', batch_norm=True)
-#         >>> data = torch.rand((1, 16, 4, 1))
-#         >>> output = encoder(data)
-#     """
-#     def __init__(
-#         self,
-#         in_channels: int,
-#         out_channels: Optional[int] = None,
-#         kernel_size: Union[int, tuple] = 5,
-#         stride: Union[int, tuple] = 2,
-#         padding: Union[int, str] = 2,
-#         activation_fn: Optional[str] = 'relu',
-#         batch_norm: bool = True,
-#         bias: bool = False,
-#         leak: Optional[float] = None,
-#         max_pool: bool = False
-#     ):
-#         super(EncoderBlock, self).__init__()
-#         self.in_channels = in_channels
-#         if out_channels is not None:
-#             self.out_channels = out_channels
-#         else:
-#             self.out_channels = out_channels = in_channels * 2
-#         self.kernel_size = kernel_size
-#         self.stride = stride
-#         self.padding = padding
-#         self.bias = bias
-#         self.leak = leak if leak is not None else 0
-#         self.maxpool = nn.MaxPool2d(2) if max_pool else nn.Identity()
-#         self.conv = nn.Conv2d(
-#             in_channels=in_channels,
-#             out_channels=out_channels,
-#             kernel_size=kernel_size,
-#             stride=stride,
-#             padding=padding,
-#             bias=bias
-#         )
-#         if activation_fn == 'leaky_relu' and self.leak > 0:
-#             self.activation = nn.LeakyReLU(leak)
-#         elif activation_fn == 'relu':
-#             self.activation = nn.ReLU()
-#         elif activation_fn == 'sigmoid':
-#             self.activation = nn.Sigmoid()
-#         elif activation_fn == 'tanh':
-#             self.activation = nn.Tanh()
-#         else:
-#             self.activation = nn.Identity()
-#         if batch_norm:
-#             self.batchnorm = nn.BatchNorm2d(out_channels)
-#         else:
-#             self.batchnorm = nn.Identity()
-#
-#     def forward(self, data: torch.Tensor) -> torch.Tensor:
-#         """Forward method.
-#
-#         Args:
-#             data (tensor): Input feature map.
-#         Returns:
-#             (tensor): Output feature map.
-#         """
-#         x = self.conv(data)
-#         x = self.batchnorm(x)
-#         x = self.activation(x)
-#         output = self.maxpool(x)
-#         return output
-#
+
+
+
 
 class DecoderBlock(nn.Module):
     """Fully-customizable decoder block layer for base separation models.
@@ -766,4 +1198,5 @@ class GLU2d(nn.Module):
 #
 # Register layers.
 # self.conv_stack = nn.Sequential(*stack)
+
 
