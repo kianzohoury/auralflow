@@ -5,7 +5,7 @@ import torch.nn as nn
 import numpy as np
 
 
-from models.layers import _AEBlock, _SoftConv2d, _get_conv_output_size
+from models.layers import _AEBlock, _SoftConv, _get_conv_output_size
 from typing import Tuple, Union, Optional, List
 
 _MIN_BLOCK_SIZE = 1
@@ -202,7 +202,7 @@ class _AutoEncoder(nn.Module):
         self.encoder_down = down_layers
         self.decoder_up = up_layers
 
-        self.soft_conv = _SoftConv2d(
+        self.soft_conv = _SoftConv(
             hidden_channels=hidden_size,
             num_targets=num_targets,
             out_channels=num_channels,
@@ -410,10 +410,11 @@ class AutoEncoder2d(nn.Module):
         self.encoder_down = down_layers
         self.decoder_up = up_layers
 
-        self.soft_conv = _SoftConv2d(
+        self.soft_conv = _SoftConv(
             hidden_channels=hidden_size,
             num_targets=num_targets,
             out_channels=num_channels,
+            num_dims=2
         )
 
     def encode(
@@ -644,10 +645,11 @@ class VAE2d(nn.Module):
         self.encoder_down = down_layers
         self.decoder_up = up_layers
 
-        self.soft_conv = _SoftConv2d(
+        self.soft_conv = _SoftConv(
             hidden_channels=hidden_size,
             num_targets=num_targets,
             out_channels=num_channels,
+            num_dims=2
         )
 
     def encode(self, data: torch.FloatTensor) -> Tuple[Tuple, List, Tuple]:

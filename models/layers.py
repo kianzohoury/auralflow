@@ -695,16 +695,19 @@ class _UpBlock1d(_AEBlock):
         return output
 
 
-class _SoftConv2d(_AEBlock):
+class _SoftConv(_AEBlock):
     def __init__(
-        self, hidden_channels: int, out_channels: int, num_targets: int
+        self, hidden_channels: int, out_channels: int, num_targets: int,
+        num_dims: int
     ):
-        super(_SoftConv2d, self).__init__()
+        super(_SoftConv, self).__init__()
         self.hidden_channels = hidden_channels
         self.out_channels = out_channels
         self.num_targets = num_targets
+        self.num_dims = num_dims
+        conv = nn.Conv2d if num_dims == 2 else nn.Conv1d
 
-        self.separator_conv = nn.Conv2d(
+        self.separator_conv = conv(
             in_channels=hidden_channels,
             out_channels=num_targets,
             kernel_size=1,
@@ -715,46 +718,7 @@ class _SoftConv2d(_AEBlock):
         self.soft_conv_heads = nn.ModuleList()
         for _ in range(num_targets):
             self.soft_conv_heads.append(
-                nn.Conv2d(
-                    in_channels=num_targets,
-                    out_channels=out_channels,
-                    kernel_size=1,
-                    stride=1,
-                    padding="same",
-                )
-            )
-
-    def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
-        """Forward method."""
-        data = self.separator_conv(data)
-        outputs = []
-        for i in range(self.num_targets):
-            outputs.append(self.soft_conv_heads[i](data))
-        outputs = torch.stack(outputs, dim=-1).float()
-        return outputs
-
-
-class _SoftConv1d(_AEBlock):
-    def __init__(
-        self, hidden_channels: int, out_channels: int, num_targets: int
-    ):
-        super(_SoftConv1d, self).__init__()
-        self.hidden_channels = hidden_channels
-        self.out_channels = out_channels
-        self.num_targets = num_targets
-
-        self.separator_conv = nn.Conv1d(
-            in_channels=hidden_channels,
-            out_channels=num_targets,
-            kernel_size=1,
-            stride=1,
-            padding="same",
-        )
-
-        self.soft_conv_heads = nn.ModuleList()
-        for _ in range(num_targets):
-            self.soft_conv_heads.append(
-                nn.Conv1d(
+                conv(
                     in_channels=num_targets,
                     out_channels=out_channels,
                     kernel_size=1,
