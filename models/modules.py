@@ -421,14 +421,11 @@ class AutoEncoder2d(nn.Module):
     ) -> Tuple[torch.FloatTensor, List[torch.FloatTensor]]:
         """Encode."""
         skip_data = []
-        print("INPUT", data.shape)
         for layer in range(len(self.encoder_conv_layers)):
             data = self.encoder_conv_layers[layer](data)
             skip_data.append(data)
-            print("SKIP", data.shape)
             if layer < len(self.encoder_conv_layers) - 1:
                 data = self.encoder_down[layer](data)
-                print("down", data.shape)
         return data, skip_data[:-1]
 
     def decode(
@@ -446,12 +443,9 @@ class AutoEncoder2d(nn.Module):
 
     def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
         """Forward method."""
-        print(data.shape)
         data, skip_data = self.encode(data)
         data = self.decode(data, skip_data)
-        print(data.shape)
         output = self.soft_conv(data)
-        print(output.shape)
         return output
 
 
@@ -585,8 +579,6 @@ class VAE2d(nn.Module):
 
         out_channels = in_channels // 2
 
-        print(output_sizes[-1][0], output_sizes[-1][1], in_channels)
-
         linear_size = output_sizes[-1][0] * output_sizes[-1][1] * in_channels
         self.mu = nn.Linear(linear_size, latent_size)
         self.sigma = nn.Linear(linear_size, latent_size)
@@ -661,14 +653,11 @@ class VAE2d(nn.Module):
     def encode(self, data: torch.FloatTensor) -> Tuple[Tuple, List, Tuple]:
         """Encode."""
         skip_data = []
-        print("INPUT", data.shape)
         for layer in range(len(self.encoder_conv_layers)):
             data = self.encoder_conv_layers[layer](data)
             skip_data.append(data)
-            print("SKIP", data.shape)
             if layer < len(self.encoder_conv_layers) - 1:
                 data = self.encoder_down[layer](data)
-                print("down", data.shape)
 
         batch, n_channels, n_bins, n_samples = data.size()
         input_size = (batch, n_channels, n_bins, n_samples)
@@ -702,15 +691,13 @@ class VAE2d(nn.Module):
         self, data: torch.FloatTensor
     ) -> Tuple[torch.FloatTensor, Tuple[torch.FloatTensor, torch.FloatTensor]]:
         """Forward method."""
-        print(data.shape)
         latent_output, skip_data, input_size = self.encode(data)
         data = self.decode(
             data=latent_output[0], input_size=input_size, skip_data=skip_data
         )
-        print(data.shape)
         output = self.soft_conv(data)
-        print(output.shape)
         return output, latent_output[1:]
+
 
 #
 # class LSTMStack(nn.Module):
