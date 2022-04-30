@@ -743,26 +743,34 @@ class _SoftConv1d(_AEBlock):
         self.out_channels = out_channels
         self.num_targets = num_targets
 
-        self.source_conv = nn.Conv1d(
+        self.separator_conv = nn.Conv1d(
             in_channels=hidden_channels,
             out_channels=num_targets,
             kernel_size=1,
             stride=1,
             padding="same",
         )
-        self.channel_conv = nn.Conv1d(
-            in_channels=num_targets,
-            out_channels=out_channels,
-            kernel_size=1,
-            stride=1,
-            padding="same",
-        )
+
+        self.soft_conv_heads = nn.ModuleList()
+        for _ in range(num_targets):
+            self.soft_conv_heads.append(
+                nn.Conv1d(
+                    in_channels=num_targets,
+                    out_channels=out_channels,
+                    kernel_size=1,
+                    stride=1,
+                    padding="same",
+                )
+            )
 
     def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
         """Forward method."""
-        data = self.source_conv(data)
-        output = self.channel_conv(data)
-        return output
+        data = self.separator_conv(data)
+        outputs = []
+        for i in range(self.num_targets):
+            outputs.append(self.soft_conv_heads[i](data))
+        outputs = torch.stack(outputs, dim=-1).float()
+        return outputs
 
 
 class DownSample(nn.Module):
