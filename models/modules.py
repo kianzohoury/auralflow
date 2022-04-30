@@ -251,10 +251,10 @@ class AutoEncoder2d(nn.Module):
         use_skip: bool = True,
     ):
         super(AutoEncoder2d, self).__init__()
-        if num_targets < 0 or num_targets > 4:
+        if num_targets < 1 or num_targets > 4:
             raise ValueError(
                 "Number of targets must be between 1 and 4, but received"
-                f" {num_targets}"
+                f" {num_targets}."
             )
         elif num_channels > 2 or num_channels < 1:
             raise ValueError(f"Channels must be 1 (mono) or 2 (stereo).")

@@ -9,14 +9,6 @@ from pprint import pprint
 from .adaptive import AdaptiveLayerNode, StackedEncoderBlock, StackedDecoderBlock
 
 
-# def get_padding(kernel_size: int, stride: int, in_size: Tuple, out_size: Tuple):
-#     h_in, w_in = in_size
-#     h_out, w_out = out_size
-#     h_pad = math.ceil(((h_out - 1) * stride + kernel_size - h_in) / 2)
-#     w_pad = math.ceil(((w_out - 1) * stride + kernel_size - w_in) / 2)
-#     return h_pad, w_pad
-
-
 class BaseUNet(nn.Module):
     """
     Dynamic implementation of the deep U-Net encoder/decoder architecture for
