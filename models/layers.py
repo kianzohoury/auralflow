@@ -697,8 +697,11 @@ class _UpBlock1d(_AEBlock):
 
 class _SoftConv(_AEBlock):
     def __init__(
-        self, hidden_channels: int, out_channels: int, num_targets: int,
-        num_dims: int
+        self,
+        hidden_channels: int,
+        out_channels: int,
+        num_targets: int,
+        num_dims: int,
     ):
         super(_SoftConv, self).__init__()
         self.hidden_channels = hidden_channels
