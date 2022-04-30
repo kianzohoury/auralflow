@@ -99,6 +99,7 @@ class TFMaskModelBase(nn.Module):
 
 class UNetTF(TFMaskModelBase):
     """U-Net source separation model in the time-frequency domain."""
+
     def __init__(
         self,
         num_targets: int,
@@ -177,6 +178,7 @@ class UNetTF(TFMaskModelBase):
 
 class UNetVTF(TFMaskModelBase):
     """U-Net source separation model in the time-frequency domain."""
+
     def __init__(
         self,
         num_targets: int,
@@ -246,7 +248,9 @@ class UNetVTF(TFMaskModelBase):
         )
         self.mask_activation = _get_activation(activation_fn=mask_activation)
 
-    def forward(self, data: torch.FloatTensor) -> Tuple[torch.FloatTensor, Tuple[torch.FloatTensor, ...]]:
+    def forward(
+        self, data: torch.FloatTensor
+    ) -> Tuple[torch.FloatTensor, Tuple[torch.FloatTensor, ...]]:
         """Forward method."""
         data = self.input_norm(data) if self.normalize_input else data
         data = data.permute(0, 3, 1, 2)
