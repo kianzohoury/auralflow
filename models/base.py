@@ -169,7 +169,7 @@ class UNetTF(TFMaskModelBase):
         """Forward method."""
         data = self.input_norm(data) if self.normalize_input else data
         data = data.permute(0, 3, 1, 2)
-        data = self.autoencoder.forward(data)
+        data = self.autoencoder(data)
         mask = self.mask_activation(data)
         mask = mask.permute(0, 2, 3, 1, 4)
         return mask
@@ -250,7 +250,7 @@ class UNetVTF(TFMaskModelBase):
         """Forward method."""
         data = self.input_norm(data) if self.normalize_input else data
         data = data.permute(0, 3, 1, 2)
-        output, latent_dist = self.autoencoder.forward(data)
+        output, latent_dist = self.autoencoder(data)
         mask = self.mask_activation(output)
         mask = mask.permute(0, 2, 3, 1, 4)
         return mask, latent_dist
