@@ -15,6 +15,19 @@
 4. [Evaluation](#paragraph2)
 5. [Demo](#paragraph2)
 
+
+# Models
+## Spectrogram-input models
+### `UNetSpec`: Vanilla U-Net spectrogram-input model
+### `UNetVAESpec`: U-Net Variational Autoencoder spectrogram-input model
+### `UNetRecurrentSpec`: U-Net spectrogram-input model
+
+## Audio-input models
+### `UNetAudio`: Vanilla U-Net spectrogram-input model
+### `UNetVAEAudio`: U-Net Variational Autoencoder spectrogram-input model
+### `UNetRecurrentAudio`: U-Net spectrogram-input model
+
+
 # Training models
 ### Creating a session
 To begin training your own source separation model, you must first create a training session on your machine with the following command:
