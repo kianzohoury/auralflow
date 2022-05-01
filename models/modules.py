@@ -419,7 +419,7 @@ class AutoEncoder2d(nn.Module):
             hidden_channels=hidden_size,
             num_targets=num_targets,
             out_channels=num_channels,
-            num_dims=2
+            num_dims=2,
         )
 
     def encode(
@@ -659,7 +659,7 @@ class VAE2d(nn.Module):
             hidden_channels=hidden_size,
             num_targets=num_targets,
             out_channels=num_channels,
-            num_dims=2
+            num_dims=2,
         )
 
     def encode(self, data: torch.FloatTensor) -> Tuple[Tuple, List, Tuple]:

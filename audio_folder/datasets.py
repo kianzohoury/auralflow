@@ -42,7 +42,7 @@ class AudioFolder(IterableDataset):
         transform (dict or None): Optional data transformations.
 
     Examples:
-        >>> train_data = AudioFolder('src/wav', ['vocals'], subset='train')
+        >>> train_data = AudioFolder('toy_dataset/wav', ['vocals'], subset='train')
         >>> audio_sample = next(iter(train_data))
     """
     def __init__(
@@ -135,7 +135,7 @@ class AudioFolder(IterableDataset):
             (AudioFolder): The validation set.
 
         Example:
-            >>> train_data = AudioFolder('src/wav', ['vocals'], subset='train')
+            >>> train_data = AudioFolder('toy_dataset/wav', ['vocals'], subset='train')
             >>> val_data = train_data.split(val_split=0.2)
         """
         assert 0 < val_split <= 1.0, \

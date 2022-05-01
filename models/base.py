@@ -46,13 +46,15 @@ class SeparationModel(nn.Module):
     def __init__(self, config: dict):
         super(SeparationModel, self).__init__()
         self.is_training = config['mode']
+        if torch.backends.cudnn.is_available():
+            torch.backends.cudnn = True
 
     @abstractmethod
     def forward(self, data):
         pass
 
     @abstractmethod
-    def backward(self, mixture_data, target_data):
+    def backward(self, **kwargs):
         pass
 
     @abstractmethod
