@@ -1,51 +1,28 @@
-import inspect
-
 import torch
 import torch.nn as nn
-import numpy as np
 
-from typing import List, Union, Optional, Tuple, Any
-from abc import ABCMeta, abstractmethod
-from collections import OrderedDict
-from transforms import STFT, InverseSTFT
-from .modules import AutoEncoder2d, VAE2d
-from .layers import _get_activation
-from transforms import _make_hann_window
-from functools import wraps
-from inspect import Signature
-from dataclasses import dataclass
-
-# __all__ = ['UNetTFMaskEstimate', 'UNetTFSourceEstimate']
+from abc import ABCMeta, abstractmethod, ABC
+from torchinfo import summary
 
 
-# def separate(
-#         self, signal: torch.FloatTensor, power_spectrum: bool = False
-# ) -> torch.FloatTensor:
-#     """"""
-#     mixture_data = self.stft(signal)
-#     mixture_mag_data = torch.abs(mixture_data)
-#     mixture_phase_data = torch.angle(mixture_data)
-#     source_mask = self.forward(mixture_mag_data)
-#     estimate_mag_data = source_mask * mixture_mag_data
-#     estimate_phase_corrected = estimate_mag_data * torch.exp(
-#         1j * mixture_phase_data
-#     )
-#     estimate_signal = self.istft(estimate_phase_corrected)
-#
-#     return estimate_signal
-
-class SeparationModel(nn.Module):
+class SeparationModel(ABC):
     """Interface for all base source separation models.
 
     Not meant to be implemented directly, but subclassed instead.
     All source separation models implement forward, backward, separate
     and inference methods.
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, config: dict):
         super(SeparationModel, self).__init__()
-        self.is_training = config['mode']
+        self.config = config
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.checkpoint_path = config["training_params"]["checkpoint_path"]
+        self.models = []
+        self.loss_names = []
+        self.optimizers = []
+        self.visual_names = []
+        self.is_training = config["training_params"]["training_mode"]
         if torch.backends.cudnn.is_available():
             torch.backends.cudnn = True
 
@@ -58,7 +35,7 @@ class SeparationModel(nn.Module):
         pass
 
     @abstractmethod
-    def update_params(self):
+    def optimizer_step(self):
         pass
 
     @abstractmethod
@@ -66,15 +43,26 @@ class SeparationModel(nn.Module):
         pass
 
     @abstractmethod
-    def inference(self, audio):
-        pass
-
-    @abstractmethod
     def validate(self):
         pass
 
+    def train(self):
+        for model in self.models:
+            if isinstance(model, nn.Module):
+                model.train()
 
+    def eval(self):
+        for model in self.models:
+            if isinstance(model, nn.Module):
+                model.eval()
 
+    def test(self, data):
+        with torch.no_grad():
+            return self.forward(data)
+
+    def setup(self):
+        for model in self.models:
+            summary(model, depth=6)
 
 
 

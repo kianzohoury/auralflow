@@ -136,60 +136,71 @@ class SpectrogramMaskModel(SeparationModel):
     loss: torch.Tensor
 
     def __init__(self, config: dict):
+        self.data_transform = {
+            "n_fft": config["dataset_params"]["num_fft"],
+            "hop_length": config["dataset_params"]["hop_length"],
+            "win_length": config["dataset_params"]["window_size"],
+            "window": None,
+            "onesided": True,
+            "return_complex": True,
+        }
+        self.stft = lambda data: torch.stft(
+            input=data, **self.data_transform
+        )
+        self.istft = lambda data: torch.istft(
+            input=data, **self.data_transform
+        )
+        sample_data = torch.rand(
+            (config["dataset_params"]["num_channels"],
+             config["dataset_params"]["sample_rate"] * config["dataset_params"]["sample_length"]
+             )
+        )
+        num_samples = self.stft(sample_data).size(-1)
+
         super(SpectrogramMaskModel, self).__init__(config)
         self.model = TFMaskUNet(
-            num_fft_bins=1023, num_samples=768, num_channels=1
+            num_fft_bins=config["dataset_params"]["num_fft"],
+            num_samples=num_samples, num_channels=1
         )
-        self.model = self.model.to(self.device)
+        self.num_channels = self.model.num_channels
+        self.num_targets = self.model.num_targets
+        self.models.append(self.model.to(self.device))
 
         if self.is_training:
             self.criterion = L1Loss()
-            self.optimizer = AdamW(self.model.parameters(), config["lr"])
+            self.optimizer = AdamW(self.model.parameters(), config["training_params"]["lr"])
 
-    def fast_fourier(
-        self, mixture_data: torch.Tensor, target_data: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def fast_fourier(self, data: torch.Tensor) -> torch.Tensor:
         """Helper method to transform raw data to complex-valued STFT data."""
-        mixture_stft, target_stft = [], []
-        n_frames = mixture_data.size(-1)
+        data_stft = []
+        n_batch, n_channels, n_frames, n_targets = data.size()
 
-        for i in range(self.num_channels):
-            mixture_stft.append(
-                self.stft(mixture_data[:, i, :].view(-1, n_frames))
-            )
+        for i in range(n_channels):
             sources_stack = []
-            for j in range(self.num_targets):
+            for j in range(n_targets):
                 sources_stack.append(
-                    self.stft(target_data[:, i, :, j].view(-1, n_frames))
+                    self.stft(data[:, i, :, j].reshape((n_batch, n_frames)))
                 )
-            target_stft.append(torch.stack(sources_stack, dim=-1))
+            data_stft.append(torch.stack(sources_stack, dim=-1))
 
-        mixture_stft = torch.stack(mixture_stft, dim=1)
-        target_stft = torch.stack(target_stft, dim=1)
-        return mixture_stft, target_stft
+        data_stft = torch.stack(data_stft, dim=1)
+        return data_stft
 
-    def process_input(
-        self, mixture_data: torch.Tensor, target_data: torch.Tensor
-    ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:
+    def process_input(self, data: torch.Tensor) -> torch.FloatTensor:
         """Processes audio data into magnitudes spectrograms for training.
 
         Args:
-            mixture_data (Tensor): Mixture input data.
-            target_data (Tensor): Target sources data.
+            data (Tensor): Raw audio data.
 
         Returns:
-            (Tensor, Tensor): Magnitude spectrograms of input mixture and
-                source targets.
+            (Tensor): Magnitude spectrogram.
         """
-        mixture_stft, target_stft = self.fast_fourier(
-            mixture_data=mixture_data, target_data=target_data
-        )
-        mixture_spec = torch.abs(mixture_stft).float()
-        target_spec = torch.abs(target_stft).float()
-        return mixture_spec, target_spec
+        data_stft = self.fast_fourier(data=data)
+        data_spec = torch.abs(data_stft)
+        return data_spec
 
     def forward(self, mixture_data: torch.FloatTensor) -> torch.FloatTensor:
-        return self.model(mixture_data)
+        return self.model(mixture_data.squeeze(-1))
 
     def backward(self, mask: torch.FloatTensor, mixture_data: torch.FloatTensor, target_data: torch.FloatTensor):
         estimate = mask * mixture_data
@@ -200,14 +211,39 @@ class SpectrogramMaskModel(SeparationModel):
         self.optimizer.step()
         self.optimizer.zero_grad()
 
+    def validate(self):
+        pass
+
     def separate(self, audio):
         pass
 
-    def inference(self, audio):
-        pass
+    def estimate_audio(self, audio):
+        with torch.no_grad():
+            mixture_data = self.stft(audio).unsqueeze(0)
+            mixture_mag_data = torch.abs(mixture_data).float()
+            mixture_phase_data = torch.angle(mixture_data)
+            source_mask = self.forward(mixture_mag_data)
+            estimate_mag_data = source_mask * mixture_mag_data
+            estimate_phase_corrected = estimate_mag_data * torch.exp(
+                1j * mixture_phase_data
+            )
+        estimate_signal = self.istft(estimate_phase_corrected)
+        return estimate_signal
 
-    def validate(self):
-        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #
@@ -220,21 +256,7 @@ class SpectrogramMaskModel(SeparationModel):
 # else:
 #     window_fn = None
 #
-# self.data_transform = {
-#     "n_fft": self.num_fft,
-#     "hop_length": hop_length,
-#     "win_length": window_size,
-#     "window": window_fn,
-#     "onesided": True,
-#     "return_complex": True,
-# }
-#
-# self.stft = lambda data: torch.stft(
-#     input=data, **self.data_transform
-# )
-# self.istft = lambda data: torch.istft(
-#     input=data, **self.data_transform
-# )
+
 
 #         hop_length (int): Hop length.
 #         window_size (int): Window size.

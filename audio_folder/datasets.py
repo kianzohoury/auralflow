@@ -1,4 +1,3 @@
-
 import librosa
 import numpy as np
 import torch
@@ -30,50 +29,51 @@ class AudioFolder(IterableDataset):
       the same effect that bootstrapping creates.
 
     Args:
-        path (str): Root directory path.
+        dataset_path (str): Root directory path.
         targets (List[str]): Target sources. Default: ['vocals'].
-        sample_length (float): The duration of an audio sample.
+        sample_length (int): The duration of an audio sample.
         subset (str): Train or test set. Default: 'train'.
         audio_format (str): Audio format. Default: 'wav'.
         sample_rate (int): Sample rate. Default: 44100
         num_channels (int): Number of audio channels. Default: 1.
             Default: True.
         backend (str): Torchaudio backend. Default: 'soundfile'.
-        transform (dict or None): Optional data transformations.
 
     Examples:
-        >>> train_data = AudioFolder('toy_dataset/wav', ['vocals'], subset='train')
+        >>> train_data = AudioFolder('toy_dataset/wav', ['vocals'],
+        ... subset='train')
         >>> audio_sample = next(iter(train_data))
     """
+
     def __init__(
         self,
-        path: str,
+        dataset_path: str,
         targets: Optional[List[str]] = None,
         sample_length: int = 3,
-        subset: str = 'train',
-        audio_format: str = 'wav',
+        subset: str = "train",
+        audio_format: str = "wav",
         sample_rate: int = 44100,
         num_channels: int = 1,
-        backend: str = 'soundfile',
-        transform: Optional[dict] = None,
+        backend: str = "soundfile",
     ):
         super(AudioFolder, self).__init__()
-        self.path = path
-        self.targets = ['vocals'] if targets is None else sorted(targets)
+        self.path = dataset_path
+        self.targets = ["vocals"] if targets is None else sorted(targets)
         self.sample_length = sample_length
         self.subset = subset
         self.audio_format = audio_format
         self.sample_rate = sample_rate
         self.num_channels = num_channels
         self.backend = backend
-        self.transform = transform
 
-        root_dir = Path(path)
+        root_dir = Path(dataset_path)
         subset_dir = root_dir / subset
         track_filepaths = []
         for track_fp in subset_dir.iterdir():
-            target_filepaths = [track_fp.joinpath(target).with_suffix(
-                "." + audio_format) for target in self.targets]
+            target_filepaths = [
+                track_fp.joinpath(target).with_suffix("." + audio_format)
+                for target in self.targets
+            ]
             if all([target_fp.is_file() for target_fp in target_filepaths]):
                 track_filepaths.append(track_fp)
 
@@ -94,9 +94,11 @@ class AudioFolder(IterableDataset):
             ValueError: If the audio backend cannot read an audio format.
         """
         sampled_track = np.random.choice(self._track_filepaths)
-        source_names = ['mixture'] + self.targets
-        source_filepaths = [sampled_track.joinpath(name).with_suffix(
-            "." + self.audio_format) for name in source_names]
+        source_names = ["mixture"] + self.targets
+        source_filepaths = [
+            sampled_track.joinpath(name).with_suffix("." + self.audio_format)
+            for name in source_names
+        ]
         if sampled_track.name not in self._duration_cache:
             duration = librosa.get_duration(filename=source_filepaths[0])
             self._duration_cache[sampled_track.name] = duration
@@ -110,7 +112,7 @@ class AudioFolder(IterableDataset):
                 audio_data, _ = torchaudio.load(
                     filepath=str(source_filepath),
                     frame_offset=offset * self.sample_rate,
-                    num_frames=self.sample_length * self.sample_rate
+                    num_frames=self.sample_length * self.sample_rate,
                 )
             except ValueError as e:
                 raise ValueError(f"Cannot load {str(source_filepath)}.") from e
@@ -125,7 +127,7 @@ class AudioFolder(IterableDataset):
         mix_data = mix_data.unsqueeze(-1)
         return mix_data, target_data
 
-    def split(self, val_split: float = 0.2) -> 'AudioFolder':
+    def split(self, val_split: float = 0.2) -> "AudioFolder":
         """Splits the audio folder into training and validation folders.
 
         Args:
@@ -135,11 +137,11 @@ class AudioFolder(IterableDataset):
             (AudioFolder): The validation set.
 
         Example:
-            >>> train_data = AudioFolder('toy_dataset/wav', ['vocals'], subset='train')
+            >>> train_data = AudioFolder('toy_dataset/wav', ['vocals'],
+            ... subset='train')
             >>> val_data = train_data.split(val_split=0.2)
         """
-        assert 0 < val_split <= 1.0, \
-            "Split value must be between 0.0 and 1.0."
+        assert 0 < val_split <= 1.0, "Split value must be between 0.0 and 1.0."
 
         val_dataset = AudioFolder(
             self.path,
@@ -149,7 +151,7 @@ class AudioFolder(IterableDataset):
             self.audio_format,
             self.sample_rate,
             self.num_channels,
-            self.backend
+            self.backend,
         )
 
         # Shuffle and get the split point.
