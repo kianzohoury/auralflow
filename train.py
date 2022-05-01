@@ -54,7 +54,9 @@ def main(config_filepath: str):
     current_epoch = configuration["training_params"]["last_epoch"] + 1
     max_epochs = configuration["training_params"]["max_epochs"]
     stop_epoch = current_epoch + max_epochs
-    max_dataloader_iters = configuration["dataset_params"]["loader_params"]["max_iterations"]
+    max_dataloader_iters = configuration["dataset_params"]["loader_params"][
+        "max_iterations"
+    ]
     global_step = configuration["training_params"]["global_step"]
 
     # writer = tensorboard.SummaryWriter(
@@ -73,7 +75,9 @@ def main(config_filepath: str):
                 loading_time = time.time() - start
 
                 mixture, target = mixture.to(device), target.to(device)
-                mixture, target = model.process_input(mixture), model.process_input(target)
+                mixture, target = model.process_input(
+                    mixture
+                ), model.process_input(target)
                 mask = model.forward(mixture)
                 model.backward(mask, mixture, target)
                 model.optimizer_step()
@@ -155,7 +159,8 @@ def main(config_filepath: str):
 
 if __name__ == "__main__":
     import multiprocessing
-    multiprocessing.set_start_method('spawn', True)
+
+    multiprocessing.set_start_method("spawn", True)
 
     parser = ArgumentParser(description="Model training script.")
     parser.add_argument(
