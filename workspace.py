@@ -35,9 +35,7 @@ if __name__ == '__main__':
         num_fft_bins=1023,
         num_samples=315,
         num_channels=2,
-        hop_length=768,
-        window_size=1023,
-        kernel_size=(5, 2, 3, 5),
+        kernel_size=(3, 2, 5, 3),
         normalize_input=True,
         mask_activation_fn='sigmoid'
     )
@@ -45,9 +43,10 @@ if __name__ == '__main__':
     # print(model.autoencoder.kernel_size)
     # summary(model, input_size=(1, 1, 3 * 44100))
     x, y = torch.rand((1, 2, 44100 * 2)), torch.rand((1, 2, 44100 * 2, 4))
-    xx, yy = model.process_input(x, y)
+    # print(_get_transpose_padding(15, 8, 31, 18, 2, 5))
+    # xx, yy = model.process_input(x, y)
     # print(xx.shape, yy.shape)
-    print(model.num_fft, model.num_bins, model.window_size)
+    # print(model.num_fft, model.num_bins, model.window_size)
     print(model(torch.rand((1, 2, 512, 315))).shape)
     # print(model(torch.rand((1, 1, 3 * 44100))).size())
     # vae(torch.rand((1, 1, 512, 173)))

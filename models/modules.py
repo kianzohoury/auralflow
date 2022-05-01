@@ -352,7 +352,12 @@ class AutoEncoder2d(nn.Module):
                     )
                 )
                 out_channels *= 2
-                h_out, w_out = h_in // 2, w_in // 2
+                h_out, w_out = _get_conv_output_size(
+                    h_in=h_in,
+                    w_in=w_in,
+                    stride=2,
+                    kernel_size=kernel_size[1],
+                )
                 output_sizes.append((h_out, w_out))
 
         out_channels = in_channels // 2
@@ -389,7 +394,7 @@ class AutoEncoder2d(nn.Module):
                         dim=2,
                         in_channels=in_channels,
                         out_channels=out_channels,
-                        kernel_size=kernel_size[0],
+                        kernel_size=kernel_size[3],
                         stride=1,
                         padding="same" if same_padding else 0,
                         activation_fn=activation,
@@ -484,7 +489,7 @@ class VAE2d(nn.Module):
         elif hidden_size < 0:
             raise ValueError(f"Hidden size must be at least 1.")
         elif isinstance(kernel_size, int):
-            kernel_size = [kernel_size] + [2] + [kernel_size] + [5]
+            kernel_size = [kernel_size] * 4
         elif isinstance(kernel_size, tuple):
             if len(kernel_size) != 4 - bool(downsampler == "downsample"):
                 raise ValueError(
@@ -575,7 +580,12 @@ class VAE2d(nn.Module):
                     )
                 )
                 out_channels *= 2
-                h_out, w_out = h_in // 2, w_in // 2
+                h_out, w_out = _get_conv_output_size(
+                    h_in=h_in,
+                    w_in=w_in,
+                    stride=2,
+                    kernel_size=kernel_size[1],
+                )
                 output_sizes.append((h_out, w_out))
 
         out_channels = in_channels // 2
@@ -624,7 +634,7 @@ class VAE2d(nn.Module):
                         dim=2,
                         in_channels=in_channels,
                         out_channels=out_channels,
-                        kernel_size=kernel_size[0],
+                        kernel_size=kernel_size[3],
                         stride=1,
                         padding="same" if same_padding else 0,
                         activation_fn=activation,

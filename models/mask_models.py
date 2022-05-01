@@ -42,8 +42,8 @@ class TFMaskUNet(nn.Module):
         hidden_size (int): Initial hidden size of the autoencoder.
             Default: 16.
         kernel_size (union[Tuple, int]): Kernel sizes of the autoencoder. A
-            tuple of (encoder_k_size, downsampler_k_size, decoder_k_size,
-            upsampler_k_size) may be passed in. Otherwise, all kernels will
+            tuple of (enc_conv_size, downsampler_size, upsampler_size,
+            dec_conv_size) may be passed in. Otherwise, all kernels will
             share the same size. Default: 3.
         block_size (int): Depth of each encoder/decoder block. Default: 3.
         downsampler (str): Downsampling method employed by the encoder.
@@ -69,11 +69,9 @@ class TFMaskUNet(nn.Module):
         num_fft_bins: int,
         num_samples: int,
         num_channels: int,
-        hop_length: int,
-        window_size: int,
         max_depth: int = 6,
         hidden_size: int = 16,
-        kernel_size: Union[Tuple, int] = 2,
+        kernel_size: Union[Tuple, int] = 3,
         block_size: int = 3,
         downsampler: str = "max_pool",
         upsampler: str = "transpose",
@@ -90,8 +88,6 @@ class TFMaskUNet(nn.Module):
         self.num_bins = num_fft_bins // 2 + 1
         self.num_samples = num_samples
         self.num_channels = num_channels
-        self.hop_length = hop_length
-        self.window_size = window_size
         self.max_depth = max_depth
         self.hidden_size = hidden_size
         self.kernel_size = kernel_size
@@ -131,73 +127,6 @@ class TFMaskUNet(nn.Module):
             activation_fn=mask_activation_fn
         )
 
-        if window_type is not None:
-            window_fn = _make_hann_window(
-                window_length=window_size,
-                trainable=False,
-                device="cuda" if torch.cuda.is_available() else "cpu",
-            )
-        else:
-            window_fn = None
-
-        self.data_transform = {
-            "n_fft": self.num_fft,
-            "hop_length": hop_length,
-            "win_length": window_size,
-            "window": window_fn,
-            "onesided": True,
-            "return_complex": True,
-        }
-
-        self.stft = lambda data: torch.stft(
-            input=data, **self.data_transform
-        )
-        self.istft = lambda data: torch.istft(
-            input=data, **self.data_transform
-        )
-
-    def fast_fourier(
-        self, mixture_data: torch.Tensor, target_data: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Helper method to transform raw data to complex-valued STFT data."""
-        mixture_stft, target_stft = [], []
-        n_frames = mixture_data.size(-1)
-
-        for i in range(self.num_channels):
-            mixture_stft.append(
-                self.stft(mixture_data[:, i, :].view(-1, n_frames))
-            )
-            sources_stack = []
-            for j in range(self.num_targets):
-                sources_stack.append(
-                    self.stft(target_data[:, i, :, j].view(-1, n_frames))
-                )
-            target_stft.append(torch.stack(sources_stack, dim=-1))
-
-        mixture_stft = torch.stack(mixture_stft, dim=1)
-        target_stft = torch.stack(target_stft, dim=1)
-        return mixture_stft, target_stft
-
-    def process_input(
-        self, mixture_data: torch.Tensor, target_data: torch.Tensor
-    ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:
-        """Processes audio data into magnitudes spectrograms for training.
-
-        Args:
-            mixture_data (Tensor): Mixture input data.
-            target_data (Tensor): Target sources data.
-
-        Returns:
-            (Tensor, Tensor): Magnitude spectrograms of input mixture and
-                source targets.
-        """
-        mixture_stft, target_stft = self.fast_fourier(
-            mixture_data=mixture_data, target_data=target_data
-        )
-        mixture_spec = torch.abs(mixture_stft).float()
-        target_spec = torch.abs(target_stft).float()
-        return mixture_spec, target_spec
-
     def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
         """Forward method."""
         if self.normalize_input:
@@ -206,21 +135,6 @@ class TFMaskUNet(nn.Module):
         data = self.autoencoder(data)
         mask = self.mask_activation(data)
         return mask
-
-    def backward(self, mask: torch.FloatTensor, target_data: torch.FloatTensor):
-        pass
-
-    def update_params(self):
-        pass
-
-    def separate(self, audio):
-        pass
-
-    def inference(self, audio):
-        pass
-
-    def validate(self):
-        pass
 
 
 # class UNetRecurrentMaskTF(UNetTFMaskEstimate):
@@ -323,3 +237,71 @@ class TFMaskUNet(nn.Module):
 #         mask = self.mask_activation(output)
 #         mask = mask.permute(0, 2, 3, 1, 4)
 #         return mask, latent_dist
+
+    # def fast_fourier(
+    #         self, mixture_data: torch.Tensor, target_data: torch.Tensor
+    # ) -> Tuple[torch.Tensor, torch.Tensor]:
+    #     """Helper method to transform raw data to complex-valued STFT data."""
+    #     mixture_stft, target_stft = [], []
+    #     n_frames = mixture_data.size(-1)
+    #
+    #     for i in range(self.num_channels):
+    #         mixture_stft.append(
+    #             self.stft(mixture_data[:, i, :].view(-1, n_frames))
+    #         )
+    #         sources_stack = []
+    #         for j in range(self.num_targets):
+    #             sources_stack.append(
+    #                 self.stft(target_data[:, i, :, j].view(-1, n_frames))
+    #             )
+    #         target_stft.append(torch.stack(sources_stack, dim=-1))
+    #
+    #     mixture_stft = torch.stack(mixture_stft, dim=1)
+    #     target_stft = torch.stack(target_stft, dim=1)
+    #     return mixture_stft, target_stft
+    #
+    # def process_input(
+    #         self, mixture_data: torch.Tensor, target_data: torch.Tensor
+    # ) -> Tuple[torch.FloatTensor, torch.FloatTensor]:
+    #     """Processes audio data into magnitudes spectrograms for training.
+    #
+    #     Args:
+    #         mixture_data (Tensor): Mixture input data.
+    #         target_data (Tensor): Target sources data.
+    #
+    #     Returns:
+    #         (Tensor, Tensor): Magnitude spectrograms of input mixture and
+    #             source targets.
+    #     """
+    #     mixture_stft, target_stft = self.fast_fourier(
+    #         mixture_data=mixture_data, target_data=target_data
+    #     )
+    #     mixture_spec = torch.abs(mixture_stft).float()
+    #     target_spec = torch.abs(target_stft).float()
+    #     return mixture_spec, target_spec
+
+        #
+        # if window_type is not None:
+        #     window_fn = _make_hann_window(
+        #         window_length=window_size,
+        #         trainable=False,
+        #         device="cuda" if torch.cuda.is_available() else "cpu",
+        #     )
+        # else:
+        #     window_fn = None
+        #
+        # self.data_transform = {
+        #     "n_fft": self.num_fft,
+        #     "hop_length": hop_length,
+        #     "win_length": window_size,
+        #     "window": window_fn,
+        #     "onesided": True,
+        #     "return_complex": True,
+        # }
+        #
+        # self.stft = lambda data: torch.stft(
+        #     input=data, **self.data_transform
+        # )
+        # self.istft = lambda data: torch.istft(
+        #     input=data, **self.data_transform
+        # )

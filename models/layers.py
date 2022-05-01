@@ -43,8 +43,8 @@ def _get_conv_output_size(
     Returns:
         (tuple): Output size.
     """
-    h_out = math.floor((h_in - kernel_size // stride) + 1)
-    w_out = math.floor((w_in - kernel_size // stride) + 1)
+    h_out = math.floor((h_in - kernel_size) / stride + 1)
+    w_out = math.floor((w_in - kernel_size) / stride + 1)
     assert h_out >= 0 and w_out >= 0
     return h_out, w_out
 
