@@ -1,3 +1,5 @@
+import inspect
+
 import torch
 import torch.nn as nn
 import math
@@ -30,7 +32,7 @@ _UP_LAYERS = {
     "trilinear",
     "cubic",
 }
-_BLOCK_TYPES = {"conv", "recurrent", "upsampler", "downsampler"}
+_BLOCK_TYPES = {"conv", "soft_conv", "recurrent", "upsampler", "downsampler"}
 
 
 def _get_conv_output_size(
@@ -112,13 +114,13 @@ def _get_activation(
 
 
 class _AEBlock(nn.Module):
-    """Base class and factory method for all autoencoder blocks.
+    """Base and factory class used to generate all autoencoder blocks.
 
     This class is not meant to be instantiated.
     """
 
     @staticmethod
-    def get_autoencoder_block(
+    def generate_block(
         block_type: str, dim: int, **kwargs
     ) -> Optional["_AEBlock"]:
         """Instantiates an autoencoder block.
@@ -142,41 +144,31 @@ class _AEBlock(nn.Module):
                 "Spatial dimensions of autoencoder block must be 1d or 2d,"
                 f" but received {dim}."
             )
-
-        if block_type == "conv" and dim == 2:
-            return _ConvBlock2d(**kwargs)
-        elif block_type == "conv" and dim == 1:
-            return _ConvBlock1d(**kwargs)
-        elif block_type == "recurrent" and dim == 2:
-            return _RecurrentBlock2d(**kwargs)
-        elif block_type == "recurrent" and dim == 1:
-            return _RecurrentBlock1d(**kwargs)
-        elif block_type == "downsampler" and dim == 2:
-            return _DownBlock2d(**kwargs)
+        elif block_type == "conv":
+            return ConvBlock(num_dims=dim, **kwargs)
+        elif block_type == "soft_conv":
+            return SoftConv(num_dims=dim, **kwargs)
+        elif block_type == "recurrent":
+            return _RecurrentBlock.generate_recurrent_block(
+                num_dims=dim, **kwargs
+            )
         elif block_type == "downsampler" and dim == 1:
             return _DownBlock1d(**kwargs)
-        elif block_type == "upsampler" and dim == 2:
-            return _UpBlock2d(**kwargs)
+        elif block_type == "downsampler" and dim == 2:
+            return _DownBlock2d(**kwargs)
         elif block_type == "upsampler" and dim == 1:
             return _UpBlock1d(**kwargs)
-        else:
-            return None
+        elif block_type == "upsampler" and dim == 2:
+            return _UpBlock2d(**kwargs)
+        return None
 
 
-class _RecurrentBlock2d(_AEBlock):
-    def __init__(self, **kwargs):
-        super(_RecurrentBlock2d, self).__init__()
-
-
-class _RecurrentBlock1d(_AEBlock):
-    def __init__(self, **kwargs):
-        super(_RecurrentBlock1d, self).__init__()
-
-
-class _ConvBlock2d(_AEBlock):
-    """2-dimensional autoencoder convolutional block.
+class ConvBlock(_AEBlock):
+    """Convolutional block.
 
     Args:
+        num_dims (int): Number of spatial dimensions. If audio is in time-freq
+            domain, num_dims = 2, otherwise num_dims = 1.
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
         kernel_size (int): Kernel size.
@@ -193,6 +185,7 @@ class _ConvBlock2d(_AEBlock):
 
     def __init__(
         self,
+        num_dims: int,
         in_channels: int,
         out_channels: int,
         kernel_size: int,
@@ -204,7 +197,8 @@ class _ConvBlock2d(_AEBlock):
         activation_param: Optional[Union[int, float]] = None,
         dropout_p: float = 0,
     ):
-        super(_ConvBlock2d, self).__init__()
+        super(ConvBlock, self).__init__()
+
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -216,8 +210,12 @@ class _ConvBlock2d(_AEBlock):
         self.activation_param = activation_param
         self.dropout_p = dropout_p
 
+        conv = nn.Conv1d if num_dims == 1 else nn.Conv2d
+        bn = nn.BatchNorm1d if num_dims == 1 else nn.BatchNorm2d
+        dropout = nn.Dropout if num_dims == 1 else nn.Dropout2d
+
         layers = [
-            nn.Conv2d(
+            conv(
                 in_channels=self.in_channels,
                 out_channels=self.out_channels,
                 kernel_size=self.kernel_size,
@@ -227,79 +225,9 @@ class _ConvBlock2d(_AEBlock):
             )
         ]
 
-        if self.batch_norm:
-            layers.append(nn.BatchNorm2d(self.out_channels))
-        layers.append(
-            _get_activation(self.activation_fn, self.activation_param)
-        )
-        if self.dropout_p > 0:
-            layers.append(nn.Dropout2d(self.dropout_p))
-        self.layers = nn.Sequential(*layers)
-
-    def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
-        """Forward method."""
-        return self.layers(data)
-
-
-class _ConvBlock1d(_AEBlock):
-    """1-dimensional autoencoder convolutional block.
-
-    Args:
-        in_channels (int): Number of input channels.
-        out_channels (int): Number of output channels.
-        kernel_size (int): Kernel size.
-        stride (int): Stride length. Default: 1.
-        padding (union[tuple, str, int]): Size of the zero-padding. Default: 0.
-        activation_fn (str): Activation function. Default: 'relu'.
-        batch_norm (bool): Whether to use batch normalization. Default: True.
-        use_bias (bool): True if the convolution's bias term should be learned.
-            Default: False.
-        activation_param (optional[int, float]): Optional activation parameter.
-            Default: None.
-        dropout_p (float): Dropout probability. Default: 0.
-    """
-
-    def __init__(
-        self,
-        in_channels: int,
-        out_channels: int,
-        kernel_size: int,
-        stride: int,
-        padding: Union[tuple, str, int] = "same",
-        activation_fn: str = "relu",
-        batch_norm: bool = True,
-        use_bias: bool = True,
-        activation_param: Optional[Union[int, float]] = None,
-        dropout_p: float = 0,
-    ):
-        super(_ConvBlock1d, self).__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
-        self.activation_fn = activation_fn
-        self.batch_norm = batch_norm
-        self.use_bias = use_bias
-        self.activation_param = activation_param
-        self.dropout_p = dropout_p
-        layers = [
-            nn.Conv1d(
-                in_channels=self.in_channels,
-                out_channels=self.out_channels,
-                kernel_size=self.kernel_size,
-                stride=self.stride,
-                padding=self.padding,
-                bias=self.use_bias,
-            )
-        ]
-        if self.batchnorm:
-            layers.append(nn.BatchNorm1d(self.out_channels))
-        layers.append(
-            _get_activation(self.activation_fn, self.activation_param)
-        )
-        if self.dropout_p > 0:
-            layers.append(nn.Dropout(self.dropout_p))
+        layers.extend([bn(self.out_channels)] if batch_norm else [])
+        layers.append(_get_activation(activation_fn, activation_param))
+        layers.extend([dropout(dropout_p)] if dropout_p > 0 else [])
         self.layers = nn.Sequential(*layers)
 
     def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
@@ -695,7 +623,7 @@ class _UpBlock1d(_AEBlock):
         return output
 
 
-class _SoftConv(_AEBlock):
+class SoftConv(_AEBlock):
     def __init__(
         self,
         hidden_channels: int,
@@ -703,14 +631,14 @@ class _SoftConv(_AEBlock):
         num_targets: int,
         num_dims: int,
     ):
-        super(_SoftConv, self).__init__()
+        super(SoftConv, self).__init__()
         self.hidden_channels = hidden_channels
         self.out_channels = out_channels
         self.num_targets = num_targets
         self.num_dims = num_dims
-        conv = nn.Conv2d if num_dims == 2 else nn.Conv1d
+        conv = nn.Conv1d if num_dims == 1 else nn.Conv2d
 
-        self.separator_conv = conv(
+        self.soft_conv = conv(
             in_channels=hidden_channels,
             out_channels=num_targets,
             kernel_size=1,
@@ -718,9 +646,9 @@ class _SoftConv(_AEBlock):
             padding="same",
         )
 
-        self.soft_conv_heads = nn.ModuleList()
+        self.separator_convs = nn.ModuleList()
         for _ in range(num_targets):
-            self.soft_conv_heads.append(
+            self.separator_convs.append(
                 conv(
                     in_channels=num_targets,
                     out_channels=out_channels,
@@ -732,12 +660,33 @@ class _SoftConv(_AEBlock):
 
     def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
         """Forward method."""
-        data = self.separator_conv(data)
-        outputs = []
+        data = self.soft_conv(data)
+        output = []
         for i in range(self.num_targets):
-            outputs.append(self.soft_conv_heads[i](data))
-        outputs = torch.stack(outputs, dim=-1).float()
-        return outputs
+            output.append(self.separator_convs[i](data))
+        output = torch.stack(output, dim=-1).float()
+        return output
+
+
+class _RecurrentBlock(_AEBlock):
+    """Factory class for recurrent blocks."""
+
+    @staticmethod
+    def generate_recurrent_block(num_dims: int, **kwargs) -> "_RecurrentBlock":
+        if num_dims == 1:
+            return RecurrentBlock1d(**kwargs)
+        else:
+            return RecurrentBlock2d(**kwargs)
+
+
+class RecurrentBlock2d(_RecurrentBlock):
+    def __init__(self, **kwargs):
+        super(RecurrentBlock2d, self).__init__()
+
+
+class RecurrentBlock1d(_RecurrentBlock):
+    def __init__(self, **kwargs):
+        super(RecurrentBlock1d, self).__init__()
 
 
 class DownSample(nn.Module):

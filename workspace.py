@@ -2,12 +2,16 @@ import torch
 
 from config.build import build_layers
 from models.modules import AutoEncoder2d, VAE2d
-from models.base import UNetTF, UNetVTF
+# from models.base import UNetSpec, UNetVAESpec
+from models.mask_models import TFMaskUNet
+from models.layers import _get_transpose_padding
 from torchinfo import summary
+import inspect
+from models.layers import ConvBlock
+
 from pprint import pprint
 
 if __name__ == '__main__':
-    # d = build_layers({})
     # autoencoder = AutoEncoder2d(
     #     num_targets=3,
     #     num_bins=512,
@@ -26,53 +30,27 @@ if __name__ == '__main__':
     #     dropout_p=0.5,
     #     leak_constant=0.2
     # )
-    # vae = VAE2d(
-    #     num_targets=3,
-    #     latent_size=1024,
-    #     num_bins=512,
-    #     num_samples=173,
-    #     num_channels=1,
-    #     max_depth=6,
-    #     hidden_size=16,
-    #     kernel_size=(3, 5, 3, 5),
-    #     same_padding=True,
-    #     block_size=3,
-    #     downsampler='conv',
-    #     upsampler='transpose',
-    #     batch_norm=True,
-    #     activation='leaky_relu',
-    #     use_skip=True,
-    #     dropout_p=0.5,
-    #     leak_constant=0.2
-    # )
 
-    # model = UNetTF(
-    #     num_targets=3,
-    #     num_bins=512,
-    #     num_samples=173,
-    #     num_channels=1,
-    #     num_fft=1024,
-    #     hop_length=768,
-    #     window_size=1024,
-    #     max_depth=6,
-    #     hidden_size=16,
-    #     kernel_size=(3, 2, 3, 5)
-    # )
-
-    model = UNetVTF(
-        latent_size=1024,
-        num_targets=3,
-        num_bins=512,
-        num_samples=173,
-        num_channels=1,
-        num_fft=1024,
+    model = TFMaskUNet(
+        num_fft_bins=1023,
+        num_samples=315,
+        num_channels=2,
         hop_length=768,
-        window_size=1024,
-        max_depth=6,
-        hidden_size=16,
-        kernel_size=(3, 2, 3, 5)
+        window_size=1023,
+        kernel_size=(5, 2, 3, 5),
+        normalize_input=True,
+        mask_activation_fn='sigmoid'
     )
-    summary(model, torch.rand((1, 512, 173, 1)).size(), depth=8)
-    # print(model(torch.rand((1, 512, 173, 1))).size())
-    # autoencoder(torch.rand((1, 1, 512, 173)))
+
+    # print(model.autoencoder.kernel_size)
+    # summary(model, input_size=(1, 1, 3 * 44100))
+    x, y = torch.rand((1, 2, 44100 * 2)), torch.rand((1, 2, 44100 * 2, 4))
+    xx, yy = model.process_input(x, y)
+    # print(xx.shape, yy.shape)
+    print(model.num_fft, model.num_bins, model.window_size)
+    print(model(torch.rand((1, 2, 512, 315))).shape)
+    # print(model(torch.rand((1, 1, 3 * 44100))).size())
     # vae(torch.rand((1, 1, 512, 173)))
+    #
+    # print(ConvBlock(2, 128, 256, 2, 1, dropout_p=.8))
+

@@ -5,7 +5,7 @@ import torch.nn as nn
 import numpy as np
 
 
-from models.layers import _AEBlock, _SoftConv, _get_conv_output_size
+from models.layers import _AEBlock, SoftConv, _get_conv_output_size
 from typing import Tuple, Union, Optional, List
 
 _MIN_BLOCK_SIZE = 1
@@ -101,7 +101,7 @@ class _AutoEncoder(nn.Module):
             enc_block_stack = []
             for _ in range(block_size):
                 enc_block_stack.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="conv",
                         dim=2,
                         in_channels=in_channels,
@@ -131,7 +131,7 @@ class _AutoEncoder(nn.Module):
 
             if layer < self.max_depth - 1:
                 down_layers.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="downsampler",
                         dim=2,
                         in_channels=in_channels,
@@ -154,7 +154,7 @@ class _AutoEncoder(nn.Module):
             h_out, w_out = output_sizes[-((layer + 1) * (block_size + 1)) - 1]
 
             up_layers.append(
-                _AEBlock.get_autoencoder_block(
+                _AEBlock.generate_block(
                     block_type="upsampler",
                     dim=2,
                     in_channels=in_channels,
@@ -176,7 +176,7 @@ class _AutoEncoder(nn.Module):
             dec_block_stack = []
             for _ in range(block_size):
                 dec_block_stack.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="conv",
                         dim=2,
                         in_channels=in_channels,
@@ -202,7 +202,7 @@ class _AutoEncoder(nn.Module):
         self.encoder_down = down_layers
         self.decoder_up = up_layers
 
-        self.soft_conv = _SoftConv(
+        self.soft_conv = SoftConv(
             hidden_channels=hidden_size,
             num_targets=num_targets,
             out_channels=num_channels,
@@ -309,7 +309,7 @@ class AutoEncoder2d(nn.Module):
             enc_block_stack = []
             for _ in range(block_size):
                 enc_block_stack.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="conv",
                         dim=2,
                         in_channels=in_channels,
@@ -339,7 +339,7 @@ class AutoEncoder2d(nn.Module):
 
             if layer < self.max_depth - 1:
                 down_layers.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="downsampler",
                         dim=2,
                         in_channels=in_channels,
@@ -362,7 +362,7 @@ class AutoEncoder2d(nn.Module):
             h_out, w_out = output_sizes[-((layer + 1) * (block_size + 1)) - 1]
 
             up_layers.append(
-                _AEBlock.get_autoencoder_block(
+                _AEBlock.generate_block(
                     block_type="upsampler",
                     dim=2,
                     in_channels=in_channels,
@@ -384,7 +384,7 @@ class AutoEncoder2d(nn.Module):
             dec_block_stack = []
             for _ in range(block_size):
                 dec_block_stack.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="conv",
                         dim=2,
                         in_channels=in_channels,
@@ -410,7 +410,7 @@ class AutoEncoder2d(nn.Module):
         self.encoder_down = down_layers
         self.decoder_up = up_layers
 
-        self.soft_conv = _SoftConv(
+        self.soft_conv = SoftConv(
             hidden_channels=hidden_size,
             num_targets=num_targets,
             out_channels=num_channels,
@@ -484,7 +484,7 @@ class VAE2d(nn.Module):
         elif hidden_size < 0:
             raise ValueError(f"Hidden size must be at least 1.")
         elif isinstance(kernel_size, int):
-            kernel_size = [kernel_size] * 4
+            kernel_size = [kernel_size] + [2] + [kernel_size] + [5]
         elif isinstance(kernel_size, tuple):
             if len(kernel_size) != 4 - bool(downsampler == "downsample"):
                 raise ValueError(
@@ -532,7 +532,7 @@ class VAE2d(nn.Module):
             enc_block_stack = []
             for _ in range(block_size):
                 enc_block_stack.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="conv",
                         dim=2,
                         in_channels=in_channels,
@@ -562,7 +562,7 @@ class VAE2d(nn.Module):
 
             if layer < self.max_depth - 1:
                 down_layers.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="downsampler",
                         dim=2,
                         in_channels=in_channels,
@@ -597,7 +597,7 @@ class VAE2d(nn.Module):
             h_out, w_out = output_sizes[-((layer + 1) * (block_size + 1)) - 1]
 
             up_layers.append(
-                _AEBlock.get_autoencoder_block(
+                _AEBlock.generate_block(
                     block_type="upsampler",
                     dim=2,
                     in_channels=in_channels,
@@ -619,7 +619,7 @@ class VAE2d(nn.Module):
             dec_block_stack = []
             for _ in range(block_size):
                 dec_block_stack.append(
-                    _AEBlock.get_autoencoder_block(
+                    _AEBlock.generate_block(
                         block_type="conv",
                         dim=2,
                         in_channels=in_channels,
@@ -645,7 +645,7 @@ class VAE2d(nn.Module):
         self.encoder_down = down_layers
         self.decoder_up = up_layers
 
-        self.soft_conv = _SoftConv(
+        self.soft_conv = SoftConv(
             hidden_channels=hidden_size,
             num_targets=num_targets,
             out_channels=num_channels,
