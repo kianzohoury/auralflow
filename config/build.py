@@ -9,7 +9,7 @@ import torchinfo
 from yaml import YAMLError
 
 from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
-from audio_folder.datasets import AudioFolder
+from datasets.datasets import AudioFolder
 from ruamel.yaml.error import MarkedYAMLError
 from utils.data_utils import get_data_shape
 from models.adaptive import process_block
@@ -140,7 +140,7 @@ def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
             specified within the dataset configuration file.
 
     Returns:
-        (audio_folder): An audio_folder iterable dataset.
+        (audio_folder): An datasets iterable dataset.
 
     Raises:
         FileNotFoundError: Path to dataset could not be found.
@@ -308,10 +308,10 @@ def load_model(
 
 def build_layers(config_dict: dict):
     d1 = yaml_parser.load(
-        Path("/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml")
+        Path("/config/unet/unet_base.yaml")
     )
     d2 = yaml_parser.load(
-        Path("/Users/Kian/Desktop/auralflow/config/data_config.yaml")
+        Path("/config/data_config.yaml")
     )
     d = d1 | d2
 
