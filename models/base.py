@@ -27,11 +27,11 @@ class SeparationModel(ABC):
         torch.backends.cudnn.benchmark = True
 
     @abstractmethod
-    def forward(self, data):
+    def forward(self):
         pass
 
     @abstractmethod
-    def backward(self, **kwargs):
+    def backward(self):
         pass
 
     @abstractmethod

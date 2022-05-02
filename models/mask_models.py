@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.nn import L1Loss
 from torch.optim import AdamW
 
-from typing import Union, Tuple, Any
+from typing import Union, Tuple, Any, List
 from .modules import AutoEncoder2d
 from .layers import _get_activation
 from .base import SeparationModel
@@ -138,6 +138,11 @@ class SpectrogramMaskModel(SeparationModel):
     """"""
 
     def __init__(self, configuration: dict):
+        self.mixtures: torch.Tensor = torch.Tensor()
+        self.targets: torch.Tensor = torch.Tensor()
+        self.loss: List = []
+        self.masks: List = []
+
         dataset_params = configuration["dataset_params"]
         arch_params = configuration["architecture_params"]
         num_samples = get_num_frames(
@@ -186,14 +191,11 @@ class SpectrogramMaskModel(SeparationModel):
             hop_length=dataset_params["hop_length"],
         )
 
-        self.loss: Any
-        self.output: torch.Tensor
-
-        # if self.is_training:
-        #     self.criterion = L1Loss()
-        #     self.optimizer = AdamW(
-        #         self.model.parameters(), config["training_params"]["lr"]
-        #     )
+        if self.is_training:
+            self.criterion = L1Loss()
+            lr = configuration["training_params"]["lr"]
+            for model in self.models:
+                self.optimizers.append(AdamW(model.parameters(), lr))
 
     def fast_fourier(self, data: torch.Tensor) -> torch.Tensor:
         """Helper method to transform raw data to complex-valued STFT data."""
@@ -224,22 +226,25 @@ class SpectrogramMaskModel(SeparationModel):
         data_spec = torch.abs(data_stft)
         return data_spec
 
-    def forward(self, mixture_data: torch.FloatTensor) -> torch.FloatTensor:
-        return self.model(mixture_data.squeeze(-1))
+    def set_data(self, mixture, target):
+        self.mixtures = self.process_data(mixture)
+        self.targets = self.process_data(target)
 
-    def backward(
-        self,
-        mask: torch.FloatTensor,
-        mixture_data: torch.FloatTensor,
-        target_data: torch.FloatTensor,
-    ):
-        estimate = mask * mixture_data
-        self.loss = self.criterion(estimate, target_data)
+    def forward(self):
+        for model in self.models:
+            self.masks.append(model(self.mixtures.squeeze(-1)))
+
+    def backward(self):
+        for mask in self.masks:
+            estimate = mask * self.mixtures
+            loss = self.criterion(estimate, self.targets)
+            self.loss.append(loss)
 
     def optimizer_step(self):
-        self.loss.backward()
-        self.optimizer.step()
-        self.optimizer.zero_grad()
+        for loss, optimizer in zip(self.loss, self.optimizers):
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
 
     def validate(self):
         pass
