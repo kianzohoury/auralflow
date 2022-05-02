@@ -7,6 +7,7 @@ from torch import stft, istft
 
 def get_stft(num_fft: int, hop_length: int, window_size: int) -> Callable:
     """Returns the stft function specified by the input args."""
+
     def stft_func(data):
         return stft(
             input=data,
@@ -16,6 +17,7 @@ def get_stft(num_fft: int, hop_length: int, window_size: int) -> Callable:
             onesided=True,
             return_complex=True,
         )
+
     return stft_func
 
 
@@ -23,6 +25,7 @@ def get_inverse_stft(
     num_fft: int, hop_length: int, window_size: int
 ) -> Callable:
     """Returns the inverse of the stft function specified by the input args."""
+
     def inverse_stft_func(data):
         return istft(
             input=data,
@@ -32,6 +35,7 @@ def get_inverse_stft(
             onesided=True,
             return_complex=True,
         )
+
     return inverse_stft_func
 
 

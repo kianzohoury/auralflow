@@ -1,12 +1,9 @@
+from abc import abstractmethod, ABC
+from torchinfo import summary
 from pathlib import Path
 
 import torch
 import torch.nn as nn
-
-from abc import ABCMeta, abstractmethod, ABC
-
-from typing import List
-from torchinfo import summary
 
 
 class SeparationModel(ABC):
@@ -77,6 +74,7 @@ class SeparationModel(ABC):
                 model.cpu().state_dict(), Path(self.checkpoint_path) / path
             )
             model.to(self.device)
+
 
 # class MaskModel(TFMaskModelBase):
 #     def __init__(self, **kwargs):

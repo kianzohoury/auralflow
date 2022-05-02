@@ -145,7 +145,7 @@ class SpectrogramMaskModel(SeparationModel):
             sample_length=dataset_params["sample_length"],
             num_fft=dataset_params["num_fft"],
             window_size=dataset_params["window_size"],
-            hop_length=dataset_params["hop_length"]
+            hop_length=dataset_params["hop_length"],
         )
 
         super(SpectrogramMaskModel, self).__init__(**configuration)
@@ -168,7 +168,7 @@ class SpectrogramMaskModel(SeparationModel):
                     mask_activation_fn=arch_params["mask_activation_fn"],
                     dropout_p=arch_params["dropout_p"],
                     use_skip=arch_params["use_skip"],
-                    normalize_input=arch_params["normalize_input"]
+                    normalize_input=arch_params["normalize_input"],
                 )
             )
 
@@ -177,13 +177,13 @@ class SpectrogramMaskModel(SeparationModel):
         self.stft = get_stft(
             num_fft=dataset_params["num_fft"],
             window_size=dataset_params["window_size"],
-            hop_length=dataset_params["hop_length"]
+            hop_length=dataset_params["hop_length"],
         )
 
         self.inv_stft = get_inverse_stft(
             num_fft=dataset_params["num_fft"],
             window_size=dataset_params["window_size"],
-            hop_length=dataset_params["hop_length"]
+            hop_length=dataset_params["hop_length"],
         )
 
         self.loss: Any
@@ -211,7 +211,7 @@ class SpectrogramMaskModel(SeparationModel):
         data_stft = torch.stack(data_stft, dim=1)
         return data_stft
 
-    def process_input(self, data: torch.Tensor) -> torch.Tensor:
+    def process_data(self, data: torch.Tensor) -> torch.Tensor:
         """Processes audio data into magnitudes spectrograms for training.
 
         Args:

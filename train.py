@@ -11,26 +11,29 @@ from utils.progress_bar import ProgressBar
 
 def main(config_filepath: str):
 
+    print("Reading configuration file...")
     configuration = load_config(config_filepath)
-    training_mode = configuration["training_params"]["training_mode"]
+
+    training_params = configuration["training_params"]
+    dataset_params = configuration["dataset_params"]
+    loader_params = dataset_params["loader_params"]
+
+    training_mode = training_params["training_mode"]
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    print("Initializing dataset...")
+    print("Loading dataset...")
     train_dataset = create_dataset(
-        dataset_params=configuration["dataset_params"], subset="train"
+        dataset_params=dataset_params, subset="train"
     )
-    val_dataset = train_dataset.split(
-        configuration["dataset_params"]["val_split"]
-    )
-
+    val_dataset = train_dataset.split(val_split=dataset_params["val_split"])
     train_dataloader = load_dataset(
-        dataset=train_dataset, dataset_params=configuration["dataset_params"]
+        dataset=train_dataset, loader_params=dataset_params["loader_params"]
     )
     val_dataloader = load_dataset(
-        dataset=val_dataset, dataset_params=configuration["dataset_params"]
+        dataset=val_dataset, loader_params=dataset_params["loader_params"]
     )
-    print("Finished loading data.")
+    print("Loading complete.")
 
     model = create_model(configuration)
     # model.setup()
@@ -39,12 +42,9 @@ def main(config_filepath: str):
     print("Training session started...")
     print("=" * 95)
 
-    current_epoch = configuration["training_params"]["last_epoch"] + 1
-    max_epochs = configuration["training_params"]["max_epochs"]
-    stop_epoch = current_epoch + max_epochs
-    max_dataloader_iters = configuration["dataset_params"]["loader_params"][
-        "max_iterations"
-    ]
+    current_epoch = training_params["last_epoch"] + 1
+    stop_epoch = current_epoch + training_params["max_epochs"]
+    max_iters_per_epoch = loader_params["max_iterations"]
     global_step = configuration["training_params"]["global_step"]
 
     # writer = tensorboard.SummaryWriter(
@@ -56,30 +56,24 @@ def main(config_filepath: str):
     for epoch in range(current_epoch, stop_epoch):
 
         total_loss = 0
-        start = 0
 
-        with ProgressBar(train_dataloader, max_dataloader_iters) as pbar:
+        with ProgressBar(train_dataloader, max_iters_per_epoch) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
             for index, (mixture, target) in enumerate(pbar):
-                loading_time = time.time() - start
-                start = time.time()
 
                 mixture, target = mixture.to(device), target.to(device)
-                mixture = model.process_input(mixture)
-                target = model.process_input(target)
-                stft_time = time.time() - start
+
+                mixture = model.process_data(mixture)
+                target = model.process_data(target)
                 mask = model.forward(mixture)
                 model.backward(mask, mixture, target)
                 model.optimizer_step()
 
                 #         # writer.add_scalar("Loss/train", model.loss.item(), global_step)
 
-                #         # iter_losses.append(loss.item())
                 pbar.set_postfix(
                     {
                         "loss": model.loss.item(),
-                        # "loading_time": f"{round(loading_time, 2)}s",
-                        "stft_time": f"{round(stft_time, 2)}s",
                     }
                 )
                 total_loss += model.loss.item()
@@ -88,43 +82,13 @@ def main(config_filepath: str):
                 start = time.time()
 
                 # break after seeing max_iter * batch_size samples
-                if index >= max_dataloader_iters:
-                    pbar.set_postfix(loss=total_loss / max_dataloader_iters)
+                if index >= max_iters_per_epoch:
+                    pbar.set_postfix(loss=total_loss / max_iters_per_epoch)
                     pbar.clear()
                     break
             # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
 
         # epoch_losses.append(total_loss / max_iters)
-
-        # additional validation step for early stopping
-        # val_loss, val_steps = cross_validate(
-        #     model,
-        #     val_dataloader,
-        #     criterion,
-        #     max_iters,
-        #     writer,
-        #     num_fft,
-        #     window_size,
-        #     hop_length,
-        #     val_steps,
-        #     device,
-        # )
-        # val_losses.append(val_loss)
-
-        # update current training environment/model state
-        # training_session["current_epoch"] = epoch
-        # training_session["global_steps"] = global_steps
-        # training_session["state_dict"] = model.state_dict()
-        # training_session["optimizer"] = optimizer.state_dict()
-        # training_session["iter_losses"] = iter_losses
-        # training_session["epoch_losses"] = epoch_losses
-        # training_session["val_losses"] = val_losses
-        # training_session["trained"] = True
-
-        # take snapshot and save to checkpoint directory
-        # checkpoint_handler(training_session,
-        #                    training_session['model_dir'] / 'checkpoints',
-        #                    display=(epoch - 1) % 10 == 0)
 
         # if epoch % 10 == 0:
         #     torch.save(training_session, training_session["latest_checkpoint"])
@@ -157,7 +121,6 @@ if __name__ == "__main__":
         "config_filepath", type=str, help="Path to a configuration file."
     )
     args = parser.parse_args()
-
     main(args.config_filepath)
 
 
