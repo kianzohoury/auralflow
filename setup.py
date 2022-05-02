@@ -1,19 +1,18 @@
 from setuptools import find_packages, setup
 from pathlib import Path
 
-NAME = 'auralflow'
+NAME = "auralflow"
 
 REQUIREMENTS = [
-    'torch',
-    'torchaudio'
-    'librosa',
-    'numpy',
-    'matplotlib',
-    'ipython',
-    'pyyaml',
-    'tabulate',
-    'torchinfo',
-    'tqdm',
+    "torch",
+    "torchaudio" "librosa",
+    "numpy",
+    "matplotlib",
+    "ipython",
+    "pyyaml",
+    "tabulate",
+    "torchinfo",
+    "tqdm",
 ]
 
 with open(Path("README.md"), "r") as file:
@@ -39,16 +38,14 @@ setup(
         "Programming Language :: C++",
         "Programming Language :: Python :: 3",
         "Topic :: Multimedia :: Sound/Audio",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence"
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
     # Exclude the build files.
     packages=find_packages(),
     install_requires=REQUIREMENTS,
     # extras_requires=EXTRAS,
-
     # entry_points={
     #     'console_scripts': [
     #         'auralflow = parse_sessions.__main__:main'
     #     ]
 )
-

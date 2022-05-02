@@ -1,14 +1,12 @@
+from pathlib import Path
+from typing import Iterator, List, Optional, Tuple
+from torch.utils.data.dataset import IterableDataset
+
 import librosa
 import numpy as np
 import torch
-import torchaudio
 import torch.utils.data
-
-from pathlib import Path
-from torch.utils.data.dataset import IterableDataset, Dataset
-from torch.utils.data.dataloader import DataLoader
-from typing import Iterator, List, Optional, Tuple
-from tqdm import tqdm
+import torchaudio
 
 
 class AudioFolder(IterableDataset):
@@ -80,9 +78,9 @@ class AudioFolder(IterableDataset):
                 track_filepaths.append(track_fp)
 
         self._track_filepaths = track_filepaths
-        # Remember the track durations to speed up the chunk sampling process.
+        # Cache the track durations to speed up sampling.
         self._duration_cache = {}
-        # Set torchaudio backend for loading (soundfile > sox_io for loading).
+        # Set torchaudio backend for audio loading.
         torchaudio.set_audio_backend(backend)
         np.random.seed(1)
 
@@ -101,6 +99,7 @@ class AudioFolder(IterableDataset):
             sampled_track.joinpath(name).with_suffix("." + self.audio_format)
             for name in source_names
         ]
+
         if sampled_track.name not in self._duration_cache:
             duration = librosa.get_duration(filename=source_filepaths[0])
             self._duration_cache[sampled_track.name] = duration
@@ -116,8 +115,8 @@ class AudioFolder(IterableDataset):
                     frame_offset=offset * self.sample_rate,
                     num_frames=self.sample_length * self.sample_rate,
                 )
-            except ValueError as e:
-                raise ValueError(f"Cannot load {str(source_filepath)}.") from e
+            except IOError as e:
+                raise IOError(f"Cannot load {str(source_filepath)}.") from e
             if self.num_channels == 1:
                 audio_data = torch.mean(audio_data, dim=0, keepdim=True)
             sources_data.append(audio_data)
@@ -167,53 +166,7 @@ class AudioFolder(IterableDataset):
         return val_dataset
 
     def __iter__(self) -> Iterator:
-        """Iter method called by the dataloader."""
+        """Iter method."""
         while True:
             mix, target = self._generate_mixture()
             yield mix, target
-
-
-
-class AudioDataset(Dataset):
-    def __init__(self, audio_folder, num_samples=1000):
-        self.dataset = []
-        self.num_samples = num_samples
-        dataloader = DataLoader(audio_folder, num_workers=16, pin_memory=True)
-        with tqdm(dataloader, total=num_samples) as tq:
-            for i, sample in enumerate(tq):
-                self.dataset.append(sample)
-                if i == num_samples:
-                    break
-    
-    def __getitem__(self, idx):
-        return self.dataset[idx]
-
-    def __len__(self):
-        return self.num_samples
-
-class StreamDataset(Dataset):
-    def __init__(self, audio_folder):
-        frame_length = (2048 * 44100) // 22050
-        hop_length = (512 * 44100) // 22050
-        self.data = []
-        total = 0
-        for filepath in audio_folder._track_filepaths:
-
-            # Stream the data, working on 128 frames at a time
-            stream = librosa.stream(filepath / "mixture.wav",
-                                    block_length=128,
-                                    frame_length=frame_length,
-                                    hop_length=hop_length)
-
-            chromas = []
-            for y in stream:
-                chroma_block = librosa.feature.chroma_stft(y=y, sr=44100,
-                                                            n_fft=frame_length,
-                                                            hop_length=hop_length,
-                                                            center=True)
-                total += 1
-            chromas.append(chromas)
-            self.data.extend(chromas)
-            print(len(self.data))
-
-

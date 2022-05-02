@@ -11,6 +11,7 @@ class ProgressBar(tqdm):
         train (bool): Displays training bar if True, or validation bar if False.
             Default: True.
     """
+
     def __init__(self, dataloader: DataLoader, total: int, train: bool = True):
         desc = None if train else f"Evaluating..."
         ascii_symbol = None if train else " ="
@@ -23,5 +24,5 @@ class ProgressBar(tqdm):
             ascii=ascii_symbol,
             bar_format=bar_format,
             total=total,
-            ncols=120
+            ncols=120,
         )

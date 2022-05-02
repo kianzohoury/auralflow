@@ -20,7 +20,13 @@ import config.utils
 from trainer.trainer import cross_validate
 from utils.progress_bar import ProgressBar
 from torch.utils.data.dataloader import DataLoader
-from audio_folder import AudioFolder, create_dataset, load_dataset, AudioDataset, StreamDataset
+from audio_folder import (
+    AudioFolder,
+    create_dataset,
+    load_dataset,
+    AudioDataset,
+    StreamDataset,
+)
 from argparse import ArgumentParser
 import config.build
 
@@ -63,7 +69,6 @@ def main(config_filepath: str):
     ]
     global_step = configuration["training_params"]["global_step"]
 
-
     # writer = tensorboard.SummaryWriter(
     #     training_session["model_dir"].parent / "runs"
     # )
@@ -74,7 +79,7 @@ def main(config_filepath: str):
 
         total_loss = 0
         start = 0
-        
+
         with ProgressBar(train_dataloader, max_dataloader_iters) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
             for index, (mixture, target) in enumerate(pbar):
@@ -89,28 +94,27 @@ def main(config_filepath: str):
                 model.backward(mask, mixture, target)
                 model.optimizer_step()
 
-        #         # writer.add_scalar("Loss/train", model.loss.item(), global_step)
+                #         # writer.add_scalar("Loss/train", model.loss.item(), global_step)
 
-        #         # iter_losses.append(loss.item())
+                #         # iter_losses.append(loss.item())
                 pbar.set_postfix(
                     {
                         "loss": model.loss.item(),
                         # "loading_time": f"{round(loading_time, 2)}s",
-                        "stft_time": f"{round(stft_time, 2)}s"
+                        "stft_time": f"{round(stft_time, 2)}s",
                     }
                 )
                 total_loss += model.loss.item()
 
                 global_step += 1
                 start = time.time()
-            
+
                 # break after seeing max_iter * batch_size samples
                 if index >= max_dataloader_iters:
                     pbar.set_postfix(loss=total_loss / max_dataloader_iters)
                     pbar.clear()
                     break
             # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
-
 
         # epoch_losses.append(total_loss / max_iters)
 
@@ -177,7 +181,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.config_filepath)
-
 
 
 #

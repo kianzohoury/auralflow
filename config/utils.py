@@ -10,7 +10,7 @@ from collections import OrderedDict
 
 yaml_parser = ruamel.yaml.YAML()
 
-config_dir = Path(__file__ ) / 'config'
+config_dir = Path(__file__) / "config"
 
 
 def get_session_logs(logs_file: Path) -> Optional[dict]:
@@ -24,8 +24,9 @@ def get_session_logs(logs_file: Path) -> Optional[dict]:
         try:
             logs_file.open("w")
         except IOError as e:
-            raise IOError(f"Cannot create session logs file",
-                          "{str(logs_file)}.") from e
+            raise IOError(
+                f"Cannot create session logs file", "{str(logs_file)}."
+            ) from e
     try:
         return yaml_parser.load(logs_file) or {}
     except YAMLError as e:
@@ -40,7 +41,7 @@ def log_session(logs_file: Path, **data):
     """
     try:
         current_logs = get_session_logs(logs_file)
-        session_id = data['session-id']
+        session_id = data["session-id"]
         current_logs[session_id] = data
         yaml_parser.dump(current_logs, logs_file)
     except YAMLError as e:
@@ -62,8 +63,10 @@ def clone_config_file(template_config: Path, model_dir: Path):
         destination_file = model_dir / template_config.name
         yaml_parser.dump(config_data, destination_file)
     except YAMLError as e:
-        raise YAMLError(f"Cannot clone the configuration file",
-                        "{str(template_config)} into {str(model_dir)}.") from e
+        raise YAMLError(
+            f"Cannot clone the configuration file",
+            "{str(template_config)} into {str(model_dir)}.",
+        ) from e
 
 
 def remove_directory(folder: Path):
@@ -87,11 +90,11 @@ def clear_session(logs_file: Path, session_id: str):
             print(f"Error: no such session: {session_id} exists.")
         else:
             try:
-                session_dir = Path(logs[session_id]['location'])
+                session_dir = Path(logs[session_id]["location"])
                 remove_directory(session_dir)
                 logs.pop(session_id)
                 if len(logs) == 1:
-                    logs.pop('current')
+                    logs.pop("current")
                 print(f"Success: {session_id} was erased.")
                 yaml_parser.dump(logs, logs_file)
             except (IOError, YAMLError) as e:
@@ -111,18 +114,18 @@ def list_models(logs_file: Path):
     else:
         table_entries = []
         for session_name, info in logs.items():
-            if session_name == 'current':
+            if session_name == "current":
                 continue
-            location = info['location']
-            date = info['date-created']
-            models = info['models']
+            location = info["location"]
+            date = info["date-created"]
+            models = info["models"]
             for model in models:
                 table_entries.append(
                     [session_name, model, date, location + f"/{model}"]
                 )
         table_string = tabulate(
             table_entries,
-            headers=['Session', 'Model', 'Created', 'Location'],
-            tablefmt="rst"
+            headers=["Session", "Model", "Created", "Location"],
+            tablefmt="rst",
         )
         print(table_string)

@@ -133,6 +133,7 @@ class TFMaskUNet(nn.Module):
 
 class SpectrogramMaskModel(SeparationModel):
     """"""
+
     loss: torch.Tensor
 
     def __init__(self, config: dict):
@@ -144,32 +145,35 @@ class SpectrogramMaskModel(SeparationModel):
             "onesided": True,
             "return_complex": True,
         }
-        self.stft = lambda data: torch.stft(
-            input=data, **self.data_transform
-        )
+        self.stft = lambda data: torch.stft(input=data, **self.data_transform)
         self.istft = lambda data: torch.istft(
             input=data, **self.data_transform
         )
         sample_data = torch.rand(
-            (config["dataset_params"]["num_channels"],
-             config["dataset_params"]["sample_rate"] * config["dataset_params"]["sample_length"]
-             )
+            (
+                config["dataset_params"]["num_channels"],
+                config["dataset_params"]["sample_rate"]
+                * config["dataset_params"]["sample_length"],
+            )
         )
         num_samples = self.stft(sample_data).size(-1)
 
         super(SpectrogramMaskModel, self).__init__(config)
         self.model = TFMaskUNet(
             num_fft_bins=config["dataset_params"]["num_fft"],
-            num_samples=num_samples, num_channels=1,
-            block_size=1
+            num_samples=num_samples,
+            num_channels=1,
+            block_size=1,
         )
         self.num_channels = self.model.num_channels
         self.num_targets = self.model.num_targets
         self.models.append(self.model.to(self.device))
-   
+
         if self.is_training:
             self.criterion = L1Loss()
-            self.optimizer = AdamW(self.model.parameters(), config["training_params"]["lr"])
+            self.optimizer = AdamW(
+                self.model.parameters(), config["training_params"]["lr"]
+            )
 
     def fast_fourier(self, data: torch.Tensor) -> torch.Tensor:
         """Helper method to transform raw data to complex-valued STFT data."""
@@ -203,7 +207,12 @@ class SpectrogramMaskModel(SeparationModel):
     def forward(self, mixture_data: torch.FloatTensor) -> torch.FloatTensor:
         return self.model(mixture_data.squeeze(-1))
 
-    def backward(self, mask: torch.FloatTensor, mixture_data: torch.FloatTensor, target_data: torch.FloatTensor):
+    def backward(
+        self,
+        mask: torch.FloatTensor,
+        mixture_data: torch.FloatTensor,
+        target_data: torch.FloatTensor,
+    ):
         estimate = mask * mixture_data
         self.loss = self.criterion(estimate, target_data)
 
@@ -230,21 +239,6 @@ class SpectrogramMaskModel(SeparationModel):
             )
         estimate_signal = self.istft(estimate_phase_corrected)
         return estimate_signal
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #

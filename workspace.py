@@ -2,6 +2,7 @@ import torch
 
 from config.build import build_layers
 from models.modules import AutoEncoder2d, VAE2d
+
 # from models.base import UNetSpec, UNetVAESpec
 from models.mask_models import TFMaskUNet
 from models.layers import _get_transpose_padding
@@ -11,7 +12,7 @@ from models.layers import ConvBlock
 
 from pprint import pprint
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # autoencoder = AutoEncoder2d(
     #     num_targets=3,
     #     num_bins=512,
@@ -37,7 +38,7 @@ if __name__ == '__main__':
         num_channels=2,
         kernel_size=(3, 2, 5, 3),
         normalize_input=True,
-        mask_activation_fn='sigmoid'
+        mask_activation_fn="sigmoid",
     )
 
     # print(model.autoencoder.kernel_size)
@@ -52,4 +53,3 @@ if __name__ == '__main__':
     # vae(torch.rand((1, 1, 512, 173)))
     #
     # print(ConvBlock(2, 128, 256, 2, 1, dropout_p=.8))
-

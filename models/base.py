@@ -64,10 +64,6 @@ class SeparationModel(ABC):
             summary(model, depth=6)
 
 
-
-
-
-
 # class MaskModel(TFMaskModelBase):
 #     def __init__(self, **kwargs):
 #         super(MaskModel, self).__init__(**kwargs)
@@ -78,4 +74,3 @@ class SeparationModel(ABC):
 #
 # class AudioMaskModelBase(nn.Module):
 #     """Base class for deep source mask estimation directly in the time domain."""
-

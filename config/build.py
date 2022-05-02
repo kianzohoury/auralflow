@@ -16,15 +16,17 @@ from models.adaptive import process_block
 
 from typing import Optional
 
-yaml_parser = ruamel.yaml.YAML(typ='safe', pure=True)
-session_logs_file = Path(__file__).parent / 'session_logs.yaml'
+yaml_parser = ruamel.yaml.YAML(typ="safe", pure=True)
+session_logs_file = Path(__file__).parent / "session_logs.yaml"
 
 
 class BuildFailure(Exception):
     def __init__(self, error):
         self.error = error
-        self.message = ("Cannot build model. Check configuration file for"
-                        "missing or invalid arguments.")
+        self.message = (
+            "Cannot build model. Check configuration file for"
+            "missing or invalid arguments."
+        )
 
     def __repr__(self):
         return f"{self.error}. {self.message}"
@@ -39,9 +41,9 @@ def compress_keys(config_dict: dict) -> dict:
         if isinstance(v1, dict):
             flattened = compress_keys(v1)
             for k2 in flattened:
-                result[f"{k1}_{k2}".replace('-', '_')] = flattened[k2]
+                result[f"{k1}_{k2}".replace("-", "_")] = flattened[k2]
         else:
-            result[k1.replace('-', '_')] = v1
+            result[k1.replace("-", "_")] = v1
     return result
 
 
@@ -66,13 +68,15 @@ def get_all_config_contents(model_dir: Path) -> dict:
                 frmt_config_data[label] = compress_keys(config_data[label])
         # Make sure only keys are 'model', 'data' and 'training'.
         for key in list(frmt_config_data.keys()):
-            if key not in {'dataset', 'model', 'training'}:
+            if key not in {"dataset", "model", "training"}:
                 frmt_config_data.pop(key)
         return frmt_config_data
     except MarkedYAMLError as e:
-        raise YAMLError(f"Cannot read files {e.context}. Check the formatting"
-                        " of your configuration files, or create a new model to" 
-                        " restore the configuration files.")
+        raise YAMLError(
+            f"Cannot read files {e.context}. Check the formatting"
+            " of your configuration files, or create a new model to"
+            " restore the configuration files."
+        )
 
 
 def build_model(config_data: dict) -> nn.Module:
@@ -87,9 +91,9 @@ def build_model(config_data: dict) -> nn.Module:
     Raises:
         BuildFailure: Failed to execute Pytorch module creation.
     """
-    model_config = compress_keys(config_data['model'])
-    dataset_config = compress_keys(config_data['dataset'])
-    base_model = model_config.pop('base_model')
+    model_config = compress_keys(config_data["model"])
+    dataset_config = compress_keys(config_data["dataset"])
+    base_model = model_config.pop("base_model")
     build_instructions = {**model_config, **dataset_config}
     for config_key in build_instructions.copy():
         if config_key not in REQUIRED_MODEL_KEYS:
@@ -97,25 +101,25 @@ def build_model(config_data: dict) -> nn.Module:
     try:
         input_size = get_data_shape(
             batch_size=1,
-            sample_rate=dataset_config['sample_rate'],
-            sample_length=dataset_config['sample_length'],
-            num_fft=dataset_config['num_fft'],
-            window_size=dataset_config['window_size'],
-            hop_length=dataset_config['hop_length'],
-            num_channels=dataset_config['num_channels'],
-            targets=build_instructions['targets']
+            sample_rate=dataset_config["sample_rate"],
+            sample_length=dataset_config["sample_length"],
+            num_fft=dataset_config["num_fft"],
+            window_size=dataset_config["window_size"],
+            hop_length=dataset_config["hop_length"],
+            num_channels=dataset_config["num_channels"],
+            targets=build_instructions["targets"],
         )
         num_bins, num_samples = input_size[1:3]
-        build_instructions['num_bins'] = num_bins
-        build_instructions['num_samples'] = num_samples
+        build_instructions["num_bins"] = num_bins
+        build_instructions["num_samples"] = num_samples
         encoder_block = process_block(
-            build_instructions.pop('encoder'), block_type='encoder'
+            build_instructions.pop("encoder"), block_type="encoder"
         )
         decoder_block = process_block(
-            build_instructions.pop('decoder'), block_type='decoder'
+            build_instructions.pop("decoder"), block_type="decoder"
         )
-        build_instructions['encoder'] = encoder_block
-        build_instructions['decoder'] = decoder_block
+        build_instructions["encoder"] = encoder_block
+        build_instructions["decoder"] = decoder_block
         model = BASE_MODELS[base_model](**build_instructions)
 
         # Test the network using via a forward pass.
@@ -141,26 +145,28 @@ def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
     Raises:
         FileNotFoundError: Path to dataset could not be found.
     """
-    dataset_config = compress_keys(config_data['dataset'])
+    dataset_config = compress_keys(config_data["dataset"])
     audio_transform = {}
-    for key in ['num_fft', 'window_size', 'hop_length']:
+    for key in ["num_fft", "window_size", "hop_length"]:
         try:
             audio_transform[key] = dataset_config.pop(key)
         except KeyError as error:
             raise BuildFailure(error)
-    dataset_config['transform'] = audio_transform
+    dataset_config["transform"] = audio_transform
     try:
-        dataset_dir = dataset_dir or Path(dataset_config.pop('path'))
-        dataset_config['path'] = str(dataset_dir)
+        dataset_dir = dataset_dir or Path(dataset_config.pop("path"))
+        dataset_config["path"] = str(dataset_dir)
         return AudioFolder(**dataset_config)
     except FileNotFoundError:
-        raise FileNotFoundError(f"Cannot load {str(dataset_dir)} into an "
-                                "AudioFolder. Check the directory's path.")
+        raise FileNotFoundError(
+            f"Cannot load {str(dataset_dir)} into an "
+            "AudioFolder. Check the directory's path."
+        )
 
 
-def load_model(model_dir: Path,
-               visualize: bool = False,
-               visual_depth: int = 8) -> nn.Module:
+def load_model(
+    model_dir: Path, visualize: bool = False, visual_depth: int = 8
+) -> nn.Module:
     """Loads a source separation model into memory.
 
     Args:
@@ -181,22 +187,20 @@ def load_model(model_dir: Path,
         model = build_model(config_dict)
         print("Success: PyTorch model was built. Printing model...")
         if visualize:
-            data_config_copy = dict(config_dict['dataset'])
-            for key in ['backend', 'audio_format', 'path']:
+            data_config_copy = dict(config_dict["dataset"])
+            for key in ["backend", "audio_format", "path"]:
                 data_config_copy.pop(key)
-            data_config_copy['batch_size'] \
-                = config_dict['training']['batch_size']
-            data_config_copy['targets'] = config_dict['model']['targets']
+            data_config_copy["batch_size"] = config_dict["training"][
+                "batch_size"
+            ]
+            data_config_copy["targets"] = config_dict["model"]["targets"]
             input_shape = transforms.get_data_shape(**data_config_copy)
             torchinfo.summary(
-                model=model,
-                input_size=input_shape[:-1],
-                depth=visual_depth
+                model=model, input_size=input_shape[:-1], depth=visual_depth
             )
         return model
     except Exception as error:
         raise BuildFailure(error)
-
 
 
 #
@@ -303,10 +307,13 @@ def load_model(model_dir: Path,
 
 
 def build_layers(config_dict: dict):
-    d1 = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml'))
-    d2 = yaml_parser.load(Path('/Users/Kian/Desktop/auralflow/config/data_config.yaml'))
+    d1 = yaml_parser.load(
+        Path("/Users/Kian/Desktop/auralflow/config/unet/unet_base.yaml")
+    )
+    d2 = yaml_parser.load(
+        Path("/Users/Kian/Desktop/auralflow/config/data_config.yaml")
+    )
     d = d1 | d2
-
 
     m = build_model(d)
     pprint(m)
@@ -319,5 +326,7 @@ def build_layers(config_dict: dict):
     except ValueError:
         raise
     return
+
+
 #
 # def parse_layers(config_dict: dict):

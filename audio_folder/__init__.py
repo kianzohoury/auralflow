@@ -1,15 +1,9 @@
-
 from torch.utils.data.dataloader import DataLoader
-from .datasets import AudioFolder, AudioDataset, StreamDataset
+from .datasets import AudioFolder
 
 
 def create_dataset(dataset_params: dict, subset: str = "train") -> AudioFolder:
-    """Instantiates and returns an AudioFolder.
-
-    Args:
-        dataset_params (dict): Dataset parameters.
-        subset (int): Subset of the dataset. Default: "train".
-    """
+    """Instantiates and returns an AudioFolder given a dataset config."""
     audio_folder = AudioFolder(
         subset=subset,
         dataset_path=dataset_params["dataset_path"],
@@ -23,14 +17,13 @@ def create_dataset(dataset_params: dict, subset: str = "train") -> AudioFolder:
     return audio_folder
 
 
-def load_dataset(dataset: AudioFolder, dataset_params: dict) -> DataLoader:
-    """Instantiates a dataloader."""
+def load_dataset(dataset: AudioFolder, loader_params: dict) -> DataLoader:
+    """Returns a dataloader for loading data from a given AudioFolder."""
     dataloader = DataLoader(
         dataset=dataset,
-        batch_size=dataset_params["loader_params"]["batch_size"],
-        num_workers=dataset_params["loader_params"]["num_workers"],
-        pin_memory=dataset_params["loader_params"]["pin_memory"],
-        persistent_workers=dataset_params["loader_params"]["persistent_workers"],
-        prefetch_factor=2
+        batch_size=loader_params["batch_size"],
+        num_workers=loader_params["num_workers"],
+        pin_memory=loader_params["pin_memory"],
+        persistent_workers=loader_params["persistent_workers"],
     )
     return dataloader
