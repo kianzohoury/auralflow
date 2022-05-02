@@ -12,13 +12,13 @@
         "mask_activation_fn": "relu",
         "dropout_p": 0,
         "use_skip": true,
-        "normalize_input": false
+        "normalize_input": true
     },
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
         "audio_format": "wav",
         "backend": "soundfile",
-        "targets": ["bass", "drums", "other", "vocals"],
+        "targets": ["bass"],
         "num_channels": 1,
         "sample_rate": 44100,
         "num_fft": 1023,
@@ -27,7 +27,7 @@
         "sample_length": 3,
         "val_split": 0.2,
         "loader_params": {
-            "max_iterations": 200,
+            "max_iterations": 1000,
             "batch_size": 4,
             "num_workers": 8,
             "pin_memory": true,

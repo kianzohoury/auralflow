@@ -24,5 +24,5 @@ class ProgressBar(tqdm):
             ascii=ascii_symbol,
             bar_format=bar_format,
             total=total,
-            ncols=120,
+            ncols=140,
         )

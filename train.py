@@ -2,11 +2,13 @@ import time
 from argparse import ArgumentParser
 
 import torch
+import numpy as np
 
 from datasets import create_dataset, load_dataset
 from models import create_model
 from utils import load_config
 from utils.progress_bar import ProgressBar
+from torch.utils.tensorboard import SummaryWriter
 
 
 def main(config_filepath: str):
@@ -47,15 +49,13 @@ def main(config_filepath: str):
     max_iters_per_epoch = loader_params["max_iterations"]
     global_step = configuration["training_params"]["global_step"]
 
-    # writer = tensorboard.SummaryWriter(
-    #     training_session["model_dir"].parent / "runs"
-    # )
+    writer = SummaryWriter("runs_vocals")
 
     stop_counter = 0
     model.train()
     for epoch in range(current_epoch, stop_epoch):
 
-        total_loss = 0
+        # total_loss = 0
 
         with ProgressBar(train_dataloader, max_iters_per_epoch) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
@@ -63,27 +63,40 @@ def main(config_filepath: str):
 
                 mixture, target = mixture.to(device), target.to(device)
 
-                mixture = model.process_data(mixture)
-                target = model.process_data(target)
-                mask = model.forward(mixture)
-                model.backward(mask, mixture, target)
+                mixture = model.set_data(mixture, target)
+                model.forward()
+                model.backward()
                 model.optimizer_step()
+                # target = model.process_data(target)
+                # mask = model.forward(mixture)
+                # model.backward(mask, mixture, target)
+                # model.optimizer_step()
 
-                #         # writer.add_scalar("Loss/train", model.loss.item(), global_step)
-
-                pbar.set_postfix(
-                    {
-                        "loss": model.loss.item(),
+                
+                closure = {
+                        "v_l": model.named_losses[0][-1],
+                        # "d_l": model.named_losses[1][-1],
+                        # "o_l": model.named_losses[2][-1],
+                        # "v_l": model.named_losses[3][-1],
+                        
                     }
-                )
-                total_loss += model.loss.item()
+                writer.add_scalars("Loss/train", closure, global_step)
+                pbar.set_postfix(closure)
+                # total_loss += model.loss.item()
 
                 global_step += 1
                 start = time.time()
 
+                closure = {
+                        "v_l": sum(model.named_losses[0]) / ((epoch + 1) * max_iters_per_epoch),
+                        # "d_l": sum(model.named_losses[1]) / ((epoch + 1) * max_iters_per_epoch),
+                        # "o_l": sum(model.named_losses[2]) / ((epoch + 1) * max_iters_per_epoch),
+                        # "v_l": sum(model.named_losses[3]) / ((epoch + 1) * max_iters_per_epoch),
+                }
+
                 # break after seeing max_iter * batch_size samples
                 if index >= max_iters_per_epoch:
-                    pbar.set_postfix(loss=total_loss / max_iters_per_epoch)
+                    pbar.set_postfix(closure)
                     pbar.clear()
                     break
             # print(prof.key_averages().table(sort_by="self_cpu_time_total"))

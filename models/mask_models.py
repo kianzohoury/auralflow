@@ -101,7 +101,7 @@ class TFMaskUNet(nn.Module):
         super(TFMaskUNet, self).__init__()
 
         if self.normalize_input:
-            self.input_norm = nn.BatchNorm2d(self.num_bins)
+            self.input_norm = nn.BatchNorm2d(self.num_fft_bins // 2 + 1)
 
         self.autoencoder = AutoEncoder2d(
             num_targets=1,
@@ -142,18 +142,20 @@ class SpectrogramMaskModel(SeparationModel):
         self.targets: torch.Tensor = torch.Tensor()
         self.loss: List = []
         self.masks: List = []
+        self.named_losses = [[] for _ in range(4)]
 
         dataset_params = configuration["dataset_params"]
         arch_params = configuration["architecture_params"]
-        num_samples = get_num_frames(
-            sample_rate=dataset_params["sample_rate"],
-            sample_length=dataset_params["sample_length"],
-            num_fft=dataset_params["num_fft"],
-            window_size=dataset_params["window_size"],
-            hop_length=dataset_params["hop_length"],
-        )
+        # num_samples = get_num_frames(
+        #     sample_rate=dataset_params["sample_rate"],
+        #     sample_length=dataset_params["sample_length"],
+        #     num_fft=dataset_params["num_fft"],
+        #     window_size=dataset_params["window_size"],
+        #     hop_length=dataset_params["hop_length"],
+        # )
+        num_samples = 173
 
-        super(SpectrogramMaskModel, self).__init__(**configuration)
+        super(SpectrogramMaskModel, self).__init__(configuration)
         num_models = len(configuration["dataset_params"]["targets"])
 
         for _ in range(num_models):
@@ -235,16 +237,20 @@ class SpectrogramMaskModel(SeparationModel):
             self.masks.append(model(self.mixtures.squeeze(-1)))
 
     def backward(self):
-        for mask in self.masks:
+        for i, mask in enumerate(self.masks):
             estimate = mask * self.mixtures
-            loss = self.criterion(estimate, self.targets)
+            loss = self.criterion(estimate, self.targets[:, :, :, :, i].unsqueeze(-1))
             self.loss.append(loss)
+            self.named_losses[i].append(loss.item())
 
     def optimizer_step(self):
         for loss, optimizer in zip(self.loss, self.optimizers):
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
+        self.loss = []
+        self.masks = []
+
 
     def validate(self):
         pass
