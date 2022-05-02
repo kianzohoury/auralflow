@@ -154,8 +154,7 @@ class SpectrogramNetSimple(nn.Module):
             compress=False,
         )
 
-        enc_sizes = [[num_fft_bins >> l, num_samples >> l] for l in range(7)]
-        print(enc_sizes)
+        enc_sizes = [[num_fft_bins >> l, num_samples >> l] for l in range(6)]
 
         self.up_1 = UpBlock(
             hidden_dim * 32,
@@ -224,5 +223,5 @@ class SpectrogramNetSimple(nn.Module):
         dec_5 = self.up_5(dec_4, skip_1)
         dec_6 = self.soft_conv(dec_5)
 
-        mask = self.mask_activation(dec_6)
+        mask = self.mask_activation(dec_6).permute(0, 2, 3, 1)
         return mask

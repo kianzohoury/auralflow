@@ -163,7 +163,7 @@ class SpectrogramMaskModel(SeparationModel):
         super(SpectrogramMaskModel, self).__init__(configuration)
         # num_models = len(configuration["dataset_params"]["targets"])
         self.model = SpectrogramNetSimple(
-            num_fft_bins=configuration["dataset_params"]["num_fft"],
+            num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
             num_samples=num_samples,
             num_channels=configuration["dataset_params"]["num_channels"]
         )
@@ -188,7 +188,7 @@ class SpectrogramMaskModel(SeparationModel):
         #             normalize_input=arch_params["normalize_input"],
         #         )
         #     )
-        self.model = self.model.to(self.device)
+        self.model = self.model.to("cuda")
         # self.models = [model.to(self.device) for model in self.models]
 
         self.stft = get_stft(
@@ -240,18 +240,18 @@ class SpectrogramMaskModel(SeparationModel):
         return data_spec
 
     def set_data(self, mixture, target):
-        self.mixtures = self.process_data(mixture)
-        self.targets = self.process_data(target)
+        self.mixtures = self.process_data(mixture).squeeze(-1)
+        self.targets = self.process_data(target).squeeze(-1).permute(0, 2, 3, 1)
 
     def forward(self):
-        self.mask = self.model(self.mixtures.squeeze(-1))
+        self.mask = self.model(self.mixtures)
         # for model in self.models:
         #     self.masks.append(model(self.mixtures.squeeze(-1)))
 
     def backward(self):
-        estimate = self.mask * self.mixtures
+        estimate = self.mask * self.mixtures.permute(0, 2, 3, 1)
         self.loss = self.criterion(
-            estimate, self.targets[:, :, :, :, 0].unsqueeze(-1)
+            estimate, self.targets
         )
         self.losses.append(self.loss.item())
 

@@ -9,6 +9,7 @@ from models import create_model
 from utils import load_config
 from utils.progress_bar import ProgressBar
 from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader
 
 
 def main(config_filepath: str):
@@ -29,15 +30,18 @@ def main(config_filepath: str):
         dataset_params=dataset_params, subset="train"
     )
     val_dataset = train_dataset.split(val_split=dataset_params["val_split"])
-    train_dataloader = load_dataset(
-        dataset=train_dataset, loader_params=dataset_params["loader_params"]
-    )
-    val_dataloader = load_dataset(
-        dataset=val_dataset, loader_params=dataset_params["loader_params"]
-    )
+    # train_dataloader = load_dataset(
+    #     dataset=train_dataset, loader_params=dataset_params["loader_params"]
+    # )
+    train_dataloader = DataLoader(
+        train_dataset, num_workers=8, pin_memory=True,
+        persistent_workers=True, batch_size=4)
+    # val_dataloader = load_dataset(
+    #     dataset=val_dataset, loader_params=dataset_params["loader_params"]
+    # )
     print("Loading complete.")
 
-    model = create_model(configuration)
+    # model = create_model(configuration)
     # model.setup()
 
     print("=" * 95)
@@ -52,7 +56,7 @@ def main(config_filepath: str):
     writer = SummaryWriter("runs_vocals")
 
     stop_counter = 0
-    model.train()
+    # model.train()
     for epoch in range(current_epoch, stop_epoch):
 
         # total_loss = 0
@@ -61,26 +65,26 @@ def main(config_filepath: str):
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
             for index, (mixture, target) in enumerate(pbar):
 
-                mixture, target = mixture.to(device), target.to(device)
+                # mixture, target = mixture.to(device), target.to(device)
 
-                model.set_data(mixture, target)
-                model.forward()
-                model.backward()
-                model.optimizer_step()
+                # model.set_data(mixture, target)
+                # model.forward()
+                # model.backward()
+                # model.optimizer_step()
                 # target = model.process_data(target)
                 # mask = model.forward(mixture)
                 # model.backward(mask, mixture, target)
                 # model.optimizer_step()
 
-                closure = {
-                        "v_l": model.loss[-1],
-                        # "d_l": model.named_losses[1][-1],
-                        # "o_l": model.named_losses[2][-1],
-                        # "v_l": model.named_losses[3][-1],
+                # closure = {
+                #         "v_l": model.losses[-1],
+                #         # "d_l": model.named_losses[1][-1],
+                #         # "o_l": model.named_losses[2][-1],
+                #         # "v_l": model.named_losses[3][-1],
 
-                    }
-                writer.add_scalars("Loss/train", model.loss[-1], global_step)
-                pbar.set_postfix(closure)
+                #     }
+                # writer.add_scalar("Loss/train", model.losses[-1], global_step)
+                # pbar.set_postfix(closure)
                 # total_loss += model.loss.item()
 
                 global_step += 1
@@ -95,7 +99,7 @@ def main(config_filepath: str):
 
                 # break after seeing max_iter * batch_size samples
                 if index >= max_iters_per_epoch:
-                    pbar.set_postfix({"avg_loss": np.mean(model.loss[-max_iters_per_epoch:])})
+                    # pbar.set_postfix({"avg_loss": np.mean(model.losses[-max_iters_per_epoch:])})
                     pbar.clear()
                     break
             # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
