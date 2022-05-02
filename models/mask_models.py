@@ -160,12 +160,13 @@ class SpectrogramMaskModel(SeparationModel):
         super(SpectrogramMaskModel, self).__init__(config)
         self.model = TFMaskUNet(
             num_fft_bins=config["dataset_params"]["num_fft"],
-            num_samples=num_samples, num_channels=1
+            num_samples=num_samples, num_channels=1,
+            block_size=1
         )
         self.num_channels = self.model.num_channels
         self.num_targets = self.model.num_targets
         self.models.append(self.model.to(self.device))
-
+   
         if self.is_training:
             self.criterion = L1Loss()
             self.optimizer = AdamW(self.model.parameters(), config["training_params"]["lr"])

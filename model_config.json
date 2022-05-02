@@ -1,7 +1,7 @@
 {
     "base_model": "SpectrogramMaskModel",
     "dataset_params": {
-        "dataset_path": "/Users/Kian/Downloads/wav",
+        "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
         "audio_format": "wav",
         "backend": "soundfile",
         "targets": ["vocals"],
@@ -13,8 +13,8 @@
         "sample_length": 3,
         "val_split": 0.2,
         "loader_params": {
-            "max_iterations": 1000,
-            "batch_size": 8,
+            "max_iterations": 200,
+            "batch_size": 4,
             "num_workers": 8,
             "pin_memory": true,
             "persistent_workers": true

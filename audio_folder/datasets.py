@@ -5,8 +5,10 @@ import torchaudio
 import torch.utils.data
 
 from pathlib import Path
-from torch.utils.data.dataset import IterableDataset
+from torch.utils.data.dataset import IterableDataset, Dataset
+from torch.utils.data.dataloader import DataLoader
 from typing import Iterator, List, Optional, Tuple
+from tqdm import tqdm
 
 
 class AudioFolder(IterableDataset):
@@ -169,3 +171,49 @@ class AudioFolder(IterableDataset):
         while True:
             mix, target = self._generate_mixture()
             yield mix, target
+
+
+
+class AudioDataset(Dataset):
+    def __init__(self, audio_folder, num_samples=1000):
+        self.dataset = []
+        self.num_samples = num_samples
+        dataloader = DataLoader(audio_folder, num_workers=16, pin_memory=True)
+        with tqdm(dataloader, total=num_samples) as tq:
+            for i, sample in enumerate(tq):
+                self.dataset.append(sample)
+                if i == num_samples:
+                    break
+    
+    def __getitem__(self, idx):
+        return self.dataset[idx]
+
+    def __len__(self):
+        return self.num_samples
+
+class StreamDataset(Dataset):
+    def __init__(self, audio_folder):
+        frame_length = (2048 * 44100) // 22050
+        hop_length = (512 * 44100) // 22050
+        self.data = []
+        total = 0
+        for filepath in audio_folder._track_filepaths:
+
+            # Stream the data, working on 128 frames at a time
+            stream = librosa.stream(filepath / "mixture.wav",
+                                    block_length=128,
+                                    frame_length=frame_length,
+                                    hop_length=hop_length)
+
+            chromas = []
+            for y in stream:
+                chroma_block = librosa.feature.chroma_stft(y=y, sr=44100,
+                                                            n_fft=frame_length,
+                                                            hop_length=hop_length,
+                                                            center=True)
+                total += 1
+            chromas.append(chromas)
+            self.data.extend(chromas)
+            print(len(self.data))
+
+

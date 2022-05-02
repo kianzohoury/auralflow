@@ -23,8 +23,7 @@ class SeparationModel(ABC):
         self.optimizers = []
         self.visual_names = []
         self.is_training = config["training_params"]["training_mode"]
-        if torch.backends.cudnn.is_available():
-            torch.backends.cudnn = True
+        torch.backends.cudnn.benchmark = True
 
     @abstractmethod
     def forward(self, data):

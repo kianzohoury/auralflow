@@ -1,9 +1,13 @@
+from pickle import TRUE
 import sys
 import time
+from typing_extensions import TypeVarTuple
 
 import torch
 import torch.nn as nn
 import numpy as np
+from torch.utils.data.dataset import Dataset
+import torchaudio
 import torchinfo
 from utils import load_config
 from torch.utils import tensorboard
@@ -17,7 +21,7 @@ import config.utils
 from trainer.trainer import cross_validate
 from utils.progress_bar import ProgressBar
 from torch.utils.data.dataloader import DataLoader
-from audio_folder import AudioFolder, create_dataset, load_dataset
+from audio_folder import AudioFolder, create_dataset, load_dataset, AudioDataset, StreamDataset
 from argparse import ArgumentParser
 import config.build
 
@@ -36,6 +40,7 @@ def main(config_filepath: str):
     val_dataset = train_dataset.split(
         configuration["dataset_params"]["val_split"]
     )
+
     train_dataloader = load_dataset(
         dataset=train_dataset, dataset_params=configuration["dataset_params"]
     )
@@ -59,6 +64,7 @@ def main(config_filepath: str):
     ]
     global_step = configuration["training_params"]["global_step"]
 
+
     # writer = tensorboard.SummaryWriter(
     #     training_session["model_dir"].parent / "runs"
     # )
@@ -69,37 +75,43 @@ def main(config_filepath: str):
 
         total_loss = 0
         start = 0
+        
         with ProgressBar(train_dataloader, max_dataloader_iters) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
             for index, (mixture, target) in enumerate(pbar):
                 loading_time = time.time() - start
+                start = time.time()
 
                 mixture, target = mixture.to(device), target.to(device)
-                mixture, target = model.process_input(
-                    mixture
-                ), model.process_input(target)
+                mixture = model.process_input(mixture)
+                target = model.process_input(target)
+                stft_time = time.time() - start
                 mask = model.forward(mixture)
                 model.backward(mask, mixture, target)
                 model.optimizer_step()
 
-                # writer.add_scalar("Loss/train", model.loss.item(), global_step)
+        #         # writer.add_scalar("Loss/train", model.loss.item(), global_step)
 
-                # iter_losses.append(loss.item())
+        #         # iter_losses.append(loss.item())
                 pbar.set_postfix(
                     {
                         "loss": model.loss.item(),
-                        "loading_time": f"{round(loading_time, 2)}s",
+                        # "loading_time": f"{round(loading_time, 2)}s",
+                        "stft_time": f"{round(stft_time, 2)}s"
                     }
                 )
+                total_loss += model.loss.item()
 
                 global_step += 1
                 start = time.time()
-
+            
                 # break after seeing max_iter * batch_size samples
                 if index >= max_dataloader_iters:
                     pbar.set_postfix(loss=total_loss / max_dataloader_iters)
                     pbar.clear()
                     break
+            # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
+
 
         # epoch_losses.append(total_loss / max_iters)
 
@@ -158,9 +170,6 @@ def main(config_filepath: str):
 
 
 if __name__ == "__main__":
-    import multiprocessing
-
-    multiprocessing.set_start_method("spawn", True)
 
     parser = ArgumentParser(description="Model training script.")
     parser.add_argument(

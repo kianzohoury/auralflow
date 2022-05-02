@@ -2,7 +2,7 @@ import inspect
 from typing import Tuple
 
 from torch.utils.data.dataloader import DataLoader
-from .datasets import AudioFolder
+from .datasets import AudioFolder, AudioDataset, StreamDataset
 
 
 def create_dataset(dataset_params: dict, subset: str = "train") -> AudioFolder:
@@ -33,5 +33,6 @@ def load_dataset(dataset: AudioFolder, dataset_params: dict) -> DataLoader:
         num_workers=dataset_params["loader_params"]["num_workers"],
         pin_memory=dataset_params["loader_params"]["pin_memory"],
         persistent_workers=dataset_params["loader_params"]["persistent_workers"],
+        prefetch_factor=4
     )
     return dataloader
