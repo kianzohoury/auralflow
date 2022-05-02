@@ -4,9 +4,7 @@ import time
 import torch
 import torch.nn as nn
 import numpy as np
-import torchinfo
 from torch.utils import tensorboard
-from utils.utils import checkpoint_handler
 
 from pathlib import Path
 
@@ -14,16 +12,9 @@ import config.utils
 from trainer.trainer import cross_validate
 from utils.progress_bar import ProgressBar
 from torch.utils.data.dataloader import DataLoader
-from audio_folder.datasets import AudioFolder
 from argparse import ArgumentParser
-import transforms
-from yaml import YAMLError
-from typing import List
 import ruamel.yaml
 import config.build
-import yaml
-
-from pprint import pprint
 
 config_dir = Path(__file__).parent / 'config'
 session_logs_file = config_dir / 'session_logs.yaml'

@@ -11,3 +11,4 @@ def load_config(config_filepath: str):
             return json.load(config_file)
     except IOError as e:
         raise e
+

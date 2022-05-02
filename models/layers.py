@@ -1,11 +1,9 @@
-import inspect
+from typing import Optional, Union
+from utils import data_utils
 
 import torch
 import torch.nn as nn
-import math
 import torch.nn.functional as functional
-
-from typing import Optional, Union, Tuple
 
 
 _ACTIVATIONS = {
@@ -33,48 +31,6 @@ _UP_LAYERS = {
     "cubic",
 }
 _BLOCK_TYPES = {"conv", "soft_conv", "recurrent", "upsampler", "downsampler"}
-
-
-def _get_conv_output_size(
-    h_in: int, w_in: int, stride: int, kernel_size: int
-) -> Tuple[int, int]:
-    """Computes the non-zero padded output of a conv layer.
-
-    Returns:
-        (tuple): Output size.
-    """
-    h_out = math.floor((h_in - kernel_size) / stride + 1)
-    w_out = math.floor((w_in - kernel_size) / stride + 1)
-    assert h_out >= 0 and w_out >= 0
-    return h_out, w_out
-
-
-def _get_transpose_padding(
-    h_in: int, w_in: int, h_out: int, w_out: int, stride: int, kernel_size: int
-) -> Tuple[int, int]:
-    """Computes the required transpose conv padding for a target shape.
-
-    Returns:
-        (tuple): Transpose padding.
-    """
-    h_pad = math.ceil((kernel_size - h_out + stride * (h_in - 1)) / 2)
-    w_pad = math.ceil((kernel_size - w_out + stride * (w_in - 1)) / 2)
-    assert h_pad >= 0 and w_pad >= 0
-    return h_pad, w_pad
-
-
-def _get_conv_padding(
-    h_in: int, w_in: int, h_out: int, w_out: int, kernel_size: int
-) -> Tuple[int, int]:
-    """Computes the required conv padding.
-
-    Returns:
-        (tuple): Convolutional padding.
-    """
-    h_pad = max(0, math.ceil((2 * h_out - 2 + kernel_size - h_in) / 2))
-    w_pad = max(0, math.ceil((2 * w_out - 2 + kernel_size - w_in) / 2))
-    assert h_pad >= 0 and w_pad >= 0
-    return h_pad, w_pad
 
 
 def _get_activation(
@@ -299,7 +255,7 @@ class _DownBlock2d(_AEBlock):
         elif down_method == "downsample":
             self.down = DownSample(scale_factor=scale_factor)
         elif down_method == "conv":
-            padding = _get_conv_padding(
+            padding = data_utils.get_conv_pad(
                 h_in=n_bins,
                 w_in=n_samples,
                 h_out=n_bins // 2,
@@ -378,7 +334,7 @@ class _DownBlock1d(_AEBlock):
         elif down_method == "downsample":
             self.down = DownSample(scale_factor=scale_factor)
         elif down_method == "conv":
-            padding, _ = _get_conv_padding(
+            padding, _ = data_utils.get_conv_pad(
                 h_in=0,
                 w_in=n_samples,
                 h_out=0,
@@ -476,7 +432,7 @@ class _UpBlock2d(_AEBlock):
         self.out_channels = out_channels
 
         if up_method == "transpose":
-            padding = _get_transpose_padding(
+            padding = data_utils.get_deconv_pad(
                 h_in=n_bins_in,
                 w_in=n_samples_in,
                 h_out=n_bins_out,
@@ -582,7 +538,7 @@ class _UpBlock1d(_AEBlock):
         self.out_channels = out_channels
 
         if up_method == "transpose":
-            _, padding = _get_transpose_padding(
+            _, padding = data_utils.get_deconv_pad(
                 h_in=0,
                 w_in=n_samples_out,
                 h_out=0,
