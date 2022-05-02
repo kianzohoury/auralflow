@@ -307,12 +307,8 @@ def load_model(
 
 
 def build_layers(config_dict: dict):
-    d1 = yaml_parser.load(
-        Path("/config/unet/unet_base.yaml")
-    )
-    d2 = yaml_parser.load(
-        Path("/config/data_config.yaml")
-    )
+    d1 = yaml_parser.load(Path("/config/unet/unet_base.yaml"))
+    d2 = yaml_parser.load(Path("/config/data_config.yaml"))
     d = d1 | d2
 
     m = build_model(d)

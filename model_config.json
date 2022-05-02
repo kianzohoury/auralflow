@@ -1,10 +1,24 @@
 {
     "base_model": "SpectrogramMaskModel",
+    "architecture_params": {
+        "max_depth": 6,
+        "hidden_size": 16,
+        "kernel_size": [3, 2, 5, 3],
+        "block_size": 3,
+        "downsampler": "max_pool",
+        "upsampler": "transpose",
+        "batch_norm": true,
+        "layer_activation_fn": "relu",
+        "mask_activation_fn": "relu",
+        "dropout_p": 0,
+        "use_skip": true,
+        "normalize_input": false
+    },
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
         "audio_format": "wav",
         "backend": "soundfile",
-        "targets": ["vocals"],
+        "targets": ["bass", "drums", "other", "vocals"],
         "num_channels": 1,
         "sample_rate": 44100,
         "num_fft": 1023,
@@ -19,19 +33,19 @@
             "pin_memory": true,
             "persistent_workers": true
         }
-  },
-  "training_params": {
-      "training_mode": true,
-      "max_epochs": 100,
-      "lr": 0.001,
-      "loss": "l1",
-      "stop_patience": 10,
-      "export_path": "",
-      "checkpoint_path": "checkpoint",
-      "last_epoch": -1,
-      "global_step": -1
-  },
-  "visualizer_params": {
-      "tensorboard": true
-  }
+    },
+    "training_params": {
+        "training_mode": true,
+        "max_epochs": 100,
+        "lr": 0.001,
+        "loss": "l1",
+        "stop_patience": 10,
+        "export_path": "",
+        "checkpoint_path": "checkpoints",
+        "last_epoch": -1,
+        "global_step": -1
+    },
+    "visualizer_params": {
+        "tensorboard": true
+    }
 }

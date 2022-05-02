@@ -1,10 +1,41 @@
 import torch
 import math
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Callable
+from torch import stft, istft
 
 
-def get_num_bins(
+def get_stft(num_fft: int, hop_length: int, window_size: int) -> Callable:
+    """Returns the stft function specified by the input args."""
+    def stft_func(data):
+        return stft(
+            input=data,
+            n_fft=num_fft,
+            hop_length=hop_length,
+            win_length=window_size,
+            onesided=True,
+            return_complex=True,
+        )
+    return stft_func
+
+
+def get_inverse_stft(
+    num_fft: int, hop_length: int, window_size: int
+) -> Callable:
+    """Returns the inverse of the stft function specified by the input args."""
+    def inverse_stft_func(data):
+        return istft(
+            input=data,
+            n_fft=num_fft,
+            hop_length=hop_length,
+            win_length=window_size,
+            onesided=True,
+            return_complex=True,
+        )
+    return inverse_stft_func
+
+
+def get_num_frames(
     sample_rate: int,
     sample_length: int,
     num_fft: int,

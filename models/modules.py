@@ -5,7 +5,8 @@ import torch.nn as nn
 import numpy as np
 
 
-from models.layers import _AEBlock, SoftConv, _get_conv_output_size
+from models.layers import _AEBlock, SoftConv
+from utils.data_utils import get_conv_shape
 from typing import Tuple, Union, Optional, List
 
 _MIN_BLOCK_SIZE = 1
@@ -119,7 +120,7 @@ class _AutoEncoder(nn.Module):
                 if same_padding:
                     h_out, w_out = h_in, w_in
                 else:
-                    h_out, w_out = _get_conv_output_size(
+                    h_out, w_out = get_conv_shape(
                         h_in=h_in,
                         w_in=w_in,
                         stride=1,
@@ -327,7 +328,7 @@ class AutoEncoder2d(nn.Module):
                 if same_padding:
                     h_out, w_out = h_in, w_in
                 else:
-                    h_out, w_out = _get_conv_output_size(
+                    h_out, w_out = get_conv_shape(
                         h_in=h_in,
                         w_in=w_in,
                         stride=1,
@@ -352,7 +353,7 @@ class AutoEncoder2d(nn.Module):
                     )
                 )
                 out_channels *= 2
-                h_out, w_out = _get_conv_output_size(
+                h_out, w_out = get_conv_shape(
                     h_in=h_in,
                     w_in=w_in,
                     stride=2,
@@ -555,7 +556,7 @@ class VAE2d(nn.Module):
                 if same_padding:
                     h_out, w_out = h_in, w_in
                 else:
-                    h_out, w_out = _get_conv_output_size(
+                    h_out, w_out = get_conv_shape(
                         h_in=h_in,
                         w_in=w_in,
                         stride=1,
@@ -580,7 +581,7 @@ class VAE2d(nn.Module):
                     )
                 )
                 out_channels *= 2
-                h_out, w_out = _get_conv_output_size(
+                h_out, w_out = get_conv_shape(
                     h_in=h_in,
                     w_in=w_in,
                     stride=2,
@@ -709,16 +710,3 @@ class VAE2d(nn.Module):
         )
         output = self.soft_conv(data)
         return output, latent_output[1:]
-
-
-#
-# class LSTMStack(nn.Module):
-#     def __init__(self, input_size: int, hidden_size: int, depth: int = 3, reshape_input: bool = False):
-#         super(LSTMStack, self).__init__()
-#         self.hidden_size = hidden_size
-#         self.depth = depth
-#         self.reshape_input = reshape_input
-#         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size, depth=depth, bidirectional=True, batch_first=True)
-#
-#     def forward(self, data: torch.FloatTensor) -> torch.FloatTensor:
-#

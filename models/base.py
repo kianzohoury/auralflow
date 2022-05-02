@@ -1,7 +1,11 @@
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 
 from abc import ABCMeta, abstractmethod, ABC
+
+from typing import List
 from torchinfo import summary
 
 
@@ -19,7 +23,7 @@ class SeparationModel(ABC):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.checkpoint_path = config["training_params"]["checkpoint_path"]
         self.models = []
-        self.loss_names = []
+        self.losses = []
         self.optimizers = []
         self.visual_names = []
         self.is_training = config["training_params"]["training_mode"]
@@ -46,11 +50,13 @@ class SeparationModel(ABC):
         pass
 
     def train(self):
+        """Sets each model to training mode."""
         for model in self.models:
             if isinstance(model, nn.Module):
                 model.train()
 
     def eval(self):
+        """Sets each model to evaluation mode."""
         for model in self.models:
             if isinstance(model, nn.Module):
                 model.eval()
@@ -63,6 +69,14 @@ class SeparationModel(ABC):
         for model in self.models:
             summary(model, depth=6)
 
+    def save_checkpoint(self, global_step: int, loss: float):
+        """Saves a checkpoint for each model."""
+        for model in self.models:
+            path = f"{model.__name__}_{global_step}_{round(loss, 5)}.pth"
+            torch.save(
+                model.cpu().state_dict(), Path(self.checkpoint_path) / path
+            )
+            model.to(self.device)
 
 # class MaskModel(TFMaskModelBase):
 #     def __init__(self, **kwargs):
