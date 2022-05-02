@@ -48,7 +48,7 @@ def get_num_frames(
 ) -> int:
     """Returns the number of FFT/STFT frequency bins."""
     x = torch.rand((1, sample_rate * sample_length))
-    torch.stft(
+    y = torch.stft(
         x,
         n_fft=num_fft,
         win_length=window_size,
@@ -56,7 +56,7 @@ def get_num_frames(
         onesided=True,
         return_complex=True,
     )
-    return x.size(-1)
+    return y.size(-1)
 
 
 def make_hann_window(
