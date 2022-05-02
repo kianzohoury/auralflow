@@ -22,6 +22,8 @@ class SeparationModel(ABC):
         self.models = []
         self.losses = []
         self.optimizers = []
+        self.model = None
+        self.optimizer = None
         self.visual_names = []
         self.is_training = config["training_params"]["training_mode"]
         torch.backends.cudnn.benchmark = True
@@ -48,23 +50,26 @@ class SeparationModel(ABC):
 
     def train(self):
         """Sets each model to training mode."""
-        for model in self.models:
-            if isinstance(model, nn.Module):
-                model.train()
+        self.model.train()
+        # for model in self.models:
+        #     if isinstance(model, nn.Module):
+        #         model.train()
 
     def eval(self):
         """Sets each model to evaluation mode."""
-        for model in self.models:
-            if isinstance(model, nn.Module):
-                model.eval()
+        self.model.eval()
+        # for model in self.models:
+        #     if isinstance(model, nn.Module):
+        #         model.eval()
 
-    def test(self, data):
+    def test(self):
         with torch.no_grad():
-            return self.forward(data)
+            return self.forward()
 
     def setup(self):
-        for model in self.models:
-            summary(model, depth=6)
+        summary(self.model, depth=6)
+        # for model in self.models:
+        #     summary(model, depth=6)
 
     def save_checkpoint(self, global_step: int, loss: float):
         """Saves a checkpoint for each model."""

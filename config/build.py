@@ -11,8 +11,7 @@ from yaml import YAMLError
 from config.constants import REQUIRED_MODEL_KEYS, BASE_MODELS
 from datasets.datasets import AudioFolder
 from ruamel.yaml.error import MarkedYAMLError
-from utils.data_utils import get_data_shape
-from models.adaptive import process_block
+from utils.data_utils import get_conv_shape
 
 from typing import Optional
 

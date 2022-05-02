@@ -1,16 +1,7 @@
 import torch
 
-from config.build import build_layers
-from models.modules import AutoEncoder2d, VAE2d
-
 # from models.base import UNetSpec, UNetVAESpec
-from models.mask_models import TFMaskUNet
-from models.layers import _get_transpose_padding
-from torchinfo import summary
-import inspect
-from models.layers import ConvBlock
-
-from pprint import pprint
+from models.static_models import SpectrogramNetSimple
 
 if __name__ == "__main__":
     # autoencoder = AutoEncoder2d(
@@ -32,24 +23,26 @@ if __name__ == "__main__":
     #     leak_constant=0.2
     # )
 
-    model = TFMaskUNet(
-        num_fft_bins=1023,
-        num_samples=315,
-        num_channels=2,
-        kernel_size=(3, 2, 5, 3),
-        normalize_input=True,
-        mask_activation_fn="sigmoid",
-    )
+    # model = TFMaskUNet(
+    #     num_fft_bins=1023,
+    #     num_samples=315,
+    #     num_channels=2,
+    #     kernel_size=(3, 2, 5, 3),
+    #     normalize_input=True,
+    #     mask_activation_fn="sigmoid",
+    # )
 
     # print(model.autoencoder.kernel_size)
     # summary(model, input_size=(1, 1, 3 * 44100))
-    x, y = torch.rand((1, 2, 44100 * 2)), torch.rand((1, 2, 44100 * 2, 4))
+    # x, y = torch.rand((1, 2, 44100 * 2)), torch.rand((1, 2, 44100 * 2, 4))
     # print(_get_transpose_padding(15, 8, 31, 18, 2, 5))
     # xx, yy = model.process_input(x, y)
     # print(xx.shape, yy.shape)
     # print(model.num_fft, model.num_bins, model.window_size)
-    print(model(torch.rand((1, 2, 512, 315))).shape)
+    # print(model(torch.rand((1, 2, 512, 315))).shape)
     # print(model(torch.rand((1, 1, 3 * 44100))).size())
     # vae(torch.rand((1, 1, 512, 173)))
     #
     # print(ConvBlock(2, 128, 256, 2, 1, dropout_p=.8))
+    model = SpectrogramNetSimple(512, 173)
+    print(model(torch.rand((1, 1, 512, 173))))

@@ -63,7 +63,7 @@ def main(config_filepath: str):
 
                 mixture, target = mixture.to(device), target.to(device)
 
-                mixture = model.set_data(mixture, target)
+                model.set_data(mixture, target)
                 model.forward()
                 model.backward()
                 model.optimizer_step()
@@ -72,31 +72,30 @@ def main(config_filepath: str):
                 # model.backward(mask, mixture, target)
                 # model.optimizer_step()
 
-                
                 closure = {
-                        "v_l": model.named_losses[0][-1],
+                        "v_l": model.loss[-1],
                         # "d_l": model.named_losses[1][-1],
                         # "o_l": model.named_losses[2][-1],
                         # "v_l": model.named_losses[3][-1],
-                        
+
                     }
-                writer.add_scalars("Loss/train", closure, global_step)
+                writer.add_scalars("Loss/train", model.loss[-1], global_step)
                 pbar.set_postfix(closure)
                 # total_loss += model.loss.item()
 
                 global_step += 1
                 start = time.time()
 
-                closure = {
-                        "v_l": sum(model.named_losses[0]) / ((epoch + 1) * max_iters_per_epoch),
-                        # "d_l": sum(model.named_losses[1]) / ((epoch + 1) * max_iters_per_epoch),
-                        # "o_l": sum(model.named_losses[2]) / ((epoch + 1) * max_iters_per_epoch),
-                        # "v_l": sum(model.named_losses[3]) / ((epoch + 1) * max_iters_per_epoch),
-                }
+                # closure = {
+                #         "v_l": sum(model.loss[) / ((epoch + 1) * max_iters_per_epoch),
+                #         # "d_l": sum(model.named_losses[1]) / ((epoch + 1) * max_iters_per_epoch),
+                #         # "o_l": sum(model.named_losses[2]) / ((epoch + 1) * max_iters_per_epoch),
+                #         # "v_l": sum(model.named_losses[3]) / ((epoch + 1) * max_iters_per_epoch),
+                # }
 
                 # break after seeing max_iter * batch_size samples
                 if index >= max_iters_per_epoch:
-                    pbar.set_postfix(closure)
+                    pbar.set_postfix({"avg_loss": np.mean(model.loss[-max_iters_per_epoch:])})
                     pbar.clear()
                     break
             # print(prof.key_averages().table(sort_by="self_cpu_time_total"))

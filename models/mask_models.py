@@ -10,6 +10,7 @@ from typing import Union, Tuple, Any, List
 from .modules import AutoEncoder2d
 from .layers import _get_activation
 from .base import SeparationModel
+from .static_models import SpectrogramNetSimple
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
 
 
@@ -81,7 +82,7 @@ class TFMaskUNet(nn.Module):
         use_skip: bool = True,
         normalize_input: bool = False,
     ):
-        # Note that only 1 source will be estimated via masking.
+        # Note that only 1 source will be estimated per mask model.
         self.num_targets = 1
         self.num_fft_bins = num_fft_bins
         self.num_samples = num_samples
@@ -138,48 +139,57 @@ class SpectrogramMaskModel(SeparationModel):
     """"""
 
     def __init__(self, configuration: dict):
-        self.mixtures: torch.Tensor = torch.Tensor()
-        self.targets: torch.Tensor = torch.Tensor()
-        self.loss: List = []
-        self.masks: List = []
-        self.named_losses = [[] for _ in range(4)]
+        self.mixtures = None
+        self.targets = None
+        self.mask = None
+        self.loss = None
+        self.losses = []
+        # self.mixtures: torch.Tensor = torch.Tensor()
+        # self.targets: torch.Tensor = torch.Tensor()
+        # self.loss: List = []
+        # self.masks: List = []
+        # self.named_losses = [[] for _ in range(4)]
 
         dataset_params = configuration["dataset_params"]
         arch_params = configuration["architecture_params"]
-        # num_samples = get_num_frames(
-        #     sample_rate=dataset_params["sample_rate"],
-        #     sample_length=dataset_params["sample_length"],
-        #     num_fft=dataset_params["num_fft"],
-        #     window_size=dataset_params["window_size"],
-        #     hop_length=dataset_params["hop_length"],
-        # )
-        num_samples = 173
+        num_samples = get_num_frames(
+            sample_rate=dataset_params["sample_rate"],
+            sample_length=dataset_params["sample_length"],
+            num_fft=dataset_params["num_fft"],
+            window_size=dataset_params["window_size"],
+            hop_length=dataset_params["hop_length"],
+        )
 
         super(SpectrogramMaskModel, self).__init__(configuration)
-        num_models = len(configuration["dataset_params"]["targets"])
+        # num_models = len(configuration["dataset_params"]["targets"])
+        self.model = SpectrogramNetSimple(
+            num_fft_bins=configuration["dataset_params"]["num_fft"],
+            num_samples=num_samples,
+            num_channels=configuration["dataset_params"]["num_channels"]
+        )
 
-        for _ in range(num_models):
-            self.models.append(
-                TFMaskUNet(
-                    num_fft_bins=dataset_params["num_fft"],
-                    num_samples=num_samples,
-                    num_channels=dataset_params["num_channels"],
-                    max_depth=arch_params["max_depth"],
-                    hidden_size=arch_params["hidden_size"],
-                    kernel_size=arch_params["kernel_size"],
-                    block_size=arch_params["block_size"],
-                    downsampler=arch_params["downsampler"],
-                    upsampler=arch_params["upsampler"],
-                    batch_norm=arch_params["batch_norm"],
-                    layer_activation_fn=arch_params["layer_activation_fn"],
-                    mask_activation_fn=arch_params["mask_activation_fn"],
-                    dropout_p=arch_params["dropout_p"],
-                    use_skip=arch_params["use_skip"],
-                    normalize_input=arch_params["normalize_input"],
-                )
-            )
-
-        self.models = [model.to(self.device) for model in self.models]
+        # for _ in range(num_models):
+        #     self.models.append(
+        #         TFMaskUNet(
+        #             num_fft_bins=dataset_params["num_fft"],
+        #             num_samples=num_samples,
+        #             num_channels=dataset_params["num_channels"],
+        #             max_depth=arch_params["max_depth"],
+        #             hidden_size=arch_params["hidden_size"],
+        #             kernel_size=arch_params["kernel_size"],
+        #             block_size=arch_params["block_size"],
+        #             downsampler=arch_params["downsampler"],
+        #             upsampler=arch_params["upsampler"],
+        #             batch_norm=arch_params["batch_norm"],
+        #             layer_activation_fn=arch_params["layer_activation_fn"],
+        #             mask_activation_fn=arch_params["mask_activation_fn"],
+        #             dropout_p=arch_params["dropout_p"],
+        #             use_skip=arch_params["use_skip"],
+        #             normalize_input=arch_params["normalize_input"],
+        #         )
+        #     )
+        self.model = self.model.to(self.device)
+        # self.models = [model.to(self.device) for model in self.models]
 
         self.stft = get_stft(
             num_fft=dataset_params["num_fft"],
@@ -196,8 +206,9 @@ class SpectrogramMaskModel(SeparationModel):
         if self.is_training:
             self.criterion = L1Loss()
             lr = configuration["training_params"]["lr"]
-            for model in self.models:
-                self.optimizers.append(AdamW(model.parameters(), lr))
+            self.optimizer = AdamW(self.model.parameters(), lr)
+            # for model in self.models:
+            #     self.optimizers.append(AdamW(model.parameters(), lr))
 
     def fast_fourier(self, data: torch.Tensor) -> torch.Tensor:
         """Helper method to transform raw data to complex-valued STFT data."""
@@ -233,24 +244,33 @@ class SpectrogramMaskModel(SeparationModel):
         self.targets = self.process_data(target)
 
     def forward(self):
-        for model in self.models:
-            self.masks.append(model(self.mixtures.squeeze(-1)))
+        self.mask = self.model(self.mixtures.squeeze(-1))
+        # for model in self.models:
+        #     self.masks.append(model(self.mixtures.squeeze(-1)))
 
     def backward(self):
-        for i, mask in enumerate(self.masks):
-            estimate = mask * self.mixtures
-            loss = self.criterion(estimate, self.targets[:, :, :, :, i].unsqueeze(-1))
-            self.loss.append(loss)
-            self.named_losses[i].append(loss.item())
+        estimate = self.mask * self.mixtures
+        self.loss = self.criterion(
+            estimate, self.targets[:, :, :, :, 0].unsqueeze(-1)
+        )
+        self.losses.append(self.loss.item())
+
+        # for i, mask in enumerate(self.masks):
+        #     estimate = mask * self.mixtures
+        #     loss = self.criterion(estimate, self.targets[:, :, :, :, i].unsqueeze(-1))
+        #     self.loss.append(loss)
+        #     self.named_losses[i].append(loss.item())
 
     def optimizer_step(self):
-        for loss, optimizer in zip(self.loss, self.optimizers):
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-        self.loss = []
-        self.masks = []
-
+        self.loss.backward()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+        # for loss, optimizer in zip(self.loss, self.optimizers):
+        #     loss.backward()
+        #     optimizer.step()
+        #     optimizer.zero_grad()
+        self.loss = None
+        self.mask = None
 
     def validate(self):
         pass
@@ -258,18 +278,18 @@ class SpectrogramMaskModel(SeparationModel):
     def separate(self, audio):
         pass
 
-    def estimate_audio(self, audio):
-        with torch.no_grad():
-            mixture_data = self.stft(audio).unsqueeze(0)
-            mixture_mag_data = torch.abs(mixture_data).float()
-            mixture_phase_data = torch.angle(mixture_data)
-            source_mask = self.forward(mixture_mag_data)
-            estimate_mag_data = source_mask * mixture_mag_data
-            estimate_phase_corrected = estimate_mag_data * torch.exp(
-                1j * mixture_phase_data
-            )
-        estimate_signal = self.istft(estimate_phase_corrected)
-        return estimate_signal
+    # def estimate_audio(self, audio):
+    #     with torch.no_grad():
+    #         mixture_data = self.stft(audio).unsqueeze(0)
+    #         mixture_mag_data = torch.abs(mixture_data).float()
+    #         mixture_phase_data = torch.angle(mixture_data)
+    #         source_mask = self.forward(mixture_mag_data)
+    #         estimate_mag_data = source_mask * mixture_mag_data
+    #         estimate_phase_corrected = estimate_mag_data * torch.exp(
+    #             1j * mixture_phase_data
+    #         )
+    #     estimate_signal = self.istft(estimate_phase_corrected)
+    #     return estimate_signal
 
 
 #
