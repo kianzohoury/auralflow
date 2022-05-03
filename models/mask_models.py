@@ -167,7 +167,7 @@ class SpectrogramMaskModel(SeparationModel):
             num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
             num_samples=num_samples,
             num_channels=configuration["dataset_params"]["num_channels"],
-            lstm_hidden_size=(configuration["dataset_params"]["num_fft"] // 2 + 1) * 2
+            lstm_hidden_size=(configuration["dataset_params"]["num_fft"] // 2 + 1),
         )
 
         # for _ in range(num_models):
@@ -253,8 +253,7 @@ class SpectrogramMaskModel(SeparationModel):
     def backward(self):
         estimate = self.mask * self.mixtures.permute(0, 2, 3, 1)
         self.loss = self.criterion(
-            estimate, self.targets, mu=self.model.mu_data, sigma=self.model.sigma_data
-        )
+            estimate, self.targets, mu=self.model.mu_data, sigma=self.model.sigma_data)
         self.losses.append(self.loss.item())
 
         # for i, mask in enumerate(self.masks):

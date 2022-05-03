@@ -9,3 +9,10 @@ def kl_div_loss(mu: torch.FloatTensor, sigma: torch.FloatTensor) -> float:
 
 def vae_loss(estimate, target, mu, sigma):
     return l1_loss(estimate, target) + kl_div_loss(mu, sigma)
+
+def l1_residual_loss(mixture, estimate, target):
+    residual_estimate = mixture - estimate
+    residual_linear = mixture - target
+    return l1_loss(residual_estimate, residual_linear)
+
+
