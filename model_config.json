@@ -27,8 +27,8 @@
         "sample_length": 1,
         "val_split": 0.2,
         "loader_params": {
-            "max_iterations": 1000,
-            "batch_size": 4,
+            "max_iterations": 125,
+            "batch_size": 16,
             "num_workers": 8,
             "pin_memory": true,
             "persistent_workers": true

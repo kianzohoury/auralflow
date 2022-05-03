@@ -35,7 +35,7 @@ def main(config_filepath: str):
     # )
     train_dataloader = DataLoader(
         train_dataset, num_workers=16, pin_memory=True,
-        persistent_workers=True, batch_size=4, prefetch_factor=4)
+        persistent_workers=True, batch_size=128, prefetch_factor=4)
     # val_dataloader = load_dataset(
     #     dataset=val_dataset, loader_params=dataset_params["loader_params"]
     # )
@@ -53,7 +53,7 @@ def main(config_filepath: str):
     max_iters_per_epoch = loader_params["max_iterations"]
     global_step = configuration["training_params"]["global_step"]
 
-    writer = SummaryWriter("runs_vocals")
+    writer = SummaryWriter("runs_vocals_1")
 
     stop_counter = 0
     model.train()
@@ -83,7 +83,7 @@ def main(config_filepath: str):
                         # "v_l": model.named_losses[3][-1],
 
                     }
-                writer.add_scalar("Loss/train", model.losses[-1], global_step)
+                writer.add_scalars("Loss/train", {"batch_128": model.losses[-1]}, global_step)
                 pbar.set_postfix(closure)
                 total_loss += model.losses[-1]
 

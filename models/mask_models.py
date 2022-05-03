@@ -10,7 +10,7 @@ from typing import Union, Tuple, Any, List
 from .modules import AutoEncoder2d
 from .layers import _get_activation
 from .base import SeparationModel
-from .static_models import SpectrogramNetSimple
+from .static_models import SpectrogramNetSimple, SpectrogramLSTMBottleneck
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
 
 
@@ -162,10 +162,11 @@ class SpectrogramMaskModel(SeparationModel):
 
         super(SpectrogramMaskModel, self).__init__(configuration)
         # num_models = len(configuration["dataset_params"]["targets"])
-        self.model = SpectrogramNetSimple(
+        self.model = SpectrogramLSTMBottleneck(
             num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
             num_samples=num_samples,
-            num_channels=configuration["dataset_params"]["num_channels"]
+            num_channels=configuration["dataset_params"]["num_channels"],
+            lstm_hidden_size=(configuration["dataset_params"]["num_fft"] // 2 + 1) * 2
         )
 
         # for _ in range(num_models):
