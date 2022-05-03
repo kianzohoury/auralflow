@@ -24,7 +24,7 @@
         "num_fft": 1023,
         "window_size": 1023,
         "hop_length": 768,
-        "sample_length": 3,
+        "sample_length": 1,
         "val_split": 0.2,
         "loader_params": {
             "max_iterations": 1000,
