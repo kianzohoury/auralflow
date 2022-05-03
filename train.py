@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import torch
 import numpy as np
 
-from datasets import create_dataset, load_dataset
+from datasets import create_dataset, load_dataset, AudioFolder
 from models import create_model
 from utils import load_config
 from utils.progress_bar import ProgressBar
@@ -32,8 +32,8 @@ def main(config_filepath: str):
     #     dataset=train_dataset, loader_params=dataset_params["loader_params"]
     # )
     train_dataloader = DataLoader(
-        train_dataset, num_workers=10, pin_memory=True,
-        persistent_workers=True, batch_size=128, prefetch_factor=4)
+        train_dataset, num_workers=4, pin_memory=True,
+        persistent_workers=True, batch_size=32, prefetch_factor=4)
     # val_dataloader = load_dataset(
     #     dataset=val_dataset, loader_params=dataset_params["loader_params"]
     # )
@@ -53,32 +53,32 @@ def main(config_filepath: str):
 
     writer = SummaryWriter("runs_vocals_1")
 
-    model.train()
+    # model.train()
     for epoch in range(current_epoch, stop_epoch):
         total_loss = 0
-        with ProgressBar(train_dataloader, max_iters_per_epoch) as pbar:
-            pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
-            for index, (mixture, target) in enumerate(pbar):
+        # with ProgressBar(train_dataloader, max_iters_per_epoch) as pbar:
+        #     pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
+        for index, (mixture, target) in enumerate(train_dataloader):
+            print(mixture.shape)
+        
 
-                mixture, target = mixture.to(device), target.to(device)
+                # model.set_data(mixture, target)
+                # model.forward()
+                # model.backward()
+                # model.optimizer_step()
 
-                model.set_data(mixture, target)
-                model.forward()
-                model.backward()
-                model.optimizer_step()
+                # writer.add_scalars("Loss/train", {"batch_128_60_lr_0005_VAE": model.losses[-1]}, global_step)
+                # pbar.set_postfix({"avg_loss": model.batch_losses[-1]})
+                # total_loss += model.losses[-1]
 
-                writer.add_scalars("Loss/train", {"batch_128_60_lr_0005_VAE": model.losses[-1]}, global_step)
-                pbar.set_postfix({"avg_loss": model.batch_losses[-1]})
-                total_loss += model.losses[-1]
-
-                global_step += 1
+            global_step += 1
                 # start = time.time()
 
                 # break after seeing max_iter * batch_size samples
-                if index >= max_iters_per_epoch:
-                    pbar.set_postfix({"avg_loss": total_loss / max_iters_per_epoch})
-                    pbar.clear()
-                    break
+                # if index >= max_iters_per_epoch:
+                #     pbar.set_postfix({"avg_loss": total_loss / max_iters_per_epoch})
+                #     pbar.clear()
+                #     break
             # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
 
         # epoch_losses.append(total_loss / max_iters)
