@@ -225,3 +225,146 @@ class SpectrogramNetSimple(nn.Module):
 
         mask = self.mask_activation(dec_6).permute(0, 2, 3, 1)
         return mask
+
+
+class SpectrogramLSTMBottleneck(nn.Module):
+    def __init__(
+            self,
+            num_fft_bins,
+            num_samples,
+            num_channels=1,
+            block_size=3,
+            hidden_dim=16,
+            mask_activation_fn="sigmoid",
+            leak_factor=0.2,
+            lstm_layers=3,
+            lstm_hidden_size=512
+    ):
+        super(SpectrogramLSTMBottleneck, self).__init__()
+
+        self.down_1 = DownBlock(
+            num_channels, hidden_dim, size=block_size, leak=leak_factor
+        )
+        self.down_2 = DownBlock(
+            hidden_dim, hidden_dim * 2, size=block_size, leak=leak_factor
+        )
+        self.down_3 = DownBlock(
+            hidden_dim * 2, hidden_dim * 4, size=block_size, leak=leak_factor
+        )
+        self.down_4 = DownBlock(
+            hidden_dim * 4, hidden_dim * 8, size=block_size, leak=leak_factor
+        )
+        self.down_5 = DownBlock(
+            hidden_dim * 8, hidden_dim * 16, size=block_size, leak=leak_factor
+        )
+        self.down_6 = DownBlock(
+            hidden_dim * 16,
+            hidden_dim * 32,
+            size=block_size,
+            leak=leak_factor,
+            compress=False,
+            )
+
+        enc_sizes = [[num_fft_bins >> l, num_samples >> l] for l in range(6)]
+
+        num_lstm_features = hidden_dim * 32 * enc_sizes[-1][0]
+
+        self.lstm = nn.LSTM(
+            input_size=num_lstm_features,
+            hidden_size=lstm_hidden_size,
+            bidirectional=True,
+            num_layers=lstm_layers
+        )
+
+        self.post_lstm_linear = nn.Sequential(
+            nn.Linear(
+                lstm_hidden_size * 2,
+                lstm_hidden_size
+            ),
+            nn.ReLU(),
+            nn.Linear(
+                lstm_hidden_size,
+                num_lstm_features
+            ),
+            nn.ReLU()
+        )
+
+        self.up_1 = UpBlock(
+            hidden_dim * 32,
+            hidden_dim * 16,
+            transpose_padding=get_deconv_pad(
+                *enc_sizes[-1], *enc_sizes[-2], stride=2, kernel_size=5
+            ),
+            size=block_size,
+            )
+
+        self.up_2 = UpBlock(
+            hidden_dim * 16,
+            hidden_dim * 8,
+            transpose_padding=get_deconv_pad(
+                *enc_sizes[-2], *enc_sizes[-3], stride=2, kernel_size=5
+            ),
+            size=block_size,
+            )
+        self.up_3 = UpBlock(
+            hidden_dim * 8,
+            hidden_dim * 4,
+            transpose_padding=get_deconv_pad(
+                *enc_sizes[-3], *enc_sizes[-4], stride=2, kernel_size=5
+            ),
+            size=block_size,
+            )
+        self.up_4 = UpBlock(
+            hidden_dim * 4,
+            hidden_dim * 2,
+            transpose_padding=get_deconv_pad(
+                *enc_sizes[-4], *enc_sizes[-5], stride=2, kernel_size=5
+            ),
+            size=block_size,
+            )
+        self.up_5 = UpBlock(
+            hidden_dim * 2,
+            hidden_dim,
+            transpose_padding=get_deconv_pad(
+                *enc_sizes[-5], *enc_sizes[-6], stride=2, kernel_size=5
+            ),
+            size=block_size,
+            )
+        self.soft_conv = nn.Conv2d(
+            in_channels=hidden_dim,
+            out_channels=num_channels,
+            kernel_size=1,
+            stride=1,
+            padding="same",
+        )
+        self.mask_activation = (
+            nn.Sigmoid() if mask_activation_fn == "sigmoid" else nn.ReLU()
+        )
+
+    def forward(self, data):
+        enc_1, skip_1 = self.down_1(data)
+        enc_2, skip_2 = self.down_2(enc_1)
+        enc_3, skip_3 = self.down_3(enc_2)
+        enc_4, skip_4 = self.down_4(enc_3)
+        enc_5, skip_5 = self.down_5(enc_4)
+        enc_6, _ = self.down_6(enc_5)
+
+        n, c, b, t = enc_6.shape
+
+        enc_6 = enc_6.permute(0, 3, 1, 2).reshape((n, t, c * b))
+
+        lstm_out, _ = self.lstm(enc_6)
+        lstm_out = lstm_out.reshape((n * t, -1))
+
+        latent_output = self.post_lstm_linear(lstm_out)
+        latent_output = latent_output.reshape((n, t, c, b)).permute(0, 2, 3, 1)
+
+        dec_1 = self.up_1(latent_output, skip_5)
+        dec_2 = self.up_2(dec_1, skip_4)
+        dec_3 = self.up_3(dec_2, skip_3)
+        dec_4 = self.up_4(dec_3, skip_2)
+        dec_5 = self.up_5(dec_4, skip_1)
+        dec_6 = self.soft_conv(dec_5)
+
+        mask = self.mask_activation(dec_6).permute(0, 2, 3, 1)
+        return mask
