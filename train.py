@@ -66,31 +66,13 @@ def main(config_filepath: str):
                 model.forward()
                 model.backward()
                 model.optimizer_step()
-                # target = model.process_data(target)
-                # mask = model.forward(mixture)
-                # model.backward(mask, mixture, target)
-                # model.optimizer_step()
 
-                closure = {
-                        "v_l": model.losses[-1],
-                        # "d_l": model.named_losses[1][-1],
-                        # "o_l": model.named_losses[2][-1],
-                        # "v_l": model.named_losses[3][-1],
-
-                    }
                 writer.add_scalars("Loss/train", {"batch_128_60_lr_0005_VAE": model.losses[-1]}, global_step)
-                pbar.set_postfix(closure)
+                pbar.set_postfix({"avg_loss": model.batch_losses[-1]})
                 total_loss += model.losses[-1]
 
                 global_step += 1
                 # start = time.time()
-
-                # closure = {
-                #         "v_l": sum(model.loss[) / ((epoch + 1) * max_iters_per_epoch),
-                #         # "d_l": sum(model.named_losses[1]) / ((epoch + 1) * max_iters_per_epoch),
-                #         # "o_l": sum(model.named_losses[2]) / ((epoch + 1) * max_iters_per_epoch),
-                #         # "v_l": sum(model.named_losses[3]) / ((epoch + 1) * max_iters_per_epoch),
-                # }
 
                 # break after seeing max_iter * batch_size samples
                 if index >= max_iters_per_epoch:
