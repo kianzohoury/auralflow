@@ -12,6 +12,7 @@ from .layers import _get_activation
 from .base import SeparationModel
 from .static_models import SpectrogramNetSimple, SpectrogramLSTMBottleneck, SpectrogramLSTMVAE
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
+from losses.losses import vae_loss
 
 
 class TFMaskUNet(nn.Module):
@@ -205,7 +206,7 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         if self.is_training:
-            self.criterion = L1Loss()
+            self.criterion = vae_loss
             lr = configuration["training_params"]["lr"]
             self.optimizer = AdamW(self.model.parameters(), lr)
             # for model in self.models:
@@ -252,7 +253,7 @@ class SpectrogramMaskModel(SeparationModel):
     def backward(self):
         estimate = self.mask * self.mixtures.permute(0, 2, 3, 1)
         self.loss = self.criterion(
-            estimate, self.targets
+            estimate, self.targets, mu=self.model.mu_data, sigma=self.model.sigma_data
         )
         self.losses.append(self.loss.item())
 
