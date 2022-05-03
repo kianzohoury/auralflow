@@ -34,7 +34,7 @@ def main(config_filepath: str):
     #     dataset=train_dataset, loader_params=dataset_params["loader_params"]
     # )
     train_dataloader = DataLoader(
-        train_dataset, num_workers=16, pin_memory=True,
+        train_dataset, num_workers=10, pin_memory=True,
         persistent_workers=True, batch_size=128, prefetch_factor=4)
     # val_dataloader = load_dataset(
     #     dataset=val_dataset, loader_params=dataset_params["loader_params"]
@@ -83,7 +83,7 @@ def main(config_filepath: str):
                         # "v_l": model.named_losses[3][-1],
 
                     }
-                writer.add_scalars("Loss/train", {"batch_128_60_lr_0005": model.losses[-1]}, global_step)
+                writer.add_scalars("Loss/train", {"batch_128_60_lr_0001": model.losses[-1]}, global_step)
                 pbar.set_postfix(closure)
                 total_loss += model.losses[-1]
 
