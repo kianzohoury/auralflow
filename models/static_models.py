@@ -139,14 +139,16 @@ class SpectrogramNetSimple(nn.Module):
                 stride=2,
                 kernel_size=5
             )
-            for l in range(len(self.encoding_sizes))
+            for l in range(len(self.encoding_sizes) - 1)
         ]
 
-        self.up_1 = UpBlock(*self.channel_sizes[-1], padding=padding_sizes[-1])
-        self.up_2 = UpBlock(*self.channel_sizes[-2], padding=padding_sizes[-2])
-        self.up_3 = UpBlock(*self.channel_sizes[-3], padding=padding_sizes[-3])
-        self.up_4 = UpBlock(*self.channel_sizes[-4], padding=padding_sizes[-4])
-        self.up_5 = UpBlock(*self.channel_sizes[-5], padding=padding_sizes[-5])
+        self.channel_sizes = [size[::-1] for size in self.channel_sizes]
+
+        self.up_1 = UpBlock(*self.channel_sizes[-1], padding=padding_sizes[0])
+        self.up_2 = UpBlock(*self.channel_sizes[-2], padding=padding_sizes[1])
+        self.up_3 = UpBlock(*self.channel_sizes[-3], padding=padding_sizes[2])
+        self.up_4 = UpBlock(*self.channel_sizes[-4], padding=padding_sizes[3])
+        self.up_5 = UpBlock(*self.channel_sizes[-5], padding=padding_sizes[4])
 
         self.soft_conv = nn.Conv2d(
             in_channels=hidden_dim,
@@ -246,8 +248,8 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
 
     def __init__(self, *args, **kwargs):
         super(SpectrogramLSTMVariational, self).__init__(*args, **kwargs)
-        self.mu = nn.Linear(self.num_features, self.num_features)
-        self.sigma = nn.Linear(self.num_features, self.num_features)
+        self.mu = nn.Linear(2 * self.num_features, self.num_features)
+        self.sigma = nn.Linear(2 * self.num_features, self.num_features)
         self.eps = torch.distributions.Normal(0, 1)
         if torch.cuda.is_available():
             self.eps.loc = self.eps.loc.cuda()
@@ -273,10 +275,10 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         lstm_out, _ = self.lstm(self.latent_data)
         lstm_out = lstm_out.reshape((n * b, -1))
 
-        latent_data = self.linear(lstm_out)
-        latent_data = latent_data.reshape((n, b, c, t)).permute(0, 2, 1, 3)
+        dec_0 = self.linear(lstm_out)
+        dec_0 = dec_0.reshape((n, b, c, t)).permute(0, 2, 1, 3)
 
-        dec_1 = self.up_1(latent_data, skip_5)
+        dec_1 = self.up_1(dec_0, skip_5)
         dec_2 = self.up_2(dec_1, skip_4)
         dec_3 = self.up_3(dec_2, skip_3)
         dec_4 = self.up_4(dec_3, skip_2)
