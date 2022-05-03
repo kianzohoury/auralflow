@@ -267,7 +267,7 @@ class SpectrogramLSTMBottleneck(nn.Module):
 
         enc_sizes = [[num_fft_bins >> l, num_samples >> l] for l in range(6)]
 
-        num_lstm_features = hidden_dim * 32 * enc_sizes[-1][0]
+        num_lstm_features = hidden_dim * 32 * enc_sizes[-1][-1]
 
         self.lstm = nn.LSTM(
             input_size=num_lstm_features,
@@ -351,13 +351,16 @@ class SpectrogramLSTMBottleneck(nn.Module):
 
         n, c, b, t = enc_6.shape
 
-        enc_6 = enc_6.permute(0, 3, 1, 2).reshape((n, t, c * b))
+        # enc_6 = enc_6.permute(0, 3, 1, 2).reshape((n, t, c * b))
+        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
 
         lstm_out, _ = self.lstm(enc_6)
-        lstm_out = lstm_out.reshape((n * t, -1))
+        # lstm_out = lstm_out.reshape((n * t, -1))
+        lstm_out = lstm_out.reshape((n * b, -1))
 
         latent_output = self.post_lstm_linear(lstm_out)
-        latent_output = latent_output.reshape((n, t, c, b)).permute(0, 2, 3, 1)
+        # latent_output = latent_output.reshape((n, t, c, b)).permute(0, 2, 3, 1)
+        latent_output = latent_output.reshape((n, b, c, t)).permute(0, 2, 1, 3)
 
         dec_1 = self.up_1(latent_output, skip_5)
         dec_2 = self.up_2(dec_1, skip_4)
