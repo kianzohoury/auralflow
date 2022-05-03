@@ -10,9 +10,13 @@ from typing import Union, Tuple, Any, List
 from .modules import AutoEncoder2d
 from .layers import _get_activation
 from .base import SeparationModel
-from .static_models import SpectrogramNetSimple, SpectrogramLSTMBottleneck
+from .static_models import (
+    SpectrogramNetSimple,
+    SpectrogramLSTM,
+    SpectrogramLSTMVariational,
+)
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
-from losses.losses import vae_loss
+from torch import Tensor, FloatTensor
 
 
 class TFMaskUNet(nn.Module):
@@ -139,18 +143,11 @@ class TFMaskUNet(nn.Module):
 class SpectrogramMaskModel(SeparationModel):
     """"""
 
-    def __init__(self, configuration: dict):
-        self.mixtures = None
-        self.targets = None
-        self.mask = None
-        self.loss = None
-        self.losses = []
-        # self.mixtures: torch.Tensor = torch.Tensor()
-        # self.targets: torch.Tensor = torch.Tensor()
-        # self.loss: List = []
-        # self.masks: List = []
-        # self.named_losses = [[] for _ in range(4)]
+    mixtures: Tensor
+    targets: Tensor
+    mask: FloatTensor
 
+    def __init__(self, configuration: dict):
         dataset_params = configuration["dataset_params"]
         arch_params = configuration["architecture_params"]
         num_samples = get_num_frames(
@@ -160,14 +157,15 @@ class SpectrogramMaskModel(SeparationModel):
             window_size=dataset_params["window_size"],
             hop_length=dataset_params["hop_length"],
         )
-
         super(SpectrogramMaskModel, self).__init__(configuration)
-        # num_models = len(configuration["dataset_params"]["targets"])
-        self.model = SpectrogramLSTMBottleneck(
+        self.model = SpectrogramLSTMVariational(
             num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
             num_samples=num_samples,
             num_channels=configuration["dataset_params"]["num_channels"],
-            lstm_hidden_size=(configuration["dataset_params"]["num_fft"] // 2 + 1) * 2
+            lstm_hidden_size=(
+                configuration["dataset_params"]["num_fft"] // 2 + 1
+            )
+            * 2,
         )
 
         # for _ in range(num_models):
@@ -190,8 +188,7 @@ class SpectrogramMaskModel(SeparationModel):
         #             normalize_input=arch_params["normalize_input"],
         #         )
         #     )
-        self.model = self.model.to("cuda")
-        # self.models = [model.to(self.device) for model in self.models]
+        self.model = self.model.to(self.device)
 
         self.stft = get_stft(
             num_fft=dataset_params["num_fft"],
@@ -205,14 +202,11 @@ class SpectrogramMaskModel(SeparationModel):
             hop_length=dataset_params["hop_length"],
         )
 
-        if self.is_training:
-            self.criterion = vae_loss
+        if self.training_mode:
             lr = configuration["training_params"]["lr"]
-            self.optimizer = AdamW(self.model.parameters(), lr)
-            # for model in self.models:
-            #     self.optimizers.append(AdamW(model.parameters(), lr))
+            self.optim = AdamW(self.model.parameters(), lr)
 
-    def fast_fourier(self, data: torch.Tensor) -> torch.Tensor:
+    def fast_fourier(self, data: Tensor) -> Tensor:
         """Helper method to transform raw data to complex-valued STFT data."""
         data_stft = []
         n_batch, n_channels, n_frames, n_targets = data.size()
@@ -228,7 +222,7 @@ class SpectrogramMaskModel(SeparationModel):
         data_stft = torch.stack(data_stft, dim=1)
         return data_stft
 
-    def process_data(self, data: torch.Tensor) -> torch.Tensor:
+    def process_data(self, data: Tensor) -> Tensor:
         """Processes audio data into magnitudes spectrograms for training.
 
         Args:
@@ -242,20 +236,24 @@ class SpectrogramMaskModel(SeparationModel):
         return data_spec
 
     def set_data(self, mixture, target):
-        self.mixtures = self.process_data(mixture).squeeze(-1)
-        self.targets = self.process_data(target).squeeze(-1).permute(0, 2, 3, 1)
+        self.mixtures = self.process_data(mixture).squeeze(-1).to(self.device)
+        self.targets = self.process_data(target).squeeze(-1)
+        self.targets = self.targets.permute(0, 2, 3, 1).to(self.device)
 
     def forward(self):
         self.mask = self.model(self.mixtures)
-        # for model in self.models:
-        #     self.masks.append(model(self.mixtures.squeeze(-1)))
 
     def backward(self):
         estimate = self.mask * self.mixtures.permute(0, 2, 3, 1)
-        self.loss = self.criterion(
-            estimate, self.targets, mu=self.model.mu_data, sigma=self.model.sigma_data
+        with torch.no_grad():
+            latent_target = self.model(self.targets.squeeze(-1))
+        self.batch_loss = self.model.criterion(
+            estimate, self.targets, self.model.latent_data, latent_target
         )
-        self.losses.append(self.loss.item())
+        # self.loss = self.criterion(
+        #     estimate, self.targets, mu=self.model.mu_data, sigma=self.model.sigma_data
+        # )
+        self.train_losses.append(self.batch_loss.item())
 
         # for i, mask in enumerate(self.masks):
         #     estimate = mask * self.mixtures
@@ -264,15 +262,9 @@ class SpectrogramMaskModel(SeparationModel):
         #     self.named_losses[i].append(loss.item())
 
     def optimizer_step(self):
-        self.loss.backward()
+        self.batch_loss.backward()
         self.optimizer.step()
         self.optimizer.zero_grad()
-        # for loss, optimizer in zip(self.loss, self.optimizers):
-        #     loss.backward()
-        #     optimizer.step()
-        #     optimizer.zero_grad()
-        self.loss = None
-        self.mask = None
 
     def validate(self):
         pass

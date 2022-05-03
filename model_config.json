@@ -1,5 +1,6 @@
 {
     "base_model": "SpectrogramMaskModel",
+    "model_name": "my_separation_model",
     "architecture_params": {
         "max_depth": 6,
         "hidden_size": 16,
@@ -28,8 +29,8 @@
         "val_split": 0.2,
         "loader_params": {
             "max_iterations": 60,
-            "batch_size": 16,
-            "num_workers": 8,
+            "batch_size": 128,
+            "num_workers": 10,
             "pin_memory": true,
             "persistent_workers": true
         }

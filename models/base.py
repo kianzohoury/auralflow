@@ -1,4 +1,6 @@
 from abc import abstractmethod, ABC
+from typing import List
+
 from torchinfo import summary
 from pathlib import Path
 
@@ -7,37 +9,36 @@ import torch.nn as nn
 
 
 class SeparationModel(ABC):
-    """Interface for all base source separation models.
+    """Interface for all source separation models."""
 
-    Not meant to be implemented directly, but subclassed instead.
-    All source separation models implement forward, backward, separate
-    and inference methods.
-    """
+    model: nn.Module
+    optimizer: nn.Module
+    batch_loss: torch.Tensor
+    train_losses: List
+    val_losses: List
+    stop_patience: int
 
     def __init__(self, config: dict):
         super(SeparationModel, self).__init__()
         self.config = config
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.checkpoint_path = config["training_params"]["checkpoint_path"]
-        self.models = []
-        self.losses = []
-        self.optimizers = []
-        self.model = None
-        self.optimizer = None
-        self.visual_names = []
-        self.is_training = config["training_params"]["training_mode"]
+        self.training_mode = config["training_params"]["training_mode"]
         torch.backends.cudnn.benchmark = True
 
     @abstractmethod
     def forward(self):
+        """Forward method."""
         pass
 
     @abstractmethod
     def backward(self):
+        """Performs gradient computation and records loss."""
         pass
 
     @abstractmethod
     def optimizer_step(self):
+        """Performs parameter optimization."""
         pass
 
     @abstractmethod
@@ -49,45 +50,59 @@ class SeparationModel(ABC):
         pass
 
     def train(self):
-        """Sets each model to training mode."""
+        """Sets model to training mode."""
         self.model.train()
-        # for model in self.models:
-        #     if isinstance(model, nn.Module):
-        #         model.train()
 
     def eval(self):
-        """Sets each model to evaluation mode."""
+        """Sets model to evaluation mode."""
         self.model.eval()
-        # for model in self.models:
-        #     if isinstance(model, nn.Module):
-        #         model.eval()
 
     def test(self):
+        """Calls forward method without gradient tracking."""
         with torch.no_grad():
             return self.forward()
 
-    def setup(self):
-        summary(self.model, depth=6)
-        # for model in self.models:
-        #     summary(model, depth=6)
+    def save_model(self, global_step: int, silent=True):
+        """Saves checkpoint for the model."""
+        model_path = f"{self.config['model_name']}_{global_step}.pth"
+        torch.save(
+            self.model.cpu().state_dict(),
+            Path(self.checkpoint_path) / model_path,
+        )
+        self.model.to(self.device)
+        if not silent:
+            print("Model successfully saved.")
 
-    def save_checkpoint(self, global_step: int, loss: float):
-        """Saves a checkpoint for each model."""
-        for model in self.models:
-            path = f"{model.__name__}_{global_step}_{round(loss, 5)}.pth"
-            torch.save(
-                model.cpu().state_dict(), Path(self.checkpoint_path) / path
-            )
-            model.to(self.device)
+    def load_model(self, global_step: int):
+        """Loads previously trained model."""
+        model_path = f"{self.config['model_name']}_{global_step}.pth"
+        if Path(model_path).is_file():
+            state_dict = torch.load(model_path, map_location=self.device)
+            self.model.load_state_dict(state_dict)
+            print("Model successfully loaded.")
 
+    def save_optim(self, global_step: int, silent=True):
+        """Saves snapshot of the model's optimizer."""
+        optim_path = f"{self.config['model_name']}_optim_{global_step}.pth"
+        torch.save(
+            self.optimizer.state_dict(),
+            Path(self.checkpoint_path) / optim_path,
+        )
+        if not silent:
+            print("Optimizer successfully saved.")
 
-# class MaskModel(TFMaskModelBase):
-#     def __init__(self, **kwargs):
-#         super(MaskModel, self).__init__(**kwargs)
-#
-#     # def forward(self, audio) -> torch.FloatTensor:
-#     #     pass
-#
-#
-# class AudioMaskModelBase(nn.Module):
-#     """Base class for deep source mask estimation directly in the time domain."""
+    def load_optim(self, global_step: int):
+        """Loads model's optimizer to resume training."""
+        optim_path = f"{self.config['model_name']}_optim_{global_step}.pth"
+        if Path(optim_path).is_file():
+            state_dict = torch.load(optim_path)
+            self.optimizer.load_state_dict(state_dict)
+            print("Optimizer successfully loaded.")
+
+    def post_epoch_callback(self):
+        pass
+
+        # def setup(self):
+        #     summary(self.model, depth=6)
+        # # for model in self.models:
+        # #     summary(model, depth=6)

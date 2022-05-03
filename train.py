@@ -21,8 +21,6 @@ def main(config_filepath: str):
     dataset_params = configuration["dataset_params"]
     loader_params = dataset_params["loader_params"]
 
-    training_mode = training_params["training_mode"]
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     print("Loading dataset...")
@@ -55,12 +53,9 @@ def main(config_filepath: str):
 
     writer = SummaryWriter("runs_vocals_1")
 
-    stop_counter = 0
     model.train()
     for epoch in range(current_epoch, stop_epoch):
-
         total_loss = 0
-
         with ProgressBar(train_dataloader, max_iters_per_epoch) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
             for index, (mixture, target) in enumerate(pbar):
