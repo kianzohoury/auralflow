@@ -27,7 +27,7 @@
         "sample_length": 1,
         "val_split": 0.2,
         "loader_params": {
-            "max_iterations": 125,
+            "max_iterations": 60,
             "batch_size": 16,
             "num_workers": 8,
             "pin_memory": true,
@@ -37,7 +37,7 @@
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
-        "lr": 0.001,
+        "lr": 0.0005,
         "loss": "l1",
         "stop_patience": 10,
         "export_path": "",

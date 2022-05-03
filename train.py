@@ -83,7 +83,7 @@ def main(config_filepath: str):
                         # "v_l": model.named_losses[3][-1],
 
                     }
-                writer.add_scalars("Loss/train", {"batch_128": model.losses[-1]}, global_step)
+                writer.add_scalars("Loss/train", {"batch_128_60_lr_0005": model.losses[-1]}, global_step)
                 pbar.set_postfix(closure)
                 total_loss += model.losses[-1]
 
