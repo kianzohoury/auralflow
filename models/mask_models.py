@@ -15,6 +15,7 @@ from .static_models import (
     SpectrogramLSTM,
     SpectrogramLSTMVariational,
 )
+
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
 from torch import Tensor, FloatTensor
 
@@ -165,8 +166,10 @@ class SpectrogramMaskModel(SeparationModel):
             lstm_hidden_size=(
                 configuration["dataset_params"]["num_fft"] // 2 + 1
             )
-            * 2,
+            * 2
         )
+        # num_models = len(configuration["dataset_params"]["targets"])
+
 
         # for _ in range(num_models):
         #     self.models.append(
