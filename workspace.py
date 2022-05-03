@@ -1,7 +1,7 @@
 import torch
 
 # from models.base import UNetSpec, UNetVAESpec
-from models.static_models import SpectrogramNetSimple, SpectrogramLSTMBottleneck, SpectrogramLSTMVAE
+from models.static_models import SpectrogramNetSimple, SpectrogramLSTM, SpectrogramLSTMVariational
 
 if __name__ == "__main__":
     # autoencoder = AutoEncoder2d(
@@ -44,5 +44,5 @@ if __name__ == "__main__":
     # vae(torch.rand((1, 1, 512, 173)))
     #
     # print(ConvBlock(2, 128, 256, 2, 1, dropout_p=.8))
-    model = SpectrogramLSTMVAE(512, 173)
+    model = SpectrogramLSTMVariational(512, 173)
     print(model(torch.rand((1, 1, 512, 173))))

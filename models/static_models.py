@@ -150,6 +150,8 @@ class SpectrogramNetSimple(nn.Module):
         self.up_4 = UpBlock(*self.channel_sizes[-4], padding=padding_sizes[3])
         self.up_5 = UpBlock(*self.channel_sizes[-5], padding=padding_sizes[4])
 
+        self.channel_sizes = [size[::-1] for size in self.channel_sizes]
+
         self.soft_conv = nn.Conv2d(
             in_channels=hidden_dim,
             out_channels=num_channels,
@@ -218,10 +220,10 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         enc_6, _ = self.down_6(enc_5)
 
         n, c, b, t = enc_6.size()
-
         enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
 
-        lstm_out, _ = self.lstm(enc_6).reshape((n * b, -1))
+        lstm_out, _ = self.lstm(enc_6)
+        lstm_out = lstm_out.reshape((n * b, -1))
 
         latent_data = self.linear(lstm_out)
         latent_data = latent_data.reshape((n, b, c, t)).permute(0, 2, 1, 3)
@@ -248,8 +250,8 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
 
     def __init__(self, *args, **kwargs):
         super(SpectrogramLSTMVariational, self).__init__(*args, **kwargs)
-        self.mu = nn.Linear(2 * self.num_features, self.num_features)
-        self.sigma = nn.Linear(2 * self.num_features, self.num_features)
+        self.mu = nn.Linear(self.num_features, self.num_features)
+        self.sigma = nn.Linear(self.num_features, self.num_features)
         self.eps = torch.distributions.Normal(0, 1)
         if torch.cuda.is_available():
             self.eps.loc = self.eps.loc.cuda()
@@ -276,7 +278,7 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         lstm_out = lstm_out.reshape((n * b, -1))
 
         dec_0 = self.linear(lstm_out)
-        dec_0 = dec_0.reshape((n, b, c, t)).permute(0, 2, 1, 3)
+        dec_0 = dec_0.reshape((n, b, -1, t)).permute(0, 2, 1, 3)
 
         dec_1 = self.up_1(dec_0, skip_5)
         dec_2 = self.up_2(dec_1, skip_4)
