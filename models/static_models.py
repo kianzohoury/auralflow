@@ -236,7 +236,6 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         dec_6 = self.soft_conv(dec_5)
 
         mask = self.mask_activation(dec_6)
-        mask = mask.permute(0, 2, 3, 1)
         return mask
 
 

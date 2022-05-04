@@ -34,7 +34,7 @@ def audio_to_disk(
 ) -> List[OrderedDict]:
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
-    num_tracks = len(list(Path(dataset_path, split).iterdir()))
+    num_tracks = 4
     with tqdm(Path(dataset_path, split).iterdir(), total=num_tracks) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):
@@ -51,6 +51,7 @@ def audio_to_disk(
             audio_tracks.append(entry)
             if index == num_tracks:
                 break
+
     return audio_tracks
 
 

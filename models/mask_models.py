@@ -159,20 +159,18 @@ class SpectrogramMaskModel(SeparationModel):
             hop_length=dataset_params["hop_length"],
         )
         super(SpectrogramMaskModel, self).__init__(configuration)
-        # self.model = SpectrogramLSTMVariational(
+        self.model = SpectrogramLSTMVariational(
+            num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
+            num_samples=num_samples,
+            num_channels=configuration["dataset_params"]["num_channels"],
+            lstm_hidden_size=1024
+        )
+        # self.model = SpectrogramLSTM(
         #     num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
         #     num_samples=num_samples,
         #     num_channels=configuration["dataset_params"]["num_channels"],
-        #     lstm_hidden_size=(
-        #         configuration["dataset_params"]["num_fft"] // 2 + 1
-        #     )
-        #     * 2
+        #     lstm_hidden_size=1024
         # )
-        self.model = SpectrogramNetSimple(
-            num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
-            num_samples=num_samples,
-            num_channels=configuration["dataset_params"]["num_channels"]
-        )
         # num_models = len(configuration["dataset_params"]["targets"])
 
 
@@ -261,10 +259,10 @@ class SpectrogramMaskModel(SeparationModel):
         # self.batch_loss = self.model.criterion(
         #     estimate, self.targets, latent_estimate, latent_target
         # )
-        self.batch_loss = self.model.criterion(estimate, self.targets)
-        # self.batch_loss = self.criterion(
-        #     estimate, self.targets, mu=self.model.mu_data, sigma=self.model.sigma_data
-        # )
+        # self.batch_loss = self.model.criterion(estimate, self.targets)
+        self.batch_loss = self.criterion(
+            estimate, self.targets, mu=self.model.mu_data, sigma=self.model.sigma_data
+        )
         self.train_losses.append(self.batch_loss.item())
 
         # for i, mask in enumerate(self.masks):
