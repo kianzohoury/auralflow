@@ -15,7 +15,8 @@ class KLDivergenceLoss(nn.Module):
     def __init__(self):
         super(KLDivergenceLoss, self).__init__()
         self.l1 = nn.L1Loss()
-        self.kl = nn.KLDivLoss
+        self.kl = nn.KLDivLoss()
 
     def forward(self, net_est, target, latent_est, latent_target):
-        return self.l1(net_est, target) + self.kl(latent_est, latent_target)
+        print(net_est.shape, target.shape, latent_est.shape, latent_target.shape)
+        return self.l1(net_est, target.squeeze(1)) + self.kl(latent_est, latent_target)

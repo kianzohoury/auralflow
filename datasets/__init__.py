@@ -30,12 +30,11 @@ def create_audio_folder(
 
 
 def audio_to_disk(
-    dataset_path: str, targets: List[str], split: str = "train", stop: int = 5
+    dataset_path: str, targets: List[str], split: str = "train"
 ) -> List[OrderedDict]:
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
-    num_tracks = stop
-    # num_tracks = len(list(Path(dataset_path, split).iterdir()))
+    num_tracks = len(list(Path(dataset_path, split).iterdir()))
     with tqdm(Path(dataset_path, split).iterdir(), total=num_tracks) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):

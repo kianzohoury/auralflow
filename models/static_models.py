@@ -115,6 +115,7 @@ class SpectrogramNetSimple(nn.Module):
         leak_factor: float = 0.2,
     ):
         super(SpectrogramNetSimple, self).__init__()
+        self.criterion = L1Loss()
         self.channel_sizes = [[num_channels, hidden_dim]]
         self.channel_sizes += [
             [hidden_dim << l, hidden_dim << (l + 1)] for l in range(5)
@@ -183,7 +184,6 @@ class SpectrogramNetSimple(nn.Module):
         dec_6 = self.soft_conv(dec_5)
 
         mask = self.mask_activation(dec_6)
-        mask = mask.permute(0, 2, 3, 1)
         return mask
 
 
@@ -250,6 +250,7 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
 
     def __init__(self, *args, **kwargs):
         super(SpectrogramLSTMVariational, self).__init__(*args, **kwargs)
+        self.criterion = KLDivergenceLoss()
         self.mu = nn.Linear(self.num_features, self.num_features)
         self.sigma = nn.Linear(self.num_features, self.num_features)
         self.eps = torch.distributions.Normal(0, 1)
@@ -288,5 +289,4 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         dec_6 = self.soft_conv(dec_5)
 
         mask = self.mask_activation(dec_6)
-        mask = mask.permute(0, 2, 3, 1)
         return mask

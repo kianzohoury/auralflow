@@ -195,14 +195,12 @@ class AudioDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-        mixture = torch.from_numpy(self.dataset[idx]["mixture"])
-        print(mixture.shape)
+        mixture = self.dataset[idx]["mixture"]
         mixture = mixture.unsqueeze(0)
         mixture = mixture.unsqueeze(-1)
-        print(mixture.shape)
         targets = []
         for target in self.targets:
-            targets.append(torch.from_numpy(self.dataset[idx][target]).unsqueeze(0))
+            targets.append(self.dataset[idx][target].unsqueeze(0))
         targets = torch.stack(targets, dim=-1)
         return mixture, targets
 
@@ -222,12 +220,12 @@ def make_chunks(
 
             offset = np.random.randint(0, duration - chunk_size * 44100)
             stop = offset + int(44100 * chunk_size)
-            mix_chunk = mixture[offset:stop]
+            mix_chunk = torch.from_numpy(mixture[offset:stop])
 
             chunked_entry = OrderedDict()
             chunked_entry["mixture"] = mix_chunk
             for target_name, target_data in list(entry.items())[1:-1]:
-                chunked_entry[target_name] = target_data[offset:stop]
+                chunked_entry[target_name] = torch.from_numpy(target_data[offset:stop])
             chunked_dataset.append(chunked_entry)
 
             if index == num_chunks:
