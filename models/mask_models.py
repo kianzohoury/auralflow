@@ -250,7 +250,6 @@ class SpectrogramMaskModel(SeparationModel):
         self.mask = self.model(self.mixtures)
 
     def backward(self):
-        print(torch.min(self.mask), torch.max(self.mask))
         estimate = self.mask * self.mixtures
         # latent_estimate = self.model.latent_data
         # with torch.no_grad():

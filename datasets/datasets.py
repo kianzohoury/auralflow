@@ -212,8 +212,9 @@ def make_chunks(
     chunked_dataset = []
     mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
     num_tracks = len(dataset)
+    num_chunks = 100000
     with tqdm(range(num_chunks), total=num_chunks) as tq:
-        for index in enumerate(tq):
+        for index, _ in enumerate(tq):
 
             entry = dataset[np.random.randint(num_tracks)]
             mixture = entry["mixture"]
@@ -222,8 +223,8 @@ def make_chunks(
             offset = np.random.randint(0, duration - chunk_size * sr)
             stop = offset + int(sr * chunk_size)
             mix_chunk = torch.from_numpy(mixture[offset:stop])
-            mix_sum += mix_chunk
-            mix_sum_square += (mix_chunk ** 2)
+            if index == 97727:
+                print(mix_chunk)
 
             chunked_entry = OrderedDict()
             chunked_entry["mixture"] = mix_chunk
@@ -234,13 +235,31 @@ def make_chunks(
             if index == num_chunks:
                 break
     del dataset
-    if normalize:
-        mix_mean = mix_sum / num_chunks
-        mix_std = torch.sqrt(mix_sum_square / num_chunks - mix_mean ** 2)
-        print(f"Dataset statistics: mean: {mix_mean}, std: {mix_std}")
-        for track in chunked_dataset:
-            track['mixture'] = (track['mixture'] - mix_mean) / mix_std
-
+    normalize_dataset(chunked_dataset)
     return chunked_dataset
 
+
+def normalize_dataset(dataset, ratio: float = 0.2):
+    sr = 44100
+    chunk_size = dataset[0]['mixture'].shape[0] // sr
+    mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
+    with tqdm(iter(dataset), total=int(len(dataset) * ratio)) as tq:
+        for index, track in enumerate(tq):
+            mixture = track['mixture']
+
+            mix_sum += mixture
+            mix_sum_square += mixture ** 2
+            if index == int(len(dataset) * ratio):
+                break
+            
+    mix_mean = mix_sum / (int(len(dataset) * ratio))
+    mix_std = torch.sqrt(mix_sum_square / (int(len(dataset) * ratio)) - mix_mean * mix_mean)
+    with tqdm(iter(dataset), total=len(dataset)) as tq:
+        for index, track in enumerate(tq):
+            track['mixture'] = (track['mixture'] - mix_mean) / (mix_std + 1e-9)
+            if index == len(dataset):
+                break
+    print(f"Dataset statistics: mean: {mix_mean}, std: {mix_std}")
+
+    
 
