@@ -1,9 +1,16 @@
 import torch
-
+from datasets import create_audio_dataset
 # from models.base import UNetSpec, UNetVAESpec
 from models.static_models import SpectrogramNetSimple, SpectrogramLSTM, SpectrogramLSTMVariational
 
 if __name__ == "__main__":
+    train_dataset = create_audio_dataset(
+        'toy_dataset',
+        split="train",
+        targets=["vocals"],
+        chunk_size=3,
+        num_chunks=int(1e6),
+    )
     # autoencoder = AutoEncoder2d(
     #     num_targets=3,
     #     num_bins=512,
@@ -44,5 +51,5 @@ if __name__ == "__main__":
     # vae(torch.rand((1, 1, 512, 173)))
     #
     # print(ConvBlock(2, 128, 256, 2, 1, dropout_p=.8))
-    model = SpectrogramLSTMVariational(512, 173)
-    print(model(torch.rand((1, 1, 512, 173))))
+    # model = SpectrogramLSTMVariational(512, 173)
+    # print(model(torch.rand((1, 1, 512, 173))))

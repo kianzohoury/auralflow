@@ -284,6 +284,10 @@ class SpectrogramMaskModel(SeparationModel):
     def separate(self, audio):
         pass
 
+    def post_epoch_callback(self):
+        pass
+
+
     # def estimate_audio(self, audio):
     #     with torch.no_grad():
     #         mixture_data = self.stft(audio).unsqueeze(0)
