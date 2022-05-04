@@ -28,7 +28,11 @@ def main(config_filepath: str):
     #     dataset_params=dataset_params, subset="train"
     # )
     train_dataset = create_audio_dataset(
-        dataset_params["dataset_path"], split="train", targets=["vocals"]
+        dataset_params["dataset_path"],
+        split="train",
+        targets=["vocals"],
+        chunk_size=1,
+        num_chunks=int(1e6)
     )
     # val_dataset = train_dataset.split(val_split=dataset_params["val_split"])
     # train_dataloader = load_dataset(
