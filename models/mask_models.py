@@ -168,10 +168,11 @@ class SpectrogramMaskModel(SeparationModel):
         #     )
         #     * 2
         # )
-        self.model = SpectrogramNetSimple(
+        self.model = SpectrogramLSTM(
             num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
             num_samples=num_samples,
-            num_channels=configuration["dataset_params"]["num_channels"]
+            num_channels=configuration["dataset_params"]["num_channels"],
+            lstm_hidden_size=1024
         )
         # num_models = len(configuration["dataset_params"]["targets"])
 
