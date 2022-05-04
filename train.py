@@ -32,15 +32,15 @@ def main(config_filepath: str):
         split="train",
         targets=["vocals"],
         chunk_size=1,
-        num_chunks=int(1e6)
+        num_chunks=int(1e2)
     )
     # val_dataset = train_dataset.split(val_split=dataset_params["val_split"])
     # train_dataloader = load_dataset(
     #     dataset=train_dataset, loader_params=dataset_params["loader_params"]
     # )
     train_dataloader = DataLoader(
-        train_dataset, num_workers=4, pin_memory=True,
-        persistent_workers=True, batch_size=32, prefetch_factor=4)
+        train_dataset, num_workers=8, pin_memory=True,
+        persistent_workers=True, batch_size=64, prefetch_factor=4)
     # val_dataloader = load_dataset(
     #     dataset=val_dataset, loader_params=dataset_params["loader_params"]
     # )
@@ -60,32 +60,31 @@ def main(config_filepath: str):
 
     writer = SummaryWriter("runs_vocals_1")
 
-    # model.train()
+    model.train()
     for epoch in range(current_epoch, stop_epoch):
         total_loss = 0
-        # with ProgressBar(train_dataloader, max_iters_per_epoch) as pbar:
-        #     pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
-        for index, (mixture, target) in enumerate(train_dataloader):
-            print(mixture.shape)
-        
+        with ProgressBar(train_dataloader, max_iters_per_epoch) as pbar:
+            pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
+            for index, (mixture, target) in enumerate(train_dataloader):
+            
+                model.set_data(mixture.unsqueeze(1).unsqueeze(-1), target.unsqueeze(1))
+                print(model.mixtures.shape)
+                model.forward()
+                model.backward()
+                model.optimizer_step()
 
-                # model.set_data(mixture, target)
-                # model.forward()
-                # model.backward()
-                # model.optimizer_step()
+                writer.add_scalars("Loss/train", {"batch_128_60_lr_0005_VAE": model.losses[-1]}, global_step)
+                pbar.set_postfix({"avg_loss": model.batch_losses[-1]})
+                total_loss += model.losses[-1]
 
-                # writer.add_scalars("Loss/train", {"batch_128_60_lr_0005_VAE": model.losses[-1]}, global_step)
-                # pbar.set_postfix({"avg_loss": model.batch_losses[-1]})
-                # total_loss += model.losses[-1]
-
-            global_step += 1
+                global_step += 1
                 # start = time.time()
 
                 # break after seeing max_iter * batch_size samples
-                # if index >= max_iters_per_epoch:
-                #     pbar.set_postfix({"avg_loss": total_loss / max_iters_per_epoch})
-                #     pbar.clear()
-                #     break
+                if index >= max_iters_per_epoch:
+                    pbar.set_postfix({"avg_loss": total_loss / max_iters_per_epoch})
+                    pbar.clear()
+                    break
             # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
 
         # epoch_losses.append(total_loss / max_iters)
@@ -123,71 +122,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main(args.config_filepath)
 
-
-#
-# import torch
-# from torch.utils.data import DataLoader
-# from torch.utils.tensorboard import SummaryWriter
-# from utils.progress_bar import ProgressBar
-#
-# #
-# def run_training_loop():
-#     pass
-
-#
-# def cross_validate(model: torch.nn.Module, data_loader: DataLoader,
-#                    criterion: torch.nn.Module, max_iters: int,
-#                    writer: SummaryWriter, num_fft: int, window_size: int,
-#                    hop_length: int, val_steps: int, device: str = 'cpu') -> float:
-#     r"""Cross validates a model's performance.
-#
-#     Designed to be called after each training epoch to prevent over-fitting
-#     on the training set, and signal early stopping.
-#
-#     Returns:
-#         (float): The batch-wise average validation loss.
-#     """
-#     num_iterations = max_iters
-#     total_loss = 0
-#
-#     model.eval()
-#     with ProgressBar(data_loader, num_iterations, train=False) as pbar:
-#         for index, (mixture, target) in enumerate(pbar):
-#             mixture, target = mixture.to(device), target.to(device)
-#
-#             mixture_stft = torch.stft(mixture.squeeze(1).squeeze(-1),
-#                                       num_fft - 1, hop_length, window_size - 1,
-#                                       onesided=True, return_complex=True)
-#             target_stft = torch.stft(target.squeeze(1).squeeze(-1), num_fft - 1,
-#                                      hop_length, window_size - 1, onesided=True,
-#                                      return_complex=True)
-#
-#             # reshape data
-#             mixture_mag, target_mag = torch.abs(mixture_stft), torch.abs(target_stft)
-#             mixture_phase = torch.angle(mixture_stft)
-#
-#             mixture_mag = mixture_mag.unsqueeze(-1)
-#             target_mag = target_mag.unsqueeze(-1)
-#
-#             with torch.no_grad():
-#
-#                 # generate soft mask
-#                 mask = model(mixture_mag)['mask']
-#
-#                 estimate = mask * mixture_mag
-#
-#                 # estimate source(s) and record loss
-#                 loss = criterion(estimate, target_mag)
-#
-#             total_loss += loss.item()
-#             writer.add_scalar("Val/Loss", loss.item(), val_steps)
-#             pbar.set_postfix(loss=loss.item())
-#
-#             val_steps += 1
-#
-#             if index >= num_iterations:
-#                 pbar.set_postfix(loss=round(total_loss / num_iterations, 3))
-#                 pbar.clear()
-#                 break
-#
-#     return (total_loss / num_iterations, val_steps)

@@ -5,8 +5,7 @@ from typing import Iterator, List, Optional, Tuple
 from torch import Tensor
 from torch.utils.data.dataset import IterableDataset, Dataset
 from tqdm import tqdm
-
-from . import make_chunks
+from . import datasets
 
 import librosa
 import numpy as np
@@ -197,8 +196,41 @@ class AudioDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         mixture = torch.from_numpy(self.dataset[idx]["mixture"])
+        print(mixture.shape)
+        mixture = mixture.unsqueeze(0)
+        mixture = mixture.unsqueeze(-1)
+        print(mixture.shape)
         targets = []
         for target in self.targets:
-            targets.append(torch.from_numpy(self.dataset[idx][target]))
+            targets.append(torch.from_numpy(self.dataset[idx][target]).unsqueeze(0))
         targets = torch.stack(targets, dim=-1)
         return mixture, targets
+
+
+def make_chunks(
+    dataset: List, chunk_size: int, num_chunks: int
+) -> List[OrderedDict]:
+    """Transforms an audio dataset into a chunked dataset."""
+    chunked_dataset = []
+    num_tracks = len(dataset)
+    with tqdm(range(num_chunks), total=num_chunks) as tq:
+        for index in enumerate(tq):
+
+            entry = dataset[np.random.randint(num_tracks)]
+            mixture = entry["mixture"]
+            duration = entry["duration"]
+
+            offset = np.random.randint(0, duration - chunk_size * 44100)
+            stop = offset + int(44100 * chunk_size)
+            mix_chunk = mixture[offset:stop]
+
+            chunked_entry = OrderedDict()
+            chunked_entry["mixture"] = mix_chunk
+            for target_name, target_data in list(entry.items())[1:-1]:
+                chunked_entry[target_name] = target_data[offset:stop]
+            chunked_dataset.append(chunked_entry)
+
+            if index == num_chunks:
+                break
+    del dataset
+    return chunked_dataset

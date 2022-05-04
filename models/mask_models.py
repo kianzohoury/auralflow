@@ -212,6 +212,7 @@ class SpectrogramMaskModel(SeparationModel):
     def fast_fourier(self, data: Tensor) -> Tensor:
         """Helper method to transform raw data to complex-valued STFT data."""
         data_stft = []
+        print(data.shape)
         n_batch, n_channels, n_frames, n_targets = data.size()
 
         for i in range(n_channels):
@@ -234,6 +235,7 @@ class SpectrogramMaskModel(SeparationModel):
         Returns:
             (Tensor): Magnitude spectrogram.
         """
+        print("FUCK")
         data_stft = self.fast_fourier(data=data)
         data_spec = torch.abs(data_stft)
         return data_spec
@@ -242,6 +244,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.mixtures = self.process_data(mixture).squeeze(-1).to(self.device)
         self.targets = self.process_data(target).squeeze(-1)
         self.targets = self.targets.permute(0, 2, 3, 1).to(self.device)
+        print(self.mixtures.shape, self.targets.shape)
 
     def forward(self):
         self.mask = self.model(self.mixtures)
