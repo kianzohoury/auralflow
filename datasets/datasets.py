@@ -1,6 +1,12 @@
+from collections import OrderedDict
 from pathlib import Path
 from typing import Iterator, List, Optional, Tuple
-from torch.utils.data.dataset import IterableDataset
+
+from torch import Tensor
+from torch.utils.data.dataset import IterableDataset, Dataset
+from tqdm import tqdm
+
+from . import create_audio_dataset
 
 import librosa
 import numpy as np
@@ -170,3 +176,61 @@ class AudioFolder(IterableDataset):
         while True:
             mix, target = self._generate_mixture()
             yield mix, target
+
+
+class AudioDataset(Dataset):
+    def __init__(
+        self,
+        dataset_path: str,
+        targets: List[str],
+        chunk_size: int = 1,
+        num_chunks: int = int(1e6),
+        split="train",
+    ):
+        super(AudioDataset, self).__init__()
+        self.dataset_path = dataset_path
+        self.targets = targets
+        self.split = split
+        full_dataset = create_audio_dataset(
+            dataset_path=dataset_path, targets=targets, split=split
+        )
+        self.dataset = self.make_chunks(
+            dataset=full_dataset, chunk_size=chunk_size, num_chunks=num_chunks
+        )
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        mixture = torch.from_numpy(self.dataset[idx]['mixture'])
+        targets = []
+        for target in self.targets:
+            targets.append(torch.from_numpy(self.dataset[idx][target]))
+        targets = torch.stack(targets, dim=-1)
+        return mixture, targets
+
+    @staticmethod
+    def make_chunks(dataset, chunk_size: int, num_chunks: int):
+        chunked_dataset = []
+        num_tracks = len(dataset)
+        with tqdm(range(num_chunks), total=num_chunks) as tq:
+            for index in enumerate(tq):
+
+                entry = dataset[np.random.randint(num_tracks)]
+                mixture = entry["mixture"]
+                duration = entry["duration"]
+
+                offset = np.random.randint(0, duration - chunk_size * 44100)
+                stop = offset + int(44100 * chunk_size)
+                mix_chunk = mixture[offset:stop]
+
+                chunked_entry = OrderedDict()
+                chunked_entry["mixture"] = mix_chunk
+                for target_name, target_data in list(entry.items())[1:-1]:
+                    chunked_entry[target_name] = target_data[offset:stop]
+                chunked_dataset.append(chunked_entry)
+
+                if index == num_chunks:
+                    break
+        del dataset
+        return chunked_dataset
