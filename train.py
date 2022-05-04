@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import torch
 import numpy as np
 
-from datasets import create_dataset, load_dataset, AudioFolder
+from datasets import create_audio_folder, load_dataset, create_audio_dataset
 from models import create_model
 from utils import load_config
 from utils.progress_bar import ProgressBar
@@ -24,8 +24,11 @@ def main(config_filepath: str):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     print("Loading dataset...")
-    train_dataset = create_dataset(
-        dataset_params=dataset_params, subset="train"
+    # train_dataset = create_dataset(
+    #     dataset_params=dataset_params, subset="train"
+    # )
+    train_dataset = create_audio_dataset(
+        dataset_params["dataset_path"], split="train", targets=["vocals"]
     )
     # val_dataset = train_dataset.split(val_split=dataset_params["val_split"])
     # train_dataloader = load_dataset(
