@@ -1,10 +1,11 @@
 import torch
 import torch.nn as nn
-from torch.nn.functional import l1_loss
+from torch.nn.functional import l1_loss, mse_loss, binary_cross_entropy
+import numpy as np
 
 
-def kl_div_loss(mu: torch.FloatTensor, sigma: torch.FloatTensor) -> float:
-    return torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1) * 0.5
+def kl_div_loss(mu: torch.FloatTensor, sigma: torch.FloatTensor) -> torch.Tensor:
+    return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
 def vae_loss(estimate, target, mu, sigma):

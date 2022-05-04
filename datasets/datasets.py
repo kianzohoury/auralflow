@@ -206,10 +206,11 @@ class AudioDataset(Dataset):
 
 
 def make_chunks(
-    dataset: List, chunk_size: int, num_chunks: int
+    dataset: List, chunk_size: int, num_chunks: int, normalize: bool = True, sr: int = 44100
 ) -> List[OrderedDict]:
     """Transforms an audio dataset into a chunked dataset."""
     chunked_dataset = []
+    mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
     num_tracks = len(dataset)
     with tqdm(range(num_chunks), total=num_chunks) as tq:
         for index in enumerate(tq):
@@ -218,9 +219,11 @@ def make_chunks(
             mixture = entry["mixture"]
             duration = entry["duration"]
 
-            offset = np.random.randint(0, duration - chunk_size * 44100)
-            stop = offset + int(44100 * chunk_size)
+            offset = np.random.randint(0, duration - chunk_size * sr)
+            stop = offset + int(sr * chunk_size)
             mix_chunk = torch.from_numpy(mixture[offset:stop])
+            mix_sum += mix_chunk
+            mix_sum_square += (mix_chunk ** 2)
 
             chunked_entry = OrderedDict()
             chunked_entry["mixture"] = mix_chunk
@@ -231,4 +234,13 @@ def make_chunks(
             if index == num_chunks:
                 break
     del dataset
+    if normalize:
+        mix_mean = mix_sum / num_chunks
+        mix_std = torch.sqrt(mix_sum_square / num_chunks - mix_mean ** 2)
+        print(f"Dataset statistics: mean: {mix_mean}, std: {mix_std}")
+        for track in chunked_dataset:
+            track['mixture'] = (track['mixture'] - mix_mean) / mix_std
+
     return chunked_dataset
+
+

@@ -79,7 +79,7 @@ def main(config_filepath: str):
                 model.optimizer_step()
 
                 # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
-                writer.add_scalars("Loss/train", {"batch_64_lr_0005_LSTM": model.train_losses[-1]}, global_step)
+                writer.add_scalars("Loss/train", {"batch_64_lr_0005_VAE_1024": model.train_losses[-1]}, global_step)
                 pbar.set_postfix({"avg_loss": model.train_losses[-1]})
                 total_loss += model.train_losses[-1]
 
