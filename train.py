@@ -79,10 +79,12 @@ def main(config_filepath: str):
     model.setup()
     print("Completed.")
 
-    tb = program.TensorBoard()
-    tb.configure(argv=[None, '--logdir', "/Users/Kian/Desktop/auralflow/runs", '--host', '127.0.0.1'])
-    url = tb.launch()
-    print(f"Serving TensorBoard on {url}")
+    run_tensorboard("/Users/Kian/Desktop/auralflow/runs")
+    #
+    # tb = program.TensorBoard()
+    # tb.configure(argv=[None, '--logdir', "/Users/Kian/Desktop/auralflow/runs", '--host', '127.0.0.1'])
+    # url = tb.launch()
+    # print(f"Serving TensorBoard on {url}")
 
     writer = SummaryWriter()
 
@@ -150,3 +152,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(args.config_filepath)
+
+def run_tensorboard(logdir_absolute):
+
+    import os, threading
+    tb_thread = threading.Thread(
+        target=lambda: os.system('/home/username/anaconda3/envs/'
+                                 'env_name/bin/tensorboard '
+                                 '--logdir=' + logdir_absolute),
+        daemon=True)
+    tb_thread.start()
