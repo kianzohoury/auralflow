@@ -216,7 +216,7 @@ def make_chunks(
     chunked_dataset = []
     # mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
     num_tracks = len(dataset)
-    num_chunks = 1000
+    # num_chunks = 1000
     with tqdm(range(num_chunks), total=num_chunks) as tq:
         for index, _ in enumerate(tq):
 
@@ -227,8 +227,6 @@ def make_chunks(
             offset = np.random.randint(0, duration - chunk_size * sr)
             stop = offset + int(sr * chunk_size)
             mix_chunk = torch.from_numpy(mixture[offset:stop])
-            # if index == 97727:
-            #     print(mix_chunk)
 
             chunked_entry = OrderedDict()
             chunked_entry["mixture"] = mix_chunk

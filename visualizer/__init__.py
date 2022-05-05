@@ -8,6 +8,7 @@ from matplotlib.image import imread
 from numpy import array
 from torch import Tensor
 from typing import List
+from PIL import Image
 
 
 def get_residual_specs_image(
@@ -15,28 +16,30 @@ def get_residual_specs_image(
     target_data: Tensor,
     target_labels: List[str],
     sample_rate: int = 44100,
-) -> array:
-    """Creates residual spectrogram images for diisplaying via tensorboard."""
-
+):
+    """Creates residual spectrogram images for displaying via tensorboard."""
     n_batch, n_channels, n_bins, n_frames, n_targets = estimate_data.shape
-    estimate_data, target_data = estimate_data.cpu(), target_data.cpu()
-    estimate_data = torch.mean(estimate_data, dim=1).reshape(
-        (0, n_bins, n_frames, n_targets)
-    )
-    target_data = torch.mean(target_data, dim=1).reshape(
-        (0, n_bins, n_frames, n_targets)
-    )
+    estimate_data = torch.mean(estimate_data[0], dim=0).reshape(
+        (n_bins, n_frames, n_targets)
+    ).detach().cpu()
+    target_data = torch.mean(target_data[0], dim=0).reshape(
+        (n_bins, n_frames, n_targets)
+    ).detach().cpu()
 
     estimates_log_normal, targets_log_normal = [], []
     for i in range(n_targets):
-        estimates_log_normal[i] = librosa.amplitude_to_db(
-            estimate_data[i], ref=np.max
+        estimates_log_normal.append(
+            librosa.amplitude_to_db(
+                estimate_data[:, :, i], ref=np.max
+            )
         )
-        targets_log_normal[i] = librosa.amplitude_to_db(
-            target_data[i], ref=np.max
+        targets_log_normal.append(
+            librosa.amplitude_to_db(
+                target_data[:, :, i], ref=np.max
+            )
         )
 
-    fig, ax = plt.subplots(nrows=n_targets, ncols=1, figsize=(12, 6), dpi=150)
+    fig, ax = plt.subplots(nrows=n_targets + 1, ncols=1, figsize=(6, 3), dpi=150)
 
     image = None
     for i in range(n_targets):
@@ -54,10 +57,12 @@ def get_residual_specs_image(
     fig.tight_layout()
     fig.colorbar(image, ax=ax.ravel().tolist(), format="%+2.f dB")
 
-    buffer = io.BytesIO()
-    plt.imsave(buffer, format="jpg")
-    image = imread(buffer)
-    return image
+    with open("temp.jpg", "w") as temp_file:
+        plt.savefig("temp.jpg", dpi=fig.dpi)
+        img_data = torch.from_numpy(np.array(Image.open("temp.jpg")))
+
+    plt.close(fig)
+    return img_data
 
 
 def format_plot(axis, target_label):

@@ -9,8 +9,6 @@ import numpy as np
 
 from tqdm import tqdm
 
-__all__ = ["datasets"]
-
 
 def create_audio_folder(
     dataset_params: dict, subset: str = "train"
@@ -35,7 +33,7 @@ def audio_to_disk(
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
-    num_tracks = len(subset_dir)
+    num_tracks = 3
     with tqdm(subset_dir, total=num_tracks) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):

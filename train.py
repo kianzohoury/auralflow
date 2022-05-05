@@ -11,6 +11,7 @@ from utils.progress_bar import ProgressBar
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from tqdm import tqdm_notebook
 import math
 from torch.profiler import profile, record_function
 from torch.profiler.profiler import ProfilerActivity
@@ -36,7 +37,7 @@ def main(config_filepath: str):
         split="train",
         targets=["vocals"],
         chunk_size=3,
-        num_chunks=int(1e6),
+        num_chunks=int(1e5),
     )
     # val_dataset = train_dataset.split(val_split=dataset_params["val_split"])
     # train_dataloader = load_dataset(
@@ -69,7 +70,7 @@ def main(config_filepath: str):
     global_step = configuration["training_params"]["global_step"]
 
     writer = SummaryWriter("runs_vocals_1")
-    iters = 50
+    iters = 1
     model.train()
     for epoch in range(current_epoch, stop_epoch):
         total_loss = 0

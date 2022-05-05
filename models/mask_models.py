@@ -291,12 +291,17 @@ class SpectrogramMaskModel(SeparationModel):
 
     def post_epoch_callback(self, global_step, writer):
         image = get_residual_specs_image(
-            estimate_data=self.estimates,
-            target_data=self.targets,
+            estimate_data=self.estimates.unsqueeze(-1),
+            target_data=self.targets.unsqueeze(-1),
             target_labels=self.config["dataset_params"]["targets"],
             sample_rate=self.config["dataset_params"]["sample_rate"]
         )
-        writer.add_image("residual spectrograms", image, global_step)
+        writer.add_image(
+            "residual spectrograms",
+            image,
+            dataformats='HWC',
+            global_step=global_step
+        )
 
 
     # def estimate_audio(self, audio):
