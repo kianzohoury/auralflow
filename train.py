@@ -58,7 +58,7 @@ def main(config_filepath: str):
     print("Loading complete.")
 
     model = create_model(configuration)
-    # model.setup()
+    model.setup()
 
     print("=" * 95)
     print("Training session started...")
@@ -70,7 +70,7 @@ def main(config_filepath: str):
     global_step = configuration["training_params"]["global_step"]
 
     writer = SummaryWriter()
-    iters = 1
+    iters = 60
     model.train()
     for epoch in range(current_epoch, stop_epoch):
         total_loss = 0
