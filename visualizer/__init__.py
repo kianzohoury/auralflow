@@ -9,6 +9,7 @@ from numpy import array
 from torch import Tensor
 from typing import List
 from PIL import Image
+from pathlib import Path
 
 
 def get_residual_specs_image(
@@ -57,9 +58,10 @@ def get_residual_specs_image(
     fig.tight_layout()
     fig.colorbar(image, ax=ax.ravel().tolist(), format="%+2.f dB")
 
-    with open("temp.jpg", "w") as temp_file:
-        plt.savefig("temp.jpg", dpi=fig.dpi)
-        img_data = torch.from_numpy(np.array(Image.open("temp.jpg")))
+    with open("temp.png", "w") as temp_file:
+        plt.savefig("temp.png", dpi=120)
+        img_data = torch.from_numpy(np.array(Image.open("temp.png")))
+        Path("temp.png").unlink()
 
     plt.close(fig)
     return img_data
