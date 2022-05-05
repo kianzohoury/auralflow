@@ -164,5 +164,4 @@ if __name__ == "__main__":
     Process(
         target=run_tensorboard, args=("/Users/Kian/Desktop/auralflow/runs",)
     ).start()
-    run_tensorboard("/Users/Kian/Desktop/auralflow/runs")
     Process(target=main, args=(args.config_filepath,)).start()
