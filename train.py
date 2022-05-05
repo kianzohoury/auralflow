@@ -1,29 +1,19 @@
 import os
-import time
+import threading
 from argparse import ArgumentParser
+from multiprocessing import Process
 
 import torch
-import numpy as np
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
-from datasets import create_audio_folder, load_dataset, create_audio_dataset
+from datasets import create_audio_dataset
 from models import create_model
 from utils import load_config
 from visualizer.progress import ProgressBar
-from torch.utils.tensorboard import SummaryWriter
-from torch.utils.data import DataLoader
-from multiprocessing import Process
-from validate import cross_validate
-from tqdm import tqdm
-from tqdm import tqdm_notebook
-import math
-from torch.profiler import profile, record_function
-from torch.profiler.profiler import ProfilerActivity
 
 
 def run_tensorboard(logdir_absolute):
-
-    import os, threading
-
     tb_thread = threading.Thread(
         target=lambda: os.system("tensorboard --logdir=" + logdir_absolute),
         daemon=True,
@@ -92,13 +82,15 @@ def main(config_filepath: str):
     model.setup()
     print("Completed.")
 
+    print(visualizer_params["logs_path"])
+
     writer_process = Process(
         target=run_tensorboard, args=(visualizer_params["logs_path"],)
     )
 
     writer_process.start()
 
-    writer = SummaryWriter()
+    writer = SummaryWriter(visualizer_params["logs_path"])
 
     print("=" * 95)
     print("Training is starting...")
