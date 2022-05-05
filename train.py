@@ -91,7 +91,6 @@ def main(config_filepath: str):
     model = create_model(configuration)
     model.setup()
     print("Completed.")
-    print("=" * 95)
 
     writer_process = Process(
         target=run_tensorboard, args=(visualizer_params["logs_path"],)
