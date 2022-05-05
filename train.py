@@ -80,7 +80,7 @@ def main(config_filepath: str):
     print("Completed.")
 
     tb = program.TensorBoard()
-    tb.configure(argv=[None, '--logdir', "/Users/Kian/Desktop/auralflow/runs", '--host', 'localhost'])
+    tb.configure(argv=[None, '--logdir', "/Users/Kian/Desktop/auralflow/runs", '--host', '127.0.0.1'])
     url = tb.launch()
     print(f"Serving TensorBoard on {url}")
 
