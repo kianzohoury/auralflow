@@ -27,7 +27,8 @@ def run_tensorboard(logdir_absolute):
                                  'env_name/bin/tensorboard '
                                  '--logdir=' + logdir_absolute),
         daemon=True)
-    tb_thread.start(
+    tb_thread.start()
+
 
 def main(config_filepath: str):
 
@@ -162,4 +163,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main(args.config_filepath)
 
-)
