@@ -16,6 +16,7 @@ class SeparationModel(ABC):
     batch_loss: torch.Tensor
     train_losses: List
     val_losses: List
+    min_loss: float
     stop_patience: int
 
     def __init__(self, config: dict):
@@ -43,10 +44,6 @@ class SeparationModel(ABC):
 
     @abstractmethod
     def separate(self, audio):
-        pass
-
-    @abstractmethod
-    def validate(self):
         pass
 
     def train(self):

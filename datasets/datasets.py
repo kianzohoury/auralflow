@@ -218,7 +218,7 @@ def make_chunks(
     # mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
     num_tracks = len(dataset)
     # num_chunks = 1000
-    with ProgressBar(range(num_chunks), total=num_chunks, fmt=False) as tq:
+    with ProgressBar(range(num_chunks), total=num_chunks) as tq:
         for index, _ in enumerate(tq):
 
             entry = dataset[np.random.randint(num_tracks)]

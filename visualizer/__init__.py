@@ -10,15 +10,18 @@ from torch import Tensor
 from typing import List
 from PIL import Image
 from pathlib import Path
+from torch.utils.tensorboard import SummaryWriter
 
 
-def get_residual_specs_image(
+def log_residual_specs(
+    writer: SummaryWriter,
+    global_step: int,
     estimate_data: Tensor,
     target_data: Tensor,
     target_labels: List[str],
     sample_rate: int = 44100,
 ):
-    """Creates residual spectrogram images for displaying via tensorboard."""
+    """Plots residual spectrograms to tensorboard."""
     n_batch, n_channels, n_bins, n_frames, n_targets = estimate_data.shape
     estimate_data = torch.mean(estimate_data[0], dim=0).reshape(
         (n_bins, n_frames, n_targets)
@@ -40,7 +43,12 @@ def get_residual_specs_image(
             )
         )
 
-    fig, ax = plt.subplots(nrows=n_targets + 1, ncols=1, figsize=(6, 3), dpi=150)
+    fig, ax = plt.subplots(
+        nrows=n_targets + 1,
+        ncols=1,
+        figsize=(6, 3),
+        dpi=150
+    )
 
     image = None
     for i in range(n_targets):
@@ -53,18 +61,12 @@ def get_residual_specs_image(
         )
         format_plot(ax[i], target_labels[i])
 
-    plt.suptitle("Residual spectrograms")
     plt.xlabel("Seconds")
     fig.tight_layout()
     fig.colorbar(image, ax=ax.ravel().tolist(), format="%+2.f dB")
 
-    with open("temp.png", "w") as temp_file:
-        plt.savefig("temp.png", dpi=120)
-        img_data = torch.from_numpy(np.array(Image.open("temp.png")))
-        Path("temp.png").unlink()
-
+    writer.add_figure("residual_specs", figure=fig, global_step=global_step)
     plt.close(fig)
-    return img_data
 
 
 def format_plot(axis, target_label):

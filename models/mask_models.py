@@ -5,7 +5,10 @@ import torch.nn as nn
 
 from torch.nn import L1Loss
 from torch.optim import AdamW
+from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from validate import cross_validate
+from validate import cross_validate
 
 from typing import Union, Tuple, Any, List, Callable
 from .modules import AutoEncoder2d
@@ -16,7 +19,7 @@ from .static_models import (
     SpectrogramLSTM,
     SpectrogramLSTMVariational,
 )
-from visualizer import get_residual_specs_image
+from visualizer import log_residual_specs
 from losses import vae_loss
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
 from torch import Tensor, FloatTensor
@@ -212,10 +215,13 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         if self.training_mode:
-            lr = configuration["training_params"]["lr"]
+            lr = self.config["training_params"]["lr"]
             self.optimizer = AdamW(self.model.parameters(), lr)
             self.train_losses = []
+            self.val_losses = []
             self.criterion = vae_loss
+            self.min_loss = 0
+            self.stop_patience = self.config["training_params"]["stop_patience"]
 
     @staticmethod
     def fast_fourier(transform: Callable, data: Tensor) -> Tensor:
@@ -270,7 +276,7 @@ class SpectrogramMaskModel(SeparationModel):
             mu=self.model.mu_data,
             sigma=self.model.sigma_data,
         )
-        self.train_losses.append(self.batch_loss.item())
+        # self.train_losses.append(self.batch_loss.item())
 
         # for i, mask in enumerate(self.masks):
         #     estimate = mask * self.mixtures
@@ -283,24 +289,48 @@ class SpectrogramMaskModel(SeparationModel):
         self.optimizer.step()
         self.optimizer.zero_grad()
 
-    def validate(self):
-        pass
+    def early_stop(self):
+        """Signals that training should stop based on patience criteria."""
+        mean_eval_loss = sum(self.val_losses) / len(self.val_losses)
+        if mean_eval_loss >= self.min_loss:
+            self.stop_patience -= 1
+        else:
+            self.min_loss = mean_eval_loss
+        if self.stop_patience == 0:
+            return True
+        return False
+
+    # def validate(self, val_dataloader: DataLoader, max_iters: int):
+    #     cross_validate(
+    #         model=self.model,
+    #         val_dataloader=val_dataloader,
+    #         writer=writer,
+    #         max_iters=max_iters,
+    #         global_step=global_step
+    #     )
 
     def separate(self, audio):
         pass
 
-    def post_epoch_callback(self, global_step: int, writer: SummaryWriter):
-        image = get_residual_specs_image(
+    def post_epoch_callback(
+        self,
+        writer: SummaryWriter,
+        global_step: int,
+        val_dataloader: DataLoader,
+        max_iters: int
+    ):
+        """Called at the end of each epoch."""
+        val_step = self.config['max_iters'] * len(self.train_losses)
+
+        cross_validate(self.model, val_dataloader, max_iters, writer)
+
+        log_residual_specs(
+            writer=writer,
+            global_step=global_step,
             estimate_data=self.estimates.unsqueeze(-1),
             target_data=self.targets.unsqueeze(-1),
             target_labels=self.config["dataset_params"]["targets"],
             sample_rate=self.config["dataset_params"]["sample_rate"]
-        )
-        writer.add_image(
-            "residual spectrograms",
-            image,
-            dataformats='HWC',
-            global_step=global_step
         )
 
     def get_batch_loss(self):
