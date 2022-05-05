@@ -23,8 +23,7 @@ def run_tensorboard(logdir_absolute):
 
     import os, threading
     tb_thread = threading.Thread(
-        target=lambda: os.system('/home/username/anaconda3/envs/'
-                                 'env_name/bin/tensorboard '
+        target=lambda: os.system('/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/tensorboard '
                                  '--logdir=' + logdir_absolute),
         daemon=True)
     tb_thread.start()
