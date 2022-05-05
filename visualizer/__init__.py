@@ -23,31 +23,30 @@ def log_residual_specs(
 ):
     """Plots residual spectrograms to tensorboard."""
     n_batch, n_channels, n_bins, n_frames, n_targets = estimate_data.shape
-    estimate_data = torch.mean(estimate_data[0], dim=0).reshape(
-        (n_bins, n_frames, n_targets)
-    ).detach().cpu()
-    target_data = torch.mean(target_data[0], dim=0).reshape(
-        (n_bins, n_frames, n_targets)
-    ).detach().cpu()
+    estimate_data = (
+        torch.mean(estimate_data[0], dim=0)
+        .reshape((n_bins, n_frames, n_targets))
+        .detach()
+        .cpu()
+    )
+    target_data = (
+        torch.mean(target_data[0], dim=0)
+        .reshape((n_bins, n_frames, n_targets))
+        .detach()
+        .cpu()
+    )
 
     estimates_log_normal, targets_log_normal = [], []
     for i in range(n_targets):
         estimates_log_normal.append(
-            librosa.amplitude_to_db(
-                estimate_data[:, :, i], ref=np.max
-            )
+            librosa.amplitude_to_db(estimate_data[:, :, i], ref=np.max)
         )
         targets_log_normal.append(
-            librosa.amplitude_to_db(
-                target_data[:, :, i], ref=np.max
-            )
+            librosa.amplitude_to_db(target_data[:, :, i], ref=np.max)
         )
 
     fig, ax = plt.subplots(
-        nrows=n_targets + 1,
-        ncols=1,
-        figsize=(6, 3),
-        dpi=150
+        nrows=n_targets + 1, ncols=1, figsize=(6, 3), dpi=150
     )
 
     image = None

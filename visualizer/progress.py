@@ -4,6 +4,7 @@ from tqdm import tqdm
 
 class ProgressBar(tqdm):
     """Wraps tqdm progress bar."""
+
     def __init__(self, iterable: Iterable, total: int, fmt: bool = True):
         # ascii_symbol = None if train else " ="
         if fmt:

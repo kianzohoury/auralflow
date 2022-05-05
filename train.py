@@ -11,6 +11,7 @@ from utils import load_config
 from visualizer.progress import ProgressBar
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
+from multiprocessing import Process
 from validate import cross_validate
 from tqdm import tqdm
 from tqdm import tqdm_notebook
@@ -19,12 +20,15 @@ from torch.profiler import profile, record_function
 from torch.profiler.profiler import ProfilerActivity
 from tensorboard import program
 
+
 def run_tensorboard(logdir_absolute):
 
     import os, threading
+
     tb_thread = threading.Thread(
-        target=lambda: os.system('tensorboard --logdir=' + logdir_absolute),
-        daemon=True)
+        target=lambda: os.system("tensorboard --logdir=" + logdir_absolute),
+        daemon=True,
+    )
     tb_thread.start()
 
 
@@ -135,7 +139,7 @@ def main(config_filepath: str):
                     {"batch_64_lr_0005_VAE_1024": batch_loss},
                     global_step,
                 )
-        
+
         model.train_losses.append(total_loss / max_iters)
 
         pbar.set_postfix({"avg_loss": total_loss / max_iters})
@@ -153,11 +157,13 @@ def main(config_filepath: str):
 
 
 if __name__ == "__main__":
-
     parser = ArgumentParser(description="Model training script.")
     parser.add_argument(
         "config_filepath", type=str, help="Path to a configuration file."
     )
     args = parser.parse_args()
-    main(args.config_filepath)
-
+    Process(
+        target=run_tensorboard, args=("/Users/Kian/Desktop/auralflow/runs",)
+    ).start()
+    run_tensorboard("/Users/Kian/Desktop/auralflow/runs")
+    Process(target=main, args=(args.config_filepath,)).start()

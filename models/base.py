@@ -103,5 +103,6 @@ class SeparationModel(ABC):
         Path(self.checkpoint_path).mkdir(exist_ok=True)
 
         # summary(self.model, depth=6)
+
     # for model in self.models:
     #     summary(model, depth=6)

@@ -148,6 +148,7 @@ class TFMaskUNet(nn.Module):
 
 class SpectrogramMaskModel(SeparationModel):
     """"""
+
     mixtures: Tensor
     targets: Tensor
     estimates: Tensor
@@ -221,7 +222,9 @@ class SpectrogramMaskModel(SeparationModel):
             self.val_losses = []
             self.criterion = vae_loss
             self.min_loss = float("inf")
-            self.stop_patience = self.config["training_params"]["stop_patience"]
+            self.stop_patience = self.config["training_params"][
+                "stop_patience"
+            ]
 
     @staticmethod
     def fast_fourier(transform: Callable, data: Tensor) -> Tensor:
@@ -318,7 +321,7 @@ class SpectrogramMaskModel(SeparationModel):
         writer: SummaryWriter,
         global_step: int,
         val_dataloader: DataLoader,
-        max_iters: int
+        max_iters: int,
     ):
         """Called at the end of each epoch."""
         # val_step = self.config['max_iters'] * len(self.train_losses)
@@ -331,12 +334,11 @@ class SpectrogramMaskModel(SeparationModel):
             estimate_data=self.estimates.unsqueeze(-1),
             target_data=self.targets.unsqueeze(-1),
             target_labels=self.config["dataset_params"]["targets"],
-            sample_rate=self.config["dataset_params"]["sample_rate"]
+            sample_rate=self.config["dataset_params"]["sample_rate"],
         )
 
     def get_batch_loss(self):
         return self.batch_loss.item()
-
 
     # def estimate_audio(self, audio):
     #     with torch.no_grad():
