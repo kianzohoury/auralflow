@@ -4,7 +4,7 @@ from typing import Iterator, List, Optional, Tuple
 
 from torch import Tensor
 from torch.utils.data.dataset import IterableDataset, Dataset
-from tqdm import tqdm
+from tqdm import tqdm, tqdm_notebook
 from . import datasets
 
 import librosa

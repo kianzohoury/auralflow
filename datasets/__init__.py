@@ -3,6 +3,7 @@ from . import datasets
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
+import time
 
 import librosa
 import numpy as np
@@ -33,7 +34,8 @@ def audio_to_disk(
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
-    num_tracks = 3
+    num_tracks = len(subset_dir)
+    
     with tqdm(subset_dir, total=num_tracks) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):
