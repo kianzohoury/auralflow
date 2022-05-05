@@ -18,7 +18,6 @@ from tqdm import tqdm_notebook
 import math
 from torch.profiler import profile, record_function
 from torch.profiler.profiler import ProfilerActivity
-from tensorboard import program
 
 
 def run_tensorboard(logdir_absolute):
@@ -33,7 +32,7 @@ def run_tensorboard(logdir_absolute):
 
 
 def main(config_filepath: str):
-
+    print("=" * 95)
     print("Reading configuration file...")
     configuration = load_config(config_filepath)
 
@@ -43,7 +42,7 @@ def main(config_filepath: str):
     visualizer_params = configuration["visualizer_params"]
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
+    print("=" * 95)
     print("Loading training set...")
     train_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
@@ -53,6 +52,7 @@ def main(config_filepath: str):
         num_chunks=int(1e4),
     )
     print("Completed.")
+    print("=" * 95)
     print("Loading validation set...")
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
@@ -62,6 +62,7 @@ def main(config_filepath: str):
         num_chunks=int(1e4),
     )
     print("Completed.")
+    print("=" * 95)
 
     train_dataloader = DataLoader(
         train_dataset,
@@ -90,12 +91,13 @@ def main(config_filepath: str):
     model = create_model(configuration)
     model.setup()
     print("Completed.")
+    print("=" * 95)
 
-    #
-    # tb = program.TensorBoard()
-    # tb.configure(argv=[None, '--logdir', "/Users/Kian/Desktop/auralflow/runs", '--host', '127.0.0.1'])
-    # url = tb.launch()
-    # print(f"Serving TensorBoard on {url}")
+    writer_process = Process(
+        target=run_tensorboard, args=(visualizer_params["logs_path"],)
+    )
+
+    writer_process.start()
 
     writer = SummaryWriter()
 
@@ -161,7 +163,5 @@ if __name__ == "__main__":
         "config_filepath", type=str, help="Path to a configuration file."
     )
     args = parser.parse_args()
-    Process(
-        target=run_tensorboard, args=("/Users/Kian/Desktop/auralflow/runs",)
-    ).start()
-    Process(target=main, args=(args.config_filepath,)).start()
+    main_process = Process(target=main, args=(args.config_filepath,))
+    main_process.start()
