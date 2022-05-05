@@ -87,7 +87,7 @@ def main(config_filepath: str):
     model.setup()
     print("Completed.")
 
-    run_tensorboard("/Users/Kian/Desktop/auralflow/runs")
+    run_tensorboard("runs")
     #
     # tb = program.TensorBoard()
     # tb.configure(argv=[None, '--logdir', "/Users/Kian/Desktop/auralflow/runs", '--host', '127.0.0.1'])
