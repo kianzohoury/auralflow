@@ -23,7 +23,7 @@ def run_tensorboard(logdir_absolute):
 
     import os, threading
     tb_thread = threading.Thread(
-        target=lambda: os.system('python -m tensorflow.tensorboard --logdir=' + logdir_absolute),
+        target=lambda: os.system('python3 tensorboard --logdir=' + logdir_absolute),
         daemon=True)
     tb_thread.start()
 
