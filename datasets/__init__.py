@@ -3,6 +3,7 @@ from . import datasets
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
+from visualizer.progress import ProgressBar
 import time
 
 import librosa
@@ -36,7 +37,7 @@ def audio_to_disk(
     subset_dir = list(Path(dataset_path, split).iterdir())
     num_tracks = len(subset_dir)
     
-    with tqdm(subset_dir, total=num_tracks) as tq:
+    with ProgressBar(subset_dir, total=num_tracks) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):
             track_name = track_folder / "mixture.wav"

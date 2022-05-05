@@ -5,6 +5,7 @@ from typing import Iterator, List, Optional, Tuple
 from torch import Tensor
 from torch.utils.data.dataset import IterableDataset, Dataset
 from tqdm import tqdm, tqdm_notebook
+from visualizer.progress import ProgressBar
 from . import datasets
 
 import librosa
@@ -217,7 +218,7 @@ def make_chunks(
     # mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
     num_tracks = len(dataset)
     # num_chunks = 1000
-    with tqdm(range(num_chunks), total=num_chunks) as tq:
+    with ProgressBar(range(num_chunks), total=num_chunks) as tq:
         for index, _ in enumerate(tq):
 
             entry = dataset[np.random.randint(num_tracks)]

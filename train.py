@@ -7,7 +7,7 @@ import numpy as np
 from datasets import create_audio_folder, load_dataset, create_audio_dataset
 from models import create_model
 from utils import load_config
-from utils.progress_bar import ProgressBar
+from visualizer.progress import ProgressBar
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from tqdm import tqdm
