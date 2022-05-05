@@ -4,9 +4,12 @@ from tqdm import tqdm
 
 class ProgressBar(tqdm):
     """Wraps tqdm progress bar."""
-    def __init__(self, iterable: Iterable, total: int):
+    def __init__(self, iterable: Iterable, total: int, fmt: bool = True):
         # ascii_symbol = None if train else " ="
-        bar_format = "{desc:<20.20}{percentage:6.0f}%|{bar:16}{r_bar}"
+        if fmt:
+            bar_format = "{desc:<20.20}{percentage:6.0f}%|{bar:16}{r_bar}"
+        else:
+            bar_format = None
         super(ProgressBar, self).__init__(
             iterable=iterable,
             unit="batch",

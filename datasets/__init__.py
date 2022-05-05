@@ -37,7 +37,7 @@ def audio_to_disk(
     subset_dir = list(Path(dataset_path, split).iterdir())
     num_tracks = len(subset_dir)
     
-    with ProgressBar(subset_dir, total=num_tracks) as tq:
+    with ProgressBar(subset_dir, total=num_tracks, fmt=False) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):
             track_name = track_folder / "mixture.wav"
