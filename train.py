@@ -69,7 +69,7 @@ def main(config_filepath: str):
     # max_iters_per_epoch = loader_params["max_iterations"]
     global_step = configuration["training_params"]["global_step"]
 
-    writer = SummaryWriter("runs_vocals_1")
+    writer = SummaryWriter()
     iters = 1
     model.train()
     for epoch in range(current_epoch, stop_epoch):
@@ -77,25 +77,23 @@ def main(config_filepath: str):
         with ProgressBar(train_dataloader, iters) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
             for index, (mixture, target) in enumerate(pbar):
-                # with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
-                #     with record_function("model_inference"):
 
                 model.set_data(mixture, target)
                 model.forward()
                 model.backward()
                 model.optimizer_step()
 
-                # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+                batch_loss = model.get_batch_loss()
+
                 writer.add_scalars(
                     "Loss/train",
-                    {"batch_64_lr_0005_VAE_1024": model.train_losses[-1]},
+                    {"batch_64_lr_0005_VAE_1024": batch_loss},
                     global_step,
                 )
-                pbar.set_postfix({"avg_loss": model.train_losses[-1]})
-                total_loss += model.train_losses[-1]
+                pbar.set_postfix({"avg_loss": batch_loss})
+                total_loss += batch_loss
 
                 global_step += 1
-                # start = time.time()
 
                 # break after seeing max_iter * batch_size samples
                 if index >= iters:
@@ -103,9 +101,11 @@ def main(config_filepath: str):
                     pbar.clear()
                     break
 
-
         pbar.set_postfix({"avg_loss": total_loss / iters})
         model.post_epoch_callback(epoch, writer)
+        model.save_model(global_step=global_step)
+        model.save_optim(global_step=global_step)
+
         # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
 
         # epoch_losses.append(total_loss / max_iters)

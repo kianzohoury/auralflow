@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from torch.nn import L1Loss
 from torch.optim import AdamW
+from torch.utils.tensorboard import SummaryWriter
 
 from typing import Union, Tuple, Any, List, Callable
 from .modules import AutoEncoder2d
@@ -144,7 +145,6 @@ class TFMaskUNet(nn.Module):
 
 class SpectrogramMaskModel(SeparationModel):
     """"""
-
     mixtures: Tensor
     targets: Tensor
     estimates: Tensor
@@ -289,7 +289,7 @@ class SpectrogramMaskModel(SeparationModel):
     def separate(self, audio):
         pass
 
-    def post_epoch_callback(self, global_step, writer):
+    def post_epoch_callback(self, global_step: int, writer: SummaryWriter):
         image = get_residual_specs_image(
             estimate_data=self.estimates.unsqueeze(-1),
             target_data=self.targets.unsqueeze(-1),
@@ -302,6 +302,9 @@ class SpectrogramMaskModel(SeparationModel):
             dataformats='HWC',
             global_step=global_step
         )
+
+    def get_batch_loss(self):
+        return self.batch_loss.item()
 
 
     # def estimate_audio(self, audio):
