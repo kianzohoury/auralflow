@@ -17,6 +17,7 @@ from tqdm import tqdm_notebook
 import math
 from torch.profiler import profile, record_function
 from torch.profiler.profiler import ProfilerActivity
+from tensorboard import program
 
 
 def main(config_filepath: str):
@@ -78,8 +79,10 @@ def main(config_filepath: str):
     model.setup()
     print("Completed.")
 
-    print("Opening tensorboard...")
-    os.system(f"tensorboard --logdir={visualizer_params['logs_path']}")
+    tb = program.TensorBoard()
+    tb.configure(argv=[None, '--logdir', visualizer_params['logs_path']])
+    url = tb.launch()
+    print(f"Serving TensorBoard on {url}")
 
     writer = SummaryWriter()
 
