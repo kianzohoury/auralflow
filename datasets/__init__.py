@@ -36,6 +36,7 @@ def audio_to_disk(
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
     num_tracks = len(subset_dir)
+    num_tracks = 1
     
     with ProgressBar(subset_dir, total=num_tracks) as tq:
         entry = OrderedDict()

@@ -35,7 +35,7 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e8),
+        num_chunks=int(1e4),
     )
     print("Completed.")
     print("Loading validation set...")
@@ -44,7 +44,7 @@ def main(config_filepath: str):
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e8),
+        num_chunks=int(1e4),
     )
     print("Completed.")
 
@@ -83,7 +83,7 @@ def main(config_filepath: str):
     current_epoch = training_params["last_epoch"] + 1
     stop_epoch = current_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
-    max_iters = loader_params["max_iterations"]
+    max_iters = min(4, loader_params["max_iterations"])
     val_step = 0
 
     model.train()
@@ -114,13 +114,15 @@ def main(config_filepath: str):
                     {"batch_64_lr_0005_VAE_1024": batch_loss},
                     global_step,
                 )
+        
+        model.train_losses.append(total_loss / max_iters)
 
         pbar.set_postfix({"avg_loss": total_loss / max_iters})
 
-        if model.stop_early():
-            break
+        # if model.stop_early():
+        #     break
 
-        model.post_epoch_callback(epoch, writer)
+        model.post_epoch_callback(writer, epoch, val_dataloader, max_iters)
         model.save_model(global_step=global_step)
         model.save_optim(global_step=global_step)
 

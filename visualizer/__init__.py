@@ -66,7 +66,7 @@ def log_residual_specs(
     fig.colorbar(image, ax=ax.ravel().tolist(), format="%+2.f dB")
 
     writer.add_figure("residual_specs", figure=fig, global_step=global_step)
-    plt.close(fig)
+    # plt.close(fig)
 
 
 def format_plot(axis, target_label):

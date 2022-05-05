@@ -39,4 +39,7 @@ def cross_validate(
                 pbar.clear()
                 break
 
+    model.val_losses.append(total_loss / max_iters)
+    print(model.val_losses)
+
     pbar.set_postfix({"avg_loss": total_loss / max_iters})

@@ -220,7 +220,7 @@ class SpectrogramMaskModel(SeparationModel):
             self.train_losses = []
             self.val_losses = []
             self.criterion = vae_loss
-            self.min_loss = 0
+            self.min_loss = float("inf")
             self.stop_patience = self.config["training_params"]["stop_patience"]
 
     @staticmethod
@@ -289,9 +289,10 @@ class SpectrogramMaskModel(SeparationModel):
         self.optimizer.step()
         self.optimizer.zero_grad()
 
-    def early_stop(self):
+    def stop_early(self):
         """Signals that training should stop based on patience criteria."""
-        mean_eval_loss = sum(self.val_losses) / len(self.val_losses)
+        print(self.val_losses)
+        mean_eval_loss = sum(self.val_losses) / (len(self.val_losses) + 1e-9)
         if mean_eval_loss >= self.min_loss:
             self.stop_patience -= 1
         else:
@@ -320,9 +321,9 @@ class SpectrogramMaskModel(SeparationModel):
         max_iters: int
     ):
         """Called at the end of each epoch."""
-        val_step = self.config['max_iters'] * len(self.train_losses)
+        # val_step = self.config['max_iters'] * len(self.train_losses)
 
-        cross_validate(self.model, val_dataloader, max_iters, writer)
+        # cross_validate(self, val_dataloader, max_iters, writer)
 
         log_residual_specs(
             writer=writer,
