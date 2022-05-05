@@ -42,10 +42,12 @@
         "stop_patience": 10,
         "export_path": "",
         "checkpoint_path": "checkpoints",
+        "checkpoint_freq": 10,
         "last_epoch": -1,
         "global_step": -1
     },
     "visualizer_params": {
-        "tensorboard": true
+        "tensorboard": true,
+        "logs_path": "runs"
     }
 }

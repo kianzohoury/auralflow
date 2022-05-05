@@ -1,3 +1,4 @@
+import os
 import time
 from argparse import ArgumentParser
 
@@ -26,6 +27,7 @@ def main(config_filepath: str):
     training_params = configuration["training_params"]
     dataset_params = configuration["dataset_params"]
     loader_params = dataset_params["loader_params"]
+    visualizer_params = configuration["visualizer_params"]
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -71,8 +73,13 @@ def main(config_filepath: str):
     #     dataset=val_dataset, loader_params=dataset_params["loader_params"]
     # )
 
+    print("Loading model...")
     model = create_model(configuration)
     model.setup()
+    print("Completed.")
+
+    print("Opening tensorboard...")
+    os.system(f"tensorboard --logdir={visualizer_params['logs_path']}")
 
     writer = SummaryWriter()
 
@@ -84,6 +91,7 @@ def main(config_filepath: str):
     stop_epoch = current_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
     max_iters = min(4, loader_params["max_iterations"])
+    save_freq = training_params["checkpoint_freq"]
     val_step = 0
 
     model.train()
@@ -119,13 +127,15 @@ def main(config_filepath: str):
 
         pbar.set_postfix({"avg_loss": total_loss / max_iters})
 
+        if index % save_freq == 0:
+            model.save_model(global_step=global_step)
+            model.save_optim(global_step=global_step)
         # if model.stop_early():
         #     break
 
         model.post_epoch_callback(writer, epoch, val_dataloader, max_iters)
-        model.save_model(global_step=global_step)
-        model.save_optim(global_step=global_step)
 
+    writer.close()
     print("=" * 90 + "\nTraining is complete.")
 
 
