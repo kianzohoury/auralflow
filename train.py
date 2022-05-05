@@ -19,6 +19,15 @@ from torch.profiler import profile, record_function
 from torch.profiler.profiler import ProfilerActivity
 from tensorboard import program
 
+def run_tensorboard(logdir_absolute):
+
+    import os, threading
+    tb_thread = threading.Thread(
+        target=lambda: os.system('/home/username/anaconda3/envs/'
+                                 'env_name/bin/tensorboard '
+                                 '--logdir=' + logdir_absolute),
+        daemon=True)
+    tb_thread.start(
 
 def main(config_filepath: str):
 
@@ -153,12 +162,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main(args.config_filepath)
 
-def run_tensorboard(logdir_absolute):
-
-    import os, threading
-    tb_thread = threading.Thread(
-        target=lambda: os.system('/home/username/anaconda3/envs/'
-                                 'env_name/bin/tensorboard '
-                                 '--logdir=' + logdir_absolute),
-        daemon=True)
-    tb_thread.start()
+)
