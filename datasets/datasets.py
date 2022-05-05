@@ -206,13 +206,17 @@ class AudioDataset(Dataset):
 
 
 def make_chunks(
-    dataset: List, chunk_size: int, num_chunks: int, normalize: bool = True, sr: int = 44100
+    dataset: List,
+    chunk_size: int,
+    num_chunks: int,
+    normalize: bool = True,
+    sr: int = 44100,
 ) -> List[OrderedDict]:
     """Transforms an audio dataset into a chunked dataset."""
     chunked_dataset = []
     # mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
     num_tracks = len(dataset)
-    num_chunks = 100000
+    num_chunks = 1000
     with tqdm(range(num_chunks), total=num_chunks) as tq:
         for index, _ in enumerate(tq):
 
@@ -229,7 +233,9 @@ def make_chunks(
             chunked_entry = OrderedDict()
             chunked_entry["mixture"] = mix_chunk
             for target_name, target_data in list(entry.items())[1:-1]:
-                chunked_entry[target_name] = torch.from_numpy(target_data[offset:stop])
+                chunked_entry[target_name] = torch.from_numpy(
+                    target_data[offset:stop]
+                )
             chunked_dataset.append(chunked_entry)
 
             if index == num_chunks:
@@ -241,22 +247,26 @@ def make_chunks(
 
 def normalize_dataset(dataset, ratio: float = 0.2):
     sr = 44100
-    chunk_size = dataset[0]['mixture'].shape[0] // sr
-    mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
+    chunk_size = dataset[0]["mixture"].shape[0] // sr
+    mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros(
+        (sr * chunk_size)
+    )
     with tqdm(iter(dataset), total=int(len(dataset) * ratio)) as tq:
         for index, track in enumerate(tq):
-            mixture = track['mixture']
+            mixture = track["mixture"]
 
             mix_sum += mixture
-            mix_sum_square += mixture ** 2
+            mix_sum_square += mixture**2
             if index == int(len(dataset) * ratio):
                 break
-            
+
     mix_mean = mix_sum / (int(len(dataset) * ratio))
-    mix_std = torch.sqrt(mix_sum_square / (int(len(dataset) * ratio)) - mix_mean * mix_mean)
+    mix_std = torch.sqrt(
+        mix_sum_square / (int(len(dataset) * ratio)) - mix_mean * mix_mean
+    )
     with tqdm(iter(dataset), total=len(dataset)) as tq:
         for index, track in enumerate(tq):
-            track['mixture'] = (track['mixture'] - mix_mean) / (mix_std + 1e-9)
+            track["mixture"] = (track["mixture"] - mix_mean) / (mix_std + 1e-9)
             if index == len(dataset):
                 break
     print(f"Dataset statistics: mean: {mix_mean}, std: {mix_std}")

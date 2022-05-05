@@ -103,6 +103,7 @@ class UpBlock(nn.Module):
 
 class SpectrogramNetSimple(nn.Module):
     """Vanilla spectrogram U-Net model with triple block sizes."""
+
     criterion: L1Loss
 
     def __init__(

@@ -43,8 +43,14 @@ def main(config_filepath: str):
     #     dataset=train_dataset, loader_params=dataset_params["loader_params"]
     # )
     train_dataloader = DataLoader(
-        train_dataset, num_workers=8, pin_memory=True,
-        persistent_workers=True, batch_size=64, prefetch_factor=4, shuffle=True)
+        train_dataset,
+        num_workers=8,
+        pin_memory=True,
+        persistent_workers=True,
+        batch_size=64,
+        prefetch_factor=4,
+        shuffle=True,
+    )
     # val_dataloader = load_dataset(
     #     dataset=val_dataset, loader_params=dataset_params["loader_params"]
     # )
@@ -72,14 +78,18 @@ def main(config_filepath: str):
             for index, (mixture, target) in enumerate(pbar):
                 # with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
                 #     with record_function("model_inference"):
-            
+
                 model.set_data(mixture, target)
                 model.forward()
                 model.backward()
                 model.optimizer_step()
 
                 # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
-                writer.add_scalars("Loss/train", {"batch_64_lr_0005_VAE_1024": model.train_losses[-1]}, global_step)
+                writer.add_scalars(
+                    "Loss/train",
+                    {"batch_64_lr_0005_VAE_1024": model.train_losses[-1]},
+                    global_step,
+                )
                 pbar.set_postfix({"avg_loss": model.train_losses[-1]})
                 total_loss += model.train_losses[-1]
 
@@ -91,8 +101,11 @@ def main(config_filepath: str):
                     pbar.set_postfix({"avg_loss": total_loss / iters})
                     pbar.clear()
                     break
+
+
         pbar.set_postfix({"avg_loss": total_loss / iters})
-            # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
+        model.post_epoch_callback(epoch, writer)
+        # print(prof.key_averages().table(sort_by="self_cpu_time_total"))
 
         # epoch_losses.append(total_loss / max_iters)
 
@@ -128,4 +141,3 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(args.config_filepath)
-

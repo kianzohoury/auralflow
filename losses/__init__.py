@@ -4,7 +4,9 @@ from torch.nn.functional import l1_loss, mse_loss, binary_cross_entropy
 import numpy as np
 
 
-def kl_div_loss(mu: torch.FloatTensor, sigma: torch.FloatTensor) -> torch.Tensor:
+def kl_div_loss(
+    mu: torch.FloatTensor, sigma: torch.FloatTensor
+) -> torch.Tensor:
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
@@ -19,5 +21,9 @@ class KLDivergenceLoss(nn.Module):
         self.kl = nn.KLDivLoss()
 
     def forward(self, net_est, target, latent_est, latent_target):
-        print(net_est.shape, target.shape, latent_est.shape, latent_target.shape)
-        return self.l1(net_est, target.squeeze(1)) + self.kl(latent_est, latent_target)
+        print(
+            net_est.shape, target.shape, latent_est.shape, latent_target.shape
+        )
+        return self.l1(net_est, target.squeeze(1)) + self.kl(
+            latent_est, latent_target
+        )

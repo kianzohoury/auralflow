@@ -34,11 +34,14 @@ def audio_to_disk(
 ) -> List[OrderedDict]:
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
-    num_tracks = 4
-    with tqdm(Path(dataset_path, split).iterdir(), total=num_tracks) as tq:
+    subset_dir = list(Path(dataset_path, split).iterdir())
+    num_tracks = len(subset_dir)
+    with tqdm(subset_dir, total=num_tracks) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):
             track_name = track_folder / "mixture.wav"
+            if not track_name.is_file():
+                continue
             mixture_track, sr = librosa.load(track_name, sr=None)
             entry["mixture"] = mixture_track
             for target in targets:
@@ -75,8 +78,9 @@ def create_audio_dataset(
     return chunked_dataset
 
 
-
-def load_dataset(dataset: datasets.AudioFolder, loader_params: dict) -> DataLoader:
+def load_dataset(
+    dataset: datasets.AudioFolder, loader_params: dict
+) -> DataLoader:
     """Returns a dataloader for loading data from a given AudioFolder."""
     dataloader = DataLoader(
         dataset=dataset,

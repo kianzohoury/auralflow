@@ -1,14 +1,24 @@
+import librosa
 import torch
 from datasets import create_audio_dataset
+from IPython import display
+
+from visualizer import plot_spectrograms
+from models.mask_models import SpectrogramMaskModel
+
 # from models.base import UNetSpec, UNetVAESpec
-from models.static_models import SpectrogramNetSimple, SpectrogramLSTM, SpectrogramLSTMVariational
+from models.static_models import (
+    SpectrogramNetSimple,
+    SpectrogramLSTM,
+    SpectrogramLSTMVariational,
+)
 
 if __name__ == "__main__":
     train_dataset = create_audio_dataset(
-        'toy_dataset',
+        "toy_dataset",
         split="train",
-        targets=["vocals"],
-        chunk_size=3,
+        targets=["bass", "drums", "other", "vocals"],
+        chunk_size=12,
         num_chunks=int(1e6),
     )
     # autoencoder = AutoEncoder2d(
@@ -52,4 +62,40 @@ if __name__ == "__main__":
     #
     # print(ConvBlock(2, 128, 256, 2, 1, dropout_p=.8))
     # model = SpectrogramLSTMVariational(512, 173)
-    # print(model(torch.rand((1, 1, 512, 173))))
+    # print(model(torch.rand((1, 1, 512, 173))))=
+    x = train_dataset[0][0].unsqueeze(0)
+    y = train_dataset[0][1].unsqueeze(0)
+
+    print(x.shape, y.shape)
+    display.Audio(data=x.squeeze(0).squeeze(-1), rate=44100)
+
+    x = x.squeeze(0).squeeze(-1).squeeze(0).T
+
+    y_list = []
+    x = torch.abs(
+        torch.stft(
+            x,
+            n_fft=1023,
+            win_length=256,
+            hop_length=256,
+            return_complex=True,
+            onesided=True,
+            window=torch.hann_window(256),
+        )
+    )
+    for i in range(y.shape[-1]):
+        y_list.append(
+            torch.abs(
+                torch.stft(
+                    y[:, :, :, i].squeeze(0).squeeze(-1).squeeze(0).T,
+                    n_fft=1023,
+                    win_length=256,
+                    hop_length=256,
+                    return_complex=True,
+                    onesided=True,
+                    window=torch.hann_window(256),
+                )
+            )
+        )
+
+    plot_spectrograms(x, y_list, ["bass", "drums", "other", "vocals"])

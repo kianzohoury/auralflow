@@ -99,7 +99,7 @@ class SeparationModel(ABC):
             self.optimizer.load_state_dict(state_dict)
             print("Optimizer successfully loaded.")
 
-    def post_epoch_callback(self):
+    def post_epoch_callback(self, **kwargs):
         pass
 
         # def setup(self):

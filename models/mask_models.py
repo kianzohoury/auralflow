@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.nn import L1Loss
 from torch.optim import AdamW
 
-from typing import Union, Tuple, Any, List
+from typing import Union, Tuple, Any, List, Callable
 from .modules import AutoEncoder2d
 from .layers import _get_activation
 from .base import SeparationModel
@@ -15,6 +15,7 @@ from .static_models import (
     SpectrogramLSTM,
     SpectrogramLSTMVariational,
 )
+from visualizer import get_residual_specs_image
 from losses import vae_loss
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
 from torch import Tensor, FloatTensor
@@ -146,7 +147,10 @@ class SpectrogramMaskModel(SeparationModel):
 
     mixtures: Tensor
     targets: Tensor
+    estimates: Tensor
     mask: FloatTensor
+    stft: Callable
+    inv_stft: Callable
 
     def __init__(self, configuration: dict):
         dataset_params = configuration["dataset_params"]
@@ -163,7 +167,7 @@ class SpectrogramMaskModel(SeparationModel):
             num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
             num_samples=num_samples,
             num_channels=configuration["dataset_params"]["num_channels"],
-            lstm_hidden_size=1024
+            lstm_hidden_size=1024,
         )
         # self.model = SpectrogramLSTM(
         #     num_fft_bins=configuration["dataset_params"]["num_fft"] // 2 + 1,
@@ -172,7 +176,6 @@ class SpectrogramMaskModel(SeparationModel):
         #     lstm_hidden_size=1024
         # )
         # num_models = len(configuration["dataset_params"]["targets"])
-
 
         # for _ in range(num_models):
         #     self.models.append(
@@ -214,7 +217,8 @@ class SpectrogramMaskModel(SeparationModel):
             self.train_losses = []
             self.criterion = vae_loss
 
-    def fast_fourier(self, data: Tensor) -> Tensor:
+    @staticmethod
+    def fast_fourier(transform: Callable, data: Tensor) -> Tensor:
         """Helper method to transform raw data to complex-valued STFT data."""
         data_stft = []
         n_batch, n_channels, n_frames, n_targets = data.size()
@@ -222,7 +226,7 @@ class SpectrogramMaskModel(SeparationModel):
             sources_stack = []
             for j in range(n_targets):
                 sources_stack.append(
-                    self.stft(data[:, i, :, j].reshape((n_batch, n_frames)))
+                    transform(data[:, i, :, j].reshape((n_batch, n_frames)))
                 )
             data_stft.append(torch.stack(sources_stack, dim=-1))
 
@@ -238,7 +242,7 @@ class SpectrogramMaskModel(SeparationModel):
         Returns:
             (Tensor): Magnitude spectrogram.
         """
-        data_stft = self.fast_fourier(data=data)
+        data_stft = self.fast_fourier(transform=self.stft, data=data)
         data_spec = torch.abs(data_stft)
         return data_spec
 
@@ -250,7 +254,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.mask = self.model(self.mixtures)
 
     def backward(self):
-        estimate = self.mask * self.mixtures
+        self.estimates = self.mask * self.mixtures
         # latent_estimate = self.model.latent_data
         # with torch.no_grad():
         #     print(123, self.targets.shape)
@@ -261,7 +265,10 @@ class SpectrogramMaskModel(SeparationModel):
         # )
         # self.batch_loss = self.model.criterion(estimate, self.targets)
         self.batch_loss = self.criterion(
-            estimate, self.targets, mu=self.model.mu_data, sigma=self.model.sigma_data
+            self.estimates,
+            self.targets,
+            mu=self.model.mu_data,
+            sigma=self.model.sigma_data,
         )
         self.train_losses.append(self.batch_loss.item())
 
@@ -282,8 +289,14 @@ class SpectrogramMaskModel(SeparationModel):
     def separate(self, audio):
         pass
 
-    def post_epoch_callback(self):
-        pass
+    def post_epoch_callback(self, global_step, writer):
+        image = get_residual_specs_image(
+            estimate_data=self.estimates,
+            target_data=self.targets,
+            target_labels=self.config["dataset_params"]["targets"],
+            sample_rate=self.config["dataset_params"]["sample_rate"]
+        )
+        writer.add_image("residual spectrograms", image, global_step)
 
 
     # def estimate_audio(self, audio):
