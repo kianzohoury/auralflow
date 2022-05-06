@@ -99,15 +99,15 @@ class SpectrogramMaskModel(SeparationModel):
         data_stft = torch.stack(data_stft, dim=1)
         return data_stft
 
-    def process_audio(self, audio: Tensor, magnitude: bool = False) -> Tensor:
+    def process_audio(self, audio: Tensor, magnitude: bool = True) -> Tensor:
         """Processes audio data into magnitudes spectrograms."""
         data_stft = self.fast_fourier(transform=self.stft, data=audio)
         return torch.abs(data_stft) if magnitude else data_stft
 
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
         """Wrapper method calls process_data and transfers tensors to GPU."""
-        self.mixtures = self.process_audio(mixture).squeeze(-1).to(self.device)
-        self.targets = self.process_audio(target).squeeze(-1).to(self.device)
+        self.mixtures = self.process_audio(mixture).squeeze(-1).float().to(self.device)
+        self.targets = self.process_audio(target).squeeze(-1).float().to(self.device)
 
     def forward(self):
         """Performs forward pass to estimate the multiplicative soft-mask."""
@@ -140,15 +140,6 @@ class SpectrogramMaskModel(SeparationModel):
                 "stop_patience"
             ]
         return False
-
-    # def validate(self, val_dataloader: DataLoader, max_iters: int):
-    #     cross_validate(
-    #         model=self.model,
-    #         val_dataloader=val_dataloader,
-    #         writer=writer,
-    #         max_iters=max_iters,
-    #         global_step=global_step
-    #     )
 
     def separate(self, audio):
         """Separates audio and converts stft back to time domain."""
