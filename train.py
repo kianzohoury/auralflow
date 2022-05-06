@@ -24,14 +24,14 @@ import tensorboard.default
 def run_tensorboard(log_dir):
     # os.chdir(Path(__file__).parent / "runs")
     # [f"python -m tensorboard.main --logdir {log_dir}"]
-    
-    command = ["tensorboard", "--logdir", 'logs']
+
+    command = ["tensorboard", "--logdir", "logs"]
     # command = ["python", "-m", "tensorboard.main", "--logdir", log_dir]
     # command = tb_path
     # print(command)
     # tb_main.main()
     # log = logging.getLogger('werkzeug').setLevel(logging.ERROR)
-        # Start tensorboard server
+    # Start tensorboard server
     # tb.program.FLAGS.logdir = os.getcwd() + '/logs'
     # tb.program.main(tb.default.get_plugins(),
     #             tb.default.get_assets_zip_provider())
@@ -40,16 +40,17 @@ def run_tensorboard(log_dir):
     # url = tb.launch()
     # sys.stdout.write('TensorBoard at %s \n' % url)
     # print(os.system("tensorboard --logdir runs"))
-    
+
     tb_thread = threading.Thread(
-        target=lambda: subprocess.Popen(command, shell=False, cwd=os.getcwd()).communicate(),
+        target=lambda: subprocess.Popen(
+            command, shell=False, cwd=os.getcwd()
+        ).communicate(),
         daemon=True,
     )
     tb_thread.start()
     # print(subprocess.Popen(command, shell=False, cwd=os.getcwd()).communicate())
     # print(subprocess.check_output(command), shell=True)
     sys.exit(1)
-    
 
 
 def main(config_filepath: str):
@@ -62,7 +63,6 @@ def main(config_filepath: str):
     loader_params = dataset_params["loader_params"]
     visualizer_params = configuration["visualizer_params"]
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     print("=" * 95)
     print("Loading training set...")
     train_dataset = create_audio_dataset(
@@ -113,15 +113,13 @@ def main(config_filepath: str):
     model.setup()
     print("Completed.")
 
-    print(visualizer_params["logs_path"])
+    # writer_process = Process(
+    #     target=run_tensorboard, args=(visualizer_params["logs_path"],)
+    # )
 
-    writer_process = Process(
-        target=run_tensorboard, args=(visualizer_params["logs_path"],)
-    )
+    # writer_process.start()
 
-    writer_process.start()
-
-    writer = SummaryWriter(log_dir="FUCK")
+    writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
 
     print("=" * 95)
     print("Training is starting...")
@@ -132,11 +130,10 @@ def main(config_filepath: str):
     global_step = configuration["training_params"]["global_step"]
     max_iters = min(4, loader_params["max_iterations"])
     save_freq = training_params["checkpoint_freq"]
-    val_step = 0
 
-    model.train()
     for epoch in range(current_epoch, stop_epoch):
         total_loss = 0
+        model.train()
         with ProgressBar(train_dataloader, max_iters) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
             for index, (mixture, target) in enumerate(pbar):
@@ -159,7 +156,7 @@ def main(config_filepath: str):
 
                 writer.add_scalars(
                     "Loss/train",
-                    {"batch_64_lr_0005_VAE_1024": batch_loss},
+                    {"l1_kl": batch_loss},
                     global_step,
                 )
 
@@ -170,8 +167,9 @@ def main(config_filepath: str):
         if index % save_freq == 0:
             model.save_model(global_step=global_step)
             model.save_optim(global_step=global_step)
-        # if model.stop_early():
-        #     break
+
+        if model.stop_early():
+            break
 
         model.post_epoch_callback(writer, epoch, val_dataloader, max_iters)
 
@@ -185,10 +183,9 @@ if __name__ == "__main__":
         "config_filepath", type=str, help="Path to a configuration file."
     )
     args = parser.parse_args()
-    run_tensorboard("logs")
-    writer_process = Process(
-        target=run_tensorboard, args=("runs",)
-    )
+    # run_tensorboard("logs")
+    # writer_process = Process(target=run_tensorboard, args=("runs",))
+    main(args.config_filepath)
 
     # writer_process.start()
     # main_process = Process(target=main, args=(args.config_filepath,))

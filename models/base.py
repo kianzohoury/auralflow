@@ -16,7 +16,6 @@ class SeparationModel(ABC):
     batch_loss: torch.Tensor
     train_losses: List
     val_losses: List
-    min_loss: float
     stop_patience: int
 
     def __init__(self, config: dict):
@@ -34,12 +33,12 @@ class SeparationModel(ABC):
 
     @abstractmethod
     def backward(self):
-        """Performs gradient computation and records loss."""
+        """Computes batch-wise loss between estimate and target sources."""
         pass
 
     @abstractmethod
     def optimizer_step(self):
-        """Performs parameter optimization."""
+        """Performs gradient computation and parameter optimization."""
         pass
 
     @abstractmethod

@@ -5,7 +5,7 @@ import torch.nn as nn
 
 from utils.data_utils import get_deconv_pad
 from torch import FloatTensor
-from losses import KLDivergenceLoss
+from losses import KLDivergenceLoss, kl_div_loss
 from torch.nn import L1Loss
 
 
@@ -241,24 +241,27 @@ class SpectrogramLSTM(SpectrogramNetSimple):
 
 
 class SpectrogramLSTMVariational(SpectrogramLSTM):
-    """Spectrogram U-Net model with a variational autoencoder + LSTM."""
+    """Spectrogram U-Net model with a VAE and LSTM bottleneck.
+
+    Encoder => VAE => LSTM x 3 => decoder.
+    """
 
     latent_data: FloatTensor
     mu_data: FloatTensor
     sigma_data: FloatTensor
-    criterion: KLDivergenceLoss
 
     def __init__(self, *args, **kwargs):
         super(SpectrogramLSTMVariational, self).__init__(*args, **kwargs)
-        self.criterion = KLDivergenceLoss()
         self.mu = nn.Linear(self.num_features, self.num_features)
-        self.sigma = nn.Linear(self.num_features, self.num_features)
+        self.log_sigma = nn.Linear(self.num_features, self.num_features)
         self.eps = torch.distributions.Normal(0, 1)
         if torch.cuda.is_available():
             self.eps.loc = self.eps.loc.cuda()
             self.eps.scale = self.eps.scale.cuda()
 
-    def forward(self, data: FloatTensor):
+    def forward(self, data: FloatTensor) -> FloatTensor:
+        """Forward method."""
+        # Pass through encoder layers.
         enc_1, skip_1 = self.down_1(data)
         enc_2, skip_2 = self.down_2(enc_1)
         enc_3, skip_3 = self.down_3(enc_2)
@@ -267,26 +270,31 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         enc_6, _ = self.down_6(enc_5)
 
         n, c, b, t = enc_6.shape
-
+        # Reshape encodings to match dimensions of latent space.
         enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
 
         self.mu_data = self.mu(enc_6)
-        self.sigma_data = torch.exp(self.sigma(enc_6)).float()
+        self.sigma_data = torch.exp(self.log_sigma(enc_6)).float()
         eps = self.eps.sample(sample_shape=self.sigma_data.shape)
+        # Sample z from the modeled distribution.
         self.latent_data = self.mu_data + self.sigma_data * eps
-
+        # Pass through recurrent stack.
         lstm_out, _ = self.lstm(self.latent_data)
         lstm_out = lstm_out.reshape((n * b, -1))
-
+        # Pass through affine layers and reshape for decoder.
         dec_0 = self.linear(lstm_out)
         dec_0 = dec_0.reshape((n, b, -1, t)).permute(0, 2, 1, 3)
-
+        # Pass through decoder layers.
         dec_1 = self.up_1(dec_0, skip_5)
         dec_2 = self.up_2(dec_1, skip_4)
         dec_3 = self.up_3(dec_2, skip_3)
         dec_4 = self.up_4(dec_3, skip_2)
         dec_5 = self.up_5(dec_4, skip_1)
         dec_6 = self.soft_conv(dec_5)
-
+        # Force activations between [0, 1] to generate the multiplicative mask.
         mask = self.mask_activation(dec_6)
         return mask
+
+    def get_kl_div(self):
+        """Computes KL term of the current batch of data."""
+        return kl_div_loss(self.mu_data, self.sigma_data)

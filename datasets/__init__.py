@@ -1,15 +1,20 @@
 from torch.utils.data.dataloader import DataLoader
+from tqdm.asyncio import tqdm
+
 from . import datasets
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
-from visualizer.progress import ProgressBar
-import time
 
+# import drive
+
+import gdown
+import shutil
+import os
+import requests, zipfile, io
 import librosa
-import numpy as np
 
-from tqdm import tqdm
+ID = "1mbIa4kJWaYfaXr54EMwLaq9XNtNesxUE"
 
 
 def create_audio_folder(
@@ -92,3 +97,20 @@ def load_dataset(
         persistent_workers=loader_params["persistent_workers"],
     )
     return dataloader
+
+
+def download_musdb18() -> None:
+    """Downloads waveform musdb18 dataset."""
+    dataset_dir = Path(os.getcwd(), "wav")
+
+    dataset_dir.mkdir(exist_ok=True)
+    request = requests.get(
+        f"https://drive.google.com/uc?export=download&confirm=9_s_&id={ID}"
+    )
+    with zipfile.ZipFile(io.BytesIO(request.content)) as zip_file:
+        pass
+        # for track_file in tqdm(zip_file.infolist(), desc="Downloading..."):
+        #     try:
+        #         zip_file.extract(track_file, path=dataset_dir)
+        #     except zipfile.error as e:
+        #         pass

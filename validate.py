@@ -12,6 +12,8 @@ def cross_validate(
 ):
     """Performs cross validation."""
 
+    global_val_step = len(model.val_losses) * max_iters
+
     model.eval()
     with ProgressBar(val_dataloader, max_iters) as pbar:
         pbar.set_description("Evaluating...")
@@ -25,14 +27,12 @@ def cross_validate(
             batch_loss = model.get_batch_loss()
 
             writer.add_scalars(
-                "Loss/val",
-                {"batch_64_lr_0005_VAE_1024": batch_loss},
-                # global_step,
+                "Loss/val", {"l1_kl": batch_loss}, global_val_step
             )
+
             pbar.set_postfix({"avg_loss": batch_loss})
             total_loss += batch_loss
-
-            # global_step += 1
+            global_val_step += 1
 
             if index >= max_iters:
                 pbar.set_postfix({"avg_loss": total_loss / max_iters})
@@ -40,6 +40,4 @@ def cross_validate(
                 break
 
     model.val_losses.append(total_loss / max_iters)
-    print(model.val_losses)
-
     pbar.set_postfix({"avg_loss": total_loss / max_iters})
