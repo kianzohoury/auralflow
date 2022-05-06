@@ -14,22 +14,27 @@ from visualizer.progress import ProgressBar
 import subprocess
 from pathlib import Path
 import tensorboard
+import sys
 
 
 def run_tensorboard(log_dir):
     # os.chdir(Path(__file__).parent / "runs")
     # [f"python -m tensorboard.main --logdir {log_dir}"]
     
-    tb_path = "/usr/local/bin/tensorboard"
+    tb_path = ["tensorboard", "--logdir", 'logs']
     # command = ["python", "-m", "tensorboard.main", "--logdir", log_dir]
-    command = tb_path + " --logdir=runs"
+    command = tb_path
     print(command)
-    print(subprocess.check_output(['pwd']))
-    tb_thread = threading.Thread(
-        target=lambda: subprocess.Popen(command, shell=True),
-        daemon=True,
-    )
-    tb_thread.start()
+    
+    # tb_thread = threading.Thread(
+    #     target=lambda: subprocess.Popen(command, shell=False, cwd=os.getcwd()).communicate(),
+    #     daemon=True,
+    # )
+    # tb_thread.start()
+    print(subprocess.Popen(command, shell=False, cwd=os.getcwd()).communicate())
+    print(subprocess.check_output(command), shell=True)
+    sys.exit(1)
+    
 
 
 def main(config_filepath: str):
