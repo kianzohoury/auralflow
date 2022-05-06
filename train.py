@@ -16,7 +16,7 @@ import subprocess
 
 def run_tensorboard(logdir_absolute):
     tb_thread = threading.Thread(
-        target=lambda: subprocess.Popen("tensorboard --logdir=" + logdir_absolute, shell=True).wait(),
+        target=lambda: subprocess.Popen("tensorboard --logdir=" + "runs", shell=True).wait(),
         daemon=True,
     )
     tb_thread.start()
