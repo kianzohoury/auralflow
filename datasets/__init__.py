@@ -5,6 +5,7 @@ from . import datasets
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
+from visualizer.progress import ProgressBar
 
 # import drive
 
@@ -40,7 +41,7 @@ def audio_to_disk(
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
-    num_tracks = len(subset_dir)
+    # num_tracks = len(subset_dir)
     num_tracks = 1
 
     with ProgressBar(subset_dir, total=num_tracks) as tq:
