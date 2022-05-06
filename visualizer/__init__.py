@@ -46,17 +46,29 @@ def log_residual_specs(
         )
 
     fig, ax = plt.subplots(
-        nrows=n_targets + 1, ncols=1, figsize=(6, 3), dpi=150
+        nrows=n_targets + 1, ncols=1, figsize=(6, 3), dpi=200
     )
 
     image = None
     for i in range(n_targets):
+        estimates_log_normal[i][estimates_log_normal[i] <= -70] = np.nan
         residual = estimates_log_normal[i] - targets_log_normal[i]
         image = ax[i].imshow(
-            residual,
+            estimates_log_normal[i],
             origin="lower",
             extent=[0, 12, 1, sample_rate // 2],
             aspect="auto",
+            cmap="Reds",
+            alpha=0.8
+        )
+        targets_log_normal[i][targets_log_normal[i] <= -70] = np.nan
+        image = ax[i].imshow(
+            targets_log_normal[i],
+            origin="lower",
+            extent=[0, 12, 1, sample_rate // 2],
+            aspect="auto",
+            cmap="Blues",
+            alpha=0.8
         )
         format_plot(ax[i], target_labels[i])
 
