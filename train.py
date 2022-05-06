@@ -11,11 +11,12 @@ from datasets import create_audio_dataset
 from models import create_model
 from utils import load_config
 from visualizer.progress import ProgressBar
+import subprocess
 
 
 def run_tensorboard(logdir_absolute):
     tb_thread = threading.Thread(
-        target=lambda: os.system("tensorboard --logdir=" + logdir_absolute),
+        target=lambda: subprocess.call("tensorboard --logdir=" + logdir_absolute),
         daemon=True,
     )
     tb_thread.start()
