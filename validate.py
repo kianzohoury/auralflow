@@ -12,16 +12,18 @@ def cross_validate(
 ):
     """Performs cross validation."""
 
-    global_val_step = len(model.val_losses) * max_iters
+    iters = len(val_dataloader.dataset) / val_dataloader.batch_size
+
+    global_val_step = len(model.val_losses) * iters
 
     model.eval()
-    with ProgressBar(val_dataloader, max_iters) as pbar:
+    with ProgressBar(val_dataloader, iters) as pbar:
         pbar.set_description("Evaluating...")
         total_loss = 0
         for index, (mixture, target) in enumerate(pbar):
 
             model.set_data(mixture, target)
-            model.forward()
+            model.test()
             model.backward()
 
             batch_loss = model.get_batch_loss()
@@ -34,7 +36,7 @@ def cross_validate(
             total_loss += batch_loss
             global_val_step += 1
 
-            if index >= max_iters:
+            if index == iters - 1:
                 pbar.set_postfix({"avg_loss": total_loss / max_iters})
                 pbar.clear()
                 break
