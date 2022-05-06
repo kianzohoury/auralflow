@@ -2,7 +2,7 @@ import os
 import threading
 from argparse import ArgumentParser
 from multiprocessing import Process
-
+import inspect
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -12,11 +12,21 @@ from models import create_model
 from utils import load_config
 from visualizer.progress import ProgressBar
 import subprocess
+from pathlib import Path
+import tensorboard
 
 
-def run_tensorboard(logdir_absolute):
+def run_tensorboard(log_dir):
+    # os.chdir(Path(__file__).parent / "runs")
+    # [f"python -m tensorboard.main --logdir {log_dir}"]
+    
+    tb_path = "/usr/local/bin/tensorboard"
+    # command = ["python", "-m", "tensorboard.main", "--logdir", log_dir]
+    command = tb_path + " --logdir=runs"
+    print(command)
+    print(subprocess.check_output(['pwd']))
     tb_thread = threading.Thread(
-        target=lambda: subprocess.Popen("tensorboard --logdir=" + "runs", shell=True, cwd=os.getcwd()).wait(),
+        target=lambda: subprocess.Popen(command, shell=True),
         daemon=True,
     )
     tb_thread.start()
@@ -91,7 +101,7 @@ def main(config_filepath: str):
 
     writer_process.start()
 
-    writer = SummaryWriter(visualizer_params["logs_path"])
+    writer = SummaryWriter(log_dir="FUCK")
 
     print("=" * 95)
     print("Training is starting...")
@@ -155,5 +165,10 @@ if __name__ == "__main__":
         "config_filepath", type=str, help="Path to a configuration file."
     )
     args = parser.parse_args()
-    main_process = Process(target=main, args=(args.config_filepath,))
-    main_process.start()
+    writer_process = Process(
+        target=run_tensorboard, args=("runs",)
+    )
+
+    writer_process.start()
+    # main_process = Process(target=main, args=(args.config_filepath,))
+    # main_process.start()
