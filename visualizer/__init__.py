@@ -46,7 +46,7 @@ def log_spectrograms(
         )
 
     fig, ax = plt.subplots(
-        nrows=n_targets * 2, ncols=1, figsize=(6, 3), dpi=150
+        nrows=n_targets * 2, ncols=1, figsize=(6, 3), dpi=200
     )
 
     # image = None
@@ -60,6 +60,7 @@ def log_spectrograms(
             cmap="inferno"
         )
         format_plot(ax[i], f"{target_labels[i]}_estimate")
+
         ax[i + 1].imshow(
             targets_log_normal[i],
             origin="lower",
@@ -73,7 +74,6 @@ def log_spectrograms(
     plt.xlabel("Seconds")
     fig.tight_layout()
     # fig.colorbar(image, ax=ax.ravel().tolist(), format="%+2.f dB")
-
     writer.add_figure("spectrograms", figure=fig, global_step=global_step)
     # plt.close(fig)
 

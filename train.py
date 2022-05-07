@@ -14,6 +14,7 @@ from visualizer.progress import ProgressBar
 import subprocess
 from pathlib import Path
 from tensorboard import main as tb_main
+from validate import cross_validate
 import sys
 
 import tensorboard as tb
@@ -70,7 +71,7 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e4),
+        num_chunks=int(1e6),
     )
     print("Completed.")
     print("=" * 95)
@@ -80,7 +81,7 @@ def main(config_filepath: str):
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e4),
+        num_chunks=int(6400),
     )
     print("Completed.")
     print("=" * 95)
@@ -110,7 +111,7 @@ def main(config_filepath: str):
 
     print("Loading model...")
     model = create_model(configuration)
-    model.setup()
+    # model.setup()
     print("Completed.")
 
     # writer_process = Process(
@@ -128,7 +129,7 @@ def main(config_filepath: str):
     current_epoch = training_params["last_epoch"] + 1
     stop_epoch = current_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
-    max_iters = min(4, loader_params["max_iterations"])
+    max_iters = min(12, loader_params["max_iterations"])
     save_freq = training_params["checkpoint_freq"]
 
     for epoch in range(current_epoch, stop_epoch):
@@ -149,7 +150,7 @@ def main(config_filepath: str):
 
                 global_step += 1
 
-                if index >= max_iters:
+                if index == max_iters - 1:
                     pbar.set_postfix({"avg_loss": total_loss / max_iters})
                     pbar.clear()
                     break
@@ -161,6 +162,14 @@ def main(config_filepath: str):
                 )
 
         model.train_losses.append(total_loss / max_iters)
+
+        cross_validate(
+            model=model,
+            val_dataloader=val_dataloader,
+            writer=writer,
+            max_iters=max_iters,
+        )
+        
 
         pbar.set_postfix({"avg_loss": total_loss / max_iters})
 
