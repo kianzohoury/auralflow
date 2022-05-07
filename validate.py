@@ -23,7 +23,7 @@ def cross_validate(
         pbar.set_description(f"Epoch [{epoch}/{stop_epoch}] val")
         total_loss = 0
         for index, (mixture, target) in enumerate(pbar):
-            
+
             model.set_data(mixture, target)
             model.test()
 

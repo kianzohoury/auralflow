@@ -61,7 +61,9 @@ class SeparationModel(ABC):
 
     def save_model(self, global_step: int, silent=True) -> None:
         """Saves checkpoint for the model."""
-        model_path = f"{self.config['model_params']['model_name']}_{global_step}.pth"
+        model_path = (
+            f"{self.config['model_params']['model_name']}_{global_step}.pth"
+        )
         Path(self.checkpoint_path).mkdir(exist_ok=True)
         torch.save(
             self.model.cpu().state_dict(),
@@ -73,7 +75,9 @@ class SeparationModel(ABC):
 
     def load_model(self, global_step: int) -> None:
         """Loads previously trained model."""
-        model_path = f"{self.config['model_params']['model_name']}_{global_step}.pth"
+        model_path = (
+            f"{self.config['model_params']['model_name']}_{global_step}.pth"
+        )
         if Path(model_path).is_file():
             state_dict = torch.load(model_path, map_location=self.device)
             self.model.load_state_dict(state_dict)

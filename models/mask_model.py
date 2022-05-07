@@ -138,16 +138,14 @@ class SpectrogramMaskModel(SeparationModel):
 
     def backward(self):
         """Computes batch-wise loss between estimate and target sources."""
-        self.batch_loss = self.criterion(
-            self.estimates, self.targets
-        )
+        self.batch_loss = self.criterion(self.estimates, self.targets)
 
     def optimizer_step(self):
         """Performs gradient computation and parameter optimization."""
         self.batch_loss.backward()
         self.optimizer.step()
         for param in self.model.parameters():
-            param.grad= None
+            param.grad = None
 
     def stop_early(self):
         """Signals that training should stop based on patience criteria."""

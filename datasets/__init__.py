@@ -44,7 +44,9 @@ def audio_to_disk(
     # num_tracks = len(subset_dir)
     num_tracks = 1
 
-    with ProgressBar(subset_dir, total=num_tracks) as tq:
+    with ProgressBar(
+        subset_dir, total=num_tracks, fmt=False, unit="track"
+    ) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):
             track_name = track_folder / "mixture.wav"

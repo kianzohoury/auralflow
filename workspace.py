@@ -100,7 +100,8 @@ if __name__ == "__main__":
     #     )
     #
     # plot_spectrograms(x, y_list, ["bass", "drums", "other", "vocals"])
-    model = SpectrogramNetSimple(num_fft_bins=512, num_samples=173, num_channels=1)
+    model = SpectrogramNetSimple(
+        num_fft_bins=512, num_samples=173, num_channels=1
+    )
     x = torch.rand((1, 1, 512, 173))
     print(model(x))
-

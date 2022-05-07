@@ -10,6 +10,7 @@ from torch.nn import L1Loss
 
 torch.backends.cudnn.benchmark = True
 
+
 class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""
 
@@ -22,7 +23,7 @@ class ConvBlock(nn.Module):
                 kernel_size=kernel_size,
                 stride=1,
                 padding="same",
-                bias=False
+                bias=False,
             ),
             nn.BatchNorm2d(out_channels),
             nn.LeakyReLU(leak, inplace=True),
@@ -160,7 +161,7 @@ class SpectrogramNetSimple(nn.Module):
         self.bottleneck = ConvBlock(
             in_channels=self.channel_sizes[-1][0],
             out_channels=self.channel_sizes[-1][-1],
-            leak=0
+            leak=0,
         )
 
         # Determine the spatial dimension sizes for computing deconv padding.
