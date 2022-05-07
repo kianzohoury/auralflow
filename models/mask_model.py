@@ -146,7 +146,8 @@ class SpectrogramMaskModel(SeparationModel):
         """Performs gradient computation and parameter optimization."""
         self.batch_loss.backward()
         self.optimizer.step()
-        self.optimizer.zero_grad(set_to_none=True)
+        for param in self.model.parameters():
+            param.grad= None
 
     def stop_early(self):
         """Signals that training should stop based on patience criteria."""

@@ -7,6 +7,7 @@ from torch import autocast
 
 def cross_validate(
     model,
+    writer,
     val_dataloader: DataLoader,
     max_iters: int,
     epoch: int,
@@ -31,6 +32,10 @@ def cross_validate(
 
             pbar.set_postfix({"loss": batch_loss})
             total_loss += batch_loss
+
+            writer.add_scalars(
+                "Loss/val", {"l1_kl": batch_loss}, epoch * max_iters + index
+            )
 
             if index == max_iters:
                 pbar.set_postfix({"avg_loss": total_loss / max_iters})

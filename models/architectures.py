@@ -8,6 +8,7 @@ from torch import FloatTensor, Tensor
 from losses import KLDivergenceLoss, kl_div_loss, vae_loss
 from torch.nn import L1Loss
 
+torch.backends.cudnn.benchmark = True
 
 class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""

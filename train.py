@@ -34,7 +34,7 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e3),
+        num_chunks=int(1e6),
     )
     print("Completed.")
     print("=" * 95)
@@ -44,27 +44,27 @@ def main(config_filepath: str):
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e3),
+        num_chunks=int(1e4),
     )
     print("Completed.")
     print("=" * 95)
 
     train_dataloader = DataLoader(
         train_dataset,
-        num_workers=8,
+        num_workers=10,
         pin_memory=True,
         persistent_workers=True,
-        batch_size=8,
+        batch_size=128,
         prefetch_factor=4,
         shuffle=True,
     )
 
     val_dataloader = DataLoader(
         val_dataset,
-        num_workers=8,
+        num_workers=10,
         pin_memory=True,
         persistent_workers=True,
-        batch_size=8,
+        batch_size=128,
         prefetch_factor=4,
         shuffle=True,
     )
@@ -92,7 +92,7 @@ def main(config_filepath: str):
     current_epoch = training_params["last_epoch"] + 1
     stop_epoch = current_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
-    max_iters = int(math.ceil(len(train_dataset) / 8))
+    max_iters = 60
     # max_iters = loader_params["max_iterations"]
     save_freq = training_params["checkpoint_freq"]
 
@@ -132,13 +132,11 @@ def main(config_filepath: str):
 
         cross_validate(
             model=model,
+            writer=writer,
             val_dataloader=val_dataloader,
             max_iters=max_iters,
             epoch=epoch,
             stop_epoch=stop_epoch,
-        )
-        writer.add_scalars(
-            "Loss/val", {"l1_kl": model.val_losses[-1]}, epoch
         )
 
         pbar.set_postfix({"avg_loss": total_loss / max_iters})
