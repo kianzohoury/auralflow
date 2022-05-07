@@ -115,7 +115,7 @@ class SpectrogramNetSimple(nn.Module):
         mask_act_fn: str = "sigmoid",
         leak_factor: float = 0.2,
         normalize_input: bool = False,
-        criterion: Optional[nn.Module] = None
+        criterion: Optional[nn.Module] = None,
     ) -> None:
         super(SpectrogramNetSimple, self).__init__()
 

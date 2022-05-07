@@ -57,7 +57,7 @@ def log_spectrograms(
             origin="lower",
             extent=[0, 12, 1, sample_rate // 2],
             aspect="auto",
-            cmap="inferno"
+            cmap="inferno",
         )
         format_plot(ax[i], f"{target_labels[i]}_estimate")
 
@@ -66,7 +66,7 @@ def log_spectrograms(
             origin="lower",
             extent=[0, 12, 1, sample_rate // 2],
             aspect="auto",
-            cmap="inferno"
+            cmap="inferno",
         )
         format_plot(ax[i], f"{target_labels[i]}_true")
 
@@ -92,13 +92,13 @@ def log_audio(
             tag=f"{target_labels[i]}_estimate",
             snd_tensor=estimate_data[0, :, :, i].squeeze(-1),
             global_step=global_step,
-            sample_rate=sample_rate
+            sample_rate=sample_rate,
         )
         writer.add_audio(
             tag=f"{target_labels[i]}_true",
             snd_tensor=target_data[0, :, :, i].squeeze(-1),
             global_step=global_step,
-            sample_rate=sample_rate
+            sample_rate=sample_rate,
         )
 
 

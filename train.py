@@ -1,57 +1,17 @@
 import os
+import subprocess
+import sys
 import threading
 from argparse import ArgumentParser
-from multiprocessing import Process
-import inspect
-import torch
+
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from datasets import create_audio_dataset
 from models import create_model
 from utils import load_config
-from visualizer.progress import ProgressBar
-import subprocess
-from pathlib import Path
-from tensorboard import main as tb_main
 from validate import cross_validate
-import sys
-
-import tensorboard as tb
-import tensorboard.program
-import tensorboard.default
-
-
-def run_tensorboard(log_dir):
-    # os.chdir(Path(__file__).parent / "runs")
-    # [f"python -m tensorboard.main --logdir {log_dir}"]
-
-    command = ["tensorboard", "--logdir", "logs"]
-    # command = ["python", "-m", "tensorboard.main", "--logdir", log_dir]
-    # command = tb_path
-    # print(command)
-    # tb_main.main()
-    # log = logging.getLogger('werkzeug').setLevel(logging.ERROR)
-    # Start tensorboard server
-    # tb.program.FLAGS.logdir = os.getcwd() + '/logs'
-    # tb.program.main(tb.default.get_plugins(),
-    #             tb.default.get_assets_zip_provider())
-    # tb_ = program.TensorBoard(tb_def.get_plugins())
-    # tb.configure(argv=[None, '--logdir', 'logs'])
-    # url = tb.launch()
-    # sys.stdout.write('TensorBoard at %s \n' % url)
-    # print(os.system("tensorboard --logdir runs"))
-
-    tb_thread = threading.Thread(
-        target=lambda: subprocess.Popen(
-            command, shell=False, cwd=os.getcwd()
-        ).communicate(),
-        daemon=True,
-    )
-    tb_thread.start()
-    # print(subprocess.Popen(command, shell=False, cwd=os.getcwd()).communicate())
-    # print(subprocess.check_output(command), shell=True)
-    sys.exit(1)
+from visualizer.progress import ProgressBar
 
 
 def main(config_filepath: str):
@@ -136,7 +96,7 @@ def main(config_filepath: str):
         total_loss = 0
         model.train()
         with ProgressBar(train_dataloader, max_iters) as pbar:
-            pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
+            pbar.set_description(f"Epoch [{epoch}/{stop_epoch}] train:")
             for index, (mixture, target) in enumerate(pbar):
 
                 model.set_data(mixture, target)
@@ -168,8 +128,9 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
             writer=writer,
             max_iters=max_iters,
+            epoch=epoch,
+            stop_epoch=stop_epoch,
         )
-        
 
         pbar.set_postfix({"avg_loss": total_loss / max_iters})
 

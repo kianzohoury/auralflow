@@ -106,8 +106,12 @@ class SpectrogramMaskModel(SeparationModel):
 
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
         """Wrapper method calls process_data and transfers tensors to GPU."""
-        self.mixtures = self.process_audio(mixture).squeeze(-1).float().to(self.device)
-        self.targets = self.process_audio(target).squeeze(-1).float().to(self.device)
+        self.mixtures = (
+            self.process_audio(mixture).squeeze(-1).float().to(self.device)
+        )
+        self.targets = (
+            self.process_audio(target).squeeze(-1).float().to(self.device)
+        )
 
     def forward(self):
         """Performs forward pass to estimate the multiplicative soft-mask."""

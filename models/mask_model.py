@@ -1,21 +1,15 @@
-import inspect
+import importlib
+from typing import Callable
 
 import torch
+from torch import Tensor, FloatTensor
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from validate import cross_validate
-from validate import cross_validate
 
-from typing import Union, Tuple, Any, List, Callable
-from .modules import AutoEncoder2d
-from .layers import _get_activation
-from .base import SeparationModel
-import torch.nn as nn
-from visualizer import log_spectrograms, log_audio
 from utils.data_utils import get_num_frames, get_stft
-from torch import Tensor, FloatTensor
-import importlib
+from visualizer import log_spectrograms, log_audio
+from .base import SeparationModel
 
 
 class SpectrogramMaskModel(SeparationModel):
@@ -49,7 +43,7 @@ class SpectrogramMaskModel(SeparationModel):
         # Retrieve class of underlying model architecture.
         arch_constructor = getattr(
             importlib.import_module(f"architectures"),
-            configuration["model_params"]["model_type"]
+            configuration["model_params"]["model_type"],
         )
 
         # Create an instance of the model set to the current device.
@@ -60,7 +54,7 @@ class SpectrogramMaskModel(SeparationModel):
             hidden_dim=self.layer_params["hidden-size"],
             mask_act_fn=configuration["model_params"]["mask_activation"],
             leak_factor=self.layer_params["leak_factor"],
-            normalize_input=configuration["model_params"]["normalize_input"]
+            normalize_input=configuration["model_params"]["normalize_input"],
         ).to(self.device)
 
         # Define the specified short-time fourier transform and its inverse.
@@ -71,7 +65,7 @@ class SpectrogramMaskModel(SeparationModel):
             use_hann=dataset_params["use_hann_window"],
             trainable=dataset_params["learn_filterbanks"],
             inverse=False,
-            device=self.device
+            device=self.device,
         )
         self.inv_stft = get_stft(
             num_fft=dataset_params["num_fft"],
@@ -80,7 +74,7 @@ class SpectrogramMaskModel(SeparationModel):
             use_hann=dataset_params["use_hann_window"],
             trainable=dataset_params["learn_filterbanks"],
             inverse=True,
-            device=self.device
+            device=self.device,
         )
 
         # Define loss, optimizer, etc.
@@ -140,7 +134,7 @@ class SpectrogramMaskModel(SeparationModel):
     def backward(self):
         """Computes batch-wise loss between estimate and target sources."""
         self.estimates = self.mask * self.mixtures
-        self.batch_loss = (self.criterion(self.estimates, self.targets))
+        self.batch_loss = self.criterion(self.estimates, self.targets)
 
     def optimizer_step(self):
         """Performs gradient computation and parameter optimization."""

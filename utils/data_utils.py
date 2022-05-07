@@ -12,7 +12,7 @@ def get_stft(
     inverse: bool = False,
     use_hann: bool = True,
     trainable: bool = False,
-    device: str = 'cuda'
+    device: str = "cuda",
 ) -> Callable:
     """Returns a specified stft or inverse stft transform."""
 
@@ -34,6 +34,7 @@ def get_stft(
             return_complex=True,
         )
         return stft_data
+
     return transform
 
 

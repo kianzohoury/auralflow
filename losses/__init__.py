@@ -16,6 +16,7 @@ def vae_loss(const_criterion, estimate, target, kl_term):
 
 class KLDivergenceLoss(nn.Module):
     """Implements KL Divergence loss with native PyTorch implementation."""
+
     def __init__(self):
         super(KLDivergenceLoss, self).__init__()
         self.l1 = nn.L1Loss()
