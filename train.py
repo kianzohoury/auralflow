@@ -34,7 +34,7 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e6),
+        num_chunks=int(1e5),
     )
     print("Completed.")
     print("=" * 95)
@@ -44,7 +44,7 @@ def main(config_filepath: str):
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e4),
+        num_chunks=int(1e3),
     )
     print("Completed.")
     print("=" * 95)
@@ -54,7 +54,7 @@ def main(config_filepath: str):
         num_workers=10,
         pin_memory=True,
         persistent_workers=True,
-        batch_size=128,
+        batch_size=64,
         prefetch_factor=4,
         shuffle=True,
     )
@@ -64,7 +64,7 @@ def main(config_filepath: str):
         num_workers=10,
         pin_memory=True,
         persistent_workers=True,
-        batch_size=128,
+        batch_size=64,
         prefetch_factor=4,
         shuffle=True,
     )

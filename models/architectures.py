@@ -132,7 +132,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Set model criterion. Convenient for sub-classes like VAE.
         if criterion is None:
-            self.set_criterion(nn.L1Loss())
+            self.set_criterion(nn.MSELoss())
         else:
             self.set_criterion(criterion)
 
@@ -145,7 +145,7 @@ class SpectrogramNetSimple(nn.Module):
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_dim]]
         self.channel_sizes += [
-            [hidden_dim << i, hidden_dim << (i + 1)] for i in range(6)
+            [hidden_dim << i, hidden_dim << (i + 1)] for i in range(4)
         ]
 
         # Define encoder layers.
@@ -153,8 +153,8 @@ class SpectrogramNetSimple(nn.Module):
         self.down_2 = DownBlock(*self.channel_sizes[1], leak=leak_factor)
         self.down_3 = DownBlock(*self.channel_sizes[2], leak=leak_factor)
         self.down_4 = DownBlock(*self.channel_sizes[3], leak=leak_factor)
-        self.down_5 = DownBlock(*self.channel_sizes[4], leak=leak_factor)
-        self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor)
+        # self.down_5 = DownBlock(*self.channel_sizes[4], leak=leak_factor)
+        # self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor)
 
         # Define simple bottleneck layer.
         self.bottleneck = ConvBlock(
@@ -165,7 +165,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Determine the spatial dimension sizes for computing deconv padding.
         self.encoding_sizes = [
-            [num_fft_bins >> i, num_samples >> i] for i in range(7)
+            [num_fft_bins >> i, num_samples >> i] for i in range(5)
         ]
 
         # Compute transpose/deconvolution padding.
@@ -186,8 +186,8 @@ class SpectrogramNetSimple(nn.Module):
         self.up_2 = UpBlock(*dec_channel_sizes[1], padding=padding_sizes[1])
         self.up_3 = UpBlock(*dec_channel_sizes[2], padding=padding_sizes[2])
         self.up_4 = UpBlock(*dec_channel_sizes[3], padding=padding_sizes[3])
-        self.up_5 = UpBlock(*dec_channel_sizes[4], padding=padding_sizes[4])
-        self.up_6 = UpBlock(*dec_channel_sizes[5], padding=padding_sizes[5])
+        # self.up_5 = UpBlock(*dec_channel_sizes[4], padding=padding_sizes[4])
+        # self.up_6 = UpBlock(*dec_channel_sizes[5], padding=padding_sizes[5])
 
         # Final conv layer squeezes output channels dimension to num_channels.
         self.soft_conv = nn.Conv2d(
@@ -256,7 +256,7 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         self.lstm_hidden_size = lstm_hidden_size
 
         # Calculate number of input features to the LSTM.
-        n_features = self.channel_sizes[-1][0] * self.encoding_sizes[-1][-1]
+        n_features = self.channel_sizes[-1][0] * self.encoding_sizes[-1][0]
         self.n_features = n_features
 
         self.lstm = nn.LSTM(
@@ -289,11 +289,11 @@ class SpectrogramLSTM(SpectrogramNetSimple):
 
         # Reshape encoded audio to pass through bottleneck.
         n, c, b, t = enc_6.size()
-        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
+        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, t, c * b))
 
         # Pass through recurrent stack.
         lstm_out, _ = self.lstm(enc_6)
-        lstm_out = lstm_out.reshape((n * b, -1))
+        lstm_out = lstm_out.reshape((n * t, -1))
 
         # Project latent audio onto affine space and reshape for decoder.
         latent_data = self.linear(lstm_out)
@@ -349,12 +349,12 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         enc_2, skip_2 = self.down_2(enc_1)
         enc_3, skip_3 = self.down_3(enc_2)
         enc_4, skip_4 = self.down_4(enc_3)
-        enc_5, skip_5 = self.down_5(enc_4)
-        enc_6, skip_6 = self.down_6(enc_5)
+        # enc_5, skip_5 = self.down_5(enc_4)
+        # enc_6, skip_6 = self.down_6(enc_5)
 
         # Reshape encodings to match dimensions of latent space.
-        n, c, b, t = enc_6.shape
-        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
+        n, c, b, t = enc_4.shape
+        enc_6 = enc_4.permute(0, 2, 1, 3).reshape((n, t, c * b))
 
         # Normalizing flow.
         self.mu_data = self.mu(enc_6)
@@ -366,20 +366,20 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
 
         # Pass through recurrent stack.
         lstm_out, _ = self.lstm(self.latent_data)
-        lstm_out = lstm_out.reshape((n * b, -1))
+        lstm_out = lstm_out.reshape((n * t, -1))
 
         # Pass through affine layers and reshape for decoder.
         dec_0 = self.linear(lstm_out)
         dec_0 = dec_0.reshape((n, b, -1, t)).permute(0, 2, 1, 3)
 
         # Pass through decoder.
-        dec_1 = self.up_1(dec_0, skip_6)
-        dec_2 = self.up_2(dec_1, skip_5)
-        dec_3 = self.up_3(dec_2, skip_4)
-        dec_4 = self.up_4(dec_3, skip_3)
-        dec_5 = self.up_5(dec_4, skip_2)
-        dec_6 = self.up_6(dec_5, skip_1)
-        output = self.soft_conv(dec_6)
+        dec_1 = self.up_1(dec_0, skip_4)
+        dec_2 = self.up_2(dec_1, skip_3)
+        dec_3 = self.up_3(dec_2, skip_2)
+        dec_4 = self.up_4(dec_3, skip_1)
+        # dec_5 = self.up_5(dec_4, skip_2)
+        # dec_6 = self.up_6(dec_5, skip_1)
+        output = self.soft_conv(dec_4)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
