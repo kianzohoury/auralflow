@@ -26,8 +26,8 @@ class AudioFolder(IterableDataset):
     * Instead of chunking each track and loading an entire audio folder's worth
       of chunks, samples are randomly (with replacement) as needed by the
       dataloader. Note that when a dataloader has multiple workers and memory
-      is pinned, both the sampling process and data transfer to GPU are sped up
-      considerably, making on-the-fly data generation a viable option.
+      is pinned, both the sampling process and audio transfer to GPU are sped up
+      considerably, making on-the-fly audio generation a viable option.
 
     * If an audio folder consists of just a few tracks, resampling can generate
       a much larger dataset via chunking. However, resampling will eventually

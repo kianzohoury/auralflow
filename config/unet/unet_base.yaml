@@ -115,13 +115,13 @@ tutorial:
 # Skip connections tend to improve u-net models, so utilizing them is important.
 # However, skip connections require a little more attention to detail, as they
 # cannot be used anywhere. Wherever a skip connection is used in the encoder,
-# the shape of the skipped data tensor must match that of the decoder's with
+# the shape of the skipped audio tensor must match that of the decoder's with
 # which it will be concatenated.
 
 # So far, our encoder block takes in input, passes through convolution,
 # normalization and activation layers, and outputs batched feature maps of an
 # unknown shape. When the encoder is specified plainly in this way, it will
-# always output data with twice the number of channels and half the size
+# always output audio with twice the number of channels and half the size
 # in the spatial dimensions, such that if the input shape of x = (n, c, w, h),
 # encoder(x) = y, where y has the shape (n, 2 * c, w // 2, h // 2).
 
@@ -152,7 +152,7 @@ tutorial:
 
 # Again, in our example, the output of each encoder block is also sent to the
 # corresponding decoder block and is concatenated with the output of the
-# the decoder. The concatenated data is passed through the next decoder block
+# the decoder. The concatenated audio is passed through the next decoder block
 # as input, is concatenated again with corresponding encoder's output, and so
 # forth.
 

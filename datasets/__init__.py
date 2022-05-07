@@ -88,7 +88,7 @@ def create_audio_dataset(
 def load_dataset(
     dataset: datasets.AudioFolder, loader_params: dict
 ) -> DataLoader:
-    """Returns a dataloader for loading data from a given AudioFolder."""
+    """Returns a dataloader for loading audio from a given AudioFolder."""
     dataloader = DataLoader(
         dataset=dataset,
         batch_size=loader_params["batch_size"],

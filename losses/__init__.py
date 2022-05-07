@@ -1,20 +1,21 @@
 import torch
 import torch.nn as nn
-from torch.nn.functional import l1_loss, mse_loss, binary_cross_entropy
-import numpy as np
 
 
 def kl_div_loss(
     mu: torch.FloatTensor, sigma: torch.FloatTensor
 ) -> torch.Tensor:
+    """Computes KL term using the closed form expression."""
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
-def vae_loss(estimate, target, mu, sigma):
-    return l1_loss(estimate, target) + kl_div_loss(mu, sigma)
+def vae_loss(const_criterion, estimate, target, kl_term):
+    """Computes VAE loss := construction_loss(x, x') + kl_loss(P, Q)"""
+    return const_criterion(estimate, target) + kl_term
 
 
 class KLDivergenceLoss(nn.Module):
+    """Implements KL Divergence loss with native PyTorch implementation."""
     def __init__(self):
         super(KLDivergenceLoss, self).__init__()
         self.l1 = nn.L1Loss()

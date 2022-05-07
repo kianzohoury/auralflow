@@ -36,10 +36,10 @@ dataset:
 # Path (str): The path to the dataset, either to be specified here or
 # ----------- optionally from the command line during training time.
 ################################################################################
-# More about data representation
+# More about audio representation
 ################################################################################
 
-# It's useful to know how exactly the data is transformed from time-dependent
+# It's useful to know how exactly the audio is transformed from time-dependent
 # signals to time-frequency-dependent signals. This is done by applying the
 # `Discrete Fourier Transform` algorithm, which extracts a 3rd frequency
 # dimension that is quite useful for the task of mask estimation which is

@@ -14,12 +14,12 @@ from typing import Union, Tuple, Any, List, Callable
 from .modules import AutoEncoder2d
 from .layers import _get_activation
 from .base import SeparationModel
-from .static_models import (
+from .architectures import (
     SpectrogramNetSimple,
     SpectrogramLSTM,
     SpectrogramLSTMVariational,
 )
-from visualizer import log_residual_specs
+from visualizer import log_spectrograms
 from losses import vae_loss
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
 from torch import Tensor, FloatTensor
@@ -68,10 +68,10 @@ class TFMaskUNet(nn.Module):
             multiplicative soft-mask. Default: 'relu'.
         dropout_p (float): Dropout probability. If p > 0, dropout is used.
             Default: 0.
-        use_skip (bool): Whether to concatenate skipped data from the encoder
+        use_skip (bool): Whether to concatenate skipped audio from the encoder
             to the decoder. Default: True.
         normalize_input (bool): Whether to normalize the input. Note, that
-            this layer simply uses batch norm instead of actual data whitening.
+            this layer simply uses batch norm instead of actual audio whitening.
             Default: False.
     """
 
@@ -159,7 +159,7 @@ class TFMaskUNet(nn.Module):
         #             upsampler=arch_params["upsampler"],
         #             batch_norm=arch_params["batch_norm"],
         #             layer_activation_fn=arch_params["layer_activation_fn"],
-        #             mask_activation_fn=arch_params["mask_activation_fn"],
+        #             mask_act_fn=arch_params["mask_act_fn"],
         #             dropout_p=arch_params["dropout_p"],
         #             use_skip=arch_params["use_skip"],
         #             normalize_input=arch_params["normalize_input"],

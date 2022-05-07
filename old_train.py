@@ -61,9 +61,9 @@ def main(training_session: dict):
     val_losses = training_session["val_losses"]
     best_val_loss = training_session["best_val_loss"]
 
-    num_fft = training_session["data"]["num_fft"]
-    window_size = training_session["data"]["window_size"]
-    hop_length = training_session["data"]["hop_length"]
+    num_fft = training_session["audio"]["num_fft"]
+    window_size = training_session["audio"]["window_size"]
+    hop_length = training_session["audio"]["hop_length"]
 
     train_dataset = training_session["dataset"]
     val_dataset = train_dataset.split(val_split)
@@ -133,7 +133,7 @@ def main(training_session: dict):
                     return_complex=True,
                 )
 
-                # reshape data
+                # reshape audio
                 mixture_mag, target_mag = torch.abs(mixture_stft), torch.abs(
                     target_stft
                 )
@@ -286,7 +286,7 @@ if __name__ == "__main__":
         training_session = {
             "model": model,
             "dataset": dataset,
-            "data": config_dict["dataset"],
+            "audio": config_dict["dataset"],
             "parameters": training_settings,
             "session_dir": session_dir,
             "model_dir": model_dir,

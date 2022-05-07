@@ -1,19 +1,23 @@
 {
-    "base_model": "SpectrogramMaskModel",
-    "model_name": "my_separation_model",
-    "architecture_params": {
-        "max_depth": 6,
-        "hidden_size": 16,
-        "kernel_size": [3, 2, 5, 3],
-        "block_size": 3,
-        "downsampler": "max_pool",
-        "upsampler": "transpose",
-        "batch_norm": true,
-        "layer_activation_fn": "relu",
-        "mask_activation_fn": "relu",
-        "dropout_p": 0,
-        "use_skip": true,
-        "normalize_input": true
+    "model_params": {
+        "separation_task": "mask",
+        "model_type": "SpectrogramLSTMVariational",
+        "model_name": "my_separation_model",
+        "normalize_input": true,
+        "mask_activation": "relu",
+        "layer_params": {
+            "max_depth": 6,
+            "hidden_size": 16,
+            "kernel_size": [3, 2, 5, 3],
+            "block_size": 3,
+            "downsampler": "max_pool",
+            "upsampler": "transpose",
+            "layer_activation": "relu",
+            "dropout_p": 0,
+            "use_bias": true,
+            "use_skip": true,
+            "leak_factor": 0.2
+        }
     },
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
@@ -25,6 +29,8 @@
         "num_fft": 1023,
         "window_size": 1023,
         "hop_length": 768,
+        "use_hann_window": true,
+        "learn_filterbanks": false,
         "sample_length": 3,
         "val_split": 0.2,
         "loader_params": {

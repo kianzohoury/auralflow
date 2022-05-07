@@ -54,7 +54,7 @@ def get_all_config_contents(model_dir: Path) -> dict:
 
     Returns:
         (dict): The training session configuration dictionary containing
-            model, data and training settings.
+            model, audio and training settings.
 
     Raises:
         YAMLError: If a configuration file cannot be read.
@@ -65,7 +65,7 @@ def get_all_config_contents(model_dir: Path) -> dict:
             config_data = yaml_parser.load(config_file)
             for label in config_data.keys():
                 frmt_config_data[label] = compress_keys(config_data[label])
-        # Make sure only keys are 'model', 'data' and 'training'.
+        # Make sure only keys are 'model', 'audio' and 'training'.
         for key in list(frmt_config_data.keys()):
             if key not in {"dataset", "model", "training"}:
                 frmt_config_data.pop(key)
@@ -82,7 +82,7 @@ def build_model(config_data: dict) -> nn.Module:
     """Implements a PyTorch model from the configuration files.
 
     Args:
-        config_data (dict): Model, training and dataset configuration data.
+        config_data (dict): Model, training and dataset configuration audio.
 
     Returns:
         (nn.Module): Pytorch model.
@@ -134,7 +134,7 @@ def build_audio_folder(config_data: dict, dataset_dir: Optional[Path] = None):
     """Creates an AudioFolder for sampling audio from the dataset.
 
     Args:
-        config_data (dict): Model, training and dataset configuration data.
+        config_data (dict): Model, training and dataset configuration audio.
         dataset_dir (Path or None): Path to the dataset folder if it's not
             specified within the dataset configuration file.
 

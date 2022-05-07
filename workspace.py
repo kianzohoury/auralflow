@@ -4,10 +4,10 @@ from datasets import create_audio_dataset
 from IPython import display
 
 from visualizer import plot_spectrograms
-from models.mask_models import SpectrogramMaskModel
+from models.mask_model import SpectrogramMaskModel
 
 # from models.base import UNetSpec, UNetVAESpec
-from models.static_models import (
+from models.architectures import (
     SpectrogramNetSimple,
     SpectrogramLSTM,
     SpectrogramLSTMVariational,
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     #     num_channels=2,
     #     kernel_size=(3, 2, 5, 3),
     #     normalize_input=True,
-    #     mask_activation_fn="sigmoid",
+    #     mask_act_fn="sigmoid",
     # )
 
     # print(model.autoencoder.kernel_size)

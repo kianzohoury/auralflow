@@ -5,38 +5,36 @@ from typing import Optional, Tuple, Callable
 from torch import stft, istft
 
 
-def get_stft(num_fft: int, hop_length: int, window_size: int) -> Callable:
-    """Returns the stft function specified by the input args."""
-
-    def stft_func(data):
-        return stft(
-            input=data,
-            n_fft=num_fft,
-            hop_length=hop_length,
-            win_length=window_size,
-            onesided=True,
-            return_complex=True,
-        )
-
-    return stft_func
-
-
-def get_inverse_stft(
-    num_fft: int, hop_length: int, window_size: int
+def get_stft(
+    num_fft: int,
+    hop_length: int,
+    window_size: int,
+    inverse: bool = False,
+    use_hann: bool = True,
+    trainable: bool = False,
+    device: str = 'cuda'
 ) -> Callable:
-    """Returns the inverse of the stft function specified by the input args."""
+    """Returns a specified stft or inverse stft transform."""
 
-    def inverse_stft_func(data):
-        return istft(
+    if use_hann:
+        window = make_hann_window(window_size, trainable, device)
+    else:
+        window = None
+
+    stft_fn = torch.stft if inverse else torch.istft
+
+    def transform(data):
+        stft_data = stft_fn(
             input=data,
             n_fft=num_fft,
             hop_length=hop_length,
+            window=window,
             win_length=window_size,
             onesided=True,
             return_complex=True,
         )
-
-    return inverse_stft_func
+        return stft_data
+    return transform
 
 
 def get_num_frames(
@@ -75,7 +73,6 @@ def make_hann_window(
     """
     window = torch.hann_window(
         window_length=window_length,
-        dtype=torch.float,
         device=device if device is not None else "cpu",
         requires_grad=trainable,
     )

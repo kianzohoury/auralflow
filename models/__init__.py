@@ -1,11 +1,17 @@
 import importlib
+from typing import Any
 
 
-def create_model(configuration: dict):
+def create_model(configuration: dict) -> Any:
     """Creates a new instance of a model with its given configuration."""
-    model_name = configuration["base_model"]
-    base_class = getattr(
-        importlib.import_module("models.mask_models"), model_name
-    )
+    separation_task = configuration["model_params"]["separation_task"]
+    if separation_task == "mask":
+        base_class = importlib.import_module(
+            f"{separation_task}_model", "SpectrogramMaskModel"
+        )
+    else:
+        base_class = lambda x: x
+        pass
+
     model = base_class(configuration)
     return model

@@ -14,7 +14,7 @@ config_dir = Path(__file__) / "config"
 
 
 def get_session_logs(logs_file: Path) -> Optional[dict]:
-    """Reads session logs data.
+    """Reads session logs audio.
 
     Raises:
         IOError: If the session logs file cannot be read from.
@@ -30,7 +30,7 @@ def get_session_logs(logs_file: Path) -> Optional[dict]:
     try:
         return yaml_parser.load(logs_file) or {}
     except YAMLError as e:
-        raise YAMLError(f"Cannot load data from {str(logs_file)}.") from e
+        raise YAMLError(f"Cannot load audio from {str(logs_file)}.") from e
 
 
 def log_session(logs_file: Path, **data):

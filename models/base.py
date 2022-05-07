@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import List
 
+from torch import Tensor
 from torchinfo import summary
 from pathlib import Path
 
@@ -12,11 +13,11 @@ class SeparationModel(ABC):
     """Interface for all source separation models."""
 
     model: nn.Module
-    optimizer: nn.Module
+    optimizer: torch.optim.Optimizer
     batch_loss: torch.Tensor
     train_losses: List
     val_losses: List
-    stop_patience: int
+    patience: int
 
     def __init__(self, config: dict):
         super(SeparationModel, self).__init__()
@@ -42,7 +43,7 @@ class SeparationModel(ABC):
         pass
 
     @abstractmethod
-    def separate(self, audio):
+    def separate(self, audio: Tensor):
         pass
 
     def train(self):
@@ -58,7 +59,7 @@ class SeparationModel(ABC):
         with torch.no_grad():
             return self.forward()
 
-    def save_model(self, global_step: int, silent=True):
+    def save_model(self, global_step: int, silent=True) -> None:
         """Saves checkpoint for the model."""
         model_path = f"{self.config['model_name']}_{global_step}.pth"
         torch.save(
@@ -69,7 +70,7 @@ class SeparationModel(ABC):
         if not silent:
             print("Model successfully saved.")
 
-    def load_model(self, global_step: int):
+    def load_model(self, global_step: int) -> None:
         """Loads previously trained model."""
         model_path = f"{self.config['model_name']}_{global_step}.pth"
         if Path(model_path).is_file():
@@ -77,7 +78,7 @@ class SeparationModel(ABC):
             self.model.load_state_dict(state_dict)
             print("Model successfully loaded.")
 
-    def save_optim(self, global_step: int, silent=True):
+    def save_optim(self, global_step: int, silent=True) -> None:
         """Saves snapshot of the model's optimizer."""
         optim_path = f"{self.config['model_name']}_optim_{global_step}.pth"
         torch.save(
@@ -87,7 +88,7 @@ class SeparationModel(ABC):
         if not silent:
             print("Optimizer successfully saved.")
 
-    def load_optim(self, global_step: int):
+    def load_optim(self, global_step: int) -> None:
         """Loads model's optimizer to resume training."""
         optim_path = f"{self.config['model_name']}_optim_{global_step}.pth"
         if Path(optim_path).is_file():
