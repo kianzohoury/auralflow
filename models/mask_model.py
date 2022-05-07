@@ -42,7 +42,7 @@ class SpectrogramMaskModel(SeparationModel):
 
         # Retrieve class of underlying model architecture.
         arch_constructor = getattr(
-            importlib.import_module(f"architectures"),
+            importlib.import_module("models.architectures", "models"),
             configuration["model_params"]["model_type"],
         )
 
@@ -51,7 +51,7 @@ class SpectrogramMaskModel(SeparationModel):
             num_fft_bins=self.n_fft_bins,
             num_samples=self.num_samples,
             num_channels=self.num_channels,
-            hidden_dim=self.layer_params["hidden-size"],
+            hidden_dim=self.layer_params["hidden_size"],
             mask_act_fn=configuration["model_params"]["mask_activation"],
             leak_factor=self.layer_params["leak_factor"],
             normalize_input=configuration["model_params"]["normalize_input"],
@@ -119,13 +119,15 @@ class SpectrogramMaskModel(SeparationModel):
 
     def process_audio(self, audio: Tensor, magnitude: bool = False) -> Tensor:
         """Performs FFT algorithm and returns mag or complex spectrograms."""
-        data_stft = self.fast_fourier(transform=self.stft, audio=audio)
+        data_stft = self.fast_fourier(
+            transform=self.stft, audio=audio.to(self.device)
+        )
         return torch.abs(data_stft) if magnitude else data_stft
 
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
-        """Wrapper method calls process_data and transfers tensors to GPU."""
-        self.mixtures = self.process_audio(mixture).squeeze(-1).to(self.device)
-        self.targets = self.process_audio(target).squeeze(-1).to(self.device)
+        """Wrapper method processes data and sets data for internal access."""
+        self.mixtures = self.process_audio(mixture).squeeze(-1)
+        self.targets = self.process_audio(target).squeeze(-1)
 
     def forward(self):
         """Performs forward pass to estimate the multiplicative soft-mask."""
