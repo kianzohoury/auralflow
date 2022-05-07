@@ -85,6 +85,7 @@ class SpectrogramMaskModel(SeparationModel):
             self.val_losses = []
             self.criterion = self.model.loss_fn
             self.patience = self.config["training_params"]["stop_patience"]
+            # self.accum_steps = 10
 
     @staticmethod
     def fast_fourier(transform: Callable, audio: Tensor) -> Tensor:
@@ -136,7 +137,9 @@ class SpectrogramMaskModel(SeparationModel):
     def backward(self):
         """Computes batch-wise loss between estimate and target sources."""
         self.estimates = self.mask * self.mixtures
-        self.batch_loss = self.criterion(self.estimates, self.targets)
+        self.batch_loss = self.criterion(
+            self.estimates, self.targets
+        )
 
     def optimizer_step(self):
         """Performs gradient computation and parameter optimization."""

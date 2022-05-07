@@ -18,7 +18,7 @@ def cross_validate(
 
     model.eval()
     with ProgressBar(val_dataloader, max_iters) as pbar:
-        pbar.set_description(f"Epoch [{epoch}/{stop_epoch}]")
+        pbar.set_description(f"Epoch [{epoch}/{stop_epoch}] val")
         total_loss = 0
         for index, (mixture, target) in enumerate(pbar):
 

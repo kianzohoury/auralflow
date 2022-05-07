@@ -96,14 +96,14 @@ def main(config_filepath: str):
         total_loss = 0
         model.train()
         with ProgressBar(train_dataloader, max_iters) as pbar:
-            pbar.set_description(f"Epoch [{epoch}/{stop_epoch}] train:")
+            pbar.set_description(f"Epoch [{epoch}/{stop_epoch}] train")
             for index, (mixture, target) in enumerate(pbar):
-
+                # print(mixture.shape)
                 model.set_data(mixture, target)
-
-                print(model.mixtures.shape, model.targets.shape)
+                # print(model.mixtures.shape)
                 model.forward()
                 model.backward()
+                # if (index + 1) % model.accum_steps == 0:
                 model.optimizer_step()
 
                 batch_loss = model.get_batch_loss()
@@ -112,7 +112,7 @@ def main(config_filepath: str):
 
                 global_step += 1
 
-                if index == max_iters - 1:
+                if index + 1 == max_iters:
                     pbar.set_postfix({"avg_loss": total_loss / max_iters})
                     pbar.clear()
                     break

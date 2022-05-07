@@ -32,6 +32,7 @@ class SpectrogramMaskModel(SeparationModel):
     mask: FloatTensor
     stft: Callable
     inv_stft: Callable
+    accum_steps: int
 
     def __init__(self, configuration: dict):
         dataset_params = configuration["dataset_params"]
@@ -59,6 +60,7 @@ class SpectrogramMaskModel(SeparationModel):
         # num_models = len(configuration["dataset_params"]["targets"])
 
         self.model = self.model.to(self.device)
+        self.accum_steps = 10
 
         self.stft = get_stft(
             num_fft=dataset_params["num_fft"],
@@ -81,6 +83,7 @@ class SpectrogramMaskModel(SeparationModel):
             self.stop_patience = self.config["training_params"][
                 "stop_patience"
             ]
+            
 
     @staticmethod
     def fast_fourier(transform: Callable, data: Tensor) -> Tensor:
@@ -123,7 +126,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.batch_loss = (
             self.criterion(self.estimates, self.targets)
             + self.model.get_kl_div()
-        )
+        ) / self.accum_steps
 
     def optimizer_step(self):
         """Performs gradient computation and parameter optimization."""

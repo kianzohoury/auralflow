@@ -12,7 +12,7 @@ from torch.nn import L1Loss
 class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""
 
-    def __init__(self, in_channels, out_channels, kernel_size=3, leak=0.2):
+    def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlock, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(
@@ -21,6 +21,7 @@ class ConvBlock(nn.Module):
                 kernel_size=kernel_size,
                 stride=1,
                 padding="same",
+                bias=False
             ),
             nn.BatchNorm2d(out_channels),
             nn.LeakyReLU(leak, inplace=True),
@@ -34,7 +35,7 @@ class ConvBlock(nn.Module):
 class ConvBlockTriple(nn.Module):
     """(Conv => Batch Norm => ReLU) x 3 block."""
 
-    def __init__(self, in_channels, out_channels, kernel_size=3, leak=0.2):
+    def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
             ConvBlock(in_channels, out_channels, kernel_size, leak),
@@ -55,7 +56,7 @@ class DownBlock(nn.Module):
         in_channels: int,
         out_channels: int,
         kernel_size: int = 3,
-        leak: float = 0.2,
+        leak: float = 0,
         reduce: bool = True,
     ) -> None:
         super(DownBlock, self).__init__()
@@ -155,12 +156,10 @@ class SpectrogramNetSimple(nn.Module):
         self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor)
 
         # Define simple bottleneck layer.
-        self.bottleneck = nn.Conv2d(
+        self.bottleneck = ConvBlock(
             in_channels=self.channel_sizes[-1][0],
             out_channels=self.channel_sizes[-1][-1],
-            kernel_size=1,
-            stride=1,
-            padding="same",
+            leak=0
         )
 
         # Determine the spatial dimension sizes for computing deconv padding.

@@ -68,7 +68,7 @@ def log_spectrograms(
             aspect="auto",
             cmap="inferno",
         )
-        format_plot(ax[i], f"{target_labels[i]}_true")
+        format_plot(ax[i + 1], f"{target_labels[i]}_true")
 
     plt.ylabel("Frequency")
     plt.xlabel("Seconds")
@@ -88,16 +88,18 @@ def log_audio(
 ) -> None:
     """Logs audio data for listening via tensorboard."""
     n_batch, n_frames, n_channels, n_targets = estimate_data.shape
+    target_data = target_data[:, :n_frames, :, :]
 
     # Collapse channel dimensions to mono and reshape.
-    print(estimate_data.shape, target_data.shape)
-    print(torch.mean(estimate_data, dim=2, keepdim=True)[0].shape)
+    # print(estimate_data.shape, target_data.shape)
+    # print(torch.mean(estimate_data, dim=2, keepdim=True)[0].shape)
     estimate_data = torch.mean(estimate_data, dim=2, keepdim=True)[0].reshape(
         (n_channels, n_frames, n_targets)
-    ).squeeze(0)
+    )
     target_data = torch.mean(target_data, dim=2, keepdim=True)[0].reshape(
         (n_channels, n_frames, n_targets)
-    ).squeeze(0)
+    )
+    # print(estimate_data.shape, target_data.shape)
 
     for i in range(len(target_labels)):
         writer.add_audio(
