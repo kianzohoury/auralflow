@@ -331,11 +331,17 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
+        print(enc_1.shape)
         enc_2, skip_2 = self.down_2(enc_1)
+        print(enc_2.shape)
         enc_3, skip_3 = self.down_3(enc_2)
+        print(enc_3.shape)
         enc_4, skip_4 = self.down_4(enc_3)
+        print(enc_4.shape)
         enc_5, skip_5 = self.down_5(enc_4)
+        print(enc_5.shape)
         enc_6, _ = self.down_6(enc_5)
+        print(enc_6.shape)
 
         # Reshape encodings to match dimensions of latent space.
         n, c, b, t = enc_6.shape
@@ -359,11 +365,17 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
 
         # Pass through decoder.
         dec_1 = self.up_1(dec_0, skip_5)
+        print(dec_1.shape)
         dec_2 = self.up_2(dec_1, skip_4)
+        print(dec_2.shape)
         dec_3 = self.up_3(dec_2, skip_3)
+        print(dec_3.shape)
         dec_4 = self.up_4(dec_3, skip_2)
+        print(dec_4.shape)
         dec_5 = self.up_5(dec_4, skip_1)
+        print(dec_5.shape)
         dec_6 = self.soft_conv(dec_5)
+        print(dec_6.shape)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(dec_6)

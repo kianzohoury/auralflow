@@ -87,16 +87,28 @@ def log_audio(
     sample_rate: int = 44100,
 ) -> None:
     """Logs audio data for listening via tensorboard."""
+    n_batch, n_frames, n_channels, n_targets = estimate_data.shape
+
+    # Collapse channel dimensions to mono and reshape.
+    print(estimate_data.shape, target_data.shape)
+    print(torch.mean(estimate_data, dim=2, keepdim=True)[0].shape)
+    estimate_data = torch.mean(estimate_data, dim=2, keepdim=True)[0].reshape(
+        (n_channels, n_frames, n_targets)
+    ).squeeze(0)
+    target_data = torch.mean(target_data, dim=2, keepdim=True)[0].reshape(
+        (n_channels, n_frames, n_targets)
+    ).squeeze(0)
+
     for i in range(len(target_labels)):
         writer.add_audio(
             tag=f"{target_labels[i]}_estimate",
-            snd_tensor=estimate_data[0, :, :, i].squeeze(-1),
+            snd_tensor=estimate_data[:, :, i].squeeze(-1),
             global_step=global_step,
             sample_rate=sample_rate,
         )
         writer.add_audio(
             tag=f"{target_labels[i]}_true",
-            snd_tensor=target_data[0, :, :, i].squeeze(-1),
+            snd_tensor=target_data[:, :, i].squeeze(-1),
             global_step=global_step,
             sample_rate=sample_rate,
         )

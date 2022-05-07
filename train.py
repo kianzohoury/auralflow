@@ -31,7 +31,7 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e6),
+        num_chunks=int(1e4),
     )
     print("Completed.")
     print("=" * 95)
@@ -100,6 +100,8 @@ def main(config_filepath: str):
             for index, (mixture, target) in enumerate(pbar):
 
                 model.set_data(mixture, target)
+
+                print(model.mixtures.shape, model.targets.shape)
                 model.forward()
                 model.backward()
                 model.optimizer_step()
@@ -126,10 +128,12 @@ def main(config_filepath: str):
         cross_validate(
             model=model,
             val_dataloader=val_dataloader,
-            writer=writer,
             max_iters=max_iters,
             epoch=epoch,
             stop_epoch=stop_epoch,
+        )
+        writer.add_scalars(
+            "Loss/val", {"l1_kl": model.val_losses[-1]}, epoch
         )
 
         pbar.set_postfix({"avg_loss": total_loss / max_iters})
@@ -139,9 +143,10 @@ def main(config_filepath: str):
             model.save_optim(global_step=global_step)
 
         if model.stop_early():
+            print("Stopping training early.")
             break
 
-        model.post_epoch_callback(writer, epoch, val_dataloader, max_iters)
+        model.post_epoch_callback(mixture, target, writer, epoch)
 
     writer.close()
     print("=" * 90 + "\nTraining is complete.")

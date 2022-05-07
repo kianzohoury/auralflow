@@ -28,7 +28,7 @@
         "sample_rate": 44100,
         "num_fft": 1023,
         "window_size": 1023,
-        "hop_length": 768,
+        "hop_length": 384,
         "use_hann_window": true,
         "learn_filterbanks": false,
         "sample_length": 3,

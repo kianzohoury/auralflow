@@ -117,7 +117,7 @@ class SpectrogramMaskModel(SeparationModel):
         source_estimate = torch.stack(source_estimate, dim=-1)
         return source_estimate
 
-    def process_audio(self, audio: Tensor, magnitude: bool = False) -> Tensor:
+    def process_audio(self, audio: Tensor, magnitude: bool = True) -> Tensor:
         """Performs FFT algorithm and returns mag or complex spectrograms."""
         data_stft = self.fast_fourier(
             transform=self.stft, audio=audio.to(self.device)
@@ -158,13 +158,13 @@ class SpectrogramMaskModel(SeparationModel):
 
     def separate(self, audio: Tensor) -> Tensor:
         """Retrieves the target source estimate for a batch of audio."""
-        complex_stft = self.process_audio(audio, magnitude=False)
+        complex_stft = self.process_audio(audio, magnitude=False).squeeze(-1)
         mag, phase = torch.abs(complex_stft), torch.angle(complex_stft)
-        mask = self.model(mag)
-        estimate = mask * mag
-        phase_corrected = estimate * torch.exp(1j * phase)
+        self.mixtures = mag
+        self.test()
+        phase_corrected = self.estimates * torch.exp(1j * phase)
         source_estimate = self.inverse_fast_fourier(
-            self.inv_stft, phase_corrected
+            self.inv_stft, phase_corrected.permute(0, 2, 3, 1)
         )
         return source_estimate
 
@@ -174,8 +174,6 @@ class SpectrogramMaskModel(SeparationModel):
         target_audio: Tensor,
         writer: SummaryWriter,
         global_step: int,
-        val_dataloader: DataLoader,
-        max_iters: int,
     ):
         """Logs spectrogram images and separated audio after each epoch."""
         log_spectrograms(
@@ -186,12 +184,11 @@ class SpectrogramMaskModel(SeparationModel):
             target_labels=sorted(self.config["dataset_params"]["targets"]),
             sample_rate=self.config["dataset_params"]["sample_rate"],
         )
-
         log_audio(
             writer=writer,
             global_step=global_step,
             estimate_data=self.separate(mixture_audio).unsqueeze(-1),
-            target_data=self.separate(target_audio).unsqueeze(-1),
+            target_data=target_audio.permute(0, 2, 1, 3),
             target_labels=sorted(self.config["dataset_params"]["targets"]),
             sample_rate=self.config["dataset_params"]["sample_rate"],
         )

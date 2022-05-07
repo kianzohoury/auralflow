@@ -21,7 +21,7 @@ def get_stft(
     else:
         window = None
 
-    stft_fn = torch.stft if inverse else torch.istft
+    stft_fn = torch.stft if not inverse else torch.istft
 
     def transform(data):
         stft_data = stft_fn(
@@ -31,7 +31,7 @@ def get_stft(
             window=window,
             win_length=window_size,
             onesided=True,
-            return_complex=True,
+            return_complex=True if not inverse else False,
         )
         return stft_data
 
