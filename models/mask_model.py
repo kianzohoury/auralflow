@@ -127,12 +127,17 @@ class SpectrogramMaskModel(SeparationModel):
         return torch.abs(data_stft) if magnitude else data_stft
 
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
-        """Wrapper method processes data and sets data for internal access."""
+        """Wrapper method processes and sets data for internal access."""
         self.mixtures = self.process_audio(mixture).squeeze(-1)
         self.targets = self.process_audio(target).squeeze(-1)
 
     def forward(self):
-        """Performs forward pass to estimate the multiplicative soft-mask."""
+        """Performs target source estimation by applying a learned soft-mask.
+        
+        Target S is acquired by taking the Hadamard product between the mixture
+        signal X,and the output of the network, M (estimated soft-mask), such
+        that S = M * X.
+        """
         self.mask = self.model(self.mixtures)
         self.estimates = self.mask * self.mixtures
 
@@ -160,7 +165,26 @@ class SpectrogramMaskModel(SeparationModel):
         return False
 
     def separate(self, audio: Tensor) -> Tensor:
-        """Retrieves the target source estimate for a batch of audio."""
+        """Applies inv STFT to target source to retrieve time-domain signal.
+        
+        * Takes the target source S = M * X resultant from the forward pass,
+        applies phase correction, and applies the inverse fourier transform to
+        yield the separated audio with the shape (n_channels, n_samples). The
+        detailed procedure is as follows:
+        
+        X = |STFT(A)|
+        S = X * M
+        S_p = X * M * P
+        A_s = iSTFT(S_p)
+
+        * where X: magnitude spectrogram;
+        * S: output of forward pass
+        * S_p: phase corrected output S
+        * P: complex-valued phase matrix, i.e., exp^(i * theta), where theta
+          is the element-wise angle between real and imaginary parts of STFT(A).
+        * A_s: estimate source signal converted from time-freq to time-only
+          domain.
+        """
         complex_stft = self.process_audio(audio, magnitude=False).squeeze(-1)
         mag, phase = torch.abs(complex_stft), torch.angle(complex_stft)
         self.mixtures = mag
