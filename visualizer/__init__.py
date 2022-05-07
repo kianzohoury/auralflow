@@ -70,7 +70,6 @@ def log_spectrograms(
         )
         format_plot(ax[i + 1], f"{target_labels[i]}_true")
 
-    plt.ylabel("Frequency")
     plt.xlabel("Seconds")
     fig.tight_layout()
     # fig.colorbar(image, ax=ax.ravel().tolist(), format="%+2.f dB")

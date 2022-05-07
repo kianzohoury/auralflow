@@ -2,10 +2,13 @@ import os
 import subprocess
 import sys
 import threading
+import math
+import torch
 from argparse import ArgumentParser
 
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from torch import autocast
 
 from datasets import create_audio_dataset
 from models import create_model
@@ -31,7 +34,7 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e4),
+        num_chunks=int(1e3),
     )
     print("Completed.")
     print("=" * 95)
@@ -41,7 +44,7 @@ def main(config_filepath: str):
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(6400),
+        num_chunks=int(1e3),
     )
     print("Completed.")
     print("=" * 95)
@@ -51,7 +54,7 @@ def main(config_filepath: str):
         num_workers=8,
         pin_memory=True,
         persistent_workers=True,
-        batch_size=64,
+        batch_size=8,
         prefetch_factor=4,
         shuffle=True,
     )
@@ -61,7 +64,7 @@ def main(config_filepath: str):
         num_workers=8,
         pin_memory=True,
         persistent_workers=True,
-        batch_size=64,
+        batch_size=8,
         prefetch_factor=4,
         shuffle=True,
     )
@@ -89,7 +92,8 @@ def main(config_filepath: str):
     current_epoch = training_params["last_epoch"] + 1
     stop_epoch = current_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
-    max_iters = min(12, loader_params["max_iterations"])
+    max_iters = int(math.ceil(len(train_dataset) / 8))
+    # max_iters = loader_params["max_iterations"]
     save_freq = training_params["checkpoint_freq"]
 
     for epoch in range(current_epoch, stop_epoch):
@@ -98,11 +102,12 @@ def main(config_filepath: str):
         with ProgressBar(train_dataloader, max_iters) as pbar:
             pbar.set_description(f"Epoch [{epoch}/{stop_epoch}] train")
             for index, (mixture, target) in enumerate(pbar):
-                # print(mixture.shape)
-                model.set_data(mixture, target)
-                # print(model.mixtures.shape)
-                model.forward()
+
+                with autocast(device_type="cuda"):
+                    model.set_data(mixture, target)
+                    model.forward()
                 model.backward()
+
                 # if (index + 1) % model.accum_steps == 0:
                 model.optimizer_step()
 
@@ -112,7 +117,7 @@ def main(config_filepath: str):
 
                 global_step += 1
 
-                if index + 1 == max_iters:
+                if index == max_iters:
                     pbar.set_postfix({"avg_loss": total_loss / max_iters})
                     pbar.clear()
                     break

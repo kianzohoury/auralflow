@@ -1,4 +1,5 @@
 import importlib
+from os import truncate
 from typing import Callable
 
 import torch
@@ -133,10 +134,10 @@ class SpectrogramMaskModel(SeparationModel):
     def forward(self):
         """Performs forward pass to estimate the multiplicative soft-mask."""
         self.mask = self.model(self.mixtures)
+        self.estimates = self.mask * self.mixtures
 
     def backward(self):
         """Computes batch-wise loss between estimate and target sources."""
-        self.estimates = self.mask * self.mixtures
         self.batch_loss = self.criterion(
             self.estimates, self.targets
         )
@@ -145,18 +146,18 @@ class SpectrogramMaskModel(SeparationModel):
         """Performs gradient computation and parameter optimization."""
         self.batch_loss.backward()
         self.optimizer.step()
-        self.optimizer.zero_grad()
+        self.optimizer.zero_grad(set_to_none=True)
 
     def stop_early(self):
         """Signals that training should stop based on patience criteria."""
         if len(self.val_losses) <= 1:
             return False
-        elif self.val_losses[-1] >= min(self.val_losses):
+        elif self.val_losses[-1] >= min(self.val_losses[:-1]):
             self.patience -= 1
             if not self.patience:
                 return True
         else:
-            self.patience = self.config["training_params"]["patience"]
+            self.patience = self.config["training_params"]["stop_patience"]
         return False
 
     def separate(self, audio: Tensor) -> Tensor:
