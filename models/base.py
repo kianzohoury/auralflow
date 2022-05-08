@@ -48,7 +48,8 @@ class SeparationModel(ABC):
 
     def train(self):
         """Sets model to training mode."""
-        self.model.train()
+        for param in self.model.parameters():
+            param.requires_grad = True
 
     def eval(self):
         """Sets model to evaluation mode."""
@@ -56,8 +57,9 @@ class SeparationModel(ABC):
 
     def test(self):
         """Calls forward method without gradient tracking."""
-        with torch.no_grad():
-            return self.forward()
+        for param in self.model.parameters():
+            param.grad = None
+        return self.forward()
 
     def save_model(self, global_step: int, silent=True) -> None:
         """Saves checkpoint for the model."""

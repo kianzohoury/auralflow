@@ -14,15 +14,17 @@ torch.backends.cudnn.benchmark = True
 class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""
 
-    def __init__(self, in_channels, out_channels, kernel_size=3, bn=True, leak=0):
+    def __init__(
+        self, in_channels, out_channels, kernel_size=3, bn=True, leak=0
+    ):
         super(ConvBlock, self).__init__()
         self.conv = nn.Conv2d(
-                in_channels=in_channels,
-                out_channels=out_channels,
-                kernel_size=kernel_size,
-                stride=1,
-                padding="same",
-                bias=False,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=1,
+            padding="same",
+            bias=False,
         )
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.relu = nn.LeakyReLU(leak, inplace=True)
@@ -201,20 +203,16 @@ class SpectrogramNetSimple(nn.Module):
 
         # Define input/output normalization parameters.
         self.input_center = nn.Parameter(
-            torch.zeros(num_fft_bins).float(),
-            requires_grad=True
+            torch.zeros(num_fft_bins).float(), requires_grad=True
         )
         self.input_scale = nn.Parameter(
-            torch.ones(num_fft_bins).float(),
-            requires_grad=True
+            torch.ones(num_fft_bins).float(), requires_grad=True
         )
         self.output_center = nn.Parameter(
-            torch.zeros(num_fft_bins).float(),
-            requires_grad=True
+            torch.zeros(num_fft_bins).float(), requires_grad=True
         )
         self.output_scale = nn.Parameter(
-            torch.ones(num_fft_bins).float(),
-            requires_grad=True
+            torch.ones(num_fft_bins).float(), requires_grad=True
         )
 
         # Define activation function used for masking.
@@ -303,7 +301,7 @@ class SpectrogramLSTM(SpectrogramNetSimple):
             nn.ReLU(inplace=True),
             nn.Linear(lstm_hidden_size, n_features * 2),
             nn.ReLU(inplace=True),
-            nn.BatchNorm1d(n_features * 2)
+            nn.BatchNorm1d(n_features * 2),
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
@@ -390,7 +388,6 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         # data = data * self.input_scale
         # data = data.permute(0, 1, 3, 2)
 
-        
         # data = self.input_norm(data.permute(0, 2, 3, 1))
         # data = data.permute(0, 3, 1, 2)
 

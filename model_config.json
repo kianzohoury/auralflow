@@ -38,7 +38,8 @@
             "batch_size": 128,
             "num_workers": 10,
             "pin_memory": true,
-            "persistent_workers": true
+            "persistent_workers": true,
+            "pre_fetch": 4
         }
     },
     "training_params": {

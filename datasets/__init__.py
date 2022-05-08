@@ -1,4 +1,5 @@
 from torch.utils.data.dataloader import DataLoader
+from torch.utils.data import Dataset
 from tqdm.asyncio import tqdm
 
 from . import datasets
@@ -88,16 +89,16 @@ def create_audio_dataset(
     return chunked_dataset
 
 
-def load_dataset(
-    dataset: datasets.AudioFolder, loader_params: dict
-) -> DataLoader:
-    """Returns a dataloader for loading audio from a given AudioFolder."""
+def load_dataset(dataset: Dataset, loader_params: dict) -> DataLoader:
+    """Returns a dataloader for a given dataset."""
     dataloader = DataLoader(
         dataset=dataset,
         batch_size=loader_params["batch_size"],
         num_workers=loader_params["num_workers"],
         pin_memory=loader_params["pin_memory"],
         persistent_workers=loader_params["persistent_workers"],
+        prefetch_factor=loader_params["pre_fetch"],
+        shuffle=True,
     )
     return dataloader
 

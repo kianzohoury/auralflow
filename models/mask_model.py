@@ -136,7 +136,7 @@ class SpectrogramMaskModel(SeparationModel):
 
     def forward(self):
         """Performs target source estimation by applying a learned soft-mask.
-        
+
         Target S is acquired by taking the Hadamard product between the mixture
         signal X,and the output of the network, M (estimated soft-mask), such
         that S = M * X.
@@ -155,6 +155,10 @@ class SpectrogramMaskModel(SeparationModel):
         for param in self.model.parameters():
             param.grad = None
 
+    def scheduler_step(self):
+        """Decreases learning rate if validation loss does not improve."""
+        self.scheduler.step(self.val_losses[-1])
+
     def stop_early(self):
         """Signals that training should stop based on patience criteria."""
         if len(self.val_losses) <= 1:
@@ -169,12 +173,12 @@ class SpectrogramMaskModel(SeparationModel):
 
     def separate(self, audio: Tensor) -> Tensor:
         """Applies inv STFT to target source to retrieve time-domain signal.
-        
+
         * Takes the target source S = M * X resultant from the forward pass,
         applies phase correction, and applies the inverse fourier transform to
         yield the separated audio with the shape (n_channels, n_samples). The
         detailed procedure is as follows:
-        
+
         X = |STFT(A)|
         S = X * M
         S_p = X * M * P

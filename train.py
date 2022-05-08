@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torch import autocast
 
-from datasets import create_audio_dataset
+from datasets import create_audio_dataset, load_dataset
 from models import create_model
 from utils import load_config
 from validate import cross_validate
@@ -18,18 +18,17 @@ from visualizer.progress import ProgressBar
 
 
 def main(config_filepath: str):
-    print("-" * 79)
-    print("Reading configuration file...")
-    configuration = load_config(config_filepath)
+    """Runs training script given a configuration file."""
 
+    print("-" * 79 + "\nReading configuration file...")
+    configuration = load_config(config_filepath)
     training_params = configuration["training_params"]
     dataset_params = configuration["dataset_params"]
-    loader_params = dataset_params["loader_params"]
+    dataloader_params = dataset_params["loader_params"]
     visualizer_params = configuration["visualizer_params"]
-
     print("Done.")
-    print("-" * 79)
-    print("Fetching dataset...")
+
+    print("-" * 79 + "Fetching dataset...")
     train_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="train",
@@ -44,32 +43,19 @@ def main(config_filepath: str):
         chunk_size=dataset_params["sample_length"],
         num_chunks=int(1e4),
     )
-    print("Done.")
-    print("-" * 79)
-    train_dataloader = DataLoader(
-        train_dataset,
-        num_workers=8,
-        pin_memory=True,
-        persistent_workers=True,
-        batch_size=64,
-        prefetch_factor=4,
-        shuffle=True,
+
+    train_dataloader = load_dataset(
+        dataset=train_dataset, loader_params=dataloader_params
+    )
+    val_dataloader = load_dataset(
+        dataset=val_dataset, loader_params=dataloader_params
+    )
+    print(
+        f"Done. Loaded {len(train_dataset)} train and {len(val_dataset)}"
+        f" {dataset_params['sample_length']}s val audio chunks."
     )
 
-    val_dataloader = DataLoader(
-        val_dataset,
-        num_workers=8,
-        pin_memory=True,
-        persistent_workers=True,
-        batch_size=64,
-        prefetch_factor=4,
-        shuffle=True,
-    )
-    # val_dataloader = load_dataset(
-    #     dataset=val_dataset, loader_params=dataset_params["loader_params"]
-    # )
-
-    print("Loading model...")
+    print("-" * 79 + "Loading model...")
     model = create_model(configuration)
     # model.setup()
     print("Done.")
@@ -82,30 +68,27 @@ def main(config_filepath: str):
 
     writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
 
-    print("-" * 79)
-    print("Starting training...")
-    
     current_epoch = training_params["last_epoch"] + 1
     stop_epoch = current_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
-    max_iters = 60
-    # max_iters = loader_params["max_iterations"]
+    max_iters = dataloader_params["max_iterations"]
     save_freq = training_params["checkpoint_freq"]
 
+    print("-" * 79 + "Starting training...")
     for epoch in range(current_epoch, stop_epoch):
         print(f"Epoch [{epoch}/{stop_epoch}]", flush=True)
         total_loss = 0
         model.train()
-        with ProgressBar(train_dataloader, max_iters) as pbar:
-            pbar.set_description("train")
+        with ProgressBar(train_dataloader, max_iters, desc="train") as pbar:
             for index, (mixture, target) in enumerate(pbar):
-
-                with autocast(device_type="cuda"):
+                # Cast precision if necessary to increase training speed.
+                with autocast(device_type=model.device):
                     model.set_data(mixture, target)
                     model.forward()
-                model.backward()
 
-                # if (index + 1) % model.accum_steps == 0:
+                # Compute batch-wise loss.
+                model.backward()
+                # Update model parameters.
                 model.optimizer_step()
 
                 batch_loss = model.get_batch_loss()
@@ -133,7 +116,7 @@ def main(config_filepath: str):
             max_iters=max_iters,
         )
 
-        model.scheduler.step(model.val_losses[-1])
+        model.scheduler_step()
 
         writer.add_scalars(
             "Loss/val",
@@ -142,8 +125,8 @@ def main(config_filepath: str):
         )
 
         if index % save_freq == 0:
-            model.save_model(global_step=global_step)
-            model.save_optim(global_step=global_step)
+            model.save_model(global_step=epoch)
+            model.save_optim(global_step=epoch)
 
         if model.stop_early():
             print("Stopping training early...")
