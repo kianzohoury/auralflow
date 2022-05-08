@@ -11,7 +11,6 @@ def cross_validate(
     val_dataloader: DataLoader,
     max_iters: int,
     epoch: int,
-    stop_epoch: int,
 ):
     """Performs cross validation."""
 
@@ -20,7 +19,7 @@ def cross_validate(
 
     model.eval()
     with ProgressBar(val_dataloader, max_iters) as pbar:
-        pbar.set_description(f"Epoch [{epoch}/{stop_epoch}] val")
+        pbar.set_description("val")
         total_loss = 0
         for index, (mixture, target) in enumerate(pbar):
 
@@ -38,9 +37,7 @@ def cross_validate(
             )
 
             if index == max_iters:
-                pbar.set_postfix({"avg_loss": total_loss / max_iters})
                 pbar.clear()
                 break
 
     model.val_losses.append(total_loss / max_iters)
-    pbar.set_postfix({"avg_loss": total_loss / max_iters})

@@ -18,7 +18,7 @@ from visualizer.progress import ProgressBar
 
 
 def main(config_filepath: str):
-    print("=" * 95)
+    print("-" * 79)
     print("Reading configuration file...")
     configuration = load_config(config_filepath)
 
@@ -27,8 +27,9 @@ def main(config_filepath: str):
     loader_params = dataset_params["loader_params"]
     visualizer_params = configuration["visualizer_params"]
 
-    print("=" * 95)
-    print("Loading training set...")
+    print("Done.")
+    print("-" * 79)
+    print("Fetching dataset...")
     train_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="train",
@@ -36,22 +37,18 @@ def main(config_filepath: str):
         chunk_size=dataset_params["sample_length"],
         num_chunks=int(1e5),
     )
-    print("Completed.")
-    print("=" * 95)
-    print("Loading validation set...")
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e3),
+        num_chunks=int(1e4),
     )
-    print("Completed.")
-    print("=" * 95)
-
+    print("Done.")
+    print("-" * 79)
     train_dataloader = DataLoader(
         train_dataset,
-        num_workers=10,
+        num_workers=8,
         pin_memory=True,
         persistent_workers=True,
         batch_size=64,
@@ -61,7 +58,7 @@ def main(config_filepath: str):
 
     val_dataloader = DataLoader(
         val_dataset,
-        num_workers=10,
+        num_workers=8,
         pin_memory=True,
         persistent_workers=True,
         batch_size=64,
@@ -75,7 +72,7 @@ def main(config_filepath: str):
     print("Loading model...")
     model = create_model(configuration)
     # model.setup()
-    print("Completed.")
+    print("Done.")
 
     # writer_process = Process(
     #     target=run_tensorboard, args=(visualizer_params["logs_path"],)
@@ -85,10 +82,9 @@ def main(config_filepath: str):
 
     writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
 
-    print("=" * 95)
-    print("Training is starting...")
-    print("=" * 95)
-
+    print("-" * 79)
+    print("Starting training...")
+    
     current_epoch = training_params["last_epoch"] + 1
     stop_epoch = current_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
@@ -97,10 +93,11 @@ def main(config_filepath: str):
     save_freq = training_params["checkpoint_freq"]
 
     for epoch in range(current_epoch, stop_epoch):
+        print(f"Epoch [{epoch}/{stop_epoch}]", flush=True)
         total_loss = 0
         model.train()
         with ProgressBar(train_dataloader, max_iters) as pbar:
-            pbar.set_description(f"Epoch [{epoch}/{stop_epoch}] train")
+            pbar.set_description("train")
             for index, (mixture, target) in enumerate(pbar):
 
                 with autocast(device_type="cuda"):
@@ -118,7 +115,6 @@ def main(config_filepath: str):
                 global_step += 1
 
                 if index == max_iters:
-                    pbar.set_postfix({"avg_loss": total_loss / max_iters})
                     pbar.clear()
                     break
 
@@ -136,23 +132,21 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
             max_iters=max_iters,
             epoch=epoch,
-            stop_epoch=stop_epoch,
         )
-
-        pbar.set_postfix({"avg_loss": total_loss / max_iters})
 
         if index % save_freq == 0:
             model.save_model(global_step=global_step)
             model.save_optim(global_step=global_step)
 
         if model.stop_early():
-            print("Stopping training early.")
+            print("Stopping training early...")
             break
 
         model.post_epoch_callback(mixture, target, writer, epoch)
 
     writer.close()
-    print("=" * 90 + "\nTraining is complete.")
+    print("-" * 90)
+    print("Done.")
 
 
 if __name__ == "__main__":

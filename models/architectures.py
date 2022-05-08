@@ -199,11 +199,24 @@ class SpectrogramNetSimple(nn.Module):
             padding="same",
         )
 
+        self.output_center = nn.Parameter(
+            torch.zeros((num_channels, num_fft_bins, num_samples)),
+            requires_grad=True
+        )
+        self.output_scale = nn.Parameter(
+            torch.ones((num_channels, num_fft_bins, num_samples)),
+            requires_grad=True
+        )
+
         # Define activation function used for masking.
         if mask_act_fn == "sigmoid":
             self.mask_activation = nn.Sigmoid()
         elif mask_act_fn == "relu":
             self.mask_activation = nn.ReLU()
+        elif mask_act_fn == "tanh":
+            self.mask_activation = nn.Tanh()
+        elif mask_act_fn == "softmask":
+            self.mask_activation = nn.Softmax()
         else:
             self.mask_activation = nn.Identity()
 
@@ -381,6 +394,9 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         # dec_5 = self.up_5(dec_4, skip_2)
         # dec_6 = self.up_6(dec_5, skip_1)
         output = self.soft_conv(dec_4)
+
+        # Shift and scale output.
+        output = (output - self.output_center) * self.output_scale
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
