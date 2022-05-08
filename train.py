@@ -131,8 +131,9 @@ def main(config_filepath: str):
             writer=writer,
             val_dataloader=val_dataloader,
             max_iters=max_iters,
-            epoch=epoch,
         )
+
+        model.scheduler.step(model.val_losses[-1])
 
         writer.add_scalars(
             "Loss/val",

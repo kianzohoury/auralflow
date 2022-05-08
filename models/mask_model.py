@@ -4,7 +4,7 @@ from typing import Callable
 
 import torch
 from torch import Tensor, FloatTensor
-from torch.optim import AdamW
+from torch.optim import AdamW, lr_scheduler
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
@@ -86,6 +86,9 @@ class SpectrogramMaskModel(SeparationModel):
             self.val_losses = []
             self.criterion = self.model.loss_fn
             self.patience = self.config["training_params"]["stop_patience"]
+            self.scheduler = lr_scheduler.ReduceLROnPlateau(
+                self.optimizer, "min", verbose=True
+            )
             # self.accum_steps = 10
 
     @staticmethod

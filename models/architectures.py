@@ -14,23 +14,23 @@ torch.backends.cudnn.benchmark = True
 class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""
 
-    def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
+    def __init__(self, in_channels, out_channels, kernel_size=3, bn=True, leak=0):
         super(ConvBlock, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(
+        self.conv = nn.Conv2d(
                 in_channels=in_channels,
                 out_channels=out_channels,
                 kernel_size=kernel_size,
                 stride=1,
                 padding="same",
                 bias=False,
-            ),
-            nn.BatchNorm2d(out_channels),
-            nn.LeakyReLU(leak, inplace=True),
         )
+        self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
+        self.relu = nn.LeakyReLU(leak, inplace=True)
 
     def forward(self, data):
-        output = self.conv(data)
+        data = self.conv(data)
+        data = self.relu(data)
+        output = self.bn(data)
         return output
 
 
@@ -40,9 +40,9 @@ class ConvBlockTriple(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, leak),
+            ConvBlock(in_channels, out_channels, kernel_size, False, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, False, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, False, leak),
         )
 
     def forward(self, data):
@@ -201,19 +201,19 @@ class SpectrogramNetSimple(nn.Module):
 
         # Define input/output normalization parameters.
         self.input_center = nn.Parameter(
-            torch.zeros((num_channels, num_fft_bins, num_samples)),
+            torch.zeros(num_fft_bins).float(),
             requires_grad=True
         )
         self.input_scale = nn.Parameter(
-            torch.ones((num_channels, num_fft_bins, num_samples)),
+            torch.ones(num_fft_bins).float(),
             requires_grad=True
         )
         self.output_center = nn.Parameter(
-            torch.zeros((num_channels, num_fft_bins, num_samples)),
+            torch.zeros(num_fft_bins).float(),
             requires_grad=True
         )
         self.output_scale = nn.Parameter(
-            torch.ones((num_channels, num_fft_bins, num_samples)),
+            torch.ones(num_fft_bins).float(),
             requires_grad=True
         )
 
@@ -232,28 +232,37 @@ class SpectrogramNetSimple(nn.Module):
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
-        data = self.input_norm(data.permute(0, 2, 3, 1))
-        data = data.permute(0, 3, 1, 2)
+        # data = self.input_norm(data.permute(0, 2, 3, 1))
+        # data = data.permute(0, 3, 1, 2)
+        data = data.permute(0, 1, 3, 2)
+        data = data - self.input_center
+        data = data * self.input_scale
+        data = data.permute(0, 1, 3, 2)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
         enc_2, skip_2 = self.down_2(enc_1)
         enc_3, skip_3 = self.down_3(enc_2)
         enc_4, skip_4 = self.down_4(enc_3)
-        enc_5, skip_5 = self.down_5(enc_4)
-        enc_6, skip_6 = self.down_6(enc_5)
+        # enc_5, skip_5 = self.down_5(enc_4)
+        # enc_6, skip_6 = self.down_6(enc_5)
 
         # Pass through bottleneck.
-        latent_data = self.bottleneck(enc_6)
+        latent_data = self.bottleneck(enc_4)
 
         # Pass through decoder.
-        dec_1 = self.up_1(latent_data, skip_6)
-        dec_2 = self.up_2(dec_1, skip_5)
-        dec_3 = self.up_3(dec_2, skip_4)
-        dec_4 = self.up_4(dec_3, skip_3)
-        dec_5 = self.up_5(dec_4, skip_2)
-        dec_6 = self.up_6(dec_5, skip_1)
-        output = self.soft_conv(dec_6)
+        dec_1 = self.up_1(latent_data, skip_4)
+        dec_2 = self.up_2(dec_1, skip_3)
+        dec_3 = self.up_3(dec_2, skip_2)
+        dec_4 = self.up_4(dec_3, skip_1)
+        # dec_5 = self.up_5(dec_4, skip_2)
+        # dec_6 = self.up_6(dec_5, skip_1)
+        output = self.soft_conv(dec_4)
+
+        output = output.permute(0, 1, 3, 2)
+        output = output - self.output_center
+        output = output * self.output_scale
+        output = output.permute(0, 1, 3, 2)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
@@ -301,7 +310,8 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         # Normalize input.
         # data = self.input_norm(data.permute(0, 2, 3, 1))
         # data = data.permute(0, 3, 1, 2)
-        data = (data - self.input_center) * self.input_scale
+        # data = self.mel_scalar * torch.log10(data)
+        # data = torch.div((data - self.input_center), self.input_scale)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
@@ -333,7 +343,7 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         output = self.soft_conv(dec_4)
 
         # Shift and scale output.
-        output = (output - self.output_center) * self.output_scale
+        output = torch.div((output - self.output_center), self.output_scale)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
@@ -368,6 +378,7 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
+        
         data = self.input_norm(data.permute(0, 2, 3, 1))
         data = data.permute(0, 3, 1, 2)
 
