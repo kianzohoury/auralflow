@@ -134,6 +134,12 @@ def main(config_filepath: str):
             epoch=epoch,
         )
 
+        writer.add_scalars(
+            "Loss/val",
+            {"l1_kl": model.val_losses[-1]},
+            epoch,
+        )
+
         if index % save_freq == 0:
             model.save_model(global_step=global_step)
             model.save_optim(global_step=global_step)

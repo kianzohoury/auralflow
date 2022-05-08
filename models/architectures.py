@@ -138,10 +138,10 @@ class SpectrogramNetSimple(nn.Module):
             self.set_criterion(criterion)
 
         # Use identity to prevent GPU from being slowed down in forward pass.
-        if normalize_input:
-            self.input_norm = nn.BatchNorm2d(num_fft_bins)
-        else:
-            self.input_norm = nn.Identity()
+        # if normalize_input:
+        #     self.input_norm = nn.BatchNorm2d(num_fft_bins)
+        # else:
+        #     self.input_norm = nn.Identity()
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_dim]]
@@ -199,6 +199,15 @@ class SpectrogramNetSimple(nn.Module):
             padding="same",
         )
 
+        # Define input/output normalization parameters.
+        self.input_center = nn.Parameter(
+            torch.zeros((num_channels, num_fft_bins, num_samples)),
+            requires_grad=True
+        )
+        self.input_scale = nn.Parameter(
+            torch.ones((num_channels, num_fft_bins, num_samples)),
+            requires_grad=True
+        )
         self.output_center = nn.Parameter(
             torch.zeros((num_channels, num_fft_bins, num_samples)),
             requires_grad=True
@@ -290,23 +299,24 @@ class SpectrogramLSTM(SpectrogramNetSimple):
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
-        data = self.input_norm(data.permute(0, 2, 3, 1))
-        data = data.permute(0, 3, 1, 2)
+        # data = self.input_norm(data.permute(0, 2, 3, 1))
+        # data = data.permute(0, 3, 1, 2)
+        data = (data - self.input_center) * self.input_scale
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
         enc_2, skip_2 = self.down_2(enc_1)
         enc_3, skip_3 = self.down_3(enc_2)
         enc_4, skip_4 = self.down_4(enc_3)
-        enc_5, skip_5 = self.down_5(enc_4)
-        enc_6, skip_6 = self.down_6(enc_5)
+        # enc_5, skip_5 = self.down_5(enc_4)
+        # enc_6, skip_6 = self.down_6(enc_5)
 
         # Reshape encoded audio to pass through bottleneck.
-        n, c, b, t = enc_6.size()
-        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, t, c * b))
+        n, c, b, t = enc_4.size()
+        enc_4 = enc_4.permute(0, 2, 1, 3).reshape((n, t, c * b))
 
         # Pass through recurrent stack.
-        lstm_out, _ = self.lstm(enc_6)
+        lstm_out, _ = self.lstm(enc_4)
         lstm_out = lstm_out.reshape((n * t, -1))
 
         # Project latent audio onto affine space and reshape for decoder.
@@ -314,13 +324,16 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         latent_data = latent_data.reshape((n, b, c * 2, t)).permute(0, 2, 1, 3)
 
         # Pass through decoder.
-        dec_1 = self.up_1(latent_data, skip_6)
-        dec_2 = self.up_2(dec_1, skip_5)
-        dec_3 = self.up_3(dec_2, skip_4)
-        dec_4 = self.up_4(dec_3, skip_3)
-        dec_5 = self.up_5(dec_4, skip_2)
-        dec_6 = self.up_6(dec_5, skip_1)
-        output = self.soft_conv(dec_6)
+        dec_1 = self.up_1(latent_data, skip_4)
+        dec_2 = self.up_2(dec_1, skip_3)
+        dec_3 = self.up_3(dec_2, skip_2)
+        dec_4 = self.up_4(dec_3, skip_1)
+        # dec_5 = self.up_5(dec_4, skip_2)
+        # dec_6 = self.up_6(dec_5, skip_1)
+        output = self.soft_conv(dec_4)
+
+        # Shift and scale output.
+        output = (output - self.output_center) * self.output_scale
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)

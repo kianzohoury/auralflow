@@ -1,10 +1,10 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramLSTMVariational",
+        "model_type": "SpectrogramLSTM",
         "model_name": "my_separation_model",
-        "normalize_input": true,
-        "mask_activation": "softmax",
+        "normalize_input": false,
+        "mask_activation": "relu",
         "layer_params": {
             "max_depth": 6,
             "hidden_size": 16,

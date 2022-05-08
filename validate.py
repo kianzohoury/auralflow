@@ -10,7 +10,6 @@ def cross_validate(
     writer,
     val_dataloader: DataLoader,
     max_iters: int,
-    epoch: int,
 ):
     """Performs cross validation."""
 
@@ -31,10 +30,6 @@ def cross_validate(
 
             pbar.set_postfix({"loss": batch_loss})
             total_loss += batch_loss
-
-            writer.add_scalars(
-                "Loss/val", {"l1_kl": batch_loss}, epoch * max_iters + index
-            )
 
             if index == max_iters:
                 pbar.clear()
