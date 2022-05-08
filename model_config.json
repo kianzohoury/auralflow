@@ -1,7 +1,7 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramNetSimple",
+        "model_type": "SpectrogramLSTMVariational",
         "model_name": "my_separation_model",
         "normalize_input": true,
         "mask_activation": "sigmoid",
@@ -31,7 +31,7 @@
         "hop_length": 256,
         "use_hann_window": true,
         "learn_filterbanks": true,
-        "sample_length": 2,
+        "sample_length": 4,
         "val_split": 0.2,
         "loader_params": {
             "max_iterations": 60,

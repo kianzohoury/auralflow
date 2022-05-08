@@ -303,6 +303,7 @@ class SpectrogramLSTM(SpectrogramNetSimple):
             nn.ReLU(inplace=True),
             nn.Linear(lstm_hidden_size, n_features * 2),
             nn.ReLU(inplace=True),
+            nn.BatchNorm1d(n_features * 2)
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
@@ -310,8 +311,10 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         # Normalize input.
         # data = self.input_norm(data.permute(0, 2, 3, 1))
         # data = data.permute(0, 3, 1, 2)
-        # data = self.mel_scalar * torch.log10(data)
-        # data = torch.div((data - self.input_center), self.input_scale)
+        data = data.permute(0, 1, 3, 2)
+        data = data - self.input_center
+        data = data * self.input_scale
+        data = data.permute(0, 1, 3, 2)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
@@ -343,7 +346,10 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         output = self.soft_conv(dec_4)
 
         # Shift and scale output.
-        output = torch.div((output - self.output_center), self.output_scale)
+        output = output.permute(0, 1, 3, 2)
+        output = output - self.output_center
+        output = output * self.output_scale
+        output = output.permute(0, 1, 3, 2)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
@@ -378,9 +384,15 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
+
+        # data = data.permute(0, 1, 3, 2)
+        # data = data - self.input_center
+        # data = data * self.input_scale
+        # data = data.permute(0, 1, 3, 2)
+
         
-        data = self.input_norm(data.permute(0, 2, 3, 1))
-        data = data.permute(0, 3, 1, 2)
+        # data = self.input_norm(data.permute(0, 2, 3, 1))
+        # data = data.permute(0, 3, 1, 2)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
@@ -419,9 +431,10 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         # dec_6 = self.up_6(dec_5, skip_1)
         output = self.soft_conv(dec_4)
 
-        # Shift and scale output.
-        output = (output - self.output_center) * self.output_scale
-
+        output = output.permute(0, 1, 3, 2)
+        output = output - self.output_center
+        output = output * self.output_scale
+        output = output.permute(0, 1, 3, 2)
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
         return mask
