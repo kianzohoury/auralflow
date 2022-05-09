@@ -226,6 +226,8 @@ class SpectrogramNetSimple(nn.Module):
             self.mask_activation = nn.Tanh()
         elif mask_act_fn == "softmask":
             self.mask_activation = nn.Softmax()
+        elif mask_act_fn == "hardtanh":
+            self.mask_activation = nn.Hardtanh(0, 1, inplace=True)
         else:
             self.mask_activation = nn.Identity()
 

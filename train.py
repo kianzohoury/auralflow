@@ -35,7 +35,7 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e5),
+        num_chunks=int(1e4),
     )
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
@@ -73,7 +73,8 @@ def main(config_filepath: str):
     current_epoch = training_params["last_epoch"] + 1
     stop_epoch = current_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
-    max_iters = dataloader_params["max_iterations"]
+    # max_iters = dataloader_params["max_iterations"]
+    max_iters = len(train_dataloader)
     save_freq = training_params["checkpoint_freq"]
 
     print("-" * 79 + "\nStarting training...")
@@ -95,8 +96,8 @@ def main(config_filepath: str):
                     model=model.model, writer=writer, global_step=epoch
                 )
 
-                nn.utils.clip_grad_norm(
-                    model.optimizer.parameters(), max_norm=1.0
+                nn.utils.clip_grad_norm_(
+                    model.model.parameters(), max_norm=1.0
                 )
 
                 # Update model parameters.

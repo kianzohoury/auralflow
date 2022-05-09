@@ -1,10 +1,10 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramNetSimple",
+        "model_type": "SpectrogramLSTM",
         "model_name": "my_separation_model",
         "normalize_input": true,
-        "mask_activation": "relu",
+        "mask_activation": "softmax",
         "layer_params": {
             "max_depth": 6,
             "hidden_size": 16,
@@ -45,7 +45,7 @@
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
-        "lr": 0.009,
+        "lr": 0.005,
         "stop_patience": 10,
         "export_path": "",
         "checkpoint_path": "checkpoints",
