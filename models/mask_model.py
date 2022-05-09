@@ -91,7 +91,7 @@ class SpectrogramMaskModel(SeparationModel):
             self.criterion = self.model.loss_fn
             self.patience = self.config["training_params"]["stop_patience"]
             self.scheduler = lr_scheduler.ReduceLROnPlateau(
-                self.optimizer, "min", verbose=True
+                self.optimizer, "min", verbose=True, patience=6
             )
             # self.accum_steps = 10
 

@@ -15,7 +15,7 @@ class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""
 
     def __init__(
-        self, in_channels, out_channels, kernel_size=3, bn=True, leak=0
+        self, in_channels, out_channels, kernel_size=3, bn=True, leak=0, dropout=0
     ):
         super(ConvBlock, self).__init__()
         self.conv = nn.Conv2d(
@@ -28,11 +28,13 @@ class ConvBlock(nn.Module):
         )
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.relu = nn.LeakyReLU(leak, inplace=True)
+        self.dropout = nn.Dropout2d(dropout, inplace=True)
 
     def forward(self, data):
         data = self.conv(data)
         data = self.relu(data)
-        output = self.bn(data)
+        data = self.bn(data)
+        output = self.dropout(data)
         return output
 
 
@@ -42,8 +44,8 @@ class ConvBlockTriple(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, True, leak)
-            # ConvBlock(out_channels, out_channels, kernel_size, False, leak),
+            ConvBlock(in_channels, out_channels, kernel_size, True, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0.4)
             # ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )
 
@@ -160,7 +162,7 @@ class SpectrogramNetSimple(nn.Module):
         # self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor)
 
         # Define simple bottleneck layer.
-        self.bottleneck = ConvBlock(
+        self.bottleneck = ConvBlockTriple(
             in_channels=self.channel_sizes[-1][0],
             out_channels=self.channel_sizes[-1][-1],
             leak=0,

@@ -83,10 +83,10 @@ def main(config_filepath: str):
         with ProgressBar(train_dataloader, max_iters, desc="train:") as pbar:
             for idx, (mixture, target) in enumerate(pbar):
                 # Cast precision if necessary to increase training speed.
-                with autocast(device_type=model.device):
-                    model.set_data(mixture, target)
-                    model.forward()
-                
+                # with autocast(device_type=model.device):
+                model.set_data(mixture, target)
+                model.forward()
+            
                 # Compute batch-wise loss.
                 model.backward()
 
