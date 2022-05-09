@@ -4,6 +4,7 @@ from typing import Callable
 from collections import OrderedDict
 
 import torch
+import torch.nn as nn
 from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
 from torch.utils.data import DataLoader
@@ -78,6 +79,8 @@ class SpectrogramMaskModel(SeparationModel):
             inverse=True,
             device=self.device,
         )
+
+        self.model.set_criterion(nn.L1Loss())
 
         # Define loss, optimizer, etc.
         if self.training_mode:

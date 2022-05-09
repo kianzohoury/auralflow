@@ -25,23 +25,25 @@ def log_spectrograms(
         )
 
     fig, ax = plt.subplots(
-        nrows=n_targets * 3, ncols=1, figsize=(6, 3), dpi=200
+        nrows=n_targets * 3, ncols=1, figsize=(11, 8), dpi=300
     )
 
     # Log normalize spectrograms for better visualization.
     for i in range(n_targets):
+        j = 0
         for name, audio_tensor in audio_data.items():
             log_normalized = librosa.amplitude_to_db(
                 audio_tensor[:, :, i], ref=np.max
             )
-            ax[i].imshow(
+            ax[i + j].imshow(
                 log_normalized,
                 origin="lower",
                 extent=[0, 12, 1, sample_rate // 2],
                 aspect="auto",
                 cmap="plasma",
             )
-            format_plot(ax[i], f"{name}")
+            format_plot(ax[i + j], f"{name}")
+            j += 1
 
     plt.xlabel("Seconds")
     fig.tight_layout()

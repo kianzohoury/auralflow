@@ -98,7 +98,7 @@ def main(config_filepath: str):
                 # Display and log the loss.
                 pbar.set_postfix({"loss": model.get_batch_loss()})
                 writer.add_scalars(
-                    "Loss",
+                    "Loss/train",
                     {"train": model.get_batch_loss()},
                     global_step,
                 )
@@ -122,7 +122,7 @@ def main(config_filepath: str):
 
         # Log validation loss.
         writer.add_scalars(
-            "Loss",
+            "Loss/val",
             {"val": model.val_losses[-1]},
             epoch,
         )
