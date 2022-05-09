@@ -80,7 +80,7 @@ def main(config_filepath: str):
         total_loss = 0
         model.train()
         with ProgressBar(train_dataloader, max_iters, desc="train") as pbar:
-            for index, (mixture, target) in enumerate(pbar):
+            for idx, (mixture, target) in enumerate(pbar):
                 # Cast precision if necessary to increase training speed.
                 with autocast(device_type=model.device):
                     model.set_data(mixture, target)
@@ -90,44 +90,49 @@ def main(config_filepath: str):
                 model.backward()
                 # Update model parameters.
                 model.optimizer_step()
-
-                batch_loss = model.get_batch_loss()
-                pbar.set_postfix({"loss": batch_loss})
-                total_loss += batch_loss
-
                 global_step += 1
+                # Accumulate loss.
+                total_loss += model.get_batch_loss()
 
-                if index == max_iters:
-                    pbar.clear()
-                    break
-
+                # Display and log the loss.
+                pbar.set_postfix({"loss": model.get_batch_loss()})
                 writer.add_scalars(
-                    "Loss/train",
-                    {"l1_kl": batch_loss},
+                    "Loss",
+                    {"train": model.get_batch_loss()},
                     global_step,
                 )
 
+                # Break if looped max_iters times.
+                if idx == max_iters:
+                    pbar.clear()
+                    break
+
+        # Store epoch-average loss.
         model.train_losses.append(total_loss / max_iters)
 
+        # Validate updated model.
         cross_validate(
             model=model,
-            writer=writer,
             val_dataloader=val_dataloader,
-            max_iters=max_iters,
         )
 
+        # Decrease lr if scheduler determines so.
         model.scheduler_step()
 
+        # Log validation loss.
         writer.add_scalars(
-            "Loss/val",
-            {"l1_kl": model.val_losses[-1]},
+            "Loss",
+            {"val": model.val_losses[-1]},
             epoch,
         )
 
-        if index % save_freq == 0:
+        # Only save the best model.
+        is_best = model.val_losses[-1] < min(model.val_losses)
+        if is_best:
             model.save_model(global_step=epoch)
             model.save_optim(global_step=epoch)
 
+        # Stop training if stop patience runs out before improvement.
         if model.stop_early():
             print("Stopping training early...")
             break

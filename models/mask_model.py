@@ -1,6 +1,7 @@
 import importlib
 from os import truncate
 from typing import Callable
+from collections import OrderedDict
 
 import torch
 from torch import Tensor, FloatTensor
@@ -188,7 +189,7 @@ class SpectrogramMaskModel(SeparationModel):
         * S: output of forward pass
         * S_p: phase corrected output S
         * P: complex-valued phase matrix, i.e., exp^(i * theta), where theta
-          is the element-wise angle between real and imaginary parts of STFT(A).
+          is the angle between the real and imaginary parts of STFT(A).
         * A_s: estimate source signal converted from time-freq to time-only
           domain.
         """
@@ -210,12 +211,18 @@ class SpectrogramMaskModel(SeparationModel):
         global_step: int,
     ):
         """Logs spectrogram images and separated audio after each epoch."""
+        target_labels = sorted(self.config["dataset_params"]["targets"])
+        target_name = target_labels[0]
         log_spectrograms(
             writer=writer,
             global_step=global_step,
-            estimate_data=self.estimates.unsqueeze(-1),
-            target_data=self.targets.unsqueeze(-1),
-            target_labels=sorted(self.config["dataset_params"]["targets"]),
+            audio_data=OrderedDict(
+                [
+                    ("mixture", self.mixtures.unsqueeze(-1)),
+                    (f"{target_name}_estimate", self.estimates.unsqueeze(-1)),
+                    (f"{target_labels[0]}_true", self.targets.unsqueeze(-1)),
+                ]
+            ),
             sample_rate=self.config["dataset_params"]["sample_rate"],
         )
         log_audio(

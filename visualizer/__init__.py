@@ -1,78 +1,50 @@
-import io
+from typing import List, OrderedDict, Mapping, Dict
+
 import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-
-from matplotlib.image import imread
-from numpy import array
 from torch import Tensor
-from typing import List
-from PIL import Image
-from pathlib import Path
 from torch.utils.tensorboard import SummaryWriter
 
 
 def log_spectrograms(
     writer: SummaryWriter,
     global_step: int,
-    estimate_data: Tensor,
-    target_data: Tensor,
-    target_labels: List[str],
+    audio_data: OrderedDict[str, Tensor],
     sample_rate: int = 44100,
 ) -> None:
     """Creates spectrogram images to visualize via tensorboard."""
-    n_batch, n_channels, n_bins, n_frames, n_targets = estimate_data.shape
-    estimate_data = (
-        torch.mean(estimate_data[0], dim=0)
-        .reshape((n_bins, n_frames, n_targets))
-        .detach()
-        .cpu()
-    )
-    target_data = (
-        torch.mean(target_data[0], dim=0)
-        .reshape((n_bins, n_frames, n_targets))
-        .detach()
-        .cpu()
-    )
-
-    estimates_log_normal, targets_log_normal = [], []
-    for i in range(n_targets):
-        estimates_log_normal.append(
-            librosa.amplitude_to_db(estimate_data[:, :, i], ref=np.max)
-        )
-        targets_log_normal.append(
-            librosa.amplitude_to_db(target_data[:, :, i], ref=np.max)
+    _, n_channels, n_bins, n_frames, n_targets = audio_data.values()[0].shape
+    for name, audio_tensor in audio_data.items():
+        audio_data[name] = (
+            torch.mean(audio_tensor[0], dim=0)
+            .reshape((n_bins, n_frames, n_targets))
+            .detach()
+            .cpu()
         )
 
     fig, ax = plt.subplots(
-        nrows=n_targets * 2, ncols=1, figsize=(6, 3), dpi=200
+        nrows=n_targets * 3, ncols=1, figsize=(6, 3), dpi=200
     )
 
-    # image = None
+    # Log normalize spectrograms for better visualization.
     for i in range(n_targets):
-        # residual = estimates_log_normal[i] - targets_log_normal[i]
-        ax[i].imshow(
-            estimates_log_normal[i],
-            origin="lower",
-            extent=[0, 12, 1, sample_rate // 2],
-            aspect="auto",
-            cmap="inferno",
-        )
-        format_plot(ax[i], f"{target_labels[i]}_estimate")
-
-        ax[i + 1].imshow(
-            targets_log_normal[i],
-            origin="lower",
-            extent=[0, 12, 1, sample_rate // 2],
-            aspect="auto",
-            cmap="inferno",
-        )
-        format_plot(ax[i + 1], f"{target_labels[i]}_true")
+        for name, audio_tensor in audio_data.items():
+            log_normalized = librosa.amplitude_to_db(
+                audio_tensor[:, :, i], ref=np.max
+            )
+            ax[i].imshow(
+                log_normalized,
+                origin="lower",
+                extent=[0, 12, 1, sample_rate // 2],
+                aspect="auto",
+                cmap="plasma",
+            )
+            format_plot(ax[i], f"{name}")
 
     plt.xlabel("Seconds")
     fig.tight_layout()
-    # fig.colorbar(image, ax=ax.ravel().tolist(), format="%+2.f dB")
     writer.add_figure("spectrograms", figure=fig, global_step=global_step)
     # plt.close(fig)
 
@@ -90,15 +62,12 @@ def log_audio(
     target_data = target_data[:, :n_frames, :, :]
 
     # Collapse channel dimensions to mono and reshape.
-    # print(estimate_data.shape, target_data.shape)
-    # print(torch.mean(estimate_data, dim=2, keepdim=True)[0].shape)
     estimate_data = torch.mean(estimate_data, dim=2, keepdim=True)[0].reshape(
         (n_channels, n_frames, n_targets)
     )
     target_data = torch.mean(target_data, dim=2, keepdim=True)[0].reshape(
         (n_channels, n_frames, n_targets)
     )
-    # print(estimate_data.shape, target_data.shape)
 
     for i in range(len(target_labels)):
         writer.add_audio(

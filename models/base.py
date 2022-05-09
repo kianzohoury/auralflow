@@ -28,17 +28,17 @@ class SeparationModel(ABC):
         torch.backends.cudnn.benchmark = True
 
     @abstractmethod
-    def forward(self):
+    def forward(self) -> None:
         """Forward method."""
         pass
 
     @abstractmethod
-    def backward(self):
+    def backward(self) -> None:
         """Computes batch-wise loss between estimate and target sources."""
         pass
 
     @abstractmethod
-    def optimizer_step(self):
+    def optimizer_step(self) -> None:
         """Performs gradient computation and parameter optimization."""
         pass
 
@@ -46,12 +46,12 @@ class SeparationModel(ABC):
     def separate(self, audio: Tensor):
         pass
 
-    def train(self):
+    def train(self) -> None:
         """Sets model to training mode."""
         for param in self.model.parameters():
             param.requires_grad = True
 
-    def eval(self):
+    def eval(self) -> None:
         """Sets model to evaluation mode."""
         self.model.eval()
 
