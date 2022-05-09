@@ -95,6 +95,10 @@ def main(config_filepath: str):
                     model=model.model, writer=writer, global_step=epoch
                 )
 
+                nn.utils.clip_grad_norm(
+                    model.optimizer.parameters(), max_norm=1.0
+                )
+
                 # Update model parameters.
                 model.optimizer_step()
                 global_step += 1
