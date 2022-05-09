@@ -4,7 +4,7 @@ import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torch import Tensor
+from torch import Tensor, nn
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -15,7 +15,7 @@ def log_spectrograms(
     sample_rate: int = 44100,
 ) -> None:
     """Creates spectrogram images to visualize via tensorboard."""
-    _, n_channels, n_bins, n_frames, n_targets = audio_data['mixture'].shape
+    _, n_channels, n_bins, n_frames, n_targets = audio_data["mixture"].shape
     for name, audio_tensor in audio_data.items():
         audio_data[name] = (
             torch.mean(audio_tensor[0], dim=0)
@@ -93,3 +93,8 @@ def format_plot(axis, tag):
     plt.setp(axis.get_xticklabels(), visible=False)
     plt.setp(axis.get_yticklabels(), visible=False)
     axis.tick_params(axis="both", which="both", length=0)
+
+
+def log_gradients(model: nn.Module, writer: SummaryWriter, global_step: int):
+    for name, param in model.named_parameters():
+        writer.add_histogram(name, param.grad, global_step)

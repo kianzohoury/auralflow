@@ -13,6 +13,7 @@ from models.architectures import (
     SpectrogramLSTM,
     SpectrogramLSTMVariational,
 )
+from models.metrics import print_conv_stats
 
 if __name__ == "__main__":
     # train_dataset = create_audio_dataset(
@@ -103,5 +104,6 @@ if __name__ == "__main__":
     model = SpectrogramNetSimple(
         num_fft_bins=512, num_samples=173, num_channels=1
     )
-    x = torch.rand((1, 1, 512, 173))
-    print(model(x))
+    # x = torch.rand((1, 1, 512, 173))
+    # print(model(x))
+    print_conv_stats(model)

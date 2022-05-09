@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from utils.data_utils import get_num_frames, get_stft
-from visualizer import log_spectrograms, log_audio
+from visualizer import log_spectrograms, log_audio, log_gradients
 from .base import SeparationModel
 
 
@@ -236,6 +236,8 @@ class SpectrogramMaskModel(SeparationModel):
             target_labels=sorted(self.config["dataset_params"]["targets"]),
             sample_rate=self.config["dataset_params"]["sample_rate"],
         )
+
+        log_gradients(model=self.model, writer=writer, global_step=global_step)
 
     def get_batch_loss(self) -> Tensor:
         return self.batch_loss.item()
