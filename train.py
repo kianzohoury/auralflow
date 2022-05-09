@@ -4,6 +4,7 @@ import sys
 import threading
 import math
 import torch
+import torch.nn as nn
 from argparse import ArgumentParser
 
 from torch.utils.data import DataLoader
