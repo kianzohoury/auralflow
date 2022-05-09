@@ -28,7 +28,7 @@ def main(config_filepath: str):
     visualizer_params = configuration["visualizer_params"]
     print("Done.")
 
-    print("-" * 79 + "Fetching dataset...")
+    print("-" * 79 + "\nFetching dataset...")
     train_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="train",
@@ -51,11 +51,12 @@ def main(config_filepath: str):
         dataset=val_dataset, loader_params=dataloader_params
     )
     print(
-        f"Done. Loaded {len(train_dataset)} train and {len(val_dataset)}"
-        f" {dataset_params['sample_length']}s val audio chunks."
+        f"Loaded {len(train_dataset)} training and {len(val_dataset)}"
+        f" validation samples of length {dataset_params['sample_length']}s."
+        "\nDone."
     )
 
-    print("-" * 79 + "Loading model...")
+    print("-" * 79 + "\nLoading model...")
     model = create_model(configuration)
     # model.setup()
     print("Done.")
@@ -74,12 +75,12 @@ def main(config_filepath: str):
     max_iters = dataloader_params["max_iterations"]
     save_freq = training_params["checkpoint_freq"]
 
-    print("-" * 79 + "Starting training...")
+    print("-" * 79 + "\nStarting training...")
     for epoch in range(current_epoch, stop_epoch):
         print(f"Epoch [{epoch}/{stop_epoch}]", flush=True)
         total_loss = 0
         model.train()
-        with ProgressBar(train_dataloader, max_iters, desc="train") as pbar:
+        with ProgressBar(train_dataloader, max_iters, desc="train:") as pbar:
             for idx, (mixture, target) in enumerate(pbar):
                 # Cast precision if necessary to increase training speed.
                 with autocast(device_type=model.device):

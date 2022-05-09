@@ -1,7 +1,7 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramLSTMVariational",
+        "model_type": "SpectrogramLSTM",
         "model_name": "my_separation_model",
         "normalize_input": true,
         "mask_activation": "sigmoid",
@@ -28,15 +28,15 @@
         "sample_rate": 44100,
         "num_fft": 511,
         "window_size": 511,
-        "hop_length": 256,
+        "hop_length": 384,
         "use_hann_window": true,
         "learn_filterbanks": true,
-        "sample_length": 4,
+        "sample_length": 2,
         "val_split": 0.2,
         "loader_params": {
             "max_iterations": 60,
             "batch_size": 128,
-            "num_workers": 10,
+            "num_workers": 8,
             "pin_memory": true,
             "persistent_workers": true,
             "pre_fetch": 4

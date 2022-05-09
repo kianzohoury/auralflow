@@ -9,13 +9,13 @@ def cross_validate(model, val_dataloader: DataLoader) -> None:
     num_iters = len(val_dataloader)
 
     model.eval()
-    with ProgressBar(val_dataloader, total=num_iters, desc="val") as pbar:
+    with ProgressBar(val_dataloader, total=num_iters, desc="val:") as pbar:
         total_loss = 0
         for idx, (mixture, target) in enumerate(pbar):
-            # Cast precision if necessary to increase training speed.
-            with autocast(device_type=model.device):
-                model.set_data(mixture, target)
-                model.test()
+            # # Cast precision if necessary to increase training speed.
+            # with autocast(device_type=model.device):
+            model.set_data(mixture, target)
+            model.test()
 
             # Compute batch-wise loss.
             model.backward()

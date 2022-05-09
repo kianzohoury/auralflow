@@ -15,7 +15,7 @@ def log_spectrograms(
     sample_rate: int = 44100,
 ) -> None:
     """Creates spectrogram images to visualize via tensorboard."""
-    _, n_channels, n_bins, n_frames, n_targets = audio_data.values()[0].shape
+    _, n_channels, n_bins, n_frames, n_targets = audio_data['mixture'].shape
     for name, audio_tensor in audio_data.items():
         audio_data[name] = (
             torch.mean(audio_tensor[0], dim=0)

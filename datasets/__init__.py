@@ -42,7 +42,7 @@ def audio_to_disk(
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
-    num_tracks = len(subset_dir)
+    num_tracks = len(subset_dir) // 50
 
     with ProgressBar(
         subset_dir, total=num_tracks, fmt=False, unit="track"
