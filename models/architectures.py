@@ -42,9 +42,9 @@ class ConvBlockTriple(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, False, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, False, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, True, leak),
+            ConvBlock(in_channels, out_channels, kernel_size, True, leak)
+            # ConvBlock(out_channels, out_channels, kernel_size, False, leak),
+            # ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )
 
     def forward(self, data):
@@ -232,10 +232,10 @@ class SpectrogramNetSimple(nn.Module):
         # Normalize input.
         # data = self.input_norm(data.permute(0, 2, 3, 1))
         # data = data.permute(0, 3, 1, 2)
-        data = data.permute(0, 1, 3, 2)
-        data = data - self.input_center
-        data = data * self.input_scale
-        data = data.permute(0, 1, 3, 2)
+        # data = data.permute(0, 1, 3, 2)
+        # data = data - self.input_center
+        # data = data * self.input_scale
+        # data = data.permute(0, 1, 3, 2)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
@@ -257,10 +257,10 @@ class SpectrogramNetSimple(nn.Module):
         # dec_6 = self.up_6(dec_5, skip_1)
         output = self.soft_conv(dec_4)
 
-        output = output.permute(0, 1, 3, 2)
-        output = output - self.output_center
-        output = output * self.output_scale
-        output = output.permute(0, 1, 3, 2)
+        # output = output.permute(0, 1, 3, 2)
+        # output = output - self.output_center
+        # output = output * self.output_scale
+        # output = output.permute(0, 1, 3, 2)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)

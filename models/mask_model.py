@@ -149,15 +149,16 @@ class SpectrogramMaskModel(SeparationModel):
         self.estimates = self.mask * self.mixtures
 
     def backward(self):
-        """Computes batch-wise loss between estimate and target sources."""
+        """Computes and backpropagates loss."""
         self.batch_loss = self.criterion(self.estimates, self.targets)
+        self.batch_loss.backward()
 
     def optimizer_step(self):
-        """Performs gradient computation and parameter optimization."""
-        self.batch_loss.backward()
+        """Updates model's parameters."""
         self.optimizer.step()
-        for param in self.model.parameters():
-            param.grad = None
+        self.optimizer.zero_grad()
+        # for param in self.model.parameters():
+        #     param.grad = None
 
     def scheduler_step(self):
         """Decreases learning rate if validation loss does not improve."""
@@ -237,7 +238,6 @@ class SpectrogramMaskModel(SeparationModel):
             sample_rate=self.config["dataset_params"]["sample_rate"],
         )
 
-        log_gradients(model=self.model, writer=writer, global_step=global_step)
 
     def get_batch_loss(self) -> Tensor:
         return self.batch_loss.item()

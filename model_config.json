@@ -1,7 +1,7 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramLSTM",
+        "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
         "normalize_input": true,
         "mask_activation": "sigmoid",
@@ -45,7 +45,7 @@
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
-        "lr": 0.0001,
+        "lr": 0.001,
         "stop_patience": 10,
         "export_path": "",
         "checkpoint_path": "checkpoints",

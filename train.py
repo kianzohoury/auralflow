@@ -15,7 +15,7 @@ from models import create_model
 from utils import load_config
 from validate import cross_validate
 from visualizer.progress import ProgressBar
-
+from visualizer import log_gradients
 
 def main(config_filepath: str):
     """Runs training script given a configuration file."""
@@ -86,9 +86,14 @@ def main(config_filepath: str):
                 with autocast(device_type=model.device):
                     model.set_data(mixture, target)
                     model.forward()
-
+                
                 # Compute batch-wise loss.
                 model.backward()
+
+                log_gradients(
+                    model=model.model, writer=writer, global_step=epoch
+                )
+
                 # Update model parameters.
                 model.optimizer_step()
                 global_step += 1
