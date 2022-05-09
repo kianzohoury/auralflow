@@ -44,7 +44,7 @@ class ConvBlockTriple(nn.Module):
         self.conv = nn.Sequential(
             ConvBlock(in_channels, out_channels, kernel_size, False, leak),
             ConvBlock(out_channels, out_channels, kernel_size, False, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, False, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )
 
     def forward(self, data):
