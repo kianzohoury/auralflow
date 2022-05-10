@@ -148,14 +148,19 @@ class SpectrogramMaskModel(SeparationModel):
         """
         self.mask = self.model(self.mixtures)
         self.estimates = self.mask * self.mixtures
-        self.residuals = self.model.residual_mask * self.mixtures
+        # self.residuals = self.model.residual_mask * self.mixtures
 
     def backward(self):
         """Computes and backpropagates loss."""
-        self.batch_loss = self.criterion(self.estimates, self.targets) + self.criterion(
-            self.residuals, self.mixtures - self.targets
-        )
+        self.batch_loss = nn.L1Loss()(self.estimates, self.targets)
+        # self.batch_loss = self.criterion(self.estimates, self.targets) + self.criterion(
+        #     self.residuals, self.mixtures - self.targets
+        # )
         self.batch_loss.backward()
+
+    def backward_val(self):
+        self.batch_loss = self.criterion(self.estimates, self.targets)
+        
 
     def optimizer_step(self):
         """Updates model's parameters."""

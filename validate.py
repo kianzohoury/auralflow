@@ -18,7 +18,7 @@ def cross_validate(model, val_dataloader: DataLoader) -> None:
             model.test()
 
             # Compute batch-wise loss.
-            model.backward()
+            model.backward_val()
             total_loss += model.get_batch_loss()
             # Display loss.
             pbar.set_postfix({"loss": model.get_batch_loss()})

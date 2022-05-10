@@ -218,18 +218,18 @@ class SpectrogramNetSimple(nn.Module):
             self.soft_conv_res = nn.Identity()   
 
         # Define input/output normalization parameters.
-        self.input_center = nn.Parameter(
-            torch.zeros(num_fft_bins).float(), requires_grad=True
-        )
-        self.input_scale = nn.Parameter(
-            torch.ones(num_fft_bins).float(), requires_grad=True
-        )
-        self.output_center = nn.Parameter(
-            torch.zeros(num_fft_bins).float(), requires_grad=True
-        )
-        self.output_scale = nn.Parameter(
-            torch.ones(num_fft_bins).float(), requires_grad=True
-        )
+        # self.input_center = nn.Parameter(
+        #     torch.zeros(num_fft_bins).float(), requires_grad=True
+        # )
+        # self.input_scale = nn.Parameter(
+        #     torch.ones(num_fft_bins).float(), requires_grad=True
+        # )
+        # self.output_center = nn.Parameter(
+        #     torch.zeros(num_fft_bins).float(), requires_grad=True
+        # )
+        # self.output_scale = nn.Parameter(
+        #     torch.ones(num_fft_bins).float(), requires_grad=True
+        # )
 
         # Define activation function used for masking.
         if mask_act_fn == "sigmoid":
