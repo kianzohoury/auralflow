@@ -10,6 +10,7 @@ from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
 import torchaudio
+
 from librosa import display
 
 
@@ -18,43 +19,34 @@ def log_spectrograms(
     global_step: int,
     audio_data: OrderedDict[str, Tensor],
     sample_rate: int = 44100,
-    mix_raw = None
 ) -> None:
     """Creates spectrogram images to visualize via tensorboard."""
     _, n_channels, n_bins, n_frames, n_targets = audio_data['mixture'].shape
+    mel_scale = torchaudio.transforms.MelScale(
+        n_mels=128,
+        sample_rate=sample_rate,
+        f_max=sample_rate // 2,
+        n_stft=n_bins
+    )
     for name, audio_tensor in audio_data.items():
-        audio_data[name] = torchaudio.transform(
-            torch.mean(audio_tensor[0], dim=0)
-            .reshape((n_bins, n_frames, n_targets))
-            .detach()
-            .cpu()
-        )
-
-    
+        mono_sample = torch.mean(audio_tensor[0], dim=0).detach().cpu()
+        mono_sample = mono_sample.reshape((n_bins, n_frames, n_targets))
+        mel_mono_sample = mel_scale(mono_sample)
+        audio_data[name] = mel_mono_sample
 
     # Crop high end frequency bins. 
     # n_bins = n_bins * 16384 // sample_rate // 2
 
-    # mix_raw = torchaudio.transforms.Spectrogram(
-    #     n_fft=4096, win_length=4096, hop_length=2048
-    # )(mix_raw[0, :, :])
-
-    fig, ax = plt.subplots(dpi=900
-    )
+    fig, ax = plt.subplots(dpi=900)
 
     # Log normalize spectrograms for better visualization.
     for i in range(n_targets):
         j = 0
         for name, audio_tensor in audio_data.items():
-            
-            log_normalized = librosa.feature.melspectrogram(
-                S=(audio_tensor[:, :, i] ** 2).T, sr=sample_rate, fmax=16384
-            )
             # log_normalized = 20 * np.log10(audio_tensor[:, :, i] / np.max(audio_tensor[:, :, i]))
             # display.specshow(log_normalized, sr=44100, y_axis="log", ax=ax)
-
             ax.imshow(
-                log_normalized[:n_bins],
+                audio_tensor[:n_bins],
                 origin="lower",
                 extent=[0, 2, 1, 16384],
                 aspect="auto",
