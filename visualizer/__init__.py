@@ -23,16 +23,14 @@ def log_spectrograms(
     """Creates spectrogram images to visualize via tensorboard."""
     _, n_channels, n_bins, n_frames, n_targets = audio_data['mixture'].shape
     mel_scale = torchaudio.transforms.MelScale(
-        n_mels=128,
+        n_mels=512,
         sample_rate=sample_rate,
         f_max=sample_rate // 2,
         n_stft=n_bins
     )
     for name, audio_tensor in audio_data.items():
         mono_sample = torch.mean(audio_tensor[0], dim=0).detach().cpu()
-        mono_sample = mono_sample.reshape((n_bins, n_frames, n_targets))
-        mel_mono_sample = mel_scale(mono_sample)
-        audio_data[name] = mel_mono_sample
+        audio_data[name] = mono_sample.reshape((n_bins, n_frames, n_targets))
 
     # Crop high end frequency bins. 
     # n_bins = n_bins * 16384 // sample_rate // 2
@@ -43,10 +41,11 @@ def log_spectrograms(
     for i in range(n_targets):
         j = 0
         for name, audio_tensor in audio_data.items():
+            mel_from_power = librosa.power_to_db(audio_tensor[:, :, i])
             # log_normalized = 20 * np.log10(audio_tensor[:, :, i] / np.max(audio_tensor[:, :, i]))
             # display.specshow(log_normalized, sr=44100, y_axis="log", ax=ax)
             ax.imshow(
-                audio_tensor[:n_bins],
+                mel_from_power[:n_bins],
                 origin="lower",
                 extent=[0, 2, 1, 16384],
                 aspect="auto",

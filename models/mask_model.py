@@ -130,7 +130,7 @@ class SpectrogramMaskModel(SeparationModel):
         data_stft = self.fast_fourier(
             transform=self.stft, audio=audio.to(self.device)
         )
-        return torch.abs(data_stft) if magnitude else data_stft
+        return torch.abs(data_stft) ** 2 if magnitude else data_stft
 
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
         """Wrapper method processes and sets data for internal access."""
