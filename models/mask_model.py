@@ -1,5 +1,4 @@
 import importlib
-from os import truncate
 from typing import Callable
 from collections import OrderedDict
 
@@ -7,7 +6,6 @@ import torch
 import torch.nn as nn
 from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
-from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from utils.data_utils import get_num_frames, get_stft
@@ -140,36 +138,38 @@ class SpectrogramMaskModel(SeparationModel):
         self.targets = self.process_audio(target).squeeze(-1)
 
     def forward(self):
-        """Performs target source estimation by applying a learned soft-mask.
+        """Estimates target source by applying the learned mask to the mixture.
 
-        Target S is acquired by taking the Hadamard product between the mixture
-        signal X,and the output of the network, M (estimated soft-mask), such
-        that S = M * X.
+        * Target source S' is acquired by taking the Hadamard product between
+          the mixture signal X, and the output of the network, M
+          (estimated soft-mask), such that S = M * X.
+
+        * If learn_residual is True, network will also estimate the residual
+          signal separately.
         """
         self.mask = self.model(self.mixtures)
         self.estimates = self.mask * self.mixtures
-        # self.residuals = self.model.residual_mask * self.mixtures
+        self.residuals = self.model.residual_mask * self.mixtures
 
-    def backward(self):
-        """Computes and backpropagates loss."""
-        self.batch_loss = nn.L1Loss()(self.estimates, self.targets)
-        # self.batch_loss = self.criterion(self.estimates, self.targets) + self.criterion(
-        #     self.residuals, self.mixtures - self.targets
-        # )
+    def get_loss(self) -> float:
+        """Computes batch-wise loss."""
+        self.batch_loss = self.criterion(self.estimates, self.targets) + self.criterion(
+            self.residuals, self.mixtures - self.targets
+        )
+        return self.batch_loss.item()
+
+    def backward(self) -> None:
+        """Performs gradient computation and backpropagation."""
         self.batch_loss.backward()
 
-    def backward_val(self):
-        self.batch_loss = self.criterion(self.estimates, self.targets)
-        
-
-    def optimizer_step(self):
+    def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.optimizer.step()
         self.optimizer.zero_grad()
         # for param in self.model.parameters():
         #     param.grad = None
 
-    def scheduler_step(self):
+    def scheduler_step(self) -> None:
         """Decreases learning rate if validation loss does not improve."""
         self.scheduler.step(self.val_losses[-1])
 
@@ -246,7 +246,3 @@ class SpectrogramMaskModel(SeparationModel):
             target_labels=sorted(self.config["dataset_params"]["targets"]),
             sample_rate=self.config["dataset_params"]["sample_rate"],
         )
-
-
-    def get_batch_loss(self) -> Tensor:
-        return self.batch_loss.item()

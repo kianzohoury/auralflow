@@ -89,6 +89,7 @@ def main(config_filepath: str):
                 model.forward()
             
                 # Compute batch-wise loss.
+                batch_loss = model.get_loss()
                 model.backward()
 
                 log_gradients(
@@ -103,13 +104,13 @@ def main(config_filepath: str):
                 model.optimizer_step()
                 global_step += 1
                 # Accumulate loss.
-                total_loss += model.get_batch_loss()
+                total_loss += model.batch_loss
 
                 # Display and log the loss.
-                pbar.set_postfix({"loss": model.get_batch_loss()})
+                pbar.set_postfix({"loss": batch_loss})
                 writer.add_scalars(
                     "Loss/train",
-                    {"train": model.get_batch_loss()},
+                    {"train": batch_loss},
                     global_step,
                 )
 

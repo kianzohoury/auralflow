@@ -113,6 +113,7 @@ class SpectrogramNetSimple(nn.Module):
     """Vanilla spectrogram U-Net model with triple block sizes."""
 
     criterion: nn.Module
+    residual_mask: FloatTensor
 
     def __init__(
         self,
