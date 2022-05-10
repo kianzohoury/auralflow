@@ -23,15 +23,17 @@ def log_spectrograms(
     """Creates spectrogram images to visualize via tensorboard."""
     _, n_channels, n_bins, n_frames, n_targets = audio_data['mixture'].shape
     for name, audio_tensor in audio_data.items():
-        audio_data[name] = (
+        audio_data[name] = torchaudio.transform(
             torch.mean(audio_tensor[0], dim=0)
             .reshape((n_bins, n_frames, n_targets))
             .detach()
             .cpu()
         )
 
+    
+
     # Crop high end frequency bins. 
-    n_bins = n_bins * 16384 // sample_rate // 2
+    # n_bins = n_bins * 16384 // sample_rate // 2
 
     # mix_raw = torchaudio.transforms.Spectrogram(
     #     n_fft=4096, win_length=4096, hop_length=2048
@@ -45,8 +47,8 @@ def log_spectrograms(
         j = 0
         for name, audio_tensor in audio_data.items():
             
-            log_normalized = librosa.amplitude_to_db(
-                audio_tensor[:, :, i], ref=np.max
+            log_normalized = librosa.feature.melspectrogram(
+                S=(audio_tensor[:, :, i] ** 2).T, sr=sample_rate, fmax=16384
             )
             # log_normalized = 20 * np.log10(audio_tensor[:, :, i] / np.max(audio_tensor[:, :, i]))
             # display.specshow(log_normalized, sr=44100, y_axis="log", ax=ax)
@@ -56,7 +58,7 @@ def log_spectrograms(
                 origin="lower",
                 extent=[0, 2, 1, 16384],
                 aspect="auto",
-                cmap='cividis'
+                cmap='inferno'
             )
 
             format_plot(ax, f"{name}")
@@ -109,7 +111,7 @@ def log_audio(
 
 def format_plot(axis, tag):
     """Helper plot formatting method."""
-    # axis.set_yscale("symlog", basey=2)
+    axis.set_yscale("log", basey=2)
     axis.set_ylabel(tag)
     # plt.setp(axis.get_xticklabels(), visible=False)
     # plt.setp(axis.get_yticklabels(), visible=False)
