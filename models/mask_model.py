@@ -8,7 +8,7 @@ from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 
-from utils.data_utils import get_num_frames, get_stft
+from utils.data_utils import get_num_frames, get_stft, AudioTransform
 from visualizer import log_spectrograms, log_audio, log_gradients
 from .base import SeparationModel
 
@@ -21,8 +21,6 @@ class SpectrogramMaskModel(SeparationModel):
     estimates: Tensor
     residuals: Tensor
     mask: FloatTensor
-    stft: Callable
-    inv_stft: Callable
 
     def __init__(self, configuration: dict):
         super(SpectrogramMaskModel, self).__init__(configuration)
@@ -38,18 +36,18 @@ class SpectrogramMaskModel(SeparationModel):
             hop_length=dataset_params["hop_length"],
         )
 
-        # Note that number of bins is num_fft // 2 + 1 due to symmetry.
+        # Note that num bins will be num_fft // 2 + 1 due to symmetry.
         self.n_fft_bins = configuration["dataset_params"]["num_fft"] // 2 + 1
         self.num_channels = configuration["dataset_params"]["num_channels"]
 
-        # Retrieve class of underlying model architecture.
-        arch_constructor = getattr(
+        # Retrieve class name of the requested model architecture.
+        model_name = getattr(
             importlib.import_module("models.architectures", "models"),
             configuration["model_params"]["model_type"],
         )
 
-        # Create an instance of the model set to the current device.
-        self.model = arch_constructor(
+        # Create the model instance and set to current device.
+        self.model = model_name(
             num_fft_bins=self.n_fft_bins,
             num_samples=self.num_samples,
             num_channels=self.num_channels,
@@ -57,27 +55,35 @@ class SpectrogramMaskModel(SeparationModel):
             mask_act_fn=configuration["model_params"]["mask_activation"],
             leak_factor=self.layer_params["leak_factor"],
             normalize_input=configuration["model_params"]["normalize_input"],
+            residual=configuration["model_params"]["learn_residual"]
         ).to(self.device)
 
-        # Define the specified short-time fourier transform and its inverse.
-        self.stft = get_stft(
+        # Instantiate data transformer.
+        self.transform = AudioTransform(
             num_fft=dataset_params["num_fft"],
             hop_length=dataset_params["hop_length"],
             window_size=dataset_params["window_size"],
-            use_hann=dataset_params["use_hann_window"],
-            trainable=dataset_params["learn_filterbanks"],
-            inverse=False,
-            device=self.device,
+            power=2 if dataset_params["power_spectrum"] else 1
         )
-        self.inv_stft = get_stft(
-            num_fft=dataset_params["num_fft"],
-            hop_length=dataset_params["hop_length"],
-            window_size=dataset_params["window_size"],
-            use_hann=dataset_params["use_hann_window"],
-            trainable=dataset_params["learn_filterbanks"],
-            inverse=True,
-            device=self.device,
-        )
+
+        # self.stft = get_stft(
+        #     num_fft=dataset_params["num_fft"],
+        #     hop_length=dataset_params["hop_length"],
+        #     window_size=dataset_params["window_size"],
+        #     use_hann=dataset_params["use_hann_window"],
+        #     trainable=dataset_params["learn_filterbanks"],
+        #     inverse=False,
+        #     device=self.device,
+        # )
+        # self.inv_stft = get_stft(
+        #     num_fft=dataset_params["num_fft"],
+        #     hop_length=dataset_params["hop_length"],
+        #     window_size=dataset_params["window_size"],
+        #     use_hann=dataset_params["use_hann_window"],
+        #     trainable=dataset_params["learn_filterbanks"],
+        #     inverse=True,
+        #     device=self.device,
+        # )
 
         self.model.set_criterion(nn.L1Loss())
 
@@ -125,17 +131,14 @@ class SpectrogramMaskModel(SeparationModel):
         source_estimate = torch.stack(source_estimate, dim=-1)
         return source_estimate
 
-    def process_audio(self, audio: Tensor, magnitude: bool = True) -> Tensor:
-        """Performs FFT algorithm and returns mag or complex spectrograms."""
-        data_stft = self.fast_fourier(
-            transform=self.stft, audio=audio.to(self.device)
-        )
-        return torch.abs(data_stft) ** 2 if magnitude else data_stft
-
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
         """Wrapper method processes and sets data for internal access."""
-        self.mixtures = self.process_audio(mixture).squeeze(-1)
-        self.targets = self.process_audio(target).squeeze(-1)
+        self.mixtures = torch.abs(
+            self.transform.to_spectrogram(mixture.to(self.device))
+        ).squeeze(-1)
+        self.targets = torch.abs(
+            self.transform.to_spectrogram(target.to(self.device))
+        )
 
     def forward(self):
         """Estimates target source by applying the learned mask to the mixture.
@@ -186,33 +189,20 @@ class SpectrogramMaskModel(SeparationModel):
         return False
 
     def separate(self, audio: Tensor) -> Tensor:
-        """Applies inv STFT to target source to retrieve time-domain signal.
-
-        * Takes the target source S = M * X resultant from the forward pass,
-        applies phase correction, and applies the inverse fourier transform to
-        yield the separated audio with the shape (n_channels, n_samples). The
-        detailed procedure is as follows:
-
-        X = |STFT(A)|
-        S = X * M
-        S_p = X * M * P
-        A_s = iSTFT(S_p)
-
-        * where X: magnitude spectrogram;
-        * S: output of forward pass
-        * S_p: phase corrected output S
-        * P: complex-valued phase matrix, i.e., exp^(i * theta), where theta
-          is the angle between the real and imaginary parts of STFT(A).
-        * A_s: estimate source signal converted from time-freq to time-only
-          domain.
-        """
-        complex_stft = self.process_audio(audio, magnitude=False).squeeze(-1)
+        """Applies inv STFT to target source to retrieve time-domain signal."""
+        # Compute complex-valued stft.
+        complex_stft = self.transform.to_spectrogram(
+            audio.to(self.device)
+        ).squeeze(-1)
+        # Extract magnitude and phase separately.
         mag, phase = torch.abs(complex_stft), torch.angle(complex_stft)
-        self.mixtures = mag
+        # Get source estimate s' = mask * mixture.
+        self.mixtures = mag.to(self.device)
         self.test()
+        # Apply phase correction and transform back to time domain.
         phase_corrected = self.estimates * torch.exp(1j * phase)
-        source_estimate = self.inverse_fast_fourier(
-            self.inv_stft, phase_corrected.permute(0, 2, 3, 1)
+        source_estimate = self.transform.to_audio(
+            phase_corrected.permute(0, 2, 3, 1)
         )
         return source_estimate
 
@@ -225,23 +215,29 @@ class SpectrogramMaskModel(SeparationModel):
     ):
         """Logs spectrogram images and separated audio after each epoch."""
         target_labels = sorted(self.config["dataset_params"]["targets"])
-        target_name = target_labels[0]
+
+        self.eval()
+        estimate_audio = self.separate(mixture_audio.clone())
+        estimate_mel_spec = self.transform.to_mel_scale(
+            self.estimates, to_db=True
+        )
+        target_mel_spec = self.transform.audio_to_mel(target_audio)
+
         log_spectrograms(
             writer=writer,
             global_step=global_step,
-            audio_data=OrderedDict(
-                [
-                    ("mixture", self.mixtures.unsqueeze(-1)),
-                    (f"{target_name}_estimate", self.estimates.unsqueeze(-1)),
-                    (f"{target_labels[0]}_true", self.targets.unsqueeze(-1)),
-                ]
-            ),
-            sample_rate=self.config["dataset_params"]["sample_rate"],
+            estimate_spec=estimate_mel_spec,
+            target_spec=target_mel_spec,
+            estimate_audio=estimate_audio,
+            target_audio=target_audio,
+            target_labels=target_labels,
+            sample_rate=self.config["dataset_params"]["sample_rate"]
         )
+
         log_audio(
             writer=writer,
             global_step=global_step,
-            estimate_data=self.separate(mixture_audio).unsqueeze(-1),
+            estimate_data=estimate_audio.unsqueeze(-1),
             target_data=target_audio.permute(0, 2, 1, 3),
             target_labels=sorted(self.config["dataset_params"]["targets"]),
             sample_rate=self.config["dataset_params"]["sample_rate"],

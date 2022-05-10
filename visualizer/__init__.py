@@ -17,52 +17,45 @@ from librosa import display
 def log_spectrograms(
     writer: SummaryWriter,
     global_step: int,
-    audio_data: OrderedDict[str, Tensor],
+    estimate_spec: Tensor,
+    target_spec: Tensor,
+    estimate_audio: Tensor,
+    target_audio: Tensor,
+    target_labels: List[str],
     sample_rate: int = 44100,
 ) -> None:
     """Creates spectrogram images to visualize via tensorboard."""
-    _, n_channels, n_bins, n_frames, n_targets = audio_data['mixture'].shape
-    mel_scale = torchaudio.transforms.MelScale(
-        n_mels=512,
-        sample_rate=sample_rate,
-        f_max=sample_rate // 2,
-        n_stft=n_bins
-    )
-    for name, audio_tensor in audio_data.items():
-        mono_sample = torch.mean(audio_tensor[0], dim=0).detach().cpu()
-        audio_data[name] = mono_sample.reshape((n_bins, n_frames, n_targets))
 
-    # Crop high end frequency bins. 
-    # n_bins = n_bins * 16384 // sample_rate // 2
-
-    fig, ax = plt.subplots(dpi=900)
-
-    # Log normalize spectrograms for better visualization.
-    for i in range(n_targets):
-        j = 0
-        for name, audio_tensor in audio_data.items():
-            mel_from_power = librosa.power_to_db(audio_tensor[:, :, i])
-            # log_normalized = 20 * np.log10(audio_tensor[:, :, i] / np.max(audio_tensor[:, :, i]))
-            # display.specshow(log_normalized, sr=44100, y_axis="log", ax=ax)
-            ax.imshow(
-                mel_from_power[:n_bins],
-                origin="lower",
-                extent=[0, 2, 1, 16384],
-                aspect="auto",
-                cmap='inferno'
-            )
-
-            format_plot(ax, f"{name}")
-            
-            break
-            # format_plot(ax[i + j], f"{name}")
-            j += 1
-
-    plt.xlabel("Seconds")
-    # fig.tight_layout()
-    writer.add_figure("spectrograms", figure=fig, global_step=global_step)
-    fig.savefig(f"{writer.log_dir}/spectrogram_step_{global_step}.png")
-    # plt.close(fig)
+    for i, label in enumerate(target_labels):
+        fig, ax = plt.subplots(
+            nrows=3, figsize=(12, 12), sharex=False, dpi=900
+        )
+        ax[0].imshow(
+            torch.mean(target_spec, dim=0),
+            origin="lower",
+            aspect="auto",
+            cmap='viridis'
+        )
+        ax[1].imshow(
+            torch.mean(estimate_spec, dim=0),
+            origin="lower",
+            aspect="auto",
+            cmap='inferno'
+        )
+        ax[2].set_facecolor('black')
+        ax[2].plot(
+            target_audio, color="yellowgreen", alpha=0.7, linewidth=0.2
+        )
+        ax[2].plot(
+            estimate_audio, color="darkorange", alpha=0.7, linewidth=0.2
+        )
+        ax[2].set_xlim(xmin=0, xmax=target_audio.shape[-1])
+        plt.xlabel("Frames")
+        fig.tight_layout()
+        writer.add_figure("spectrogram", figure=fig, global_step=global_step)
+        fig.savefig(
+            f"{writer.log_dir}/spectrogram_step_{global_step}.png"
+        )
 
 
 def log_audio(
