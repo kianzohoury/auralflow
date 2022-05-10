@@ -1,6 +1,7 @@
 from torch import autocast
 from torch.utils.data import DataLoader
 from visualizer.progress import ProgressBar
+import torch
 
 
 def cross_validate(model, val_dataloader: DataLoader) -> None:
@@ -15,7 +16,8 @@ def cross_validate(model, val_dataloader: DataLoader) -> None:
             # # Cast precision if necessary to increase training speed.
             # with autocast(device_type=model.device):
             model.set_data(mixture, target)
-            model.test()
+            with torch.no_grad():
+                model.test()
 
             # Compute batch-wise loss.
             batch_loss = model.get_loss()

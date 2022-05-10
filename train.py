@@ -86,6 +86,7 @@ def main(config_filepath: str):
                 # Cast precision if necessary to increase training speed.
                 # with autocast(device_type=model.device):
                 model.set_data(mixture, target)
+                print(model.mixtures.shape)
                 model.forward()
             
                 # Compute batch-wise loss.

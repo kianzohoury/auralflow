@@ -339,8 +339,11 @@ class SpectrogramLSTM(SpectrogramNetSimple):
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
+        print(enc_1.shape)
         enc_2, skip_2 = self.down_2(enc_1)
+        print(enc_2.shape)
         enc_3, skip_3 = self.down_3(enc_2)
+        print(enc_3.shape)
         enc_4, skip_4 = self.down_4(enc_3)
         # enc_5, skip_5 = self.down_5(enc_4)
         # enc_6, skip_6 = self.down_6(enc_5)

@@ -2,6 +2,7 @@ from typing import List, OrderedDict, Mapping, Dict
 
 import librosa
 import matplotlib.pyplot as plt
+from matplotlib.scale import LogScale
 import numpy as np
 import torch
 import torch.nn as nn
@@ -29,6 +30,9 @@ def log_spectrograms(
             .cpu()
         )
 
+    # Crop high end frequency bins. 
+    n_bins = n_bins * 16384 // sample_rate // 2
+
     # mix_raw = torchaudio.transforms.Spectrogram(
     #     n_fft=4096, win_length=4096, hop_length=2048
     # )(mix_raw[0, :, :])
@@ -40,8 +44,6 @@ def log_spectrograms(
     for i in range(n_targets):
         j = 0
         for name, audio_tensor in audio_data.items():
-            if name != 'vocals_true':
-                continue
             
             log_normalized = librosa.amplitude_to_db(
                 audio_tensor[:, :, i], ref=np.max
@@ -50,14 +52,14 @@ def log_spectrograms(
             # display.specshow(log_normalized, sr=44100, y_axis="log", ax=ax)
 
             ax.imshow(
-                log_normalized,
+                log_normalized[:n_bins],
                 origin="lower",
-                extent=[0, 2, 1, sample_rate // 2],
+                extent=[0, 2, 1, 16384],
                 aspect="auto",
-                cmap='afmhot'
+                cmap='cividis'
             )
 
-            # format_plot(ax, f"{name}")
+            format_plot(ax, f"{name}")
             
             break
             # format_plot(ax[i + j], f"{name}")
@@ -107,7 +109,7 @@ def log_audio(
 
 def format_plot(axis, tag):
     """Helper plot formatting method."""
-    axis.set_yscale("symlog")
+    # axis.set_yscale("symlog", basey=2)
     axis.set_ylabel(tag)
     # plt.setp(axis.get_xticklabels(), visible=False)
     # plt.setp(axis.get_yticklabels(), visible=False)
