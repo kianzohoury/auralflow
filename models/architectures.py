@@ -27,7 +27,8 @@ class ConvBlock(nn.Module):
             bias=False,
         )
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
-        self.relu = nn.LeakyReLU(leak, inplace=True)
+        self.relu = nn.LeakyReLU(leak)
+        # self.relu = nn.PReLU()
         self.dropout = nn.Dropout2d(dropout, inplace=True)
 
     def forward(self, data):
@@ -44,8 +45,8 @@ class ConvBlockTriple(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, True, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0.4)
+            ConvBlock(in_channels, out_channels, kernel_size, False, leak, 0.3)
+            # ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0.3)
             # ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )
 
@@ -123,6 +124,7 @@ class SpectrogramNetSimple(nn.Module):
         leak_factor: float = 0.2,
         normalize_input: bool = False,
         criterion: Optional[nn.Module] = None,
+        residual: bool = True
     ) -> None:
         super(SpectrogramNetSimple, self).__init__()
 
@@ -134,6 +136,7 @@ class SpectrogramNetSimple(nn.Module):
         self.mask_activation_fn = mask_act_fn
         self.leak_factor = leak_factor
         self.normalize_input = normalize_input
+        self.residual = residual
 
         # Set model criterion. Convenient for sub-classes like VAE.
         if criterion is None:
@@ -142,10 +145,10 @@ class SpectrogramNetSimple(nn.Module):
             self.set_criterion(criterion)
 
         # Use identity to prevent GPU from being slowed down in forward pass.
-        # if normalize_input:
-        #     self.input_norm = nn.BatchNorm2d(num_fft_bins)
-        # else:
-        #     self.input_norm = nn.Identity()
+        if normalize_input:
+            self.input_norm = nn.BatchNorm2d(num_fft_bins)
+        else:
+            self.input_norm = nn.Identity()
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_dim]]
@@ -203,6 +206,17 @@ class SpectrogramNetSimple(nn.Module):
             padding="same",
         )
 
+        if residual:
+            self.soft_conv_res = nn.Conv2d(
+                in_channels=hidden_dim,
+                out_channels=num_channels,
+                kernel_size=1,
+                stride=1,
+                padding="same",
+            )
+        else:
+            self.soft_conv_res = nn.Identity()   
+
         # Define input/output normalization parameters.
         self.input_center = nn.Parameter(
             torch.zeros(num_fft_bins).float(), requires_grad=True
@@ -228,6 +242,8 @@ class SpectrogramNetSimple(nn.Module):
             self.mask_activation = nn.Softmax()
         elif mask_act_fn == "hardtanh":
             self.mask_activation = nn.Hardtanh(0, 1, inplace=True)
+        elif mask_act_fn == "prelu":
+            self.mask_activation = nn.PReLU()
         else:
             self.mask_activation = nn.Identity()
 
@@ -260,6 +276,7 @@ class SpectrogramNetSimple(nn.Module):
         # dec_5 = self.up_5(dec_4, skip_2)
         # dec_6 = self.up_6(dec_5, skip_1)
         output = self.soft_conv(dec_4)
+        residual = self.soft_conv_res(dec_4)
 
         # output = output.permute(0, 1, 3, 2)
         # output = output - self.output_center
@@ -268,6 +285,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
+        self.residual_mask = self.mask_activation(residual)
         return mask
 
     def set_criterion(self, criterion: nn.Module):
@@ -311,12 +329,12 @@ class SpectrogramLSTM(SpectrogramNetSimple):
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
-        # data = self.input_norm(data.permute(0, 2, 3, 1))
-        # data = data.permute(0, 3, 1, 2)
-        data = data.permute(0, 1, 3, 2)
-        data = data - self.input_center
-        data = data * self.input_scale
-        data = data.permute(0, 1, 3, 2)
+        data = self.input_norm(data.permute(0, 2, 3, 1))
+        data = data.permute(0, 3, 1, 2)
+        # data = data.permute(0, 1, 3, 2)
+        # data = data - self.input_center
+        # data = data * self.input_scale
+        # data = data.permute(0, 1, 3, 2)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
@@ -348,10 +366,10 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         output = self.soft_conv(dec_4)
 
         # Shift and scale output.
-        output = output.permute(0, 1, 3, 2)
-        output = output - self.output_center
-        output = output * self.output_scale
-        output = output.permute(0, 1, 3, 2)
+        # output = output.permute(0, 1, 3, 2)
+        # output = output - self.output_center
+        # output = output * self.output_scale
+        # output = output.permute(0, 1, 3, 2)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)

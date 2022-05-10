@@ -1,7 +1,7 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramLSTM",
+        "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
         "normalize_input": true,
         "mask_activation": "softmax",
@@ -26,9 +26,9 @@
         "targets": ["drums"],
         "num_channels": 1,
         "sample_rate": 44100,
-        "num_fft": 1023,
-        "window_size": 1023,
-        "hop_length": 768,
+        "num_fft": 4095,
+        "window_size": 4095,
+        "hop_length": 2048,
         "use_hann_window": true,
         "learn_filterbanks": true,
         "sample_length": 2,

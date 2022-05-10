@@ -14,9 +14,9 @@ class ProgressBar(tqdm):
         desc: Optional[str] = None,
     ):
         bar_format = (
-            "{desc:<10.10}{percentage:5.0f}%|{bar:16}|{n_fmt}/{total_fmt}"
+            "{desc:<10.10}{percentage:5.0f}%[{bar:16}] {n_fmt}/{total_fmt}"
         )
-        r_bar = " [{elapsed}<{remaining}, {rate_fmt}{postfix}]"
+        r_bar = " {elapsed}<{remaining}, {rate_fmt}{postfix}"
         bar_format += r_bar if fmt else " {rate_fmt}{postfix}"
 
         super(ProgressBar, self).__init__(

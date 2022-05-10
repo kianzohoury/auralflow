@@ -35,14 +35,14 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e4),
+        num_chunks=int(1e2),
     )
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e4),
+        num_chunks=int(1e2),
     )
 
     train_dataloader = load_dataset(
@@ -52,9 +52,8 @@ def main(config_filepath: str):
         dataset=val_dataset, loader_params=dataloader_params
     )
     print(
-        f"Loaded {len(train_dataset)} training and {len(val_dataset)}"
+        f"Done. Loaded {len(train_dataset)} training and {len(val_dataset)}"
         f" validation samples of length {dataset_params['sample_length']}s."
-        "\nDone."
     )
 
     print("-" * 79 + "\nLoading model...")
@@ -96,9 +95,9 @@ def main(config_filepath: str):
                     model=model.model, writer=writer, global_step=epoch
                 )
 
-                nn.utils.clip_grad_norm_(
-                    model.model.parameters(), max_norm=1.0
-                )
+                # nn.utils.clip_grad_norm_(
+                #     model.model.parameters(), max_norm=1.0
+                # )
 
                 # Update model parameters.
                 model.optimizer_step()

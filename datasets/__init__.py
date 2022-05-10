@@ -42,12 +42,11 @@ def audio_to_disk(
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
-    num_tracks = len(subset_dir)
+    num_tracks = min(len(subset_dir), 1)
 
     with ProgressBar(
-        subset_dir, total=num_tracks, fmt=False, unit="track"
+        subset_dir, total=num_tracks, fmt=False, unit="track", desc=f"{split}:"
     ) as tq:
-        tq.set_description(f"{split} set")
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):
             track_name = track_folder / "mixture.wav"

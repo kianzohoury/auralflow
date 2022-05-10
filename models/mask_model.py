@@ -21,6 +21,7 @@ class SpectrogramMaskModel(SeparationModel):
     mixtures: Tensor
     targets: Tensor
     estimates: Tensor
+    residuals: Tensor
     mask: FloatTensor
     stft: Callable
     inv_stft: Callable
@@ -147,10 +148,13 @@ class SpectrogramMaskModel(SeparationModel):
         """
         self.mask = self.model(self.mixtures)
         self.estimates = self.mask * self.mixtures
+        self.residuals = self.model.residual_mask * self.mixtures
 
     def backward(self):
         """Computes and backpropagates loss."""
-        self.batch_loss = self.criterion(self.estimates, self.targets)
+        self.batch_loss = self.criterion(self.estimates, self.targets) + self.criterion(
+            self.residuals, self.mixtures - self.targets
+        )
         self.batch_loss.backward()
 
     def optimizer_step(self):

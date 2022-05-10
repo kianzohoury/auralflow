@@ -7,6 +7,8 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
+from pathlib import Path
+from librosa import display
 
 
 def log_spectrograms(
@@ -25,30 +27,35 @@ def log_spectrograms(
             .cpu()
         )
 
-    fig, ax = plt.subplots(
-        nrows=n_targets * 3, ncols=1, figsize=(11, 8), dpi=300
+    fig, ax = plt.subplots(figsize=(4.8, 2.4), dpi=1200
     )
 
     # Log normalize spectrograms for better visualization.
     for i in range(n_targets):
         j = 0
         for name, audio_tensor in audio_data.items():
-            log_normalized = librosa.amplitude_to_db(
-                audio_tensor[:, :, i], ref=np.max
-            )
-            ax[i + j].imshow(
+            # log_normalized = librosa.amplitude_to_db(
+            #     audio_tensor[:, :, i], ref=np.max
+            # )
+            log_normalized = 20 * torch.log10(audio_tensor[:, :, i] / torch.max(audio_tensor[:, :, i]))
+            # display.specshow(log_normalized, sr=44100, hop_length=768, y_axis="log")
+            # plt.imshow()
+
+            ax.imshow(
                 log_normalized,
                 origin="lower",
-                extent=[0, 12, 1, sample_rate // 2],
-                aspect="auto",
-                cmap="plasma",
+                extent=[0, 2, 1, sample_rate // 2 // 1000],
+                aspect="auto"
             )
-            format_plot(ax[i + j], f"{name}")
+            # format_plot(ax, f"{name}")
+            break
+            # format_plot(ax[i + j], f"{name}")
             j += 1
 
     plt.xlabel("Seconds")
     fig.tight_layout()
     writer.add_figure("spectrograms", figure=fig, global_step=global_step)
+    fig.savefig(f"{writer.log_dir}/spectrogram_step_{global_step}.png")
     # plt.close(fig)
 
 
