@@ -3,7 +3,7 @@
         "separation_task": "mask",
         "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
-        "normalize_input": true,
+        "normalize_input": false,
         "learn_residual": false,
         "mask_activation": "sigmoid",
         "layer_params": {

@@ -14,6 +14,12 @@ def vae_loss(const_criterion, estimate, target, kl_term):
     return const_criterion(estimate, target) + kl_term
 
 
+def residual_loss(criterion, estimate, target, residual, mixture):
+    mix_estimate = estimate + residual
+    residual_loss = nn.functional.mse_loss(mixture, mix_estimate)
+    return criterion(estimate, target) + residual_loss
+
+
 class KLDivergenceLoss(nn.Module):
     """Implements KL Divergence loss with native PyTorch implementation."""
 
