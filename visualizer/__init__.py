@@ -1,91 +1,82 @@
-from typing import List, OrderedDict, Mapping, Dict
+from pathlib import Path
+from typing import List, Optional
 
-import librosa
 import matplotlib.pyplot as plt
-from matplotlib.scale import LogScale
-import numpy as np
 import torch
 import torch.nn as nn
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
-from pathlib import Path
-import torchaudio
-
-from librosa import display
 
 
-def log_spectrograms(
-    writer: SummaryWriter,
-    global_step: int,
-    estimate_spec: Tensor,
-    target_spec: Tensor,
-    estimate_audio: Tensor,
+def visualize_audio(
+    model,
+    mixture_audio: Tensor,
     target_audio: Tensor,
-    target_labels: List[str],
-    sample_rate: int = 44100,
-    save_images: bool = False
+    to_tensorboard: bool = True,
+    save_images: bool = False,
+    global_step: Optional[int] = None,
+    writer: Optional[SummaryWriter] = None,
 ) -> None:
-    """Creates spectrogram images to visualize via tensorboard."""
-    n_frames = min(estimate_audio.shape[-2], target_audio.shape[-2])
-    n_bins = estimate_spec.shape[3]
+    """Creates spectrogram/waveform images to visualize."""
+    # Separate target source(s).
+    model.eval()
+    estimate_audio = model.separate(mixture_audio.to(model.device))
 
-    for i, label in enumerate(target_labels):
+    # Apply log and mel scaling to estimate and target.
+    estimate_log_mel = model.transform.to_mel_scale(
+        model.estimates, to_db=True
+    )
+    target_log_mel = model.transform.audio_to_mel(
+        target_audio.permute(2, 0, 1).to(model.device)
+    ).permute(1, 2, 3, 0)
+
+    # Create a figure for each target separately.
+    for i, label in enumerate(model.target_labels):
         fig, ax = plt.subplots(
             nrows=3, figsize=(12, 8), sharex=False, sharey=False, dpi=200
         )
 
-        image = ax[0].imshow(
-            torch.mean(target_spec, dim=1)[0, :, :, i].cpu(),
-            origin="lower",
-            aspect="auto",
-            cmap='inferno'
+        # Collapse channels to mono and take first sample.
+        n_frames = estimate_audio.shape[-2]
+        est_spec_mono = torch.mean(estimate_log_mel, dim=0).cpu()
+        target_spec_mono = torch.mean(target_log_mel, dim=0)[:, :, i].cpu()
+        est_wav = torch.mean(estimate_audio, dim=0)[:, :n_frames, i].cpu()
+        target_wav = torch.mean(target_audio, dim=0)[:, :n_frames, i].cpu()
+
+        # Plot spectrograms.
+        ax[0].imshow(
+            est_spec_mono, origin="lower", aspect="auto", cmap="inferno"
         )
-        image = ax[1].imshow(
-            torch.mean(estimate_spec, dim=1)[0].cpu(),
-            origin="lower",
-            aspect="auto",
-            cmap='inferno'
+        ax[1].imshow(
+            target_spec_mono, origin="lower", aspect="auto", cmap="inferno"
         )
 
-        ax[2].set_facecolor('black')
+        # Plot waveforms.
+        ax[2].set_facecolor("black")
         ax[2].plot(
-            torch.mean(target_audio[0, :, :n_frames, i], dim=0).cpu(),
+            est_wav,
             color="yellowgreen",
             alpha=0.7,
             linewidth=0.2,
-            label=f"{label} true"
+            label=f"{label} true",
         )
         ax[2].plot(
-            torch.mean(estimate_audio[0, :, :n_frames, i], dim=0).cpu(),
+            target_wav,
             color="darkorange",
             alpha=0.7,
             linewidth=0.2,
             label=f"{label} estimate",
         )
 
-        ax[0].set_title(f"{label} true")
-        ax[1].set_title(f"{label} estimate")
+        # Formatting.
+        ax[0].set_title(f"{label} estimate")
+        ax[1].set_title(f"{label} true")
         ax[2].set_title(f"{label} waveform")
         ax[2].set_xlim(xmin=0, xmax=n_frames)
-
         ax[0].set(frame_on=False)
         ax[1].set(frame_on=False)
-
-        # fig.text(
-        #     0.06,
-        #     0.5,
-        #     'Frequency bins',
-        #     ha='center',
-        #     va='center',
-        #     rotation='vertical'
-        # )
-
-        format_plot(ax[0])
-        format_plot(ax[1])
-
-
-        # ax[0].set_ylabel
-
+        format_axis(ax[0])
+        format_axis(ax[1])
         plt.xlabel("Frames")
         plt.tight_layout()
 
@@ -94,61 +85,64 @@ def log_spectrograms(
         for leg in legend.legendHandles:
             leg.set_linewidth(3.0)
         for text in legend.get_texts():
-            plt.setp(text, color = 'w')
-        
-        cbar = fig.colorbar(image, ax=ax.ravel())
+            plt.setp(text, color="w")
+
+        # Decibel color map.
+        cbar = fig.colorbar(ax.get_images()[0], ax=ax.ravel())
         cbar.outline.set_visible(False)
 
-        # Send figure to tensorboard and optionally save locally.
-        writer.add_figure("spectrogram", figure=fig, global_step=global_step)
+        # Send figures to tensorboard.
+        if to_tensorboard and writer is not None:
+            writer.add_figure(
+                "spectrogram", figure=fig, global_step=global_step
+            )
+
+        # Save figures as images to disk.
         if save_images:
             image_dir = Path(f"{writer.log_dir}/spectrogram_images")
             image_dir.mkdir(exist_ok=True)
             fig.savefig(image_dir / f"{label}_{global_step}.png")
 
 
-def log_audio(
+def listen_audio(
+    model,
+    mixture_audio: Tensor,
+    target_audio: Tensor,
     writer: SummaryWriter,
     global_step: int,
-    estimate_data: Tensor,
-    target_data: Tensor,
-    target_labels: List[str],
+    residual: bool = True,
     sample_rate: int = 44100,
 ) -> None:
-    """Logs audio data for listening via tensorboard."""
-    n_batch, n_channels, n_frames, n_targets = estimate_data.shape
-    target_data = target_data[:, :, :n_frames, :]
+    """Embed audio to tensorboard or save audio to disk."""
+    n_frames = mixture_audio.shape[1]
+    target_audio = target_audio[:, :n_frames, :]
 
-    # Collapse channel dimensions to mono and reshape.
-    estimate_data = torch.mean(estimate_data, dim=1, keepdim=True)[0].reshape(
-        (n_channels, n_frames, n_targets)
-    )
-    target_data = torch.mean(target_data, dim=1, keepdim=True)[0].reshape(
-        (n_channels, n_frames, n_targets)
-    )
+    # Separate audio.
+    model.eval()
+    estimate_audio = model.separate(mixture_audio.to(model.device))
 
-    for i in range(len(target_labels)):
+    # Send audio to tensorboard.
+    for i, label in enumerate(model.target_labels):
         writer.add_audio(
-            tag=f"{target_labels[i]} estimate",
-            snd_tensor=estimate_data[:, :, i].squeeze(-1),
+            tag=f"{label} estimate",
+            snd_tensor=estimate_audio[:, :, i].squeeze(-1),
             global_step=global_step,
             sample_rate=sample_rate,
         )
         writer.add_audio(
-            tag=f"{target_labels[i]} true",
-            snd_tensor=target_data[:, :, i].squeeze(-1),
+            tag=f"{label} true",
+            snd_tensor=target_audio[:, :, i].squeeze(-1),
             global_step=global_step,
             sample_rate=sample_rate,
         )
-
-
-def format_plot(axis):
-    """Helper plot formatting method."""
-    # axis.set_yscale("log", basey=2)
-    # axis.set_ylabel(tag)
-    plt.setp(axis.get_xticklabels(), visible=False)
-    plt.setp(axis.get_yticklabels(), visible=False)
-    axis.tick_params(axis="both", which="both", length=0)
+        if residual:
+            res_estimate = mixture_audio.T[i] - estimate_audio.T[i]
+            writer.add_audio(
+                tag=f"{label} residual estimate",
+                snd_tensor=res_estimate.T.squeeze(-1),
+                global_step=global_step,
+                sample_rate=sample_rate,
+            )
 
 
 def log_gradients(model: nn.Module, writer: SummaryWriter, global_step: int):
@@ -157,5 +151,12 @@ def log_gradients(model: nn.Module, writer: SummaryWriter, global_step: int):
             param_norm = torch.norm(param, 2)
             grad_norm = torch.norm(param.grad, 2)
             writer.add_histogram(f"{name}_grad_norm", grad_norm, global_step)
-            writer.add_histogram(f"{name}_weight_norm", param_norm, global_step)
+            writer.add_histogram(
+                f"{name}_weight_norm", param_norm, global_step
+            )
 
+
+def format_axis(axis):
+    plt.setp(axis.get_xticklabels(), visible=False)
+    plt.setp(axis.get_yticklabels(), visible=False)
+    axis.tick_params(axis="both", which="both", length=0)
