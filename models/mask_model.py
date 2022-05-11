@@ -36,7 +36,7 @@ class SpectrogramMaskModel(SeparationModel):
             hop_length=dataset_params["hop_length"],
         )
 
-        # Note that num bins will be num_fft // 2 + 1 due to symmetry.
+        # Num bins will be num_fft // 2 + 1 due to symmetry.
         self.n_fft_bins = configuration["dataset_params"]["num_fft"] // 2 + 1
         self.num_channels = configuration["dataset_params"]["num_channels"]
 

@@ -464,8 +464,8 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
     def get_kl_div(self) -> Tensor:
         """Computes KL term of the current batch of audio.
 
-        Kl_div := (P||Q), where P is the modeled distribution, and Q is
-        a standard normal N(0, 1). The term is to be added to the
+        Defined as := D_KL(P||Q), where P is the modeled distribution, and Q
+        is a standard normal N(0, 1). The term is to be added to the
         reconstruction loss.
         """
         return kl_div_loss(self.mu_data, self.sigma_data)
