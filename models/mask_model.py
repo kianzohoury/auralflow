@@ -17,8 +17,9 @@ class SpectrogramMaskModel(SeparationModel):
     """Spectrogram-domain deep mask estimation model."""
 
     mixtures: Tensor
+    phase: Tensor
     targets: Tensor
-    estimates: Tensor
+    estimates: FloatTensor
     residuals: Tensor
     mask: FloatTensor
 
@@ -63,7 +64,7 @@ class SpectrogramMaskModel(SeparationModel):
             num_fft=dataset_params["num_fft"],
             hop_length=dataset_params["hop_length"],
             window_size=dataset_params["window_size"],
-            power=2 if dataset_params["power_spectrum"] else 1
+            device=self.device
         )
 
         # self.stft = get_stft(
@@ -84,7 +85,7 @@ class SpectrogramMaskModel(SeparationModel):
         #     inverse=True,
         #     device=self.device,
         # )
-
+        self.target_labels = sorted(self.config["dataset_params"]["targets"])
         self.model.set_criterion(nn.L1Loss())
 
         # Define loss, optimizer, etc.
@@ -100,55 +101,29 @@ class SpectrogramMaskModel(SeparationModel):
             )
             # self.accum_steps = 10
 
-    @staticmethod
-    def fast_fourier(transform: Callable, audio: Tensor) -> Tensor:
-        """Transforms raw audio to complex-valued STFT audio."""
-        audio_stft = []
-        n_batch, n_channels, n_frames, n_targets = audio.size()
-
-        for i in range(n_channels):
-            sources_stack = []
-            for j in range(n_targets):
-                sources_stack.append(
-                    transform(audio[:, i, :, j].reshape((n_batch, n_frames)))
-                )
-            audio_stft.append(torch.stack(sources_stack, dim=-1))
-
-        data_stft = torch.stack(audio_stft, dim=1)
-        return data_stft
-
-    @staticmethod
-    def inverse_fast_fourier(transform: Callable, complex_stft: Tensor):
-        """Transforms complex-valued STFT audio to temporal audio domain."""
-        source_estimate = []
-        n_batch, n_channels, n_frames, n_targets = complex_stft.size()
-
-        for i in range(n_targets):
-            source_estimate.append(
-                transform(complex_stft[:, :, :, i].squeeze(-1))
-            )
-
-        source_estimate = torch.stack(source_estimate, dim=-1)
-        return source_estimate
 
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
         """Wrapper method processes and sets data for internal access."""
-        self.mixtures = torch.abs(
-            self.transform.to_spectrogram(mixture.to(self.device))
-        ).squeeze(-1)
-        self.targets = torch.abs(
-            self.transform.to_spectrogram(target.to(self.device))
+        # Compute complex-valued STFTs and send tensors to GPU if avaialable.
+        mix_complex_stft = self.transform.to_spectrogram(
+            mixture.squeeze(-1).to(self.device)
         )
+        target_complex_stft = self.transform.to_spectrogram(
+            target.permute(0, 3, 1, 2).to(self.device)
+        ).permute(0, 2, 3, 4, 1)
 
-    def forward(self):
+        # Separate magnitude and phase, and store data for internal access.
+        self.mixtures = torch.abs(mix_complex_stft)
+        self.targets = torch.abs(target_complex_stft)
+        self.phase = torch.angle(mix_complex_stft)
+
+    def forward(self) -> None:
         """Estimates target source by applying the learned mask to the mixture.
 
-        * Target source S' is acquired by taking the Hadamard product between
-          the mixture signal X, and the output of the network, M
-          (estimated soft-mask), such that S = M * X.
-
-        * If learn_residual is True, network will also estimate the residual
-          signal separately.
+        Target source S' is acquired by taking the Hadamard product between
+        the mixture signal X, and the output of the network, M
+        (estimated soft-mask), such that S = M * X. If learning residual,
+        network will estimate it separately.
         """
         self.mask = self.model(self.mixtures)
         self.estimates = self.mask * self.mixtures
@@ -156,8 +131,8 @@ class SpectrogramMaskModel(SeparationModel):
 
     def get_loss(self) -> float:
         """Computes batch-wise loss."""
-        self.batch_loss = self.criterion(self.estimates, self.targets) + self.criterion(
-            self.residuals, self.mixtures - self.targets
+        self.batch_loss = self.criterion(
+            self.estimates.unsqueeze(-1), self.targets
         )
         return self.batch_loss.item()
 
@@ -190,21 +165,20 @@ class SpectrogramMaskModel(SeparationModel):
 
     def separate(self, audio: Tensor) -> Tensor:
         """Applies inv STFT to target source to retrieve time-domain signal."""
-        # Compute complex-valued stft.
-        complex_stft = self.transform.to_spectrogram(
-            audio.to(self.device)
-        ).squeeze(-1)
-        # Extract magnitude and phase separately.
-        mag, phase = torch.abs(complex_stft), torch.angle(complex_stft)
-        # Get source estimate s' = mask * mixture.
-        self.mixtures = mag.to(self.device)
-        self.test()
-        # Apply phase correction and transform back to time domain.
-        phase_corrected = self.estimates * torch.exp(1j * phase)
-        source_estimate = self.transform.to_audio(
-            phase_corrected.permute(0, 2, 3, 1)
+        # Compute complex-valued STFTs and send tensors to GPU if avaialable.
+        mix_complex_stft = self.transform.to_spectrogram(
+            audio.squeeze(-1).to(self.device)
         )
-        return source_estimate
+
+        # Separate magnitude and phase.
+        self.mixtures = torch.abs(mix_complex_stft)
+        self.phase = torch.angle(mix_complex_stft)
+
+        # Get source estimate s' = mask * mixture and apply phase correction.
+        self.test()
+        phase_corrected = self.estimates * torch.exp(1j * self.phase)
+        target_estimate = self.transform.to_audio(phase_corrected)
+        return target_estimate
 
     def post_epoch_callback(
         self,
@@ -214,31 +188,32 @@ class SpectrogramMaskModel(SeparationModel):
         global_step: int,
     ):
         """Logs spectrogram images and separated audio after each epoch."""
-        target_labels = sorted(self.config["dataset_params"]["targets"])
-
         self.eval()
-        estimate_audio = self.separate(mixture_audio.clone())
+        estimate_audio = self.separate(mixture_audio.to(self.device))
         estimate_mel_spec = self.transform.to_mel_scale(
             self.estimates, to_db=True
         )
-        target_mel_spec = self.transform.audio_to_mel(target_audio)
+        target_mel_spec = self.transform.audio_to_mel(
+            target_audio.permute(0, 3, 1, 2).to(self.device)
+        ).permute(0, 2, 3, 4, 1)
 
         log_spectrograms(
             writer=writer,
             global_step=global_step,
             estimate_spec=estimate_mel_spec,
             target_spec=target_mel_spec,
-            estimate_audio=estimate_audio,
+            estimate_audio=estimate_audio.unsqueeze(-1),
             target_audio=target_audio,
-            target_labels=target_labels,
-            sample_rate=self.config["dataset_params"]["sample_rate"]
+            target_labels=self.target_labels,
+            sample_rate=self.config["dataset_params"]["sample_rate"],
+            save_images=self.config["visualizer_params"]["save_images"]
         )
 
         log_audio(
             writer=writer,
             global_step=global_step,
             estimate_data=estimate_audio.unsqueeze(-1),
-            target_data=target_audio.permute(0, 2, 1, 3),
+            target_data=target_audio,
             target_labels=sorted(self.config["dataset_params"]["targets"]),
             sample_rate=self.config["dataset_params"]["sample_rate"],
         )
