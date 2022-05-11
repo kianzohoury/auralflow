@@ -107,11 +107,12 @@ class SpectrogramMaskModel(SeparationModel):
         (estimated soft-mask), such that S = M * X. If learning residual,
         network will estimate it separately.
         """
-        if self.input_norm:
-            input_data = self.mixtures / torch.max(self.mixtures)
-        else:
-            input_data = self.mixtures
-        self.mask = self.model(input_data)
+        # if self.input_norm:
+        #     input_data = self.mixtures / torch.max(self.mixtures)
+        # else:
+        #     input_data = self.mixtures
+        # print(self.mixtures.shape)
+        self.mask = self.model(self.mixtures)
         self.estimates = self.mask * self.mixtures
         # self.residuals = self.model.residual_mask * self.mixtures.clone().detach()
 

@@ -154,7 +154,6 @@ def main(config_filepath: str):
             *next(iter(val_dataloader)), writer, epoch
         )
 
-        model.train()
 
     writer.close()
     print("-" * 90)
