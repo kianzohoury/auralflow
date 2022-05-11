@@ -189,7 +189,6 @@ class SpectrogramMaskModel(SeparationModel):
     ):
         """Logs spectrogram images and separated audio after each epoch."""
         self.eval()
-
         estimate_audio = self.separate(mixture_audio.to(self.device))
         estimate_mel_spec = self.transform.to_mel_scale(
             self.estimates, to_db=True
@@ -203,18 +202,18 @@ class SpectrogramMaskModel(SeparationModel):
             global_step=global_step,
             estimate_spec=estimate_mel_spec,
             target_spec=target_mel_spec,
-            estimate_audio=estimate_audio,
+            estimate_audio=estimate_audio.unsqueeze(-1),
             target_audio=target_audio,
             target_labels=self.target_labels,
             sample_rate=self.config["dataset_params"]["sample_rate"],
             save_images=self.config["visualizer_params"]["save_images"]
         )
 
-        # log_audio(
-        #     writer=writer,
-        #     global_step=global_step,
-        #     estimate_data=estimate_audio.unsqueeze(-1),
-        #     target_data=target_audio.permute(0, 2, 1, 3),
-        #     target_labels=sorted(self.config["dataset_params"]["targets"]),
-        #     sample_rate=self.config["dataset_params"]["sample_rate"],
-        # )
+        log_audio(
+            writer=writer,
+            global_step=global_step,
+            estimate_data=estimate_audio.unsqueeze(-1),
+            target_data=target_audio,
+            target_labels=sorted(self.config["dataset_params"]["targets"]),
+            sample_rate=self.config["dataset_params"]["sample_rate"],
+        )
