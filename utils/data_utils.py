@@ -1,9 +1,12 @@
 import torch
 import math
+import librosa
 
 from typing import Optional, Tuple, Callable
 from torchaudio import transforms
 from torch import Tensor
+import numpy as np
+
 
 
 class AudioTransform(object):
@@ -36,7 +39,6 @@ class AudioTransform(object):
             onesided=True
         )
 
-        self.amp_to_db = transforms.AmplitudeToDB(stype="magnitude")
         self.mel_scale = transforms.MelScale(
             n_mels=256,
             sample_rate=sample_rate,
@@ -59,7 +61,11 @@ class AudioTransform(object):
 
     def to_decibel(self, spectrogram: Tensor) -> Tensor:
         """Transforms spectrogram to decibel scale."""
-        return self.amp_to_db(spectrogram)
+        # Use implementation from librosa due to discrepancy w/ torchaudio.
+        log_normal = torch.from_numpy(
+            librosa.amplitude_to_db(spectrogram, ref=np.max)
+        ).to(spectrogram.device)
+        return log_normal
 
     def to_mel_scale(self, spectrogram: Tensor, to_db: bool = False) -> Tensor:
         if to_db:

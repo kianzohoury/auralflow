@@ -206,7 +206,8 @@ class SpectrogramMaskModel(SeparationModel):
             estimate_audio=estimate_audio,
             target_audio=target_audio,
             target_labels=self.target_labels,
-            sample_rate=self.config["dataset_params"]["sample_rate"]
+            sample_rate=self.config["dataset_params"]["sample_rate"],
+            save_images=self.config["visualizer_params"]["save_images"]
         )
 
         # log_audio(
