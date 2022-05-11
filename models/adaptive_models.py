@@ -19,7 +19,7 @@ from .architectures import (
     SpectrogramLSTM,
     SpectrogramLSTMVariational,
 )
-from visualizer import log_spectrograms
+from visualizer import visualize_audio
 from losses import vae_loss
 from utils.data_utils import get_num_frames, get_stft, get_inverse_stft
 from torch import Tensor, FloatTensor

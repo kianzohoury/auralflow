@@ -18,6 +18,7 @@ from validate import cross_validate
 from visualizer.progress import ProgressBar
 from visualizer import log_gradients
 
+
 def main(config_filepath: str):
     """Runs training script given a configuration file."""
 
@@ -88,7 +89,7 @@ def main(config_filepath: str):
                 model.set_data(mixture, target)
                 # print(model.mixtures.shape)
                 model.forward()
-            
+
                 # Compute batch-wise loss.
                 batch_loss = model.get_loss()
                 model.backward()

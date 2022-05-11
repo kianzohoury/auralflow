@@ -15,7 +15,13 @@ class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""
 
     def __init__(
-        self, in_channels, out_channels, kernel_size=3, bn=True, leak=0, dropout=0
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=3,
+        bn=True,
+        leak=0,
+        dropout=0,
     ):
         super(ConvBlock, self).__init__()
         self.conv = nn.Conv2d(
@@ -124,7 +130,7 @@ class SpectrogramNetSimple(nn.Module):
         leak_factor: float = 0.2,
         normalize_input: bool = False,
         criterion: Optional[nn.Module] = None,
-        residual: bool = True
+        residual: bool = True,
     ) -> None:
         super(SpectrogramNetSimple, self).__init__()
 
@@ -215,7 +221,7 @@ class SpectrogramNetSimple(nn.Module):
                 padding="same",
             )
         else:
-            self.soft_conv_res = nn.Identity()   
+            self.soft_conv_res = nn.Identity()
 
         # Define input/output normalization parameters.
         # self.input_center = nn.Parameter(
