@@ -1,6 +1,4 @@
 import importlib
-from typing import Callable
-from collections import OrderedDict
 
 import torch
 import torch.nn as nn
@@ -8,8 +6,8 @@ from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 
-from utils.data_utils import get_num_frames, get_stft, AudioTransform
-from visualizer import log_spectrograms, log_audio, log_gradients
+from utils.data_utils import get_num_frames, AudioTransform
+from visualizer import visualize_audio, listen_audio
 from .base import SeparationModel
 
 
@@ -56,7 +54,7 @@ class SpectrogramMaskModel(SeparationModel):
             mask_act_fn=configuration["model_params"]["mask_activation"],
             leak_factor=self.layer_params["leak_factor"],
             normalize_input=configuration["model_params"]["normalize_input"],
-            residual=configuration["model_params"]["learn_residual"]
+            residual=configuration["model_params"]["learn_residual"],
         ).to(self.device)
 
         # Instantiate data transformer.
@@ -64,27 +62,9 @@ class SpectrogramMaskModel(SeparationModel):
             num_fft=dataset_params["num_fft"],
             hop_length=dataset_params["hop_length"],
             window_size=dataset_params["window_size"],
-            device=self.device
+            device=self.device,
         )
 
-        # self.stft = get_stft(
-        #     num_fft=dataset_params["num_fft"],
-        #     hop_length=dataset_params["hop_length"],
-        #     window_size=dataset_params["window_size"],
-        #     use_hann=dataset_params["use_hann_window"],
-        #     trainable=dataset_params["learn_filterbanks"],
-        #     inverse=False,
-        #     device=self.device,
-        # )
-        # self.inv_stft = get_stft(
-        #     num_fft=dataset_params["num_fft"],
-        #     hop_length=dataset_params["hop_length"],
-        #     window_size=dataset_params["window_size"],
-        #     use_hann=dataset_params["use_hann_window"],
-        #     trainable=dataset_params["learn_filterbanks"],
-        #     inverse=True,
-        #     device=self.device,
-        # )
         self.target_labels = sorted(self.config["dataset_params"]["targets"])
         self.model.set_criterion(nn.L1Loss())
 
@@ -101,10 +81,9 @@ class SpectrogramMaskModel(SeparationModel):
             )
             # self.accum_steps = 10
 
-
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
         """Wrapper method processes and sets data for internal access."""
-        # Compute complex-valued STFTs and send tensors to GPU if avaialable.
+        # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(
             mixture.squeeze(-1).to(self.device)
         )
@@ -188,32 +167,22 @@ class SpectrogramMaskModel(SeparationModel):
         global_step: int,
     ):
         """Logs spectrogram images and separated audio after each epoch."""
-        self.eval()
-        estimate_audio = self.separate(mixture_audio.to(self.device))
-        estimate_mel_spec = self.transform.to_mel_scale(
-            self.estimates, to_db=True
-        )
-        target_mel_spec = self.transform.audio_to_mel(
-            target_audio.permute(0, 3, 1, 2).to(self.device)
-        ).permute(0, 2, 3, 4, 1)
-
-        log_spectrograms(
-            writer=writer,
-            global_step=global_step,
-            estimate_spec=estimate_mel_spec,
-            target_spec=target_mel_spec,
-            estimate_audio=estimate_audio.unsqueeze(-1),
+        # Visualize and listen to audio via tensorboard.
+        visualize_audio(
+            model=self,
+            mixture_audio=mixture_audio.squeeze(-1),
             target_audio=target_audio,
-            target_labels=self.target_labels,
-            sample_rate=self.config["dataset_params"]["sample_rate"],
-            save_images=self.config["visualizer_params"]["save_images"]
+            to_tensorboard=True,
+            writer=writer,
+            save_images=False,
+            global_step=global_step,
         )
-
-        log_audio(
+        listen_audio(
+            model=self,
+            mixture_audio=mixture_audio.squeeze(-1),
+            target_audio=target_audio,
             writer=writer,
             global_step=global_step,
-            estimate_data=estimate_audio.unsqueeze(-1),
-            target_data=target_audio,
-            target_labels=sorted(self.config["dataset_params"]["targets"]),
+            residual=True,
             sample_rate=self.config["dataset_params"]["sample_rate"],
         )

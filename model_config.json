@@ -57,6 +57,6 @@
     "visualizer_params": {
         "tensorboard": true,
         "logs_path": "runs",
-        "save_images": true
+        "save_images": false
     }
 }

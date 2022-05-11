@@ -28,7 +28,6 @@ class ConvBlock(nn.Module):
         )
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.relu = nn.LeakyReLU(leak)
-        # self.relu = nn.PReLU()
         self.dropout = nn.Dropout2d(dropout, inplace=True)
 
     def forward(self, data):
@@ -45,7 +44,7 @@ class ConvBlockTriple(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, False, leak, 0.3)
+            ConvBlock(in_channels, out_channels, kernel_size, True, leak, 0.3)
             # ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0.3)
             # ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )
@@ -139,17 +138,17 @@ class SpectrogramNetSimple(nn.Module):
         self.normalize_input = normalize_input
         self.residual = residual
 
-        # Set model criterion. Convenient for sub-classes like VAE.
+        # Set model criterion. 
         if criterion is None:
             self.set_criterion(nn.MSELoss())
         else:
             self.set_criterion(criterion)
 
-        # Use identity to prevent GPU from being slowed down in forward pass.
-        if normalize_input:
-            self.input_norm = nn.BatchNorm2d(num_fft_bins)
-        else:
-            self.input_norm = nn.Identity()
+        # # Use identity to prevent GPU from being slowed down in forward pass.
+        # if normalize_input:
+        #     self.input_norm = nn.BatchNorm2d(num_fft_bins)
+        # else:
+        #     self.input_norm = nn.Identity()
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_dim]]
