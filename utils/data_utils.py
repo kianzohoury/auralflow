@@ -26,7 +26,7 @@ class AudioTransform(object):
             n_fft=num_fft,
             win_length=window_size,
             hop_length=hop_length,
-            power=power,
+            power=None,
             onesided=True,
             return_complex=True,
         )
