@@ -20,11 +20,13 @@ def visualize_audio(
     """Creates spectrogram/waveform images to visualize."""
     # Separate target source(s).
     model.eval()
-    estimate_audio = model.separate(mixture_audio.to(model.device))
+    estimate_audio = model.separate(
+        mixture_audio.to(model.device)
+    ).squeeze(0).unsqueeze(-1)
 
     # Apply log and mel scaling to estimate and target.
     estimate_log_mel = model.transform.to_mel_scale(
-        model.estimates, to_db=True
+        model.estimates.squeeze(0), to_db=True
     )
     target_log_mel = model.transform.audio_to_mel(
         target_audio.permute(2, 0, 1).to(model.device)
@@ -36,18 +38,18 @@ def visualize_audio(
             nrows=3, figsize=(12, 8), sharex=False, sharey=False, dpi=200
         )
 
-        # Collapse channels to mono and take first sample.
+        # Collapse channels to mono.
         n_frames = estimate_audio.shape[-2]
         est_spec_mono = torch.mean(estimate_log_mel, dim=0).cpu()
         target_spec_mono = torch.mean(target_log_mel, dim=0)[:, :, i].cpu()
-        est_wav = torch.mean(estimate_audio, dim=0)[:, :n_frames, i].cpu()
-        target_wav = torch.mean(target_audio, dim=0)[:, :n_frames, i].cpu()
+        est_wav = torch.mean(estimate_audio, dim=0)[:n_frames, i].cpu()
+        target_wav = torch.mean(target_audio, dim=0)[:n_frames, i].cpu()
 
         # Plot spectrograms.
         ax[0].imshow(
             est_spec_mono, origin="lower", aspect="auto", cmap="inferno"
         )
-        ax[1].imshow(
+        image = ax[1].imshow(
             target_spec_mono, origin="lower", aspect="auto", cmap="inferno"
         )
 
@@ -88,7 +90,7 @@ def visualize_audio(
             plt.setp(text, color="w")
 
         # Decibel color map.
-        cbar = fig.colorbar(ax.get_images()[0], ax=ax.ravel())
+        cbar = fig.colorbar(image, ax=ax.ravel())
         cbar.outline.set_visible(False)
 
         # Send figures to tensorboard.
@@ -114,32 +116,38 @@ def listen_audio(
     sample_rate: int = 44100,
 ) -> None:
     """Embed audio to tensorboard or save audio to disk."""
-    n_frames = mixture_audio.shape[1]
-    target_audio = target_audio[:, :n_frames, :]
-
     # Separate audio.
     model.eval()
-    estimate_audio = model.separate(mixture_audio.to(model.device))
+    estimate_audio = model.separate(
+        mixture_audio.to(model.device)
+    ).squeeze(0).unsqueeze(-1).cpu()
+
+    # Trim to match estimate length. 
+    n_frames = estimate_audio.shape[1]
+    target_audio = target_audio[:, :n_frames, :]
+
+    # Unpack batch dimension.
+    mixture_audio = mixture_audio.squeeze(0)[:, :n_frames, :]
 
     # Send audio to tensorboard.
     for i, label in enumerate(model.target_labels):
         writer.add_audio(
             tag=f"{label} estimate",
-            snd_tensor=estimate_audio[:, :, i].squeeze(-1),
+            snd_tensor=estimate_audio[:, :, i],
             global_step=global_step,
             sample_rate=sample_rate,
         )
         writer.add_audio(
             tag=f"{label} true",
-            snd_tensor=target_audio[:, :, i].squeeze(-1),
+            snd_tensor=target_audio[:, :, i],
             global_step=global_step,
             sample_rate=sample_rate,
         )
         if residual:
-            res_estimate = mixture_audio.T[i] - estimate_audio.T[i]
+            res_est = mixture_audio[:, :, i] - estimate_audio[:, :n_frames, i]
             writer.add_audio(
                 tag=f"{label} residual estimate",
-                snd_tensor=res_estimate.T.squeeze(-1),
+                snd_tensor=res_est.squeeze(-1),
                 global_step=global_step,
                 sample_rate=sample_rate,
             )

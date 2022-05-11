@@ -65,6 +65,8 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
+        self.input_norm = configuration["model_params"]["normalize_input"]
+
         self.target_labels = sorted(self.config["dataset_params"]["targets"])
         self.model.set_criterion(nn.L1Loss())
 
@@ -104,9 +106,13 @@ class SpectrogramMaskModel(SeparationModel):
         (estimated soft-mask), such that S = M * X. If learning residual,
         network will estimate it separately.
         """
-        self.mask = self.model(self.mixtures)
+        if self.input_norm:
+            input_data = self.mixtures / torch.max(self.mixtures)
+        else:
+            input_data = self.mixtures
+        self.mask = self.model(input_data)
         self.estimates = self.mask * self.mixtures
-        self.residuals = self.model.residual_mask * self.mixtures
+        # self.residuals = self.model.residual_mask * self.mixtures
 
     def get_loss(self) -> float:
         """Computes batch-wise loss."""
@@ -170,8 +176,8 @@ class SpectrogramMaskModel(SeparationModel):
         # Visualize and listen to audio via tensorboard.
         visualize_audio(
             model=self,
-            mixture_audio=mixture_audio.squeeze(-1),
-            target_audio=target_audio,
+            mixture_audio=mixture_audio[0].unsqueeze(0),
+            target_audio=target_audio[0],
             to_tensorboard=True,
             writer=writer,
             save_images=False,
@@ -179,8 +185,8 @@ class SpectrogramMaskModel(SeparationModel):
         )
         listen_audio(
             model=self,
-            mixture_audio=mixture_audio.squeeze(-1),
-            target_audio=target_audio,
+            mixture_audio=mixture_audio[0].unsqueeze(0),
+            target_audio=target_audio[0],
             writer=writer,
             global_step=global_step,
             residual=True,

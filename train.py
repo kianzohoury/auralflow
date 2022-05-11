@@ -18,7 +18,6 @@ from validate import cross_validate
 from visualizer.progress import ProgressBar
 from visualizer import log_gradients
 
-
 def main(config_filepath: str):
     """Runs training script given a configuration file."""
 
@@ -36,14 +35,14 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(2e2),
+        num_chunks=int(1e3),
     )
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(2e2),
+        num_chunks=int(1e3),
     )
 
     train_dataloader = load_dataset(
@@ -89,7 +88,7 @@ def main(config_filepath: str):
                 model.set_data(mixture, target)
                 # print(model.mixtures.shape)
                 model.forward()
-
+            
                 # Compute batch-wise loss.
                 batch_loss = model.get_loss()
                 model.backward()
@@ -151,7 +150,11 @@ def main(config_filepath: str):
             print("Stopping training early...")
             break
 
-        model.post_epoch_callback(mixture, target, writer, epoch)
+        model.post_epoch_callback(
+            *next(iter(val_dataloader)), writer, epoch
+        )
+
+        model.train()
 
     writer.close()
     print("-" * 90)
