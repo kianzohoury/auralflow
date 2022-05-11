@@ -145,10 +145,10 @@ class SpectrogramNetSimple(nn.Module):
             self.set_criterion(criterion)
 
         # # Use identity to prevent GPU from being slowed down in forward pass.
-        # if normalize_input:
-        #     self.input_norm = nn.BatchNorm2d(num_fft_bins)
-        # else:
-        #     self.input_norm = nn.Identity()
+        if normalize_input:
+            self.input_norm = nn.BatchNorm2d(num_fft_bins)
+        else:
+            self.input_norm = nn.Identity()
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_dim]]
@@ -285,7 +285,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
-        self.residual_mask = self.mask_activation(residual)
+        # self.residual_mask = self.mask_activation(residual)
         return mask
 
     def set_criterion(self, criterion: nn.Module):
