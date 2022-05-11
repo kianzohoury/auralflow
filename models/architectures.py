@@ -285,7 +285,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
-        # self.residual_mask = self.mask_activation(residual)
+        self.residual_mask = self.mask_activation(residual)
         return mask
 
     def set_criterion(self, criterion: nn.Module):

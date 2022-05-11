@@ -4,7 +4,7 @@
         "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
         "normalize_input": false,
-        "learn_residual": false,
+        "learn_residual": true,
         "mask_activation": "sigmoid",
         "layer_params": {
             "max_depth": 6,

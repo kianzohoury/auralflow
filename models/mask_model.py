@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.data_utils import get_num_frames, AudioTransform
 from visualizer import visualize_audio, listen_audio
 from .base import SeparationModel
-# from losses import residual_loss
+from losses import residual_loss
 
 
 class SpectrogramMaskModel(SeparationModel):
@@ -112,15 +112,15 @@ class SpectrogramMaskModel(SeparationModel):
         # else:
         #     input_data = self.mixtures
         # print(self.mixtures.shape)
-        self.mask = self.model(self.mixtures)
+        self.mask = self.model(self.mixtures.clone())
         self.estimates = self.mask * self.mixtures
-        # self.residuals = self.model.residual_mask * self.mixtures.clone().detach()
+        self.residuals = self.model.residual_mask * self.mixtures
 
     def get_loss(self) -> float:
         """Computes batch-wise loss."""
         # print(self.targets.shape, self.residuals.shape, self.mixtures.shape, self.estimates.shape)
-        self.batch_loss = self.criterion(self.estimates.unsqueeze(-1),
-            self.targets)
+        self.batch_loss = residual_loss(
+            self.criterion, self.estimates, self.targets.squeeze(-1), self.residuals, self.mixtures)
         return self.batch_loss.item()
 
     def backward(self) -> None:
