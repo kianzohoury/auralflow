@@ -26,36 +26,46 @@ def log_spectrograms(
 ) -> None:
     """Creates spectrogram images to visualize via tensorboard."""
 
+    n_frames = min(estimate_audio.shape[-1], target_audio.shape[-1])
+
     for i, label in enumerate(target_labels):
         fig, ax = plt.subplots(
-            nrows=3, figsize=(12, 12), sharex=False, dpi=900
+            nrows=3, figsize=(6, 4), sharex=False, dpi=120
         )
         ax[0].imshow(
-            torch.mean(target_spec, dim=0),
+            torch.mean(target_spec, dim=1)[0, :, :, i].cpu(),
             origin="lower",
             aspect="auto",
             cmap='viridis'
         )
         ax[1].imshow(
-            torch.mean(estimate_spec, dim=0),
+            torch.mean(estimate_spec, dim=1)[0].cpu(),
             origin="lower",
             aspect="auto",
             cmap='inferno'
         )
+
         ax[2].set_facecolor('black')
         ax[2].plot(
-            target_audio, color="yellowgreen", alpha=0.7, linewidth=0.2
+            torch.mean(target_audio, dim=0)[:n_frames, i],
+            color="yellowgreen",
+            alpha=0.7,
+            linewidth=0.2
         )
         ax[2].plot(
-            estimate_audio, color="darkorange", alpha=0.7, linewidth=0.2
+            torch.mean(estimate_audio.cpu(), dim=0)[:n_frames],
+            color="darkorange",
+            alpha=0.7,
+            linewidth=0.2
         )
-        ax[2].set_xlim(xmin=0, xmax=target_audio.shape[-1])
+
+        ax[2].set_xlim(xmin=0, xmax=n_frames)
         plt.xlabel("Frames")
         fig.tight_layout()
         writer.add_figure("spectrogram", figure=fig, global_step=global_step)
-        fig.savefig(
-            f"{writer.log_dir}/spectrogram_step_{global_step}.png"
-        )
+        # fig.savefig(
+        #     f"{writer.log_dir}/spectrogram_step_{global_step}.png"
+        # )
 
 
 def log_audio(

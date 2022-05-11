@@ -7,55 +7,55 @@ from torch import Tensor
 
 
 class AudioTransform(object):
-    """Wrapper class for transforming audio signals across diff domains."""
+    """Wrapper class that conveniently shares parameters between transforms."""
     def __init__(
         self,
         num_fft: int,
         hop_length: int,
         window_size: int,
-        power: int = 2,
-        sample_rate: int = 44100
+        sample_rate: int = 44100,
+        device: str = 'cpu'
     ):
         super(AudioTransform, self).__init__()
         self.num_fft = num_fft
         self.hop_length = hop_length
         self.window_size = window_size
-        self.power = power
 
-        self.spec = transforms.Spectrogram(
+        self.stft = transforms.Spectrogram(
             n_fft=num_fft,
             win_length=window_size,
             hop_length=hop_length,
-            power=power,
+            power=None,
             onesided=True,
-            return_complex=True,
         )
 
-        self.inverse = transforms.InverseSpectrogram(
+        self.inv_stft = transforms.InverseSpectrogram(
             n_fft=num_fft,
             win_length=window_size,
             hop_length=hop_length,
             onesided=True
         )
 
-        self.amp_to_db = transforms.AmplitudeToDB(
-            stype="power" if power == 2 else "magnitude"
-        )
-
+        self.amp_to_db = transforms.AmplitudeToDB(stype="magnitude")
         self.mel_scale = transforms.MelScale(
-            n_mels=384,
+            n_mels=256,
             sample_rate=sample_rate,
             n_stft=num_fft // 2 + 1,
             norm="slaney"
         )
 
+        # Transfer window functions and filterbanks to GPU if available.
+        self.stft.window = self.stft.window.to(device)
+        self.inv_stft.window = self.inv_stft.window.to(device)
+        self.mel_scale.fb = self.mel_scale.fb.to(device)
+
     def to_spectrogram(self, audio: Tensor) -> Tensor:
         """Transforms an audio signal to its time-freq representation."""
-        return self.spec(audio)
+        return self.stft(audio)
 
     def to_audio(self, complex_spec: Tensor) -> Tensor:
         """Transforms complex-valued spectrogram to its time-domain signal."""
-        return self.inverse(complex_spec)
+        return self.inv_stft(complex_spec)
 
     def to_decibel(self, spectrogram: Tensor) -> Tensor:
         """Transforms spectrogram to decibel scale."""
@@ -89,6 +89,37 @@ detailed procedure is as follows:
 is the angle between the real and imaginary parts of STFT(A).
 * A_s: estimate source signal converted from time-freq to time-only
 domain."""
+
+
+def fast_fourier(transform: Callable, audio: Tensor) -> Tensor:
+    """Transforms raw audio to complex-valued STFT audio."""
+    audio_stft = []
+    n_batch, n_channels, n_frames, n_targets = audio.size()
+
+    for i in range(n_channels):
+        sources_stack = []
+        for j in range(n_targets):
+            sources_stack.append(
+                transform(audio[:, i, :, j].reshape((n_batch, n_frames)))
+            )
+        audio_stft.append(torch.stack(sources_stack, dim=-1))
+
+    data_stft = torch.stack(audio_stft, dim=1)
+    return data_stft
+
+
+def inverse_fast_fourier(transform: Callable, complex_stft: Tensor):
+    """Transforms complex-valued STFT audio to temporal audio domain."""
+    source_estimate = []
+    n_batch, n_channels, n_frames, n_targets = complex_stft.size()
+
+    for i in range(n_targets):
+        source_estimate.append(
+            transform(complex_stft[:, :, :, i].squeeze(-1))
+        )
+
+    source_estimate = torch.stack(source_estimate, dim=-1)
+    return source_estimate
 
 
 def get_stft(
