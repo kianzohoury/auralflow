@@ -72,19 +72,19 @@ class WeightedComponentLoss(nn.Module):
     def forward(self):
         """Calculates a weighted component loss."""
         # Apply mask to true target source.
-        filtered_src = self.model.mask * self.model.target
+        filtered_src = self.model.mask * self.model.target.squeeze(-1)
 
         # Apply mask to true residual.
         filtered_res = self.model.mask * (
-            self.model.mixture - self.model.target
+            self.model.mixture - self.model.target.squeeze(-1)
         )
 
         # Compute weighted loss.
         self.model.batch_loss = component_loss(
             filtered_src=filtered_src,
-            target_src=self.model.target,
-            filtered_res=self.filtered_residual,
-            target_res=self.model.mixture - self.model.target,
+            target_src=self.model.target.squeeze(-1),
+            filtered_res=filtered_res,
+            target_res=self.model.mixture - self.model.target.squeeze(-1),
             alpha=self.alpha,
             beta=self.beta
         )
