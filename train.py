@@ -33,14 +33,14 @@ def main(config_filepath: str):
     train_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="train",
-        targets=dataset_params["targets"],
+        targets=dataset_params["target"],
         chunk_size=dataset_params["sample_length"],
         num_chunks=int(1e3),
     )
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="val",
-        targets=dataset_params["targets"],
+        targets=dataset_params["target"],
         chunk_size=dataset_params["sample_length"],
         num_chunks=int(1e3),
     )
@@ -86,11 +86,11 @@ def main(config_filepath: str):
                 # Cast precision if necessary to increase training speed.
                 # with autocast(device_type=model.device):
                 model.set_data(mixture, target)
-                # print(model.mixtures.shape)
+                # print(model.mixture.shape)
                 model.forward()
             
                 # Compute batch-wise loss.
-                batch_loss = model.get_loss()
+                batch_loss = model.compute_loss()
                 model.backward()
 
                 log_gradients(

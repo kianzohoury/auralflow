@@ -47,6 +47,11 @@
         "training_mode": true,
         "max_epochs": 100,
         "lr": 0.001,
+        "criterion": {
+            "loss_fn": "component_loss",
+            "alpha_constant": 0.1,
+            "beta_constant": 0.8
+        },
         "stop_patience": 10,
         "export_path": "",
         "checkpoint_path": "checkpoints",

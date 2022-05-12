@@ -5,7 +5,7 @@ import torch.nn as nn
 
 from utils.data_utils import get_deconv_pad
 from torch import FloatTensor, Tensor
-from losses import KLDivergenceLoss, kl_div_loss, vae_loss
+from losses import losses
 from torch.nn import L1Loss
 
 torch.backends.cudnn.benchmark = True
@@ -462,14 +462,6 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         return mask
 
     def get_kl_div(self) -> Tensor:
-        """Computes KL term of the current batch of audio.
+        """Computes KL term."""
+        return losses.kl_div_loss(self.mu_data, self.sigma_data)
 
-        Defined as := D_KL(P||Q), where P is the modeled distribution, and Q
-        is a standard normal N(0, 1). The term is to be added to the
-        reconstruction loss.
-        """
-        return kl_div_loss(self.mu_data, self.sigma_data)
-
-    def loss_fn(self, estimate, target) -> Tensor:
-        """Computes VAE loss."""
-        return self.criterion(estimate, target) + self.get_kl_div()

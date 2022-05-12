@@ -20,7 +20,7 @@ def cross_validate(model, val_dataloader: DataLoader) -> None:
                 model.test()
 
             # Compute batch-wise loss.
-            batch_loss = model.get_loss()
+            batch_loss = model.compute_loss()
             total_loss += batch_loss
 
             # Display loss.

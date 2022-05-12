@@ -5,6 +5,23 @@ separation tasks such as deep-mask or direct source estimation. Separation
 models are adapted for both temporal and spectral audio domains. The
 currently available models to use are:
 
+"""U-Net source separation model in the time-frequency domain.
+
+    Uses the standard `soft-masking` technique to separate a single
+    constituent audio source from its input mixture. The architecture
+    implements a vanilla U-Net design, which involves a basic
+    encoder-decoder scheme (without an additional bottleneck layer).
+    The separation procedure is as follows:
+
+    * The encoder first compresses an audio sample x in the time-frequency
+      domain to a low-resolution representation.
+    * The decoder receives the encoder's output as input, and reconstructs
+      a new sample x~, which matches the dimensionality of x.
+    * A an activation layer normalizes x~ to force its values to be between
+      [0, 1], creating a `soft-mask`.
+    * The mask is applied to the original audio sample x as an element-wise
+      product, yielding the target source estimate y.
+
 
 # Requirements
 

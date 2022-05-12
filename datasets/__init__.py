@@ -26,7 +26,7 @@ def create_audio_folder(
     audio_folder = datasets.AudioFolder(
         subset=subset,
         dataset_path=dataset_params["dataset_path"],
-        targets=dataset_params["targets"],
+        targets=dataset_params["target"],
         sample_length=dataset_params["sample_length"],
         audio_format=dataset_params["audio_format"],
         sample_rate=dataset_params["sample_rate"],

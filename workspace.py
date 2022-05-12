@@ -1,25 +1,16 @@
-import librosa
-import torch
-from datasets import create_audio_dataset
-from models.architectures import SpectrogramNetSimple
-from IPython import display
-
 # from visualizer import plot_spectrograms
-from models.mask_model import SpectrogramMaskModel
 
 # from models.base import UNetSpec, UNetVAESpec
 from models.architectures import (
     SpectrogramNetSimple,
-    SpectrogramLSTM,
-    SpectrogramLSTMVariational,
 )
-from models.metrics import print_conv_stats
+from losses.metrics import print_conv_stats
 
 if __name__ == "__main__":
     # train_dataset = create_audio_dataset(
     #     "toy_dataset",
     #     split="train",
-    #     targets=["bass", "drums", "other", "vocals"],
+    #     target=["bass", "drums", "other", "vocals"],
     #     chunk_size=12,
     #     num_chunks=int(1e6),
     # )

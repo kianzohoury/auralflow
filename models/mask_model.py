@@ -6,20 +6,21 @@ from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 
+import models.architectures
 from utils.data_utils import get_num_frames, AudioTransform
 from visualizer import visualize_audio, listen_audio
 from .base import SeparationModel
-from losses import residual_loss
+from losses import get_model_criterion
 
 
 class SpectrogramMaskModel(SeparationModel):
     """Spectrogram-domain deep mask estimation model."""
 
-    mixtures: Tensor
+    mixture: Tensor
     phase: Tensor
-    targets: Tensor
-    estimates: FloatTensor
-    residuals: Tensor
+    target: Tensor
+    estimate: FloatTensor
+    residual: Tensor
     mask: FloatTensor
 
     def __init__(self, configuration: dict):
@@ -36,9 +37,10 @@ class SpectrogramMaskModel(SeparationModel):
             hop_length=dataset_params["hop_length"],
         )
 
-        # Num bins will be num_fft // 2 + 1 due to symmetry.
+        # Note that num bins will be num_fft // 2 + 1 due to symmetry.
         self.n_fft_bins = configuration["dataset_params"]["num_fft"] // 2 + 1
         self.num_channels = configuration["dataset_params"]["num_channels"]
+        self.target_labels = sorted(self.config["dataset_params"]["target"])
 
         # Retrieve class name of the requested model architecture.
         model_name = getattr(
@@ -66,23 +68,25 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
-        self.input_norm = configuration["model_params"]["normalize_input"]
-
-        self.target_labels = sorted(self.config["dataset_params"]["targets"])
-        self.model.set_criterion(nn.L1Loss())
-
-        # Define loss, optimizer, etc.
         if self.training_mode:
-            lr = self.config["training_params"]["lr"]
-            self.optimizer = AdamW(self.model.parameters(), lr)
+            # Set loss function.
+            self.criterion = get_model_criterion(
+                model=self, config=configuration
+            )
+
+            # Set optimizer and lr scheduler.
+            self.optimizer = AdamW(
+                self.model.parameters(), self.config["training_params"]["lr"]
+            )
+            self.scheduler = lr_scheduler.ReduceLROnPlateau(
+                self.optimizer,
+                mode="min",
+                verbose=True,
+                patience=self.config["training_params"]["stop_patience"]
+            )
+
             self.train_losses = []
             self.val_losses = []
-            self.criterion = self.model.loss_fn
-            self.patience = self.config["training_params"]["stop_patience"]
-            self.scheduler = lr_scheduler.ReduceLROnPlateau(
-                self.optimizer, "min", verbose=True, patience=6
-            )
-            # self.accum_steps = 10
 
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
         """Wrapper method processes and sets data for internal access."""
@@ -95,32 +99,18 @@ class SpectrogramMaskModel(SeparationModel):
         ).permute(0, 2, 3, 4, 1)
 
         # Separate magnitude and phase, and store data for internal access.
-        self.mixtures = torch.abs(mix_complex_stft)
-        self.targets = torch.abs(target_complex_stft)
+        self.mixture = torch.abs(mix_complex_stft)
+        self.target = torch.abs(target_complex_stft)
         self.phase = torch.angle(mix_complex_stft)
 
     def forward(self) -> None:
-        """Estimates target source by applying the learned mask to the mixture.
+        """Estimates target by applying the learned mask to the mixture."""
+        self.mask = self.model(self.mixture)
+        self.estimate = self.mask * self.mixture
 
-        Target source S' is acquired by taking the Hadamard product between
-        the mixture signal X, and the output of the network, M
-        (estimated soft-mask), such that S = M * X. If learning residual,
-        network will estimate it separately.
-        """
-        # if self.input_norm:
-        #     input_data = self.mixtures / torch.max(self.mixtures)
-        # else:
-        #     input_data = self.mixtures
-        # print(self.mixtures.shape)
-        self.mask = self.model(self.mixtures.clone())
-        self.estimates = self.mask * self.mixtures
-        self.residuals = self.model.residual_mask * self.mixtures
-
-    def get_loss(self) -> float:
-        """Computes batch-wise loss."""
-        # print(self.targets.shape, self.residuals.shape, self.mixtures.shape, self.estimates.shape)
-        self.batch_loss = residual_loss(
-            self.criterion, self.estimates, self.targets.squeeze(-1), self.residuals, self.mixtures)
+    def compute_loss(self) -> float:
+        """Updates and returns the current batch-wise loss."""
+        self.criterion()
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -158,12 +148,12 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         # Separate magnitude and phase.
-        self.mixtures = torch.abs(mix_complex_stft)
+        self.mixture = torch.abs(mix_complex_stft)
         self.phase = torch.angle(mix_complex_stft)
 
         # Get source estimate s' = mask * mixture and apply phase correction.
         self.test()
-        phase_corrected = self.estimates * torch.exp(1j * self.phase)
+        phase_corrected = self.estimate * torch.exp(1j * self.phase)
         target_estimate = self.transform.to_audio(phase_corrected)
         return target_estimate
 

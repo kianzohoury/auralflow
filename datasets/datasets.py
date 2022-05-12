@@ -2,17 +2,16 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Iterator, List, Optional, Tuple
 
-from torch import Tensor
-from torch.utils.data.dataset import IterableDataset, Dataset
-from tqdm import tqdm, tqdm_notebook
-from visualizer.progress import ProgressBar
-from . import datasets
-
 import librosa
 import numpy as np
 import torch
 import torch.utils.data
 import torchaudio
+from torch import Tensor
+from torch.utils.data.dataset import IterableDataset, Dataset
+from tqdm import tqdm
+
+from visualizer.progress import ProgressBar
 
 
 class AudioFolder(IterableDataset):
@@ -91,7 +90,7 @@ class AudioFolder(IterableDataset):
         np.random.seed(1)
 
     def _generate_mixture(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Generates audio mixtures and their ground-truth target sources.
+        """Generates audio mixture and their ground-truth target sources.
 
         Returns:
             (tuple): A tuple of a training sample and its target sources.
@@ -210,14 +209,11 @@ def make_chunks(
     dataset: List,
     chunk_size: int,
     num_chunks: int,
-    normalize: bool = True,
     sr: int = 44100,
 ) -> List[OrderedDict]:
     """Transforms an audio dataset into a chunked dataset."""
     chunked_dataset = []
-    # mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros((sr * chunk_size))
     num_tracks = len(dataset)
-    # num_chunks = 1000
     with ProgressBar(
         range(num_chunks), total=num_chunks, fmt=False, unit="chunk"
     ) as tq:
@@ -242,7 +238,6 @@ def make_chunks(
             if index == num_chunks:
                 break
     del dataset
-    # normalize_dataset(chunked_dataset)
     return chunked_dataset
 
 
