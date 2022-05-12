@@ -138,6 +138,8 @@ class SpectrogramNetSimple(nn.Module):
         self.normalize_input = normalize_input
         self.residual = residual
 
+        self.input_norm = nn.LayerNorm((num_channels, num_fft_bins, num_samples))
+
         # Set model criterion. 
         if criterion is None:
             self.set_criterion(nn.MSELoss())
@@ -250,6 +252,7 @@ class SpectrogramNetSimple(nn.Module):
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
+        data = self.input_norm(data)
         # data = self.input_norm(data.permute(0, 2, 3, 1))
         # data = data.permute(0, 3, 1, 2)
         # data = data.permute(0, 1, 3, 2)

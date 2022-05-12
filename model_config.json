@@ -46,7 +46,7 @@
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
-        "lr": 0.001,
+        "lr": 0.005,
         "criterion": {
             "loss_fn": "component_loss",
             "alpha_constant": 0.1,

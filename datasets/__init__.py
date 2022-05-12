@@ -74,6 +74,7 @@ def create_audio_dataset(
     split: str = "train",
     chunk_size: int = 1,
     num_chunks: int = int(1e6),
+    normalize: bool = False
 ) -> datasets.AudioDataset:
     """Creates a chunked audio dataset."""
     full_dataset = audio_to_disk(
@@ -85,6 +86,7 @@ def create_audio_dataset(
         chunk_size=chunk_size,
         num_chunks=num_chunks,
     )
+        
     return chunked_dataset
 
 

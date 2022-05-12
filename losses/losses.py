@@ -21,15 +21,23 @@ def component_loss(
     quality of the residual noise against the other two terms.
     """
     # Separation quality term. Measures the quality of the estimated target.
-    sep_comp = ((filtered_src - target_src) ** 2).sum()
+    # sep_comp = (((filtered_src - target_src) ** 2).sum()) / target_src.numel()
+    sep_comp = l2_loss(filtered_src, target_src)
 
     # Noise attenuation term. Measures the total noise of the residual.
-    noise_atten_comp = (filtered_res ** 2).sum()
+    # noise_atten_comp = (filtered_res ** 2).sum() 
+    noise_atten_comp = torch.norm(filtered_res, p=2)
+
 
     # Noise quality component.
-    filtered_res_norm = filtered_res / torch.sqrt((filtered_res ** 2).sum())
-    target_res_norm = target_res / torch.sqrt((target_res ** 2).sum())
-    noise_quality_comp = ((filtered_res_norm - target_res_norm) ** 2).sum()
+    filtered_res_norm = filtered_res / torch.norm(filtered_res, p=2)
+    # filtered_res_norm = filtered_res / torch.sqrt((filtered_res ** 2).sum())
+    # target_res_norm = target_res / torch.sqrt((target_res ** 2).sum())
+    target_res_norm = target_res / torch.norm(target_res, p=2)
+    # noise_quality_comp = (
+    #     (filtered_res_norm - target_res_norm) ** 2
+    # ).sum() / target_res_norm.numel()
+    noise_quality_comp = l2_loss(filtered_res_norm, target_res_norm)
 
     # Discards last term if specified.
     beta = 0 if n_components == 2 else beta

@@ -35,14 +35,14 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e3),
+        num_chunks=int(1e4),
     )
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e3),
+        num_chunks=int(1e4),
     )
 
     train_dataloader = load_dataset(
