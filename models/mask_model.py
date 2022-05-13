@@ -77,12 +77,12 @@ class SpectrogramMaskModel(SeparationModel):
             self.optimizer = AdamW(
                 self.model.parameters(), self.config["training_params"]["lr"]
             )
-            # self.scheduler = lr_scheduler.ReduceLROnPlateau(
-            #     self.optimizer,
-            #     mode="min",
-            #     verbose=True,
-            #     patience=self.config["training_params"]["stop_patience"]
-            # )
+            self.scheduler = lr_scheduler.ReduceLROnPlateau(
+                self.optimizer,
+                mode="min",
+                verbose=True,
+                patience=self.config["training_params"]["stop_patience"]
+            )
             self.patience = self.config["training_params"]["stop_patience"]
 
             self.train_losses = []

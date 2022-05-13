@@ -138,8 +138,8 @@ def main(config_filepath: str):
         print("-" * 79)
 
 
-        # # Decrease lr if scheduler determines so.
-        # model.scheduler_step()
+        # Decrease lr if scheduler determines so.
+        model.scheduler_step()
 
         # Log validation loss.
         writer.add_scalar(

@@ -134,13 +134,13 @@ class SpectrogramNetSimple(nn.Module):
         self.mask_activation_fn = mask_act_fn
         self.leak_factor = leak_factor
         self.normalize_input = normalize_input
-        self.input_norm = nn.LayerNorm((num_channels, num_fft_bins, num_samples))
+        # self.input_norm = nn.LayerNorm((num_channels, num_fft_bins, num_samples))
 
-        # # # Use identity to prevent GPU from being slowed down in forward pass.
-        # if normalize_input:
-        #     self.input_norm = nn.BatchNorm2d(num_fft_bins)
-        # else:
-        #     self.input_norm = nn.Identity()
+        # Use identity to prevent GPU from being slowed down in forward pass.
+        if normalize_input:
+            self.input_norm = nn.BatchNorm2d(num_fft_bins)
+        else:
+            self.input_norm = nn.Identity()
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_dim]]
@@ -231,9 +231,9 @@ class SpectrogramNetSimple(nn.Module):
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
-        data = self.input_norm(data)
-        # data = self.input_norm(data.permute(0, 2, 3, 1))
-        # data = data.permute(0, 3, 1, 2)
+        # data = self.input_norm(data)
+        data = self.input_norm(data.permute(0, 2, 3, 1))
+        data = data.permute(0, 3, 1, 2)
         # data = data.permute(0, 1, 3, 2)
         # data = data - self.input_center
         # data = data * self.input_scale
