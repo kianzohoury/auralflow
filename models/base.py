@@ -48,11 +48,11 @@ class SeparationModel(ABC):
 
     def train(self) -> None:
         """Sets model to training mode."""
-        self.model.train()
+        self.model = self.model.train()
 
     def eval(self) -> None:
         """Sets model to evaluation mode."""
-        self.model.eval()
+        self.model = self.model.eval()
 
     def test(self):
         """Calls forward method without gradient tracking."""

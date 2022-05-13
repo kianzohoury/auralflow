@@ -20,24 +20,32 @@ def component_loss(
     residual noise attenuation. Optional third component balances the
     quality of the residual noise against the other two terms.
     """
+    flattened_dims = list(range(1, filtered_src.dim()))
     # Separation quality term. Measures the quality of the estimated target.
     # sep_comp = (((filtered_src - target_src) ** 2).sum()) / target_src.numel()
     sep_comp = l2_loss(filtered_src, target_src)
 
     # Noise attenuation term. Measures the total noise of the residual.
-    # noise_atten_comp = (filtered_res ** 2).sum() 
-    noise_atten_comp = torch.norm(filtered_res, p=2)
+    noise_atten_comp = torch.sum(filtered_res ** 2, dim=flattened_dims, keepdim=True)
+    # noise_atten_comp = torch.linalg.norm(filtered_res)
 
 
     # Noise quality component.
-    filtered_res_norm = filtered_res / torch.norm(filtered_res, p=2)
+    print()
+    print("sep", sep_comp)
+    print("noise atten", torch.mean(noise_atten_comp), noise_atten_comp.shape)
+    print()
+    filtered_res_norm = filtered_res / torch.sqrt(noise_atten_comp)
+    print(filtered_res_norm.shape)
     # filtered_res_norm = filtered_res / torch.sqrt((filtered_res ** 2).sum())
     # target_res_norm = target_res / torch.sqrt((target_res ** 2).sum())
-    target_res_norm = target_res / torch.norm(target_res, p=2)
+    target_res_norm = target_res / torch.sqrt(torch.sum(target_res ** 2, dim=flattened_dims, keepdim=True))
+    print(target_res_norm.shape)
     # noise_quality_comp = (
     #     (filtered_res_norm - target_res_norm) ** 2
     # ).sum() / target_res_norm.numel()
     noise_quality_comp = l2_loss(filtered_res_norm, target_res_norm)
+    print("noise_qual_comp", noise_quality_comp)
 
     # Discards last term if specified.
     beta = 0 if n_components == 2 else beta
@@ -49,7 +57,7 @@ def component_loss(
 
     # Combine loss components.
     loss = (1 - alpha - beta) * sep_comp
-    loss += alpha * noise_atten_comp
+    loss += alpha * torch.mean(noise_atten_comp)
     loss += beta * noise_quality_comp
     return loss
 

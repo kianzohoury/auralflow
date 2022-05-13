@@ -227,6 +227,10 @@ def make_chunks(
             stop = offset + int(sr * chunk_size)
             mix_chunk = torch.from_numpy(mixture[offset:stop])
 
+            # Discard silent audio samples.
+            if torch.max(mix_chunk) == 0:
+                continue
+
             chunked_entry = OrderedDict()
             chunked_entry["mixture"] = mix_chunk
             for target_name, target_data in list(entry.items())[1:-1]:

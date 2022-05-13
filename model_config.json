@@ -28,9 +28,9 @@
         "max_num_tracks": 2,
         "num_channels": 1,
         "sample_rate": 44100,
-        "num_fft": 512,
-        "window_size": 512,
-        "hop_length": 64,
+        "num_fft": 256,
+        "window_size": 256,
+        "hop_length": 32,
         "power_spectrum": true,
         "learn_filterbanks": false,
         "sample_length": 2,
@@ -47,9 +47,9 @@
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
-        "lr": 0.0005,
+        "lr": 0.001,
         "criterion": {
-            "loss_fn": "l1",
+            "loss_fn": "component_loss",
             "alpha_constant": 0.1,
             "beta_constant": 0.8
         },

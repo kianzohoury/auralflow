@@ -68,7 +68,6 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         if self.training_mode:
-            self.train()
             # Set loss function.
             self.criterion = get_model_criterion(
                 model=self, config=configuration
@@ -111,8 +110,8 @@ class SpectrogramMaskModel(SeparationModel):
 
     def compute_loss(self) -> float:
         """Updates and returns the current batch-wise loss."""
-        # self.criterion()
-        self.batch_loss = nn.functional.l1_loss(self.estimate, self.target.squeeze(-1))
+        self.criterion()
+        # self.batch_loss = nn.functional.l1_loss(self.estimate, self.target.squeeze(-1))
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -121,6 +120,7 @@ class SpectrogramMaskModel(SeparationModel):
 
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
+        self.train()
         self.optimizer.step()
         self.optimizer.zero_grad()
         # for param in self.model.parameters():
