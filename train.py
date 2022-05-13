@@ -35,7 +35,7 @@ def main(config_filepath: str):
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e4),
+        num_chunks=int(1e3),
         max_num_tracks=dataset_params["max_num_tracks"]
     )
     val_dataset = create_audio_dataset(
@@ -43,7 +43,7 @@ def main(config_filepath: str):
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
-        num_chunks=int(1e4),
+        num_chunks=int(1e3),
         max_num_tracks=dataset_params["max_num_tracks"]
     )
 
@@ -113,10 +113,8 @@ def main(config_filepath: str):
                 
                 # Display and log the loss.
                 pbar.set_postfix({"loss": round(batch_loss, 6)})
-                writer.add_scalars(
-                    "Loss/train",
-                    {"train": batch_loss},
-                    global_step,
+                writer.add_scalar(
+                    "Loss/train/iter_avg", batch_loss, global_step
                 )
 
                 # Break if looped max_iters times.
@@ -124,8 +122,12 @@ def main(config_filepath: str):
                     pbar.clear()
                     break
 
+        pbar.set_postfix({"loss": round(total_loss / max_iters, 6)})
         # Store epoch-average loss.
         model.train_losses.append(total_loss / max_iters)
+        writer.add_scalar(
+            "Loss/train/epoch_avg", total_loss / max_iters, epoch,
+        )
 
         # Validate updated model.
         cross_validate(
@@ -136,12 +138,18 @@ def main(config_filepath: str):
         # # Decrease lr if scheduler determines so.
         # model.scheduler_step()
 
-        # # Log validation loss.
-        # writer.add_scalars(
-        #     "Loss/val",
-        #     {"val": model.val_losses[-1]},
-        #     epoch,
-        # )
+        # Log validation loss.
+        writer.add_scalar(
+            "Loss/val/epoch_avg", model.val_losses[-1], epoch
+        )
+
+        writer.add_scalars(
+            "Loss",
+            {"train": total_loss / max_iters, "val": model.val_losses[-1]},
+            epoch
+        )
+
+
 
         # # Only save the best model.
         # is_best = model.val_losses[-1] < min(model.val_losses)
@@ -154,9 +162,9 @@ def main(config_filepath: str):
         #     print("Stopping training early...")
         #     break
 
-        # model.post_epoch_callback(
-        #     *next(iter(val_dataloader)), writer, epoch
-        # )
+        model.post_epoch_callback(
+            *next(iter(val_dataloader)), writer, epoch
+        )
 
         # model.train()
 

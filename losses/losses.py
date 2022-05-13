@@ -12,7 +12,7 @@ def component_loss(
     target_res: Tensor,
     alpha: float = 0.1,
     beta: float = 0.8,
-    n_components: int = 3
+    n_components: int = 2
 ) -> Tensor:
     """Weighted L2 loss using 2 or 3 components depending on arguments.
 
@@ -31,21 +31,21 @@ def component_loss(
 
 
     # Noise quality component.
-    print()
-    print("sep", sep_comp)
-    print("noise atten", torch.mean(noise_atten_comp), noise_atten_comp.shape)
-    print()
-    filtered_res_norm = filtered_res / torch.sqrt(noise_atten_comp)
-    print(filtered_res_norm.shape)
+    # print()
+    # print("sep", (1 - alpha - beta) * sep_comp)
+    # print("noise atten", alpha * torch.mean(noise_atten_comp))
+    # print()
+    # filtered_res_norm = filtered_res / torch.sqrt(noise_atten_comp)
+    # print(filtered_res_norm.shape)
     # filtered_res_norm = filtered_res / torch.sqrt((filtered_res ** 2).sum())
     # target_res_norm = target_res / torch.sqrt((target_res ** 2).sum())
-    target_res_norm = target_res / torch.sqrt(torch.sum(target_res ** 2, dim=flattened_dims, keepdim=True))
-    print(target_res_norm.shape)
+    # target_res_norm = target_res / torch.sqrt(torch.sum(target_res ** 2, dim=flattened_dims, keepdim=True))
+    # print(target_res_norm.shape)
     # noise_quality_comp = (
     #     (filtered_res_norm - target_res_norm) ** 2
     # ).sum() / target_res_norm.numel()
-    noise_quality_comp = l2_loss(filtered_res_norm, target_res_norm)
-    print("noise_qual_comp", noise_quality_comp)
+    # noise_quality_comp = l2_loss(filtered_res_norm, target_res_norm)
+    # print("noise_qual_comp", noise_quality_comp)
 
     # Discards last term if specified.
     beta = 0 if n_components == 2 else beta
@@ -56,9 +56,9 @@ def component_loss(
         beta /= (alpha + beta + 1e-6)
 
     # Combine loss components.
-    loss = (1 - alpha - beta) * sep_comp
-    loss += alpha * torch.mean(noise_atten_comp)
-    loss += beta * noise_quality_comp
+    loss = (1 - alpha - beta) * sep_comp + alpha * torch.mean(noise_atten_comp)
+    # loss += alpha * torch.mean(noise_atten_comp)
+    # loss += beta * noise_quality_comp
     return loss
 
 
@@ -88,11 +88,11 @@ class WeightedComponentLoss(nn.Module):
     def forward(self):
         """Calculates a weighted component loss."""
         # Apply mask to true target source.
-        filtered_src = self.model.mask * self.model.target.squeeze(-1)
+        filtered_src = self.model.mask * (self.model.target.squeeze(-1).clone().detach())
 
         # Apply mask to true residual.
         filtered_res = self.model.mask * (
-            self.model.mixture - self.model.target.squeeze(-1)
+            self.model.mixture.clone().detach() - (self.model.target.squeeze(-1).clone().detach())
         )
 
         # Compute weighted loss.
@@ -100,7 +100,7 @@ class WeightedComponentLoss(nn.Module):
             filtered_src=filtered_src,
             target_src=self.model.target.squeeze(-1),
             filtered_res=filtered_res,
-            target_res=self.model.mixture - self.model.target.squeeze(-1),
+            target_res=(self.model.mixture - self.model.target.squeeze(-1)).clone().detach(),
             alpha=self.alpha,
             beta=self.beta
         )

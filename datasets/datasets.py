@@ -210,6 +210,7 @@ def make_chunks(
     chunk_size: int,
     num_chunks: int,
     sr: int = 44100,
+    energy_cutoff: float =1.0
 ) -> List[OrderedDict]:
     """Transforms an audio dataset into a chunked dataset."""
     chunked_dataset = []
@@ -218,7 +219,8 @@ def make_chunks(
         range(num_chunks), total=num_chunks, fmt=False, unit="chunk"
     ) as tq:
         for index, _ in enumerate(tq):
-
+            
+            discard_entry = False
             entry = dataset[np.random.randint(num_tracks)]
             mixture = entry["mixture"]
             duration = entry["duration"]
@@ -227,17 +229,22 @@ def make_chunks(
             stop = offset + int(sr * chunk_size)
             mix_chunk = torch.from_numpy(mixture[offset:stop])
 
-            # Discard silent audio samples.
-            if torch.max(mix_chunk) == 0:
+            
+            if torch.linalg.norm(mix_chunk) < energy_cutoff:
                 continue
 
             chunked_entry = OrderedDict()
             chunked_entry["mixture"] = mix_chunk
             for target_name, target_data in list(entry.items())[1:-1]:
-                chunked_entry[target_name] = torch.from_numpy(
+                chunked_entry[target_name] = target_chunk = torch.from_numpy(
                     target_data[offset:stop]
                 )
-            chunked_dataset.append(chunked_entry)
+                if torch.linalg.norm(target_chunk) < energy_cutoff:
+                    discard_entry = True
+
+            # Discard silent entries.
+            if not discard_entry:
+                chunked_dataset.append(chunked_entry)
 
             if index == num_chunks:
                 break

@@ -18,10 +18,9 @@ def cross_validate(model, val_dataloader: DataLoader) -> None:
             model.set_data(mixture, target)
             with torch.no_grad():
                 model.test()
-
-            # Compute batch-wise loss.
-            batch_loss = model.compute_loss()
-            total_loss += batch_loss
+                # Compute batch-wise loss.
+                batch_loss = model.compute_loss()
+                total_loss += batch_loss
 
             # Display loss.
             pbar.set_postfix({"loss": batch_loss})

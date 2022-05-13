@@ -50,8 +50,8 @@
         "lr": 0.001,
         "criterion": {
             "loss_fn": "component_loss",
-            "alpha_constant": 0.1,
-            "beta_constant": 0.8
+            "alpha_constant": 0.5,
+            "beta_constant": 0.5
         },
         "stop_patience": 10,
         "export_path": "",

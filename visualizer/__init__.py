@@ -60,14 +60,14 @@ def visualize_audio(
             color="yellowgreen",
             alpha=0.7,
             linewidth=0.2,
-            label=f"{label} true",
+            label=f"{label} estimate",
         )
         ax[2].plot(
             target_wav,
             color="darkorange",
             alpha=0.7,
             linewidth=0.2,
-            label=f"{label} estimate",
+            label=f"{label} true",
         )
 
         # Formatting.

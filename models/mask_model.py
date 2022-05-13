@@ -105,13 +105,13 @@ class SpectrogramMaskModel(SeparationModel):
 
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
-        self.mask = self.model(self.mixture)
+        self.mask = self.model(self.mixture.clone().detach())
         self.estimate = self.mask * (self.mixture.clone().detach())
 
     def compute_loss(self) -> float:
         """Updates and returns the current batch-wise loss."""
-        self.criterion()
-        # self.batch_loss = nn.functional.l1_loss(self.estimate, self.target.squeeze(-1))
+        # self.criterion()
+        self.batch_loss = nn.functional.l1_loss(self.estimate, self.target.squeeze(-1))
         return self.batch_loss.item()
 
     def backward(self) -> None:
