@@ -22,7 +22,7 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
             loss_fn=loss_fn
         )
     elif loss_fn == "l1":
-        criterion = losses.l1_loss
+        criterion = losses.L1Loss(model=model)
     else:
-        criterion = losses.l2_loss
+        criterion = losses.L2Loss(model=model)
     return criterion

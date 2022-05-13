@@ -1,6 +1,7 @@
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data import Dataset
 from tqdm.asyncio import tqdm
+from typing import Optional
 
 from . import datasets
 from collections import OrderedDict
@@ -37,12 +38,12 @@ def create_audio_folder(
 
 
 def audio_to_disk(
-    dataset_path: str, targets: List[str], split: str = "train"
+    dataset_path: str, targets: List[str], split: str = "train", max_num_tracks: Optional[int] = None
 ) -> List[OrderedDict]:
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
-    num_tracks = len(subset_dir)
+    num_tracks = min(len(subset_dir), max_num_tracks if max_num_tracks is not None else float("inf"))
 
     with ProgressBar(
         subset_dir, total=num_tracks, fmt=False, unit="track", desc=f"{split}:"
@@ -74,11 +75,12 @@ def create_audio_dataset(
     split: str = "train",
     chunk_size: int = 1,
     num_chunks: int = int(1e6),
-    normalize: bool = False
+    normalize: bool = False,
+    max_num_tracks: Optional[int] = None
 ) -> datasets.AudioDataset:
     """Creates a chunked audio dataset."""
     full_dataset = audio_to_disk(
-        dataset_path=dataset_path, targets=targets, split=split
+        dataset_path=dataset_path, targets=targets, split=split, max_num_tracks=max_num_tracks
     )
     chunked_dataset = datasets.AudioDataset(
         dataset=full_dataset,

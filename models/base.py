@@ -49,13 +49,9 @@ class SeparationModel(ABC):
     def train(self) -> None:
         """Sets model to training mode."""
         self.model.train()
-        # for param in self.model.parameters():
-        #     param.requires_grad = True
 
     def eval(self) -> None:
         """Sets model to evaluation mode."""
-        # for param in self.model.parameters():
-        #     param.requires_grad = False
         self.model.eval()
 
     def test(self):

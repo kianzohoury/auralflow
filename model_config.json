@@ -5,7 +5,7 @@
         "model_name": "my_separation_model",
         "normalize_input": false,
         "learn_residual": true,
-        "mask_activation": "sigmoid",
+        "mask_activation": "relu",
         "layer_params": {
             "max_depth": 6,
             "hidden_size": 16,
@@ -25,11 +25,12 @@
         "audio_format": "wav",
         "backend": "soundfile",
         "targets": ["vocals"],
+        "max_num_tracks": 2,
         "num_channels": 1,
         "sample_rate": 44100,
-        "num_fft": 2048,
-        "window_size": 2048,
-        "hop_length": 512,
+        "num_fft": 512,
+        "window_size": 512,
+        "hop_length": 64,
         "power_spectrum": true,
         "learn_filterbanks": false,
         "sample_length": 2,
@@ -46,9 +47,9 @@
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
-        "lr": 0.005,
+        "lr": 0.0005,
         "criterion": {
-            "loss_fn": "component_loss",
+            "loss_fn": "l1",
             "alpha_constant": 0.1,
             "beta_constant": 0.8
         },

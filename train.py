@@ -36,6 +36,7 @@ def main(config_filepath: str):
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
         num_chunks=int(1e4),
+        max_num_tracks=dataset_params["max_num_tracks"]
     )
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
@@ -43,13 +44,14 @@ def main(config_filepath: str):
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
         num_chunks=int(1e4),
+        max_num_tracks=dataset_params["max_num_tracks"]
     )
 
     train_dataloader = load_dataset(
         dataset=train_dataset, loader_params=dataloader_params
     )
     val_dataloader = load_dataset(
-        dataset=val_dataset, loader_params=dataloader_params
+        dataset=train_dataset, loader_params=dataloader_params
     )
     print(
         f"Done. Loaded {len(train_dataset)} training and {len(val_dataset)}"
@@ -68,6 +70,7 @@ def main(config_filepath: str):
     # writer_process.start()
 
     writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
+    # optimizer = torch.optim.AdamW(model.model.parameters())
 
     current_epoch = training_params["last_epoch"] + 1
     stop_epoch = current_epoch + training_params["max_epochs"]
@@ -75,7 +78,6 @@ def main(config_filepath: str):
     # max_iters = dataloader_params["max_iterations"]
     max_iters = len(train_dataloader)
     save_freq = training_params["checkpoint_freq"]
-
     print("-" * 79 + "\nStarting training...")
     for epoch in range(current_epoch, stop_epoch):
         print(f"Epoch [{epoch}/{stop_epoch}]", flush=True)
@@ -85,12 +87,16 @@ def main(config_filepath: str):
             for idx, (mixture, target) in enumerate(pbar):
                 # Cast precision if necessary to increase training speed.
                 # with autocast(device_type=model.device):
+                
                 model.set_data(mixture, target)
                 # print(model.mixture.shape)
                 model.forward()
             
                 # Compute batch-wise loss.
                 batch_loss = model.compute_loss()
+                total_loss += batch_loss
+
+                # Compute gradient.
                 model.backward()
 
                 log_gradients(
@@ -104,11 +110,9 @@ def main(config_filepath: str):
                 # Update model parameters.
                 model.optimizer_step()
                 global_step += 1
-                # Accumulate loss.
-                total_loss += model.batch_loss
-
+                
                 # Display and log the loss.
-                pbar.set_postfix({"loss": batch_loss})
+                pbar.set_postfix({"loss": round(batch_loss, 6)})
                 writer.add_scalars(
                     "Loss/train",
                     {"train": batch_loss},
@@ -129,30 +133,32 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
         )
 
-        # Decrease lr if scheduler determines so.
-        model.scheduler_step()
+        # # Decrease lr if scheduler determines so.
+        # model.scheduler_step()
 
-        # Log validation loss.
-        writer.add_scalars(
-            "Loss/val",
-            {"val": model.val_losses[-1]},
-            epoch,
-        )
+        # # Log validation loss.
+        # writer.add_scalars(
+        #     "Loss/val",
+        #     {"val": model.val_losses[-1]},
+        #     epoch,
+        # )
 
-        # Only save the best model.
-        is_best = model.val_losses[-1] < min(model.val_losses)
-        if is_best:
-            model.save_model(global_step=epoch)
-            model.save_optim(global_step=epoch)
+        # # Only save the best model.
+        # is_best = model.val_losses[-1] < min(model.val_losses)
+        # if is_best:
+        #     model.save_model(global_step=epoch)
+        #     model.save_optim(global_step=epoch)
 
         # Stop training if stop patience runs out before improvement.
-        if model.stop_early():
-            print("Stopping training early...")
-            break
+        # if model.stop_early():
+        #     print("Stopping training early...")
+        #     break
 
-        model.post_epoch_callback(
-            *next(iter(val_dataloader)), writer, epoch
-        )
+        # model.post_epoch_callback(
+        #     *next(iter(val_dataloader)), writer, epoch
+        # )
+
+        # model.train()
 
 
     writer.close()

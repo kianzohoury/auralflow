@@ -57,7 +57,6 @@ class SpectrogramMaskModel(SeparationModel):
             mask_act_fn=configuration["model_params"]["mask_activation"],
             leak_factor=self.layer_params["leak_factor"],
             normalize_input=configuration["model_params"]["normalize_input"],
-            residual=configuration["model_params"]["learn_residual"],
         ).to(self.device)
 
         # Instantiate data transformer.
@@ -69,6 +68,7 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         if self.training_mode:
+            self.train()
             # Set loss function.
             self.criterion = get_model_criterion(
                 model=self, config=configuration
@@ -78,12 +78,13 @@ class SpectrogramMaskModel(SeparationModel):
             self.optimizer = AdamW(
                 self.model.parameters(), self.config["training_params"]["lr"]
             )
-            self.scheduler = lr_scheduler.ReduceLROnPlateau(
-                self.optimizer,
-                mode="min",
-                verbose=True,
-                patience=self.config["training_params"]["stop_patience"]
-            )
+            # self.scheduler = lr_scheduler.ReduceLROnPlateau(
+            #     self.optimizer,
+            #     mode="min",
+            #     verbose=True,
+            #     patience=self.config["training_params"]["stop_patience"]
+            # )
+            self.patience = self.config["training_params"]["stop_patience"]
 
             self.train_losses = []
             self.val_losses = []
@@ -106,11 +107,12 @@ class SpectrogramMaskModel(SeparationModel):
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
         self.mask = self.model(self.mixture)
-        self.estimate = self.mask * self.mixture
+        self.estimate = self.mask * (self.mixture.clone().detach())
 
     def compute_loss(self) -> float:
         """Updates and returns the current batch-wise loss."""
-        self.criterion()
+        # self.criterion()
+        self.batch_loss = nn.functional.l1_loss(self.estimate, self.target.squeeze(-1))
         return self.batch_loss.item()
 
     def backward(self) -> None:

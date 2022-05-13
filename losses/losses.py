@@ -127,3 +127,27 @@ class KLDivergenceLoss(nn.Module):
             self.model.estimate, self.model.target
         )
         self.model.batch_loss = torch.add(construction_loss, kl_term)
+
+
+class L1Loss(nn.Module):
+    """Wrapper class for l1 loss."""
+    def __init__(self, model):
+        super(L1Loss, self).__init__()
+        self.model = model
+
+    def forward(self) -> None:
+        self.model.batch_loss = l1_loss(
+            self.model.estimate, self.model.target.squeeze(-1)
+        )
+
+
+class L2Loss(nn.Module):
+    """Wrapper class for l2 loss."""
+    def __init__(self, model):
+        super(L2Loss, self).__init__()
+        self.model = model
+
+    def forward(self) -> None:
+        self.model.batch_loss = l2_loss(
+            self.model.estimate, self.model.target.squeeze(-1)
+        )
