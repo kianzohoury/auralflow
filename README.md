@@ -27,8 +27,9 @@ currently available models to use are:
 
 
 # Target Source Retrieval Task
-\(E = mc^2\)
-$M$
+<img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
+
+
 # Table of contents
 1. [Introduction](#introduction)
 2. [Datasets](#paragraph1)
