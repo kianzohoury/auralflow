@@ -44,8 +44,8 @@ class ConvBlockTriple(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, True, leak, 0),
-            # ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0.2)
+            ConvBlock(in_channels, out_channels, kernel_size, False, leak, 0),
+            ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0)
             # ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )
 

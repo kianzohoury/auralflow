@@ -27,9 +27,9 @@ def main(config_filepath: str):
     dataset_params = configuration["dataset_params"]
     dataloader_params = dataset_params["loader_params"]
     visualizer_params = configuration["visualizer_params"]
-    print("Done.")
+    print("Successful.")
 
-    print("-" * 79 + "\nFetching dataset...")
+    print("-" * 79 + "\nLoading training data...")
     train_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="train",
@@ -54,7 +54,7 @@ def main(config_filepath: str):
         dataset=val_dataset, loader_params=dataloader_params
     )
     print(
-        f"Done. Loaded {len(train_dataset)} training and {len(val_dataset)}"
+        f"Successful. Loaded {len(train_dataset)} training and {len(val_dataset)}"
         f" validation samples of length {dataset_params['sample_length']}s."
     )
 
@@ -80,10 +80,10 @@ def main(config_filepath: str):
     save_freq = training_params["checkpoint_freq"]
     print("-" * 79 + "\nStarting training...")
     for epoch in range(current_epoch, stop_epoch):
-        print(f"Epoch [{epoch}/{stop_epoch}]", flush=True)
+        print(f"Epoch {epoch}/{stop_epoch}", flush=True)
         total_loss = 0
         model.train()
-        with ProgressBar(train_dataloader, max_iters, desc="train:") as pbar:
+        with ProgressBar(train_dataloader, max_iters) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
                 # Cast precision if necessary to increase training speed.
                 # with autocast(device_type=model.device):
@@ -130,7 +130,13 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
         )
 
-        print("avg train loss:")
+        print("-" * 79)
+        print("avg train loss:", total_loss / max_iters)
+        print("avg val loss:", model.val_losses[-1])
+        print("sdr:")
+        print("snr:")
+        print("-" * 79)
+
 
         # # Decrease lr if scheduler determines so.
         # model.scheduler_step()
