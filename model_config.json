@@ -25,7 +25,7 @@
         "audio_format": "wav",
         "backend": "soundfile",
         "targets": ["vocals"],
-        "max_num_tracks": 2,
+        "max_num_tracks": 10,
         "num_channels": 1,
         "sample_rate": 44100,
         "num_fft": 512,
@@ -50,7 +50,7 @@
         "lr": 0.001,
         "criterion": {
             "loss_fn": "component_loss",
-            "alpha_constant": 0.5,
+            "alpha_constant": 0.25,
             "beta_constant": 0.5
         },
         "stop_patience": 10,

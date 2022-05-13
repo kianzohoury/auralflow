@@ -51,7 +51,7 @@ def main(config_filepath: str):
         dataset=train_dataset, loader_params=dataloader_params
     )
     val_dataloader = load_dataset(
-        dataset=train_dataset, loader_params=dataloader_params
+        dataset=val_dataset, loader_params=dataloader_params
     )
     print(
         f"Done. Loaded {len(train_dataset)} training and {len(val_dataset)}"
@@ -117,11 +117,6 @@ def main(config_filepath: str):
                     "Loss/train/iter_avg", batch_loss, global_step
                 )
 
-                # Break if looped max_iters times.
-                if idx == max_iters:
-                    pbar.clear()
-                    break
-
         pbar.set_postfix({"loss": round(total_loss / max_iters, 6)})
         # Store epoch-average loss.
         model.train_losses.append(total_loss / max_iters)
@@ -134,6 +129,8 @@ def main(config_filepath: str):
             model=model,
             val_dataloader=val_dataloader,
         )
+
+        print("avg train loss:")
 
         # # Decrease lr if scheduler determines so.
         # model.scheduler_step()
