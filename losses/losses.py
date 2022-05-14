@@ -27,42 +27,31 @@ def component_loss(
     # Noise attenuation term. Measures the total noise of the residual.
     total_noise_loss = torch.sum(filtered_res ** 2)
 
-    # noise_atten_comp = torch.linalg.norm(filtered_res)
+    filtered_res_unit = filtered_res / torch.linalg.norm(
+        target_res, dim=(1, 2, 3), keepdim=True
+    )
+    target_res_unit = target_res / torch.linalg.norm(
+        target_res, dim=(1, 2, 3), keepdim=True
+    )
 
+    total_noise_quality_loss = torch.sum(
+        (filtered_res_unit - target_res_unit) ** 2
+    )
 
-    # Noise quality component.
-    # print()
-    # print("sep", (1 - alpha - beta) * sep_comp)
-    # print("noise atten", alpha * torch.mean(noise_atten_comp))
-    # print()
-    # filtered_res_norm = filtered_res / torch.sqrt(noise_atten_comp)
-    # print(filtered_res_norm.shape)
-    # filtered_res_norm = filtered_res / torch.sqrt((filtered_res ** 2).sum())
-    # target_res_norm = target_res / torch.sqrt((target_res ** 2).sum())
-    # target_res_norm = target_res / torch.sqrt(torch.sum(target_res ** 2, dim=flattened_dims, keepdim=True))
-    # print(target_res_norm.shape)
-    # noise_quality_comp = (
-    #     (filtered_res_norm - target_res_norm) ** 2
-    # ).sum() / target_res_norm.numel()
-    # noise_quality_comp = l2_loss(filtered_res_norm, target_res_norm)
-    # print("noise_qual_comp", noise_quality_comp)
+    # Discards last term if specified.
+    beta = 0 if n_components == 2 else beta
 
-    # # Discards last term if specified.
-    # beta = 0 if n_components == 2 else beta
+    # Constrain alpha + beta <= 1.
+    if alpha + beta > 1:
+        total = alpha + beta + 1e-8
+        alpha = alpha / total
+        beta = beta / total
 
-    # # Constrain alpha + beta <= 1.
-    # if alpha + beta > 1:
-    #     total = alpha + beta + 1e-8
-    #     alpha = alpha / total
-    #     beta = beta / total
-
-    # # Combine loss components.
-    # sep_comp = (1 - alpha) * total_separation_loss
-    # noise_atten_comp = alpha * total_separation_loss
-    # loss = (sep_comp + noise_atten_comp) / batch_size
-    # loss += alpha * torch.mean(noise_atten_comp)
-    # loss += beta * noise_quality_comp
-    loss = (0.5 * total_separation_loss + 0.5 * total_noise_loss) / filtered_src.numel()
+    # Combine loss components.
+    sep_comp = (1 - alpha - beta) * total_separation_loss
+    noise_atten_comp = alpha * total_noise_loss
+    noise_qual_comp = beta * total_noise_quality_loss
+    loss = (sep_comp + noise_atten_comp + noise_qual_comp) / filtered_src.numel()
     return loss
 
 
