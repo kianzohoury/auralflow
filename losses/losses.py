@@ -50,8 +50,10 @@ def component_loss(
 
     # Combine loss components.
     loss = (1 - alpha - beta) * total_separation_loss
-    loss.add(alpha * total_noise_loss)
-    loss.add(beta * total_noise_quality_loss)
+    loss = loss + alpha * total_noise_loss
+    loss = loss + beta * total_noise_quality_loss
+    # loss.add(alpha * total_noise_loss)
+    # loss.add(beta * total_noise_quality_loss)
     mean_loss = loss / filtered_src.numel()
     return mean_loss
 

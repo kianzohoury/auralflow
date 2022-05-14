@@ -26,7 +26,7 @@ def visualize_audio(
 
     # Apply log and mel scaling to estimate and target.
     estimate_mel_spec = model.transform.to_mel_scale(
-        model.estimate, to_db=True
+        model.estimate, to_db=False
     )
     target_mel_spec = model.transform.audio_to_mel(
         target_audio.to(model.device)

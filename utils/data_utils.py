@@ -77,11 +77,11 @@ class AudioTransform(object):
             spectrogram = self.to_decibel(spectrogram)
         return self.mel_scale(spectrogram)
 
-    def audio_to_mel(self, audio: Tensor):
+    def audio_to_mel(self, audio: Tensor, to_db: bool = True):
         """Transforms raw audio signal to log-normalized mel spectrogram."""
         spectrogram = self.to_spectrogram(audio)
         amp_spectrogram = torch.abs(spectrogram)
-        mel_spectrogram = self.to_mel_scale(amp_spectrogram, to_db=True)
+        mel_spectrogram = self.to_mel_scale(amp_spectrogram, to_db=to_db)
         return mel_spectrogram
 
 

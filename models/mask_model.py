@@ -181,7 +181,7 @@ class SpectrogramMaskModel(SeparationModel):
                 to_tensorboard=True,
                 writer=writer,
                 save_images=False,
-                n_samples=self.dataset_params["num_images_view"],
+                n_samples=self.visualizer_params["num_images_view"],
                 global_step=global_step,
             )
             listen_audio(
@@ -191,6 +191,6 @@ class SpectrogramMaskModel(SeparationModel):
                 target_audio=target_audio[:, :, :, i],
                 writer=writer,
                 sample_rate=self.dataset_params["sample_rate"],
-                n_samples=self.dataset_params["num_audio_listen"],
+                n_samples=self.visualizer_params["num_audio_listen"],
                 global_step=global_step,
             )

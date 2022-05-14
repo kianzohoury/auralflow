@@ -184,11 +184,15 @@ class AudioDataset(Dataset):
         targets: List[str],
         chunk_size: int = 1,
         num_chunks: int = int(1e6),
+        sample_rate: int = 44100
     ):
         super(AudioDataset, self).__init__()
         self.targets = targets
         self.dataset = make_chunks(
-            dataset=dataset, chunk_size=chunk_size, num_chunks=num_chunks
+            dataset=dataset,
+            chunk_size=chunk_size,
+            num_chunks=num_chunks,
+            sr=sample_rate
         )
 
     def __len__(self):

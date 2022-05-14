@@ -91,7 +91,7 @@ def create_audio_dataset(
         targets=targets,
         chunk_size=chunk_size,
         num_chunks=int(num_chunks),
-        sr=sample_rate
+        sample_rate=sample_rate
     )
     return chunked_dataset
 
