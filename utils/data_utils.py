@@ -43,7 +43,7 @@ class AudioTransform(object):
             f_max=16384,
             sample_rate=sample_rate,
             n_stft=num_fft // 2 + 1,
-            norm="slaney",
+            # norm="slaney",
         )
 
         # Transfer window functions and filterbanks to GPU if available.

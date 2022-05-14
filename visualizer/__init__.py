@@ -4,6 +4,7 @@ from typing import List, Optional
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
+import numpy as np
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
 
@@ -32,7 +33,7 @@ def visualize_audio(
     )
 
     # Collapse channels to mono.
-    n_frames = estimate_audio.shape[-2]
+    n_frames = estimate_audio.shape[-1]
     estimate_mel_spec = torch.mean(estimate_mel_spec, dim=1).cpu()
     target_mel_spec = torch.mean(target_mel_spec, dim=1).cpu()
     estimate_audio = torch.mean(estimate_audio, dim=1)[:, :n_frames].cpu()
@@ -50,20 +51,19 @@ def visualize_audio(
         image = ax[1].imshow(
             target_mel_spec[i], origin="lower", aspect="auto", cmap="inferno"
         )
-
         # Plot waveforms.
         ax[2].set_facecolor("black")
         ax[2].plot(
-            estimate_audio[i].T,
+            estimate_audio[i],
             color="yellowgreen",
-            alpha=0.7,
+            alpha=0.8,
             linewidth=0.2,
             label=f"{label} estimate",
         )
         ax[2].plot(
-            target_audio[i].T,
+            target_audio[i],
             color="darkorange",
-            alpha=0.7,
+            alpha=0.6,
             linewidth=0.2,
             label=f"{label} true",
         )
