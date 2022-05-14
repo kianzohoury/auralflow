@@ -1,8 +1,5 @@
 import json
 
-from typing import Union
-from pathlib import Path
-
 
 def load_config(config_filepath: str):
     """Loads a .json configuration file given a filepath."""
