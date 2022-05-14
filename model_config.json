@@ -4,7 +4,7 @@
         "model_type": "SpectrogramLSTM",
         "model_name": "my_separation_model",
         "normalize_input": true,
-        "mask_activation": "tanh",
+        "mask_activation": "hardtanh",
         "hidden_size": 16,
         "dropout_p": 0,
         "leak_factor": 0.2
@@ -17,9 +17,9 @@
         "num_channels": 1,
         "sample_length": 2,
         "sample_rate": 44100,
-        "num_fft": 512,
-        "window_size": 512,
-        "hop_length": 256,
+        "num_fft": 2048,
+        "window_size": 2048,
+        "hop_length": 1024,
         "power_spectrum": false,
         "learn_filterbanks": false,
         "val_split": 0.2
