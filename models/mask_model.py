@@ -102,7 +102,7 @@ class SpectrogramMaskModel(SeparationModel):
         target_complex_stft = self.transform.to_spectrogram(
             target.to(self.device)
         )
-
+   
         # Separate magnitude and phase, and store data for internal access.
         self.mixture = torch.abs(mix_complex_stft)
         self.target = torch.abs(target_complex_stft)
@@ -174,7 +174,6 @@ class SpectrogramMaskModel(SeparationModel):
         global_step: int,
     ):
         """Logs spectrogram images and separated audio after each epoch."""
-        # Visualize and listen to audio via tensorboard.
         for i, label in enumerate(self.target_labels):
             visualize_audio(
                 model=self,

@@ -22,10 +22,11 @@ def component_loss(
     """
     batch_size = filtered_src.shape[0]
     # Separation quality term. Measures the quality of the estimated target.
-    total_separation_loss = torch.sum((filtered_src - target_src) ** 2)
+    # total_separation_loss = torch.sum((filtered_src - target_src) ** 2)
 
     # Noise attenuation term. Measures the total noise of the residual.
-    total_noise_loss = torch.sum(filtered_res ** 2)
+    # total_noise_loss = torch.sum(filtered_res ** 2)
+    loss = l2_loss(filtered_src, target_src)
 
     # noise_atten_comp = torch.linalg.norm(filtered_res)
 
@@ -47,19 +48,19 @@ def component_loss(
     # noise_quality_comp = l2_loss(filtered_res_norm, target_res_norm)
     # print("noise_qual_comp", noise_quality_comp)
 
-    # Discards last term if specified.
-    beta = 0 if n_components == 2 else beta
+    # # Discards last term if specified.
+    # beta = 0 if n_components == 2 else beta
 
-    # Constrain alpha + beta <= 1.
-    if alpha + beta > 1:
-        total = alpha + beta + 1e-8
-        alpha = alpha / total
-        beta = beta / total
+    # # Constrain alpha + beta <= 1.
+    # if alpha + beta > 1:
+    #     total = alpha + beta + 1e-8
+    #     alpha = alpha / total
+    #     beta = beta / total
 
-    # Combine loss components.
-    sep_comp = (1 - alpha - beta) * total_separation_loss
-    noise_atten_comp = alpha * total_separation_loss
-    loss = (sep_comp + noise_atten_comp) / batch_size
+    # # Combine loss components.
+    # sep_comp = (1 - alpha) * total_separation_loss
+    # noise_atten_comp = alpha * total_separation_loss
+    # loss = (sep_comp + noise_atten_comp) / batch_size
     # loss += alpha * torch.mean(noise_atten_comp)
     # loss += beta * noise_quality_comp
     return loss
@@ -91,19 +92,19 @@ class WeightedComponentLoss(nn.Module):
     def forward(self):
         """Calculates a weighted component loss."""
         # Apply mask to true target source.
-        filtered_src = self.model.mask * (self.model.target.squeeze(-1).clone().detach())
+        filtered_src = self.model.mask * (self.model.target.clone().detach())
 
         # Apply mask to true residual.
         filtered_res = self.model.mask * (
-            self.model.mixture.clone().detach() - (self.model.target.squeeze(-1).clone().detach())
+            self.model.mixture.clone().detach() - (self.model.target.clone().detach())
         )
 
         # Compute weighted loss.
         self.model.batch_loss = component_loss(
             filtered_src=filtered_src,
-            target_src=self.model.target.squeeze(-1),
+            target_src=self.model.target.clone().detach(),
             filtered_res=filtered_res,
-            target_res=(self.model.mixture - self.model.target.squeeze(-1)).clone().detach(),
+            target_res=(self.model.mixture - self.model.target).clone().detach(),
             alpha=self.alpha,
             beta=self.beta
         )
@@ -148,7 +149,7 @@ class L1Loss(nn.Module):
 
     def forward(self) -> None:
         self.model.batch_loss = l1_loss(
-            self.model.estimate, self.model.target.squeeze(-1)
+            self.model.estimate, self.model.target
         )
 
 
@@ -160,5 +161,5 @@ class L2Loss(nn.Module):
 
     def forward(self) -> None:
         self.model.batch_loss = l2_loss(
-            self.model.estimate, self.model.target.squeeze(-1)
+            self.model.estimate, self.model.target
         )

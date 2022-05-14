@@ -138,8 +138,9 @@ def main(config_filepath: str):
             model.save_model(global_step=epoch)
             model.save_optim(global_step=epoch)
 
+        mixture, target = next(iter(val_dataloader))
         model.post_epoch_callback(
-            *next(iter(val_dataloader)), writer, epoch
+            mixture, target, writer, epoch
         )
 
     writer.close()
