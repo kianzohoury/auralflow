@@ -116,9 +116,7 @@ def listen_audio(
 ) -> None:
     """Embed audio to tensorboard or save audio to disk."""
     # Separate audio.
-    estimate_audio = model.separate(
-        mixture_audio.to(model.device)
-    ).cpu()
+    estimate_audio = model.separate(mixture_audio.to(model.device)).cpu()
 
     # Trim mixture/target to match estimate length.
     n_frames = estimate_audio.shape[-1]
@@ -163,4 +161,3 @@ def format_axis(axis):
     plt.setp(axis.get_xticklabels(), visible=False)
     plt.setp(axis.get_yticklabels(), visible=False)
     axis.tick_params(axis="both", which="both", length=0)
-

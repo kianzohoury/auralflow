@@ -13,13 +13,10 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
         criterion = losses.WeightedComponentLoss(
             model=model,
             alpha=config["training_params"]["alpha_constant"],
-            beta=config["training_params"]["beta_constant"]
+            beta=config["training_params"]["beta_constant"],
         )
     elif is_vae_model:
-        criterion = losses.KLDivergenceLoss(
-            model=model,
-            loss_fn=loss_fn
-        )
+        criterion = losses.KLDivergenceLoss(model=model, loss_fn=loss_fn)
     elif loss_fn == "l1":
         criterion = losses.L1Loss(model=model)
     else:

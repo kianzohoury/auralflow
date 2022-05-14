@@ -1,23 +1,14 @@
-import os
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
 from typing import Optional
 
-import io
 import librosa
-import requests
-import zipfile
-import numpy as np
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
 from visualizer.progress import ProgressBar
 from . import datasets
-
-# import drive
-
-ID = "1mbIa4kJWaYfaXr54EMwLaq9XNtNesxUE"
 
 
 def create_audio_folder(
@@ -40,31 +31,32 @@ def create_audio_folder(
 def audio_to_disk(
     dataset_path: str,
     targets: List[str],
-    max_num_tracks: int,
-    split: str = "train"
+    max_num_tracks: Optional[int] = None,
+    split: str = "train",
+    sample_rate: int = 44100,
 ) -> List[OrderedDict]:
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
+    max_num_tracks = max_num_tracks if max_num_tracks else float("inf")
     num_tracks = min(len(subset_dir), max_num_tracks)
-
     with ProgressBar(
         subset_dir, total=num_tracks, fmt=False, unit="track"
-    ) as tq:
-
-        for index, track_folder in enumerate(tq):
+    ) as pbar:
+        for index, track_folder in enumerate(pbar):
             entry = OrderedDict()
             track_name = track_folder / "mixture.wav"
             if not track_name.is_file():
                 continue
 
-            mixture_track, sr = librosa.load(track_name, sr=None)
+            # Load mixture and target tracks.
+            mixture_track, sr = librosa.load(track_name, sr=sample_rate)
             entry["mixture"] = mixture_track
-
             for target in sorted(targets):
                 target_name = f"{str(track_folder)}/{target}.wav"
                 entry[target], sr = librosa.load(target_name, sr=sr)
 
+            # Record duration of mixture track.
             duration = (
                 int(librosa.get_duration(y=mixture_track, sr=44100)) * sr
             )
@@ -83,11 +75,14 @@ def create_audio_dataset(
     chunk_size: int = 1,
     num_chunks: int = int(1e6),
     normalize: bool = False,
-    max_num_tracks: Optional[int] = None
+    max_num_tracks: Optional[int] = None,
 ) -> datasets.AudioDataset:
     """Creates a chunked audio dataset."""
     full_dataset = audio_to_disk(
-        dataset_path=dataset_path, targets=targets, split=split, max_num_tracks=max_num_tracks
+        dataset_path=dataset_path,
+        targets=targets,
+        split=split,
+        max_num_tracks=max_num_tracks,
     )
     chunked_dataset = datasets.AudioDataset(
         dataset=full_dataset,
@@ -95,7 +90,6 @@ def create_audio_dataset(
         chunk_size=chunk_size,
         num_chunks=int(num_chunks),
     )
-        
     return chunked_dataset
 
 
@@ -111,20 +105,3 @@ def load_dataset(dataset: Dataset, training_params: dict) -> DataLoader:
         shuffle=True,
     )
     return dataloader
-
-
-def download_musdb18() -> None:
-    """Downloads waveform musdb18 dataset."""
-    dataset_dir = Path(os.getcwd(), "wav")
-
-    dataset_dir.mkdir(exist_ok=True)
-    request = requests.get(
-        f"https://drive.google.com/uc?export=download&confirm=9_s_&id={ID}"
-    )
-    with zipfile.ZipFile(io.BytesIO(request.content)) as zip_file:
-        pass
-        # for track_file in tqdm(zip_file.infolist(), desc="Downloading..."):
-        #     try:
-        #         zip_file.extract(track_file, path=dataset_dir)
-        #     except zipfile.error as e:
-        #         pass

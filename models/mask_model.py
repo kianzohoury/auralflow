@@ -1,16 +1,14 @@
 import importlib
 
 import torch
-import torch.nn as nn
 from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 
-import models.architectures
+from losses import get_model_criterion
 from utils.data_utils import get_num_frames, AudioTransform
 from visualizer import visualize_audio, listen_audio, log_gradients
 from .base import SeparationModel
-from losses import get_model_criterion
 
 
 class SpectrogramMaskModel(SeparationModel):
@@ -83,7 +81,7 @@ class SpectrogramMaskModel(SeparationModel):
                 self.optimizer,
                 mode="min",
                 verbose=True,
-                patience=self.stop_patience
+                patience=self.stop_patience,
             )
             # Store train/val losses.
             self.train_losses = []
@@ -94,7 +92,7 @@ class SpectrogramMaskModel(SeparationModel):
         # Drop last dimension if only estimating one target source.
         mixture = mixture.squeeze(-1) if not self.multi_estimator else mixture
         target = target.squeeze(-1) if not self.multi_estimator else target
-        
+
         # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(
             mixture.to(self.device)
@@ -102,7 +100,7 @@ class SpectrogramMaskModel(SeparationModel):
         target_complex_stft = self.transform.to_spectrogram(
             target.to(self.device)
         )
-   
+
         # Separate magnitude and phase, and store data for internal access.
         self.mixture = torch.abs(mix_complex_stft)
         self.target = torch.abs(target_complex_stft)
@@ -126,16 +124,16 @@ class SpectrogramMaskModel(SeparationModel):
         """Updates model's parameters."""
         self.train()
         self.optimizer.step()
-        # Quicker radient zeroing.
+        # Quicker gradient zeroing.
         for param in self.model.parameters():
             param.grad = None
 
     def scheduler_step(self) -> bool:
         """Reduces lr if val loss does not improve, and signals early stop."""
         self.scheduler.step(self.val_losses[-1])
-        delta = min(
-            self.val_losses[:-1], default=float("inf") - self.val_losses[-1]
-        )
+        prev_loss = min(self.val_losses[:-1], default=float("inf"))
+        delta = prev_loss - self.val_losses[-1]
+
         if delta > 0:
             self.stop_patience = self.training_params["stop_patience"]
             self.is_best_model = True
@@ -148,9 +146,7 @@ class SpectrogramMaskModel(SeparationModel):
     def separate(self, audio: Tensor) -> Tensor:
         """Applies inv STFT to target source to retrieve time-domain signal."""
         # Compute complex-valued STFTs and send tensors to GPU if available.
-        mix_complex_stft = self.transform.to_spectrogram(
-            audio.to(self.device)
-        )
+        mix_complex_stft = self.transform.to_spectrogram(audio.to(self.device))
 
         # Separate magnitude and phase.
         self.mixture = torch.abs(mix_complex_stft)
@@ -162,7 +158,9 @@ class SpectrogramMaskModel(SeparationModel):
         target_estimate = self.transform.to_audio(phase_corrected)
         return target_estimate
 
-    def mid_epoch_callback(self, writer: SummaryWriter, global_step: int):
+    def mid_epoch_callback(
+        self, writer: SummaryWriter, global_step: int
+    ) -> None:
         """Called during epoch before parameter update."""
         log_gradients(self.model, writer=writer, global_step=global_step)
 
@@ -172,7 +170,7 @@ class SpectrogramMaskModel(SeparationModel):
         target_audio: Tensor,
         writer: SummaryWriter,
         global_step: int,
-    ):
+    ) -> None:
         """Logs spectrogram images and separated audio after each epoch."""
         for i, label in enumerate(self.target_labels):
             visualize_audio(
@@ -183,6 +181,7 @@ class SpectrogramMaskModel(SeparationModel):
                 to_tensorboard=True,
                 writer=writer,
                 save_images=False,
+                n_samples=self.dataset_params["num_images_view"],
                 global_step=global_step,
             )
             listen_audio(
@@ -191,6 +190,7 @@ class SpectrogramMaskModel(SeparationModel):
                 mixture_audio=mixture_audio[:, :, :, i],
                 target_audio=target_audio[:, :, :, i],
                 writer=writer,
-                global_step=global_step,
                 sample_rate=self.dataset_params["sample_rate"],
+                n_samples=self.dataset_params["num_audio_listen"],
+                global_step=global_step,
             )

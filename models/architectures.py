@@ -15,7 +15,13 @@ class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""
 
     def __init__(
-        self, in_channels, out_channels, kernel_size=3, bn=True, leak=0, dropout=0
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=3,
+        bn=True,
+        leak=0,
+        dropout=0,
     ):
         super(ConvBlock, self).__init__()
         self.conv = nn.Conv2d(
@@ -134,7 +140,9 @@ class SpectrogramNetSimple(nn.Module):
         self.mask_activation_fn = mask_act_fn
         self.leak_factor = leak_factor
         self.normalize_input = normalize_input
-        self.input_norm = nn.LayerNorm((num_channels, num_fft_bins, num_samples))
+        self.input_norm = nn.LayerNorm(
+            (num_channels, num_fft_bins, num_samples)
+        )
 
         # Use identity to prevent GPU from being slowed down in forward pass.
         # if normalize_input:
@@ -433,4 +441,3 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
     def get_kl_div(self) -> Tensor:
         """Computes KL term."""
         return losses.kl_div_loss(self.mu_data, self.sigma_data)
-

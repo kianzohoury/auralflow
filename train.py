@@ -28,7 +28,8 @@ def main(config_filepath: str):
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
         num_chunks=dataset_params["max_num_samples"],
-        max_num_tracks=dataset_params["max_num_tracks"]
+        max_num_tracks=dataset_params["max_num_tracks"],
+        sample_rate=dataset_params["sample_rate"],
     )
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
@@ -36,7 +37,7 @@ def main(config_filepath: str):
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
         num_chunks=dataset_params["max_num_samples"],
-        max_num_tracks=dataset_params["max_num_tracks"]
+        max_num_tracks=dataset_params["max_num_tracks"],
     )
     train_dataloader = load_dataset(train_dataset, training_params)
     val_dataloader = load_dataset(val_dataset, training_params)
@@ -79,7 +80,9 @@ def main(config_filepath: str):
                 train_loss.append(batch_loss)
                 model.backward()
 
-                model.mid_epoch_callback(writer=writer, global_step=global_step)
+                model.mid_epoch_callback(
+                    writer=writer, global_step=global_step
+                )
 
                 # nn.utils.clip_grad_norm_(
                 #     model.model.parameters(), max_norm=1.0
@@ -88,7 +91,7 @@ def main(config_filepath: str):
                 # Update model parameters.
                 model.optimizer_step()
                 global_step += 1
-                
+
                 # Display and log the loss.
                 pbar.set_postfix({"loss": round(batch_loss, 6)})
                 writer.add_scalar(
@@ -100,7 +103,9 @@ def main(config_filepath: str):
         # Store epoch-average loss.
         model.train_losses.append(avg_loss)
         writer.add_scalar(
-            "Loss/train/epoch_avg", avg_loss, epoch,
+            "Loss/train/epoch_avg",
+            avg_loss,
+            epoch,
         )
 
         # Validate updated model.
@@ -119,14 +124,12 @@ def main(config_filepath: str):
         stop_early = model.scheduler_step()
 
         # Log validation loss.
-        writer.add_scalar(
-            "Loss/val/epoch_avg", model.val_losses[-1], epoch
-        )
+        writer.add_scalar("Loss/val/epoch_avg", model.val_losses[-1], epoch)
 
         writer.add_scalars(
             "Loss",
             {"train": model.train_losses[-1], "val": model.val_losses[-1]},
-            epoch
+            epoch,
         )
 
         if stop_early:
@@ -139,9 +142,7 @@ def main(config_filepath: str):
             model.save_optim(global_step=epoch)
 
         mixture, target = next(iter(val_dataloader))
-        model.post_epoch_callback(
-            mixture, target, writer, epoch
-        )
+        model.post_epoch_callback(mixture, target, writer, epoch)
 
     writer.close()
     print("Done.")

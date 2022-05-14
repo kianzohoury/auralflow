@@ -46,6 +46,8 @@
         "tensorboard": true,
         "save_images": false,
         "log_gradient": true,
+        "num_images_view": 1,
+        "num_audio_listen": 1,
         "logs_path": "runs"
     }
 }
