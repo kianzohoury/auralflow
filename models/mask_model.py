@@ -147,9 +147,9 @@ class SpectrogramMaskModel(SeparationModel):
 
     def separate(self, audio: Tensor) -> Tensor:
         """Applies inv STFT to target source to retrieve time-domain signal."""
-        # Compute complex-valued STFTs and send tensors to GPU if avaialable.
+        # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(
-            audio.squeeze(-1).to(self.device)
+            audio.to(self.device)
         )
 
         # Separate magnitude and phase.
@@ -166,8 +166,6 @@ class SpectrogramMaskModel(SeparationModel):
         """Called during epoch before parameter update."""
         log_gradients(self.model, writer=writer, global_step=global_step)
 
-
-
     def post_epoch_callback(
         self,
         mixture_audio: Tensor,
@@ -179,8 +177,8 @@ class SpectrogramMaskModel(SeparationModel):
         # Visualize and listen to audio via tensorboard.
         visualize_audio(
             model=self,
-            mixture_audio=mixture_audio[0].unsqueeze(0),
-            target_audio=target_audio[0],
+            mixture_audio=mixture_audio,
+            target_audio=target_audio,
             to_tensorboard=True,
             writer=writer,
             save_images=False,
@@ -188,8 +186,8 @@ class SpectrogramMaskModel(SeparationModel):
         )
         listen_audio(
             model=self,
-            mixture_audio=mixture_audio[0].unsqueeze(0),
-            target_audio=target_audio[0],
+            mixture_audio=mixture_audio,
+            target_audio=target_audio,
             writer=writer,
             global_step=global_step,
             residual=True,
