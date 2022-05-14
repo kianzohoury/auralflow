@@ -1,21 +1,20 @@
-from torch.utils.data.dataloader import DataLoader
-from torch.utils.data import Dataset
-from tqdm.asyncio import tqdm
-from typing import Optional
-
-from . import datasets
+import os
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
+from typing import Optional
+
+import io
+import librosa
+import requests
+import zipfile
+from torch.utils.data import Dataset
+from torch.utils.data.dataloader import DataLoader
+
 from visualizer.progress import ProgressBar
+from . import datasets
 
 # import drive
-
-import gdown
-import shutil
-import os
-import requests, zipfile, io
-import librosa
 
 ID = "1mbIa4kJWaYfaXr54EMwLaq9XNtNesxUE"
 
@@ -38,12 +37,15 @@ def create_audio_folder(
 
 
 def audio_to_disk(
-    dataset_path: str, targets: List[str], split: str = "train", max_num_tracks: Optional[int] = None
+    dataset_path: str,
+    targets: List[str],
+    max_num_tracks: int,
+    split: str = "train"
 ) -> List[OrderedDict]:
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
-    num_tracks = min(len(subset_dir), max_num_tracks if max_num_tracks is not None else float("inf"))
+    num_tracks = min(len(subset_dir), max_num_tracks)
 
     with ProgressBar(
         subset_dir, total=num_tracks, fmt=False, unit="track", desc=f"{split}:"
@@ -92,15 +94,15 @@ def create_audio_dataset(
     return chunked_dataset
 
 
-def load_dataset(dataset: Dataset, loader_params: dict) -> DataLoader:
+def load_dataset(dataset: Dataset, training_params: dict) -> DataLoader:
     """Returns a dataloader for a given dataset."""
     dataloader = DataLoader(
         dataset=dataset,
-        batch_size=loader_params["batch_size"],
-        num_workers=loader_params["num_workers"],
-        pin_memory=loader_params["pin_memory"],
-        persistent_workers=loader_params["persistent_workers"],
-        prefetch_factor=loader_params["pre_fetch"],
+        batch_size=training_params["batch_size"],
+        num_workers=training_params["num_workers"],
+        pin_memory=training_params["pin_memory"],
+        persistent_workers=training_params["persistent_workers"],
+        prefetch_factor=training_params["pre_fetch"],
         shuffle=True,
     )
     return dataloader

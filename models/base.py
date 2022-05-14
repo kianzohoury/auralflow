@@ -10,7 +10,7 @@ import torch.nn as nn
 
 
 class SeparationModel(ABC):
-    """Interface for all source separation models."""
+    """Interface shared among all source separation models."""
 
     model: nn.Module
     optimizer: torch.optim.Optimizer
@@ -21,10 +21,17 @@ class SeparationModel(ABC):
 
     def __init__(self, config: dict):
         super(SeparationModel, self).__init__()
+        # Store configuration settings as attributes.
         self.config = config
+        self.model_params = config["model_params"]
+        self.training_params = config["training_params"]
+        self.dataset_params = config["dataset_params"]
+        self.visualizer_params = config["visualizer_params"]
+        self.checkpoint_path = self.training_params["checkpoint_path"]
+        self.training_mode = self.training_params["training_mode"]
+
+        # Set deice, optimize CNN processes.
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.checkpoint_path = config["training_params"]["checkpoint_path"]
-        self.training_mode = config["training_params"]["training_mode"]
         torch.backends.cudnn.benchmark = True
 
     @abstractmethod

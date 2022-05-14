@@ -7,6 +7,8 @@ import torch.nn as nn
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
 
+LINE_WIDTH = 79
+
 
 def visualize_audio(
     model,
@@ -154,17 +156,18 @@ def listen_audio(
 
 
 def log_gradients(model: nn.Module, writer: SummaryWriter, global_step: int):
+    """Sends model weights and gradients to tensorboard."""
     for name, param in model.named_parameters():
         if param.grad is not None:
-            param_norm = torch.norm(param, 2)
-            grad_norm = torch.norm(param.grad, 2)
-            writer.add_histogram(f"{name}_grad_norm", grad_norm, global_step)
-            writer.add_histogram(
-                f"{name}_weight_norm", param_norm, global_step
-            )
+            # Monitor model updates by tracking their 2-norms.
+            weight_norm = torch.linalg.norm(param)
+            grad_norm = torch.linalg.norm(param.grad)
+            writer.add_histogram(f"{name}_norm", weight_norm, global_step)
+            writer.add_histogram(f"{name}_norm", grad_norm, global_step)
 
 
 def format_axis(axis):
     plt.setp(axis.get_xticklabels(), visible=False)
     plt.setp(axis.get_yticklabels(), visible=False)
     axis.tick_params(axis="both", which="both", length=0)
+

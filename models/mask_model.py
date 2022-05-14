@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import models.architectures
 from utils.data_utils import get_num_frames, AudioTransform
-from visualizer import visualize_audio, listen_audio
+from visualizer import visualize_audio, listen_audio, log_gradients
 from .base import SeparationModel
 from losses import get_model_criterion
 
@@ -25,27 +25,26 @@ class SpectrogramMaskModel(SeparationModel):
 
     def __init__(self, configuration: dict):
         super(SpectrogramMaskModel, self).__init__(configuration)
-        dataset_params = configuration["dataset_params"]
-        self.layer_params = configuration["model_params"]["layer_params"]
 
         # Calculate number of frames (temporal dimension).
         self.num_samples = get_num_frames(
-            sample_rate=dataset_params["sample_rate"],
-            sample_length=dataset_params["sample_length"],
-            num_fft=dataset_params["num_fft"],
-            window_size=dataset_params["window_size"],
-            hop_length=dataset_params["hop_length"],
+            sample_rate=self.dataset_params["sample_rate"],
+            sample_length=self.dataset_params["sample_length"],
+            num_fft=self.dataset_params["num_fft"],
+            window_size=self.dataset_params["window_size"],
+            hop_length=self.dataset_params["hop_length"],
         )
 
         # Note that num bins will be num_fft // 2 + 1 due to symmetry.
-        self.n_fft_bins = configuration["dataset_params"]["num_fft"] // 2 + 1
-        self.num_channels = configuration["dataset_params"]["num_channels"]
-        self.target_labels = sorted(self.config["dataset_params"]["targets"])
+        self.n_fft_bins = self.dataset_params["num_fft"] // 2 + 1
+        self.num_channels = self.dataset_params["num_channels"]
+        self.target_labels = sorted(self.dataset_params["targets"])
+        self.multi_estimator = len(self.target_labels) > 1
 
         # Retrieve class name of the requested model architecture.
         model_name = getattr(
             importlib.import_module("models.architectures", "models"),
-            configuration["model_params"]["model_type"],
+            self.model_params["model_type"],
         )
 
         # Create the model instance and set to current device.
@@ -53,50 +52,56 @@ class SpectrogramMaskModel(SeparationModel):
             num_fft_bins=self.n_fft_bins,
             num_samples=self.num_samples,
             num_channels=self.num_channels,
-            hidden_dim=self.layer_params["hidden_size"],
-            mask_act_fn=configuration["model_params"]["mask_activation"],
-            leak_factor=self.layer_params["leak_factor"],
-            normalize_input=configuration["model_params"]["normalize_input"],
+            hidden_dim=self.model_params["hidden_size"],
+            mask_act_fn=self.model_params["mask_activation"],
+            leak_factor=self.model_params["leak_factor"],
+            normalize_input=self.model_params["normalize_input"],
         ).to(self.device)
 
-        # Instantiate data transformer.
+        # Instantiate data transformer for pre/post audio processing.
         self.transform = AudioTransform(
-            num_fft=dataset_params["num_fft"],
-            hop_length=dataset_params["hop_length"],
-            window_size=dataset_params["window_size"],
+            num_fft=self.dataset_params["num_fft"],
+            hop_length=self.dataset_params["hop_length"],
+            window_size=self.dataset_params["window_size"],
             device=self.device,
         )
 
         if self.training_mode:
-            # Set loss function.
+            # Set model criterion.
             self.criterion = get_model_criterion(
                 model=self, config=configuration
             )
-
-            # Set optimizer and lr scheduler.
+            # Load optimizer.
             self.optimizer = AdamW(
-                self.model.parameters(), self.config["training_params"]["lr"]
+                self.model.parameters(), self.training_params["lr"]
             )
+            # Load lr scheduler.
+            self.stop_patience = self.training_params["stop_patience"]
+            self.max_lr_reductions = self.training_params["max_lr_reductions"]
+            self.is_best_model = True
             self.scheduler = lr_scheduler.ReduceLROnPlateau(
                 self.optimizer,
                 mode="min",
                 verbose=True,
-                patience=self.config["training_params"]["stop_patience"]
+                patience=self.stop_patience
             )
-            self.patience = self.config["training_params"]["stop_patience"]
-
+            # Store train/val losses.
             self.train_losses = []
             self.val_losses = []
 
     def set_data(self, mixture: Tensor, target: Tensor) -> None:
         """Wrapper method processes and sets data for internal access."""
+        # Drop last dimension if only estimating one target source.
+        mixture = mixture.squeeze(-1) if not self.multi_estimator else mixture
+        target = target.squeeze(-1) if not self.multi_estimator else target
+
         # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(
-            mixture.squeeze(-1).to(self.device)
+            mixture.to(self.device)
         )
         target_complex_stft = self.transform.to_spectrogram(
-            target.permute(0, 3, 1, 2).to(self.device)
-        ).permute(0, 2, 3, 4, 1)
+            target.to(self.device)
+        )
 
         # Separate magnitude and phase, and store data for internal access.
         self.mixture = torch.abs(mix_complex_stft)
@@ -111,7 +116,6 @@ class SpectrogramMaskModel(SeparationModel):
     def compute_loss(self) -> float:
         """Updates and returns the current batch-wise loss."""
         self.criterion()
-        # self.batch_loss = nn.functional.l1_loss(self.estimate, self.target.squeeze(-1))
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -122,25 +126,24 @@ class SpectrogramMaskModel(SeparationModel):
         """Updates model's parameters."""
         self.train()
         self.optimizer.step()
-        self.optimizer.zero_grad()
-        # for param in self.model.parameters():
-        #     param.grad = None
+        # More efficient gradient zeroing.
+        for param in self.model.parameters():
+            param.grad = None
 
-    def scheduler_step(self) -> None:
-        """Decreases learning rate if validation loss does not improve."""
-        self.scheduler.step(self.val_losses[-1])
-
-    def stop_early(self):
-        """Signals that training should stop based on patience criteria."""
-        if len(self.val_losses) <= 1:
-            return False
-        elif self.val_losses[-1] >= min(self.val_losses[:-1]):
-            self.patience -= 1
-            if not self.patience:
-                return True
+    def scheduler_step(self, epoch: int) -> bool:
+        """Reduces lr if val loss does not improve, and signals early stop."""
+        self.scheduler.step(self.val_losses[-1], epoch=epoch)
+        delta = min(
+            self.val_losses[:-1], default=float("inf") - self.val_losses[-1]
+        )
+        if delta > 0:
+            self.stop_patience = self.training_params["stop_patience"]
+            self.is_best_model = True
         else:
-            self.patience = self.config["training_params"]["stop_patience"]
-        return False
+            self.stop_patience -= 1
+            self.max_lr_reductions -= 1 if not self.stop_patience else 0
+            self.is_best_model = False
+        return not self.max_lr_reductions
 
     def separate(self, audio: Tensor) -> Tensor:
         """Applies inv STFT to target source to retrieve time-domain signal."""
@@ -158,6 +161,12 @@ class SpectrogramMaskModel(SeparationModel):
         phase_corrected = self.estimate * torch.exp(1j * self.phase)
         target_estimate = self.transform.to_audio(phase_corrected)
         return target_estimate
+
+    def mid_epoch_callback(self, writer: SummaryWriter, global_step: int):
+        """Called during epoch before parameter update."""
+        log_gradients(self.model, writer=writer, global_step=global_step)
+
+
 
     def post_epoch_callback(
         self,

@@ -23,11 +23,10 @@ def component_loss(
     flattened_dims = list(range(1, filtered_src.dim()))
 
     # Separation quality term. Measures the quality of the estimated target.
-    sep_comp = torch.sum((filtered_src - target_src) ** 2) / filtered_src.numel()
+    total_separation_loss = torch.sum((filtered_src - target_src) ** 2)
 
     # Noise attenuation term. Measures the total noise of the residual.
-    # noise_atten_comp = torch.sum(filtered_res ** 2, dim=flattened_dims, keepdim=True)
-    noise_atten_comp = torch.sum(filtered_res ** 2) / filtered_res.numel()
+    total_noise_atten_loss = torch.sum(filtered_res ** 2)
 
     # noise_atten_comp = torch.linalg.norm(filtered_res)
 
@@ -54,11 +53,11 @@ def component_loss(
 
     # Constrain alpha + beta <= 1.
     if alpha + beta > 1:
-        alpha /= (alpha + beta + 1e-6)
-        beta /= (alpha + beta + 1e-6)
+        total = alpha + beta + 1e-8
+        alpha = alpha / total
+        beta = beta / total
 
-    beta = 0
-
+        filtered_src.numel()
     # Combine loss components.
     # print()
     # print(sep_comp, noise_atten_comp)

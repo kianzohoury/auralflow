@@ -4,65 +4,48 @@
         "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
         "normalize_input": true,
-        "learn_residual": true,
         "mask_activation": "hardtanh",
-        "layer_params": {
-            "max_depth": 6,
-            "hidden_size": 16,
-            "kernel_size": [3, 2, 5, 3],
-            "block_size": 3,
-            "downsampler": "max_pool",
-            "upsampler": "transpose",
-            "layer_activation": "relu",
-            "dropout_p": 0,
-            "use_bias": true,
-            "use_skip": true,
-            "leak_factor": 0.2
-        }
+        "hidden_size": 16,
+        "dropout_p": 0,
+        "leak_factor": 0.2
     },
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
-        "audio_format": "wav",
-        "backend": "soundfile",
         "targets": ["vocals"],
         "max_num_tracks": 10,
+        "max_num_samples": 1e3,
         "num_channels": 1,
+        "sample_length": 2,
         "sample_rate": 44100,
         "num_fft": 512,
         "window_size": 512,
         "hop_length": 256,
-        "power_spectrum": true,
+        "power_spectrum": false,
         "learn_filterbanks": false,
-        "sample_length": 2,
-        "val_split": 0.2,
-        "loader_params": {
-            "max_iterations": 60,
-            "batch_size": 64,
-            "num_workers": 8,
-            "pin_memory": true,
-            "persistent_workers": true,
-            "pre_fetch": 4
-        }
+        "val_split": 0.2
     },
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
+        "batch_size": 64,
         "lr": 0.01,
-        "criterion": {
-            "loss_fn": "component_loss",
-            "alpha_constant": 0.25,
-            "beta_constant": 0.5
-        },
+        "criterion": "component_loss",
+        "alpha_constant": 0.25,
+        "beta_constant": 0.5,
+        "num_workers": 8,
+        "pin_memory": true,
+        "persistent_workers": true,
+        "pre_fetch": 4,
         "stop_patience": 10,
-        "export_path": "",
+        "max_lr_reductions": 5,
         "checkpoint_path": "checkpoints",
-        "checkpoint_freq": 10,
         "last_epoch": -1,
         "global_step": -1
     },
     "visualizer_params": {
         "tensorboard": true,
-        "logs_path": "runs",
-        "save_images": false
+        "save_images": false,
+        "log_gradient": true,
+        "logs_path": "runs"
     }
 }
