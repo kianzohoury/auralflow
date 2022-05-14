@@ -44,8 +44,8 @@ class ConvBlockTriple(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, True, leak, 0),
-            # ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0)
+            ConvBlock(in_channels, out_channels, kernel_size, False, leak, 0),
+            ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0)
             # ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )
 
@@ -232,8 +232,8 @@ class SpectrogramNetSimple(nn.Module):
         """Forward method."""
         # Normalize input.
         # data = self.input_norm(data)
-        # data = self.input_norm(data.permute(0, 2, 3, 1))
-        # data = data.permute(0, 3, 1, 2)
+        data = self.input_norm(data.permute(0, 2, 3, 1))
+        data = data.permute(0, 3, 1, 2)
         # data = data.permute(0, 1, 3, 2)
         # data = data - self.input_center
         # data = data * self.input_scale

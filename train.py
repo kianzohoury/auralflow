@@ -144,7 +144,6 @@ def main(config_filepath: str):
         )
 
     writer.close()
-    print("-" * 79)
     print("Done.")
 
 

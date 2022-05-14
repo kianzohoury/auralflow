@@ -4,7 +4,7 @@
         "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
         "normalize_input": true,
-        "mask_activation": "relu",
+        "mask_activation": "hardtanh",
         "hidden_size": 16,
         "dropout_p": 0,
         "leak_factor": 0.2
