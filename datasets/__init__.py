@@ -76,6 +76,7 @@ def create_audio_dataset(
     num_chunks: int = int(1e6),
     normalize: bool = False,
     max_num_tracks: Optional[int] = None,
+    sample_rate: int = 44100,
 ) -> datasets.AudioDataset:
     """Creates a chunked audio dataset."""
     full_dataset = audio_to_disk(
@@ -83,12 +84,14 @@ def create_audio_dataset(
         targets=targets,
         split=split,
         max_num_tracks=max_num_tracks,
+        sample_rate=sample_rate
     )
     chunked_dataset = datasets.AudioDataset(
         dataset=full_dataset,
         targets=targets,
         chunk_size=chunk_size,
         num_chunks=int(num_chunks),
+        sr=sample_rate
     )
     return chunked_dataset
 
