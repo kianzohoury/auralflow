@@ -41,8 +41,8 @@ def main(config_filepath: str):
     train_dataloader = load_dataset(train_dataset, training_params)
     val_dataloader = load_dataset(val_dataset, training_params)
     print(
-        f"Successful. Loaded {len(train_dataset)} training and"
-        f"{len(val_dataset)} validation samples of length"
+        f"Successful. Loaded {len(train_dataset)} training and "
+        f"{len(val_dataset)} validation samples of length "
         f"{dataset_params['sample_length']}s."
     )
 
@@ -57,11 +57,12 @@ def main(config_filepath: str):
     stop_epoch = start_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
     max_iters = len(train_dataloader)
-    print("-" * 79 + "\nStarting training...")
+    print("Starting training...\n" + "-" * 79)
 
     for epoch in range(start_epoch, stop_epoch):
         print(f"Epoch {epoch}/{stop_epoch}", flush=True)
         total_loss = 0
+        train_loss = []
         model.train()
         with ProgressBar(train_dataloader, total=max_iters) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
@@ -75,9 +76,10 @@ def main(config_filepath: str):
                 # Calculate mini-batch loss and run backprop.
                 batch_loss = model.compute_loss()
                 total_loss += batch_loss
+                train_loss.append(batch_loss)
                 model.backward()
 
-                model.mid_epoch_callback()
+                model.mid_epoch_callback(writer=writer, global_step=global_step)
 
                 # nn.utils.clip_grad_norm_(
                 #     model.model.parameters(), max_norm=1.0
@@ -93,11 +95,12 @@ def main(config_filepath: str):
                     "Loss/train/iter_avg", batch_loss, global_step
                 )
 
-        pbar.set_postfix({"loss": round(total_loss / max_iters, 6)})
+        avg_loss = sum(train_loss) / len(train_loss)
+        pbar.set_postfix({"loss": round(avg_loss, 6)})
         # Store epoch-average loss.
-        model.train_losses.append(total_loss / max_iters)
+        model.train_losses.append(avg_loss)
         writer.add_scalar(
-            "Loss/train/epoch_avg", total_loss / max_iters, epoch,
+            "Loss/train/epoch_avg", avg_loss, epoch,
         )
 
         # Validate updated model.
@@ -106,14 +109,13 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
         )
 
-        print("-" * 79)
-        print("avg train loss:", total_loss / max_iters)
+        print("avg train loss:", model.train_losses[-1])
         print("avg val loss:", model.val_losses[-1])
         print("sdr:")
         print("snr:")
         print("-" * 79)
 
-        # Decrease lr if no improvement.
+        # Decrease lr if necessary.
         stop_early = model.scheduler_step()
 
         # Log validation loss.
@@ -123,7 +125,7 @@ def main(config_filepath: str):
 
         writer.add_scalars(
             "Loss",
-            {"train": total_loss / max_iters, "val": model.val_losses[-1]},
+            {"train": model.train_losses[-1], "val": model.val_losses[-1]},
             epoch
         )
 

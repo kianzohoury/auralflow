@@ -94,7 +94,7 @@ class SpectrogramMaskModel(SeparationModel):
         # Drop last dimension if only estimating one target source.
         mixture = mixture.squeeze(-1) if not self.multi_estimator else mixture
         target = target.squeeze(-1) if not self.multi_estimator else target
-
+        
         # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(
             mixture.to(self.device)
@@ -126,13 +126,13 @@ class SpectrogramMaskModel(SeparationModel):
         """Updates model's parameters."""
         self.train()
         self.optimizer.step()
-        # More efficient gradient zeroing.
+        # Quicker radient zeroing.
         for param in self.model.parameters():
             param.grad = None
 
-    def scheduler_step(self, epoch: int) -> bool:
+    def scheduler_step(self) -> bool:
         """Reduces lr if val loss does not improve, and signals early stop."""
-        self.scheduler.step(self.val_losses[-1], epoch=epoch)
+        self.scheduler.step(self.val_losses[-1])
         delta = min(
             self.val_losses[:-1], default=float("inf") - self.val_losses[-1]
         )
@@ -175,21 +175,23 @@ class SpectrogramMaskModel(SeparationModel):
     ):
         """Logs spectrogram images and separated audio after each epoch."""
         # Visualize and listen to audio via tensorboard.
-        visualize_audio(
-            model=self,
-            mixture_audio=mixture_audio,
-            target_audio=target_audio,
-            to_tensorboard=True,
-            writer=writer,
-            save_images=False,
-            global_step=global_step,
-        )
-        listen_audio(
-            model=self,
-            mixture_audio=mixture_audio,
-            target_audio=target_audio,
-            writer=writer,
-            global_step=global_step,
-            residual=True,
-            sample_rate=self.config["dataset_params"]["sample_rate"],
-        )
+        for i, label in enumerate(self.target_labels):
+            visualize_audio(
+                model=self,
+                label=label,
+                mixture_audio=mixture_audio[:, :, :, i],
+                target_audio=target_audio[:, :, :, i],
+                to_tensorboard=True,
+                writer=writer,
+                save_images=False,
+                global_step=global_step,
+            )
+            listen_audio(
+                model=self,
+                label=label,
+                mixture_audio=mixture_audio[:, :, :, i],
+                target_audio=target_audio[:, :, :, i],
+                writer=writer,
+                global_step=global_step,
+                sample_rate=self.dataset_params["sample_rate"],
+            )

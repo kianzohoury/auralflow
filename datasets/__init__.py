@@ -48,7 +48,7 @@ def audio_to_disk(
     num_tracks = min(len(subset_dir), max_num_tracks)
 
     with ProgressBar(
-        subset_dir, total=num_tracks, fmt=False, unit="track", desc=f"{split}:"
+        subset_dir, total=num_tracks, fmt=False, unit="track"
     ) as tq:
         entry = OrderedDict()
         for index, track_folder in enumerate(tq):
@@ -88,7 +88,7 @@ def create_audio_dataset(
         dataset=full_dataset,
         targets=targets,
         chunk_size=chunk_size,
-        num_chunks=num_chunks,
+        num_chunks=int(num_chunks),
     )
         
     return chunked_dataset

@@ -20,13 +20,12 @@ def component_loss(
     residual noise attenuation. Optional third component balances the
     quality of the residual noise against the other two terms.
     """
-    flattened_dims = list(range(1, filtered_src.dim()))
-
+    batch_size = filtered_src.shape[0]
     # Separation quality term. Measures the quality of the estimated target.
     total_separation_loss = torch.sum((filtered_src - target_src) ** 2)
 
     # Noise attenuation term. Measures the total noise of the residual.
-    total_noise_atten_loss = torch.sum(filtered_res ** 2)
+    total_noise_loss = torch.sum(filtered_res ** 2)
 
     # noise_atten_comp = torch.linalg.norm(filtered_res)
 
@@ -57,11 +56,10 @@ def component_loss(
         alpha = alpha / total
         beta = beta / total
 
-        filtered_src.numel()
     # Combine loss components.
-    # print()
-    # print(sep_comp, noise_atten_comp)
-    loss = (1 - alpha - beta) * sep_comp + alpha * noise_atten_comp
+    sep_comp = (1 - alpha - beta) * total_separation_loss
+    noise_atten_comp = alpha * total_separation_loss
+    loss = (sep_comp + noise_atten_comp) / batch_size
     # loss += alpha * torch.mean(noise_atten_comp)
     # loss += beta * noise_quality_comp
     return loss

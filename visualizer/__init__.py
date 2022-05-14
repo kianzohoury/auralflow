@@ -10,6 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 def visualize_audio(
     model,
+    label: str,
     mixture_audio: Tensor,
     target_audio: Tensor,
     n_samples: int = 1,
@@ -24,13 +25,14 @@ def visualize_audio(
     estimate_audio = model.separate(
         mixture_audio.to(model.device)
     )
+
     # Apply log and mel scaling to estimate and target.
     estimate_log_mel = model.transform.to_mel_scale(
         model.estimate, to_db=True
     )
     target_log_mel = model.transform.audio_to_mel(
-        target_audio.permute(0, 2, 1).to(model.device)
-    ).permute(0, 2, 1)
+        target_audio.to(model.device)
+    )
 
     # Collapse channels to mono.
     n_frames = estimate_audio.shape[-2]
@@ -60,20 +62,20 @@ def visualize_audio(
             color="yellowgreen",
             alpha=0.7,
             linewidth=0.2,
-            label=f"{model.target_label} estimate",
+            label=f"{label} estimate",
         )
         ax[2].plot(
             target_wav[i],
             color="darkorange",
             alpha=0.7,
             linewidth=0.2,
-            label=f"{model.target_label} true",
+            label=f"{label} true",
         )
 
         # Formatting.
-        ax[0].set_title(f"{model.target_label} estimate")
-        ax[1].set_title(f"{model.target_label} true")
-        ax[2].set_title(f"{model.target_label} waveform")
+        ax[0].set_title(f"{label} estimate")
+        ax[1].set_title(f"{label} true")
+        ax[2].set_title(f"{label} waveform")
         ax[2].set_xlim(xmin=0, xmax=n_frames)
         ax[0].set(frame_on=False)
         ax[1].set(frame_on=False)
@@ -103,11 +105,12 @@ def visualize_audio(
         if save_images:
             image_dir = Path(f"{writer.log_dir}/spectrogram_images")
             image_dir.mkdir(exist_ok=True)
-            fig.savefig(image_dir / f"{model.target_label}_{global_step}.png")
+            fig.savefig(image_dir / f"{label}_{global_step}.png")
 
 
 def listen_audio(
     model,
+    label: str,
     mixture_audio: Tensor,
     target_audio: Tensor,
     writer: SummaryWriter,
@@ -130,20 +133,20 @@ def listen_audio(
     # Send audio to tensorboard.
     for i in range(n_samples):
         writer.add_audio(
-            tag=f"{model.target_label} estimate",
+            tag=f"{label} estimate",
             snd_tensor=estimate_audio[i],
             global_step=global_step,
             sample_rate=sample_rate,
         )
         writer.add_audio(
-            tag=f"{model.target_label} true",
+            tag=f"{label} true",
             snd_tensor=target_audio[i],
             global_step=global_step,
             sample_rate=sample_rate,
         )
         residual_estimate = mixture_audio[i] - estimate_audio[i]
         writer.add_audio(
-            tag=f"{model.target_label} residual estimate",
+            tag=f"{label} residual estimate",
             snd_tensor=residual_estimate,
             global_step=global_step,
             sample_rate=sample_rate,

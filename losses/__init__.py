@@ -6,15 +6,14 @@ import torch.nn as nn
 
 def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
     """Gets model criterion according to configuration file."""
-    criterion_params = config["training_params"]["criterion"]
-    loss_fn = criterion_params["loss_fn"]
+    loss_fn = config["training_params"]["criterion"]
     model_type = config["model_params"]["model_type"]
     is_vae_model = model_type == "SpectrogramLSTMVariational"
     if loss_fn == "component_loss":
         criterion = losses.WeightedComponentLoss(
             model=model,
-            alpha=criterion_params["alpha_constant"],
-            beta=criterion_params["beta_constant"]
+            alpha=config["training_params"]["alpha_constant"],
+            beta=config["training_params"]["beta_constant"]
         )
     elif is_vae_model:
         criterion = losses.KLDivergenceLoss(
