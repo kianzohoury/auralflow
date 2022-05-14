@@ -28,7 +28,7 @@
         "training_mode": true,
         "max_epochs": 100,
         "batch_size": 64,
-        "lr": 0.01,
+        "lr": 0.008,
         "criterion": "component_loss",
         "alpha_constant": 0.25,
         "beta_constant": 0.5,

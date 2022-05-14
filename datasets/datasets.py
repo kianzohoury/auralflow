@@ -229,7 +229,6 @@ def make_chunks(
             stop = offset + int(sr * chunk_size)
             mix_chunk = torch.from_numpy(mixture[offset:stop])
 
-            
             if torch.linalg.norm(mix_chunk) < energy_cutoff:
                 continue
 

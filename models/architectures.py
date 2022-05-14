@@ -24,7 +24,7 @@ class ConvBlock(nn.Module):
             kernel_size=kernel_size,
             stride=1,
             padding="same",
-            bias=False,
+            bias=not bn,
         )
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.relu = nn.LeakyReLU(leak)
@@ -44,7 +44,7 @@ class ConvBlockTriple(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, False, leak, 0),
+            ConvBlock(in_channels, out_channels, kernel_size, True, leak, 0),
             ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0)
             # ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )

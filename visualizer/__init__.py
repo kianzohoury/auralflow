@@ -54,14 +54,14 @@ def visualize_audio(
         # Plot waveforms.
         ax[2].set_facecolor("black")
         ax[2].plot(
-            estimate_audio[i],
+            estimate_audio[i].T,
             color="yellowgreen",
             alpha=0.7,
             linewidth=0.2,
             label=f"{label} estimate",
         )
         ax[2].plot(
-            target_audio[i],
+            target_audio[i].T,
             color="darkorange",
             alpha=0.7,
             linewidth=0.2,

@@ -69,7 +69,6 @@ def audio_to_disk(
             audio_tracks.append(entry)
             if index == num_tracks:
                 break
-
     return audio_tracks
 
 
