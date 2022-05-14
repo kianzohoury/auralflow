@@ -22,11 +22,10 @@ def component_loss(
     """
     batch_size = filtered_src.shape[0]
     # Separation quality term. Measures the quality of the estimated target.
-    # total_separation_loss = torch.sum((filtered_src - target_src) ** 2)
+    total_separation_loss = torch.sum((filtered_src - target_src) ** 2)
 
     # Noise attenuation term. Measures the total noise of the residual.
-    # total_noise_loss = torch.sum(filtered_res ** 2)
-    loss = l2_loss(filtered_src, target_src)
+    total_noise_loss = torch.sum(filtered_res ** 2)
 
     # noise_atten_comp = torch.linalg.norm(filtered_res)
 
@@ -63,6 +62,7 @@ def component_loss(
     # loss = (sep_comp + noise_atten_comp) / batch_size
     # loss += alpha * torch.mean(noise_atten_comp)
     # loss += beta * noise_quality_comp
+    loss = (0.5 * total_separation_loss + 0.5 * total_noise_loss) / filtered_src.numel()
     return loss
 
 
@@ -92,19 +92,18 @@ class WeightedComponentLoss(nn.Module):
     def forward(self):
         """Calculates a weighted component loss."""
         # Apply mask to true target source.
-        filtered_src = self.model.mask * (self.model.target.clone().detach())
+        filtered_src = self.model.mask * self.model.target
 
         # Apply mask to true residual.
-        filtered_res = self.model.mask * (
-            self.model.mixture.clone().detach() - (self.model.target.clone().detach())
-        )
+        true_residual = self.model.mixture - self.model.target
+        filtered_res = self.model.mask * true_residual
 
         # Compute weighted loss.
         self.model.batch_loss = component_loss(
             filtered_src=filtered_src,
-            target_src=self.model.target.clone().detach(),
+            target_src=self.model.target,
             filtered_res=filtered_res,
-            target_res=(self.model.mixture - self.model.target).clone().detach(),
+            target_res=true_residual,
             alpha=self.alpha,
             beta=self.beta
         )

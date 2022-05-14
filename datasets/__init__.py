@@ -8,6 +8,7 @@ import io
 import librosa
 import requests
 import zipfile
+import numpy as np
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
@@ -45,6 +46,7 @@ def audio_to_disk(
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
+    np.random.shuffle(subset_dir)
     num_tracks = min(len(subset_dir), max_num_tracks)
 
     with ProgressBar(

@@ -232,8 +232,8 @@ class SpectrogramNetSimple(nn.Module):
         """Forward method."""
         # Normalize input.
         # data = self.input_norm(data)
-        data = self.input_norm(data.permute(0, 2, 3, 1))
-        data = data.permute(0, 3, 1, 2)
+        # data = self.input_norm(data.permute(0, 2, 3, 1))
+        # data = data.permute(0, 3, 1, 2)
         # data = data.permute(0, 1, 3, 2)
         # data = data - self.input_center
         # data = data * self.input_scale
