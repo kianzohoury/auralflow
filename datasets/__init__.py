@@ -46,27 +46,31 @@ def audio_to_disk(
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
-    np.random.shuffle(subset_dir)
     num_tracks = min(len(subset_dir), max_num_tracks)
 
     with ProgressBar(
         subset_dir, total=num_tracks, fmt=False, unit="track"
     ) as tq:
-        entry = OrderedDict()
+
         for index, track_folder in enumerate(tq):
+            entry = OrderedDict()
             track_name = track_folder / "mixture.wav"
             if not track_name.is_file():
                 continue
+
             mixture_track, sr = librosa.load(track_name, sr=None)
             entry["mixture"] = mixture_track
-            for target in targets:
+
+            for target in sorted(targets):
                 target_name = f"{str(track_folder)}/{target}.wav"
                 entry[target], sr = librosa.load(target_name, sr=sr)
+
             duration = (
                 int(librosa.get_duration(y=mixture_track, sr=44100)) * sr
             )
             entry["duration"] = duration
             audio_tracks.append(entry)
+
             if index == num_tracks:
                 break
     return audio_tracks

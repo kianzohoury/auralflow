@@ -38,7 +38,7 @@ class AudioTransform(object):
             onesided=True,
         )
         self.mel_scale = transforms.MelScale(
-            n_mels=128,
+            n_mels=512,
             f_min=1,
             f_max=16384,
             sample_rate=sample_rate,
