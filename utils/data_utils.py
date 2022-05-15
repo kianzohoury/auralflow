@@ -71,7 +71,7 @@ class AudioTransform(object):
         """Transforms complex-valued spectrogram to its time-domain signal."""
         return self.inv_stft(complex_spec)
 
-    def to_mel_scale(self, spectrogram: Tensor, to_db: bool = False) -> Tensor:
+    def to_mel_scale(self, spectrogram: Tensor, to_db: bool = True) -> Tensor:
         """Transforms magnitude or log-normal spectrogram to mel scale."""
         mel_spectrogram = self.mel_scale(spectrogram)
         if to_db:

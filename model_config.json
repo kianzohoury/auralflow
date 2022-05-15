@@ -43,12 +43,13 @@
         "global_step": -1
     },
     "visualizer_params": {
-        "tensorboard": true,
+        "view_images": true,
+        "view_gradients": true,
+        "play_audio": true,
         "save_images": false,
+        "save_audio": false,
         "save_frequency": 5,
-        "log_gradient": true,
-        "num_images_view": 1,
-        "num_audio_listen": 1,
+        "num_images": 1,
         "logs_path": "runs"
     }
 }

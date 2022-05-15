@@ -296,7 +296,7 @@ class SpectrogramLSTM(SpectrogramNetSimple):
             hidden_size=lstm_hidden_size,
             bidirectional=True,
             num_layers=lstm_layers,
-            dropout=0.4
+            dropout=0.4,
         )
 
         self.linear = nn.Sequential(

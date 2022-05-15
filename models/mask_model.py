@@ -3,11 +3,10 @@ import importlib
 import torch
 from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
-from torch.utils.tensorboard import SummaryWriter
 
 from losses import get_model_criterion
 from utils.data_utils import get_num_frames, AudioTransform
-from visualizer import visualize_audio, listen_audio, log_gradients
+from visualizer import Visualizer
 from .base import SeparationModel
 
 
@@ -158,41 +157,14 @@ class SpectrogramMaskModel(SeparationModel):
         target_estimate = self.transform.to_audio(phase_corrected)
         return target_estimate
 
-    def mid_epoch_callback(
-        self, writer: SummaryWriter, global_step: int
-    ) -> None:
-        """Called during epoch before parameter update."""
-        log_gradients(self.model, writer=writer, global_step=global_step)
+    def mid_epoch_callback(self, visualizer: Visualizer, epoch: int) -> None:
+        """Called during epoch before parameter updates."""
+        visualizer.visualize_gradient(model=self, global_step=epoch)
 
     def post_epoch_callback(
-        self,
-        mixture_audio: Tensor,
-        target_audio: Tensor,
-        writer: SummaryWriter,
-        global_step: int,
+        self, mix: Tensor, target: Tensor, visualizer: Visualizer, epoch: int
     ) -> None:
-        """Logs spectrogram images and separated audio after each epoch."""
-        save_images = self.visualizer_params["save_images"]
-        save_images = save_images and global_step % self.visualizer_params["save_frequency"] == 0
-        for i, label in enumerate(self.target_labels):
-            visualize_audio(
-                model=self,
-                label=label,
-                mixture_audio=mixture_audio[:, :, :, i],
-                target_audio=target_audio[:, :, :, i],
-                to_tensorboard=True,
-                writer=writer,
-                save_images=save_images,
-                n_samples=self.visualizer_params["num_images_view"],
-                global_step=global_step,
-            )
-            listen_audio(
-                model=self,
-                label=label,
-                mixture_audio=mixture_audio[:, :, :, i],
-                target_audio=target_audio[:, :, :, i],
-                writer=writer,
-                sample_rate=self.dataset_params["sample_rate"],
-                n_samples=self.visualizer_params["num_audio_listen"],
-                global_step=global_step,
-            )
+        """Logs images and audio to tensorboard at the end of each epoch."""
+        visualizer.visualize(
+            model=self, mixture=mix, target=target, global_step=epoch
+        )

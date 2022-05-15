@@ -1,163 +1,24 @@
-from pathlib import Path
-from typing import List, Optional
-
-import matplotlib.pyplot as plt
-import torch
-import torch.nn as nn
-import numpy as np
-from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
+from . visualizer import Visualizer
 
 
-def visualize_audio(
-    model,
-    label: str,
-    mixture_audio: Tensor,
-    target_audio: Tensor,
-    n_samples: int = 1,
-    to_tensorboard: bool = True,
-    save_images: bool = False,
-    global_step: Optional[int] = None,
-    writer: Optional[SummaryWriter] = None,
-) -> None:
-    """Creates spectrogram/waveform images to visualize."""
-    # Separate target source(s).
-    estimate_audio = model.separate(mixture_audio.to(model.device))
+__all__ = ["Visualizer"]
 
-    # Apply log and mel scaling to estimate and target.
-    estimate_mel_spec = model.transform.to_mel_scale(
-        model.estimate, to_db=True
+
+def config_visualizer(config: dict, writer: SummaryWriter) -> Visualizer:
+    """Initializes and returns a visualizer object."""
+    visualizer_params = config["visualizer_params"]
+    dataset_params = config["dataset_params"]
+    viz = Visualizer(
+            writer=writer,
+            save_dir=visualizer_params["logs_path"] + "/images",
+            view_images=visualizer_params["view_images"],
+            view_gradients=visualizer_params["view_gradients"],
+            play_audio=visualizer_params["play_audio"],
+            num_images=visualizer_params["num_images"],
+            save_image=visualizer_params["save_images"],
+            save_audio=visualizer_params["save_audio"],
+            save_freq=visualizer_params["save_frequency"],
+            sample_rate=dataset_params["sample_rate"],
     )
-    target_mel_spec = model.transform.audio_to_mel(
-        target_audio.to(model.device), to_db=True
-    )
-
-    # Collapse channels to mono.
-    n_frames = estimate_audio.shape[-1]
-    estimate_mel_spec = torch.mean(estimate_mel_spec, dim=1).cpu()
-    target_mel_spec = torch.mean(target_mel_spec, dim=1).cpu()
-    estimate_audio = torch.mean(estimate_audio, dim=1)[:, :n_frames].cpu()
-    target_audio = torch.mean(target_audio, dim=1)[:, :n_frames].cpu()
-
-    # Create n_samples number of figures.
-    for i in range(n_samples):
-        fig, ax = plt.subplots(
-            nrows=3, figsize=(12, 8), sharex=False, sharey=False, dpi=120
-        )
-        # Plot spectrograms.
-        ax[0].imshow(
-            estimate_mel_spec[i], origin="lower", aspect="auto", cmap="inferno"
-        )
-        image = ax[1].imshow(
-            target_mel_spec[i], origin="lower", aspect="auto", cmap="inferno"
-        )
-        # Plot waveforms.
-        ax[2].set_facecolor("black")
-        ax[2].plot(
-            estimate_audio[i],
-            color="yellowgreen",
-            alpha=0.8,
-            linewidth=0.2,
-            label=f"{label} estimate",
-        )
-        ax[2].plot(
-            target_audio[i],
-            color="darkorange",
-            alpha=0.6,
-            linewidth=0.2,
-            label=f"{label} true",
-        )
-
-        # Formatting.
-        ax[0].set_title(f"{label} estimate")
-        ax[1].set_title(f"{label} true")
-        ax[2].set_title(f"{label} waveform")
-        ax[2].set_xlim(xmin=0, xmax=n_frames)
-        ax[0].set(frame_on=False)
-        ax[1].set(frame_on=False)
-        format_axis(ax[0])
-        format_axis(ax[1])
-        plt.xlabel("Frames")
-        plt.tight_layout()
-
-        # Set the legend.
-        legend = plt.legend(loc="upper right", framealpha=0)
-        for leg in legend.legendHandles:
-            leg.set_linewidth(3.0)
-        for text in legend.get_texts():
-            plt.setp(text, color="w")
-
-        # Decibel color map.
-        cbar = fig.colorbar(image, ax=ax.ravel())
-        cbar.outline.set_visible(False)
-
-        # Send figures to tensorboard.
-        if to_tensorboard and writer is not None:
-            writer.add_figure(
-                "spectrogram", figure=fig, global_step=global_step
-            )
-
-        # Save figures as images to disk.
-        if save_images:
-            image_dir = Path(f"{writer.log_dir}/spectrogram_images")
-            image_dir.mkdir(exist_ok=True)
-            fig.savefig(image_dir / f"{label}_{global_step}.png", dpi=600)
-
-
-def listen_audio(
-    model,
-    label: str,
-    mixture_audio: Tensor,
-    target_audio: Tensor,
-    writer: SummaryWriter,
-    global_step: int,
-    n_samples: int = 1,
-    sample_rate: int = 44100,
-) -> None:
-    """Embed audio to tensorboard or save audio to disk."""
-    # Separate audio.
-    estimate_audio = model.separate(mixture_audio.to(model.device)).cpu()
-
-    # Trim mixture/target to match estimate length.
-    n_frames = estimate_audio.shape[-1]
-    mixture_audio = mixture_audio[:, :, :n_frames]
-    target_audio = target_audio[:, :, :n_frames]
-
-    # Send audio to tensorboard.
-    for i in range(n_samples):
-        writer.add_audio(
-            tag=f"{label}/estimate",
-            snd_tensor=estimate_audio[i].T,
-            global_step=global_step,
-            sample_rate=sample_rate,
-        )
-        writer.add_audio(
-            tag=f"{label}/true",
-            snd_tensor=target_audio[i].T,
-            global_step=global_step,
-            sample_rate=sample_rate,
-        )
-        residual_estimate = mixture_audio[i] - estimate_audio[i]
-        writer.add_audio(
-            tag=f"{label}/estimate_residual",
-            snd_tensor=residual_estimate.T,
-            global_step=global_step,
-            sample_rate=sample_rate,
-        )
-
-
-def log_gradients(model: nn.Module, writer: SummaryWriter, global_step: int):
-    """Sends model weights and gradients to tensorboard."""
-    for name, param in model.named_parameters():
-        if param.grad is not None:
-            # Monitor model updates by tracking their 2-norms.
-            weight_norm = torch.linalg.norm(param)
-            grad_norm = torch.linalg.norm(param.grad)
-            writer.add_histogram(f"{name}_norm", weight_norm, global_step)
-            writer.add_histogram(f"{name}_grad_norm", grad_norm, global_step)
-
-
-def format_axis(axis):
-    plt.setp(axis.get_xticklabels(), visible=False)
-    plt.setp(axis.get_yticklabels(), visible=False)
-    axis.tick_params(axis="both", which="both", length=0)
+    return viz

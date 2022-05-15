@@ -52,8 +52,6 @@ def component_loss(
     loss = (1 - alpha - beta) * total_separation_loss
     loss = loss + alpha * total_noise_loss
     loss = loss + beta * total_noise_quality_loss
-    # loss.add(alpha * total_noise_loss)
-    # loss.add(beta * total_noise_quality_loss)
     mean_loss = loss / filtered_src.numel()
     return mean_loss
 
@@ -103,7 +101,8 @@ class WeightedComponentLoss(nn.Module):
 
         # Add kl term if using VAE.
         if hasattr(self.model, "get_kl_div"):
-            torch.add(self.model.batch_loss, self.model.get_kl_div())
+            kl_term = self.model.get_kl_div()
+            self.model.batch_loss = self.model.batch_loss + kl_term
 
 
 class KLDivergenceLoss(nn.Module):

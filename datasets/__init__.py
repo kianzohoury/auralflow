@@ -84,14 +84,14 @@ def create_audio_dataset(
         targets=targets,
         split=split,
         max_num_tracks=max_num_tracks,
-        sample_rate=sample_rate
+        sample_rate=sample_rate,
     )
     chunked_dataset = datasets.AudioDataset(
         dataset=full_dataset,
         targets=targets,
         chunk_size=chunk_size,
         num_chunks=int(num_chunks),
-        sample_rate=sample_rate
+        sample_rate=sample_rate,
     )
     return chunked_dataset
 

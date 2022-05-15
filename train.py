@@ -7,6 +7,7 @@ from models import create_model
 from utils import load_config
 from validate import cross_validate
 from visualizer.progress import ProgressBar
+from visualizer import config_visualizer
 
 
 def main(config_filepath: str):
@@ -54,6 +55,8 @@ def main(config_filepath: str):
     print("Done.")
 
     writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
+    visualizer = config_visualizer(config=configuration, writer=writer)
+
     start_epoch = training_params["last_epoch"] + 1
     stop_epoch = start_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
@@ -141,7 +144,7 @@ def main(config_filepath: str):
             model.save_model(global_step=epoch)
             model.save_optim(global_step=epoch)
 
-        mixture, target = next(iter(val_dataloader))
+        test_mixture, test_target = next(iter(val_dataloader))
         model.post_epoch_callback(mixture, target, writer, epoch)
 
     writer.close()
