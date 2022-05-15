@@ -59,6 +59,8 @@ def make_waveform_figure(
     )
 
     # Formatting.
+    ax[0].set_title(f"{label} estimate")
+    ax[1].set_title(f"{label} true")
     ax[0].set_xlim(xmin=0, xmax=estimate.shape[0])
     ax[1].set_xlim(xmin=0, xmax=estimate.shape[0])
     ax[2].set_xlim(xmin=0, xmax=estimate.shape[0])
