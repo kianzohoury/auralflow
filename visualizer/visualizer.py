@@ -222,7 +222,7 @@ class Visualizer(object):
 
     def visualize_gradient(self, model, global_step: int) -> None:
         """Sends model weights and gradients to tensorboard."""
-        for name, param in model.named_parameters():
+        for name, param in model.model.named_parameters():
             if param.grad is not None:
                 # Monitor model updates by tracking their 2-norms.
                 weight_norm = torch.linalg.norm(param)
