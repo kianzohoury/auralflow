@@ -1,7 +1,17 @@
-from . import losses
+from .losses import WeightedComponentLoss, KLDivergenceLoss, L1Loss, L2Loss
 from typing import Union, Callable
 
+
 import torch.nn as nn
+
+
+__all__ = [
+    "WeightedComponentLoss",
+    "KLDivergenceLoss",
+    "L1Loss",
+    "L2Loss",
+    "get_model_criterion",
+]
 
 
 def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
@@ -10,15 +20,15 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
     model_type = config["model_params"]["model_type"]
     is_vae_model = model_type == "SpectrogramLSTMVariational"
     if loss_fn == "component_loss":
-        criterion = losses.WeightedComponentLoss(
+        criterion = WeightedComponentLoss(
             model=model,
             alpha=config["training_params"]["alpha_constant"],
             beta=config["training_params"]["beta_constant"],
         )
     elif is_vae_model:
-        criterion = losses.KLDivergenceLoss(model=model, loss_fn=loss_fn)
+        criterion = KLDivergenceLoss(model=model, loss_fn=loss_fn)
     elif loss_fn == "l1":
-        criterion = losses.L1Loss(model=model)
+        criterion = L1Loss(model=model)
     else:
-        criterion = losses.L2Loss(model=model)
+        criterion = L2Loss(model=model)
     return criterion

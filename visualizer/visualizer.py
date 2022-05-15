@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 def make_spectrogram_figure(
-        label: str, estimate: Tensor, target: Tensor, resolution: int = 120
+    label: str, estimate: Tensor, target: Tensor, resolution: int = 120
 ) -> matplotlib.figure:
     """Returns a spectrogram image as a matplotlib figure."""
     fig, ax = plt.subplots(nrows=2, figsize=(12, 8), dpi=resolution)
@@ -33,7 +33,7 @@ def make_spectrogram_figure(
 
 
 def make_waveform_figure(
-        label: str, estimate: Tensor, target: Tensor, resolution: int = 120
+    label: str, estimate: Tensor, target: Tensor, resolution: int = 120
 ) -> matplotlib.figure:
     """Returns a waveform image as a matplotlib figure."""
     fig, ax = plt.subplots(nrows=3, figsize=(12, 8), dpi=resolution)
@@ -246,9 +246,7 @@ class Visualizer(object):
                 self.visualize_spectrogram(
                     label=label, global_step=global_step
                 )
-                self.visualize_waveform(
-                    label=label, global_step=global_step
-                )
+                self.visualize_waveform(label=label, global_step=global_step)
 
             # Visualize gradients.
             if self.view_gradients:
@@ -256,10 +254,7 @@ class Visualizer(object):
 
             # Play audio.
             if self.play_audio:
-                self.embed_audio(
-                    label=label, global_step=global_step
-                )
+                self.embed_audio(label=label, global_step=global_step)
 
         # Increment save counter.
         self.save_count += 1
-

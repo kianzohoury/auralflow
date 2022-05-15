@@ -83,9 +83,8 @@ def main(config_filepath: str):
                 train_loss.append(batch_loss)
                 model.backward()
 
-                model.mid_epoch_callback(
-                    writer=writer, global_step=global_step
-                )
+                # Mid-epoch callback.
+                model.mid_epoch_callback(visualizer=visualizer, epoch=epoch)
 
                 # nn.utils.clip_grad_norm_(
                 #     model.model.parameters(), max_norm=1.0
@@ -139,13 +138,15 @@ def main(config_filepath: str):
             print("No improvement. Stopping training early...")
             break
 
-        # Only save the best model.
+        # Only save model if validation loss decreases.
         if model.is_best_model:
             model.save_model(global_step=epoch)
             model.save_optim(global_step=epoch)
 
-        test_mixture, test_target = next(iter(val_dataloader))
-        model.post_epoch_callback(mixture, target, writer, epoch)
+        # Post-epoch callback.
+        model.post_epoch_callback(
+            *next(iter(val_dataloader)), visualizer=visualizer, epoch=epoch
+        )
 
     writer.close()
     print("Done.")
