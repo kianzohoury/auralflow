@@ -288,7 +288,7 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         self.lstm_hidden_size = lstm_hidden_size
 
         # Calculate number of input features to the LSTM.
-        n_features = self.channel_sizes[-1][0] * self.encoding_sizes[-1][0]
+        n_features = self.channel_sizes[-1][0] * self.encoding_sizes[-1][-1]
         self.n_features = n_features
 
         self.lstm = nn.LSTM(
@@ -296,19 +296,21 @@ class SpectrogramLSTM(SpectrogramNetSimple):
             hidden_size=lstm_hidden_size,
             bidirectional=True,
             num_layers=lstm_layers,
+            dropout=0.4
         )
 
         self.linear = nn.Sequential(
             nn.Linear(lstm_hidden_size * 2, lstm_hidden_size),
             nn.ReLU(inplace=True),
             nn.Linear(lstm_hidden_size, n_features * 2),
-            nn.ReLU(inplace=True),
-            nn.BatchNorm1d(n_features * 2),
+            nn.ReLU(inplace=True)
+            # nn.BatchNorm1d(n_features * 2),
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
+        data = self.input_norm(data)
         # data = self.input_norm(data.permute(0, 2, 3, 1))
         # data = data.permute(0, 3, 1, 2)
         # data = data.permute(0, 1, 3, 2)
@@ -326,11 +328,11 @@ class SpectrogramLSTM(SpectrogramNetSimple):
 
         # Reshape encoded audio to pass through bottleneck.
         n, c, b, t = enc_6.size()
-        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, t, c * b))
+        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
 
         # Pass through recurrent stack.
         lstm_out, _ = self.lstm(enc_6)
-        lstm_out = lstm_out.reshape((n * t, -1))
+        lstm_out = lstm_out.reshape((n * b, -1))
 
         # Project latent audio onto affine space and reshape for decoder.
         latent_data = self.linear(lstm_out)

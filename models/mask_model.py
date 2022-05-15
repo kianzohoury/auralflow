@@ -172,6 +172,8 @@ class SpectrogramMaskModel(SeparationModel):
         global_step: int,
     ) -> None:
         """Logs spectrogram images and separated audio after each epoch."""
+        save_images = self.visualizer_params["save_images"]
+        save_images = save_images and global_step % self.visualizer_params["save_frequency"] == 0
         for i, label in enumerate(self.target_labels):
             visualize_audio(
                 model=self,
@@ -180,7 +182,7 @@ class SpectrogramMaskModel(SeparationModel):
                 target_audio=target_audio[:, :, :, i],
                 to_tensorboard=True,
                 writer=writer,
-                save_images=False,
+                save_images=save_images,
                 n_samples=self.visualizer_params["num_images_view"],
                 global_step=global_step,
             )

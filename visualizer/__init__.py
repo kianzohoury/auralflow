@@ -26,10 +26,10 @@ def visualize_audio(
 
     # Apply log and mel scaling to estimate and target.
     estimate_mel_spec = model.transform.to_mel_scale(
-        model.estimate, to_db=False
+        model.estimate, to_db=True
     )
     target_mel_spec = model.transform.audio_to_mel(
-        target_audio.to(model.device)
+        target_audio.to(model.device), to_db=True
     )
 
     # Collapse channels to mono.
@@ -101,7 +101,7 @@ def visualize_audio(
         if save_images:
             image_dir = Path(f"{writer.log_dir}/spectrogram_images")
             image_dir.mkdir(exist_ok=True)
-            fig.savefig(image_dir / f"{label}_{global_step}.png")
+            fig.savefig(image_dir / f"{label}_{global_step}.png", dpi=600)
 
 
 def listen_audio(

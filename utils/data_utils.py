@@ -38,7 +38,7 @@ class AudioTransform(object):
             onesided=True,
         )
         self.mel_scale = transforms.MelScale(
-            n_mels=512,
+            n_mels=128,
             f_min=1,
             f_max=16384,
             sample_rate=sample_rate,
@@ -73,9 +73,10 @@ class AudioTransform(object):
 
     def to_mel_scale(self, spectrogram: Tensor, to_db: bool = False) -> Tensor:
         """Transforms magnitude or log-normal spectrogram to mel scale."""
+        mel_spectrogram = self.mel_scale(spectrogram)
         if to_db:
-            spectrogram = self.to_decibel(spectrogram)
-        return self.mel_scale(spectrogram)
+            mel_spectrogram = self.to_decibel(mel_spectrogram)
+        return mel_spectrogram
 
     def audio_to_mel(self, audio: Tensor, to_db: bool = True):
         """Transforms raw audio signal to log-normalized mel spectrogram."""
