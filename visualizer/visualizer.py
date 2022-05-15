@@ -12,7 +12,7 @@ def make_spectrogram_figure(
     label: str, estimate: Tensor, target: Tensor, resolution: int = 120
 ) -> matplotlib.figure:
     """Returns a spectrogram image as a matplotlib figure."""
-    fig, ax = plt.subplots(nrows=2, figsize=(12, 8), dpi=resolution)
+    fig, ax = plt.subplots(nrows=2, figsize=(16, 8), dpi=resolution)
     ax[0].imshow(estimate, origin="lower", aspect="auto", cmap="inferno")
     img = ax[1].imshow(target, origin="lower", aspect="auto", cmap="inferno")
 
@@ -51,7 +51,7 @@ def make_waveform_figure(
         label=f"{label} estimate",
     )
     ax[2].plot(
-        estimate,
+        target,
         color="darkorange",
         alpha=0.5,
         linewidth=0.2,
@@ -59,6 +59,8 @@ def make_waveform_figure(
     )
 
     # Formatting.
+    ax[0].set_xlim(xmin=0, xmax=estimate.shape[0])
+    ax[1].set_xlim(xmin=0, xmax=estimate.shape[0])
     ax[2].set_xlim(xmin=0, xmax=estimate.shape[0])
     _format_axes(ax)
     plt.xlabel("Frames")
@@ -113,8 +115,9 @@ class Visualizer(object):
         self.sample_rate = sample_rate
         self.save_count = 0
 
-        # Create images/audio directory.
-        Path(self.save_dir).mkdir(exist_ok=True)
+        # Create image folder.
+        if save_image:
+            Path(self.save_dir).mkdir(exist_ok=True)
 
     def test_model(
         self, model, mixture_audio: Tensor, target_audio: Tensor
@@ -135,7 +138,7 @@ class Visualizer(object):
         target_mel = torch.mean(target_mel, dim=1)[:n_images]
         estimate_wav = torch.mean(estimate_audio, dim=1)[:n_images, :n_frames]
         target_wav = torch.mean(target_audio, dim=1)[:n_images, :n_frames]
-        estimate_residual_audio = mixture_audio - estimate_audio
+        estimate_res_audio = mixture_audio[:, :, :n_frames] - estimate_audio
 
         # Store spectrograms.
         self.spectrogram = {
@@ -147,7 +150,7 @@ class Visualizer(object):
         self.audio = {
             "estimate": estimate_audio.cpu(),
             "target": target_audio.cpu(),
-            "residual": estimate_residual_audio.cpu(),
+            "residual": estimate_res_audio.cpu(),
             "estimate_mono": estimate_wav.cpu(),
             "target_mono": target_wav.cpu(),
         }
@@ -159,7 +162,7 @@ class Visualizer(object):
     def visualize_spectrogram(self, label: str, global_step: int) -> None:
         """Logs spectrogram images to tensorboard."""
         for i in range(self.num_images):
-            spec_figure = make_spectrogram_figure(
+            spec_fig = make_spectrogram_figure(
                 label=label,
                 estimate=self.spectrogram["estimate_mono"][i],
                 target=self.spectrogram["target_mono"][i],
@@ -167,20 +170,20 @@ class Visualizer(object):
 
             # Send figure to tensorboard.
             self.writer.add_figure(
-                "spectrogram/", figure=spec_figure, global_step=global_step
+                f"spectrogram/{label}", figure=spec_fig, global_step=global_step
             )
 
             # Save image locally.
             if self.save_image and (self.save_count + 1) % self.save_freq == 0:
                 self.save_figure(
-                    figure=spec_figure,
+                    figure=spec_fig,
                     filename=f"{label}_{global_step}_spectrogram.png",
                 )
 
     def visualize_waveform(self, label: str, global_step: int) -> None:
         """Logs waveform images to tensorboard."""
         for i in range(self.num_images):
-            waveform_figure = make_waveform_figure(
+            wav_fig = make_waveform_figure(
                 label=label,
                 estimate=self.audio["estimate_mono"][i],
                 target=self.audio["target_mono"][i],
@@ -188,13 +191,13 @@ class Visualizer(object):
 
             # Send figure to tensorboard.
             self.writer.add_figure(
-                "waveform/", figure=waveform_figure, global_step=global_step
+                f"waveform/{label}", figure=wav_fig, global_step=global_step
             )
 
             # Save image locally.
             if self.save_image and (self.save_count + 1) % self.save_freq == 0:
                 self.save_figure(
-                    figure=waveform_figure,
+                    figure=wav_fig,
                     filename=f"{label}_{global_step}_waveform.png",
                 )
 
@@ -215,7 +218,7 @@ class Visualizer(object):
         )
         self.writer.add_audio(
             tag=f"{label}/estimate_residual",
-            snd_tensor=self.audio["residual"].T,
+            snd_tensor=self.audio["residual"][0].T,
             global_step=global_step,
             sample_rate=self.sample_rate,
         )
@@ -238,8 +241,14 @@ class Visualizer(object):
         self, model, mixture: Tensor, target: Tensor, global_step: int
     ) -> None:
         """Runs visualizer."""
-        self.test_model(model, mixture_audio=mixture, target_audio=target)
-        for label in model.target_labels:
+        for i, label in enumerate(model.target_labels):
+
+            # Run model.
+            self.test_model(
+                model=model, 
+                mixture_audio=mixture[:, :, :, i].to(model.device),
+                target_audio=target[:, :, :, i].to(model.device)
+            )
 
             # Visualize images.
             if self.view_images:
@@ -252,7 +261,7 @@ class Visualizer(object):
             if self.view_gradients:
                 self.visualize_gradient(model=model, global_step=global_step)
 
-            # Play audio.
+            # Play separated audio back.
             if self.play_audio:
                 self.embed_audio(label=label, global_step=global_step)
 
