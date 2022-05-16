@@ -128,6 +128,11 @@ class SpectrogramMaskModel(SeparationModel):
         self.train()
         # self.scaler.step(self.optimizer)
         # self.scaler.update()
+        for param in self.model.parameters():
+            if param.grad is not None:
+                weight_norm = torch.linalg.norm(param)
+                grad_norm = torch.linalg.norm(param.grad)
+                print(f"weight norm: {weight_norm} \n grad norm {grad_norm}")
         self.optimizer.step()
         # Quicker gradient zeroing.
         for param in self.model.parameters():

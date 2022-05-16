@@ -232,23 +232,19 @@ class Visualizer(object):
                 if param.grad is not None:
                     # Monitor model updates by tracking their 2-norms.
                     weight_norm = torch.linalg.norm(param)
-                    print()
-                    print("w", weight_norm)
                     grad_norm = torch.linalg.norm(param.grad)
-                    print("g", grad_norm)
-                    # self.writer.add_histogram(
-                    #     f"{name}_norm", weight_norm, global_step
-                    # )
-                    # self.writer.add_histogram(
-                    #     f"{name}_grad_norm", grad_norm, global_step
-                    # )
+                    self.writer.add_histogram(
+                        f"{name}_norm", weight_norm, global_step
+                    )
+                    self.writer.add_histogram(
+                        f"{name}_grad_norm", grad_norm, global_step
+                    )
 
     def visualize(
         self, model, mixture: Tensor, target: Tensor, global_step: int
     ) -> None:
         """Runs visualizer."""
         for i, label in enumerate(model.target_labels):
-
             # Run model.
             self.test_model(
                 model=model, 
@@ -262,7 +258,6 @@ class Visualizer(object):
                     label=label, global_step=global_step
                 )
                 self.visualize_waveform(label=label, global_step=global_step)
-
 
             # Play separated audio back.
             if self.play_audio:
