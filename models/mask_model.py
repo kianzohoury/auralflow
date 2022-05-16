@@ -8,6 +8,7 @@ from losses import get_model_criterion
 from utils.data_utils import get_num_frames, AudioTransform
 from visualizer import Visualizer
 from .base import SeparationModel
+from torch.cuda.amp.grad_scaler import GradScaler
 
 
 class SpectrogramMaskModel(SeparationModel):
@@ -65,6 +66,7 @@ class SpectrogramMaskModel(SeparationModel):
 
         if self.training_mode:
             # Set model criterion.
+            # self.scaler = GradScaler(2 ** 6)
             self.criterion = get_model_criterion(
                 model=self, config=configuration
             )
@@ -113,6 +115,8 @@ class SpectrogramMaskModel(SeparationModel):
     def compute_loss(self) -> float:
         """Updates and returns the current batch-wise loss."""
         self.criterion()
+        # Apply scaling.
+        # self.batch_loss = self.scaler.scale(self.batch_loss)
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -122,6 +126,8 @@ class SpectrogramMaskModel(SeparationModel):
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.train()
+        # self.scaler.step(self.optimizer)
+        # self.scaler.update()
         self.optimizer.step()
         # Quicker gradient zeroing.
         for param in self.model.parameters():

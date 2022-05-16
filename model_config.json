@@ -15,11 +15,11 @@
         "max_num_tracks": 2,
         "max_num_samples": 1e3,
         "num_channels": 1,
-        "sample_length": 1,
+        "sample_length": 2,
         "sample_rate": 44100,
         "num_fft": 4096,
         "window_size": 4096,
-        "hop_length": 256,
+        "hop_length": 1024,
         "power_spectrum": false,
         "learn_filterbanks": false,
         "val_split": 0.2
@@ -44,7 +44,7 @@
     },
     "visualizer_params": {
         "view_images": true,
-        "view_gradients": true,
+        "view_gradients": false,
         "play_audio": true,
         "save_images": false,
         "save_audio": false,

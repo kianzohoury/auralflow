@@ -227,17 +227,21 @@ class Visualizer(object):
 
     def visualize_gradient(self, model, global_step: int) -> None:
         """Sends model weights and gradients to tensorboard."""
-        for name, param in model.model.named_parameters():
-            if param.grad is not None:
-                # Monitor model updates by tracking their 2-norms.
-                weight_norm = torch.linalg.norm(param)
-                grad_norm = torch.linalg.norm(param.grad)
-                self.writer.add_histogram(
-                    f"{name}_norm", weight_norm, global_step
-                )
-                self.writer.add_histogram(
-                    f"{name}_grad_norm", grad_norm, global_step
-                )
+        if not self.view_gradients:
+            for name, param in model.model.named_parameters():
+                if param.grad is not None:
+                    # Monitor model updates by tracking their 2-norms.
+                    weight_norm = torch.linalg.norm(param)
+                    print()
+                    print("w", weight_norm)
+                    grad_norm = torch.linalg.norm(param.grad)
+                    print("g", grad_norm)
+                    # self.writer.add_histogram(
+                    #     f"{name}_norm", weight_norm, global_step
+                    # )
+                    # self.writer.add_histogram(
+                    #     f"{name}_grad_norm", grad_norm, global_step
+                    # )
 
     def visualize(
         self, model, mixture: Tensor, target: Tensor, global_step: int
@@ -259,9 +263,6 @@ class Visualizer(object):
                 )
                 self.visualize_waveform(label=label, global_step=global_step)
 
-            # Visualize gradients.
-            if self.view_gradients:
-                self.visualize_gradient(model=model, global_step=global_step)
 
             # Play separated audio back.
             if self.play_audio:

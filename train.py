@@ -8,6 +8,7 @@ from utils import load_config
 from validate import cross_validate
 from visualizer.progress import ProgressBar
 from visualizer import config_visualizer
+from torch.cuda.amp import autocast
 
 
 def main(config_filepath: str):
@@ -71,14 +72,15 @@ def main(config_filepath: str):
         with ProgressBar(train_dataloader, total=max_iters) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
                 # Cast precision if necessary to increase training speed.
-                # with autocast(device_type=model.device):
+                # with autocast():
 
-                # Process data, run forward pass.
+            # Process data, run forward pass.
                 model.set_data(mixture, target)
                 model.forward()
 
                 # Calculate mini-batch loss and run backprop.
                 batch_loss = model.compute_loss()
+
                 total_loss += batch_loss
                 train_loss.append(batch_loss)
                 model.backward()
