@@ -100,7 +100,7 @@ def get_evaluation_metrics(
     estimate = torch.mean(estimate, dim=1).cpu().numpy()
     target = torch.mean(target, dim=1).unsqueeze(-1).cpu().numpy()
     # print(mix[0].shape, estimate[0].shape, target[0].shape)
-    # scores = []
+    scores = []
 
     named_metrics = bss_eval_sources(
         reference_sources=target, estimated_sources=estimate
