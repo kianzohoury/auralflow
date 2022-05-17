@@ -7,7 +7,7 @@ import numpy as np
 
 from torch import FloatTensor, Tensor
 from torch.nn import functional
-from nussl.evaluation import scale_bss_eval
+from nussl.evaluation import scale_bss_eval, BSSEvalScale
 from utils.data_utils import trim_audio
 
 
@@ -95,32 +95,30 @@ def get_evaluation_metrics(
 ) -> OrderedDict[str, float]:
     """Returns the batch-wise mean standardized source separation scores."""
     # Collapse channels dimension to mono.
-    mix = torch.mean(mix, dim=1).unsqueeze(-1).cpu().numpy()
-    estimate = torch.mean(estimate, dim=1).unsqueeze(-1).cpu().numpy()
+    mix = torch.mean(mix, dim=1).cpu().numpy()
+    estimate = torch.mean(estimate, dim=1).cpu().numpy()
     target = torch.mean(target, dim=1).unsqueeze(-1).cpu().numpy()
-    print(mix.shape, estimate.shape, target.shape)
+    print(mix[0].shape, estimate[0].shape, target[0].shape)
     scores = []
+
+    bss = BSSEvalScale([*target], [*estimate])
 
     # Compute scores for each sample.
     for i in range(mix.shape[0]):
-        scores.append(
-            scale_bss_eval(
-                references=target[0],
-                estimate=estimate[0],
-                mixture=mix[0],
-                idx=0,
-                compute_sir_sar=full
-            )
+        metrics = bss.evaluate_helper(
+            references=target[0],
+            estimates=estimate[0],
+            compute_sir_sar=full
         )
+        print(len(metrics))
+        scores.append(list(metrics))
 
     # Average scores.
+    print(scores)
     avg_scores = np.mean(scores, axis=0, keepdims=False)
-    if not full:
-        labels = eval_metrics_labels[:1] + eval_metrics_labels[3:]
-    else:
-        labels = eval_metrics_labels
+    print(avg_scores)
     named_metrics = {
-        labels[i]: avg_scores[i] for i in range(len(avg_scores))
+        eval_metrics_labels[i]: avg_scores[i] for i in range(len(scores))
     }
     return named_metrics
 
