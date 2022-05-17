@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 
+
 from torch import FloatTensor, Tensor
 from torch.nn import functional
+from fast_bss_eval import fast_bss_eval
 
 
 def component_loss(
@@ -69,6 +71,30 @@ def l2_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
 def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     """Computes KL term using the closed form expression."""
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
+
+
+def get_benchmark_evaluation(
+    model, mix: Tensor, target: Tensor, scale_invariant: bool = True
+):
+    """Returns standardized music source separation metrics."""
+    # Separate audio.
+    estimate = model.separate(mix)
+
+    if scale_invariant:
+        sdr, sir, sar, perm = fast_bss_eval.si_bss_eval_sources(
+            ref=target,
+            est=estimate,
+        )
+    else:
+        sdr, sir, sar, perm = fast_bss_eval.bss_eval_sources(
+            ref=target,
+            est=estimate
+        )
+
+    metrics = {
+        "sdr": sdr, "sir": sir, "sar": sar, "perm": perm
+    }
+    return metrics
 
 
 class WeightedComponentLoss(nn.Module):

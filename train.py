@@ -8,6 +8,7 @@ from utils import load_config
 from validate import cross_validate
 from visualizer.progress import ProgressBar
 from visualizer import config_visualizer
+from losses import get_benchmark_evaluation
 from torch.cuda.amp import autocast
 
 
@@ -118,10 +119,15 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
         )
 
+        metrics = get_benchmark_evaluation(
+            model=model, *next(iter(val_dataloader)), scale_invariant=True
+        )
+
         print("avg train loss:", model.train_losses[-1])
         print("avg val loss:", model.val_losses[-1])
-        print("sdr:")
-        print("snr:")
+        print(f"SDR: {metrics['sdr']}")
+        print(f"SIR: {metrics['sir']}")
+        print(f"SAR: {metrics['sar']}")
         print("-" * 79)
 
         # Decrease lr if necessary.

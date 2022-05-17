@@ -1,4 +1,10 @@
-from .losses import WeightedComponentLoss, KLDivergenceLoss, L1Loss, L2Loss
+from .losses import (
+    WeightedComponentLoss,
+    KLDivergenceLoss,
+    L1Loss,
+    L2Loss,
+    get_benchmark_evaluation
+)
 from typing import Union, Callable
 
 
@@ -11,6 +17,7 @@ __all__ = [
     "L1Loss",
     "L2Loss",
     "get_model_criterion",
+    "get_benchmark_evaluation"
 ]
 
 
@@ -32,3 +39,4 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
     else:
         criterion = L2Loss(model=model)
     return criterion
+
