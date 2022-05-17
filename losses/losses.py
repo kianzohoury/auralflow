@@ -1,10 +1,27 @@
+from typing import Mapping, OrderedDict
+
 import torch
 import torch.nn as nn
+import numpy as np
 
 
 from torch import FloatTensor, Tensor
 from torch.nn import functional
-from fast_bss_eval import bss_eval_sources, si_bss_eval_sources
+from nussl.evaluation import scale_bss_eval
+from utils.data_utils import trim_audio
+
+
+eval_metrics_labels = [
+    "si-sdr",
+    "si-sir",
+    "si-sar",
+    "sd-sdr",
+    "snr",
+    "srr",
+    "si-sdri",
+    "sd-sdri",
+    "snri"
+]
 
 
 def component_loss(
@@ -73,37 +90,38 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
-def get_benchmark_evaluation(
-    model, mix: Tensor, target: Tensor, scale_invariant: bool = True
-):
-    """Returns standardized music source separation metrics."""
-    # Separate audio.
-    estimate = target.squeeze(-1)
-    # estimate = model.separate(mix.squeeze(-1))
-    estimate = estimate[:, :, :target.squeeze(-1).shape[-1]]
-    print(estimate.shape, target.squeeze(-1).shape)
-    scale_invariant = False
+def get_evaluation_metrics(
+    mix: Tensor, estimate: FloatTensor, target: Tensor, full: bool = True
+) -> OrderedDict[str, float]:
+    """Returns the batch-wise mean standardized source separation scores."""
+    # Collapse channels dimension to mono.
+    mix = torch.mean(mix, dim=1).unsqueeze(-1).cpu().numpy()
+    estimate = torch.mean(estimate, dim=1).unsqueeze(-1).cpu().numpy()
+    target = torch.mean(target, dim=1).cpu().numpy()
+    scores = []
 
-    if scale_invariant:
-        sdr, sir, sar, perm = si_bss_eval_sources(
-            ref=target.squeeze(-1).numpy(),
-            est=estimate.cpu().numpy(),
-            load_diag=1e-3, 
-            filter_length=256
+    # Compute scores for each sample.
+    for i in range(mix.shape[0]):
+        scores.append(
+            scale_bss_eval(
+                references=target[0],
+                estimate=estimate[0],
+                mixture=mix[0],
+                idx=0,
+                compute_sir_sar=full
+            )
         )
+
+    # Average scores.
+    avg_scores = np.mean(scores, axis=0, keepdims=False)
+    if not full:
+        labels = eval_metrics_labels[:1] + eval_metrics_labels[3:]
     else:
-        sdr, sir, sar, perm = bss_eval_sources(
-            ref=target.squeeze(-1).numpy(),
-            est=estimate.cpu().numpy(),
-            load_diag=1e-3,
-            filter_length=256,
-            zero_mean=True
-        )
-
-    metrics = {
-        "sdr": sdr, "sir": sir, "sar": sar, "perm": perm
+        labels = eval_metrics_labels
+    named_metrics = {
+        labels[i]: avg_scores[i] for i in range(len(avg_scores))
     }
-    return metrics
+    return named_metrics
 
 
 class WeightedComponentLoss(nn.Module):
@@ -188,3 +206,27 @@ class L2Loss(nn.Module):
 
     def forward(self) -> None:
         self.model.batch_loss = l2_loss(self.model.estimate, self.model.target)
+
+
+class SeparationEvaluator(object):
+    """Wrapper class for computing evaluation metrics."""
+    def __init__(self, model, full_metrics: bool = True):
+        super(SeparationEvaluator, self).__init__()
+        self.model = model
+        self.full_metrics = full_metrics
+
+    def get_metrics(
+        self, mix: Tensor, target: Tensor
+    ) -> OrderedDict[str, float]:
+        """Returns evaluation metrics."""
+        estimate = self.model.separate(mix.squeeze(0).to(self.model.device))
+        mix, estimate, target = trim_audio([mix, estimate, target.squeeze(-1)])
+        eval_metrics = get_evaluation_metrics(
+            mix=mix, estimate=estimate, target=target, full=self.full_metrics
+        )
+        return eval_metrics
+
+    @staticmethod
+    def print_metrics(metrics: OrderedDict[str, float]) -> None:
+        for label, value in metrics.items():
+            print(f"{label}: {value}")

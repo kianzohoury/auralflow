@@ -3,7 +3,7 @@ from .losses import (
     KLDivergenceLoss,
     L1Loss,
     L2Loss,
-    get_benchmark_evaluation
+    SeparationEvaluator
 )
 from typing import Union, Callable
 
@@ -17,7 +17,7 @@ __all__ = [
     "L1Loss",
     "L2Loss",
     "get_model_criterion",
-    "get_benchmark_evaluation"
+    "SeparationEvaluator"
 ]
 
 

@@ -8,7 +8,7 @@ from utils import load_config
 from validate import cross_validate
 from visualizer.progress import ProgressBar
 from visualizer import config_visualizer
-from losses import get_benchmark_evaluation
+from losses import SeparationEvaluator
 from torch.cuda.amp import autocast
 
 
@@ -58,6 +58,7 @@ def main(config_filepath: str):
 
     writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
     visualizer = config_visualizer(config=configuration, writer=writer)
+    evaluator = SeparationEvaluator(model=model, full_metrics=True)
 
     start_epoch = training_params["last_epoch"] + 1
     stop_epoch = start_epoch + training_params["max_epochs"]
@@ -119,15 +120,11 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
         )
 
-        metrics = get_benchmark_evaluation(
-            model, *next(iter(val_dataloader)), scale_invariant=True
-        )
+        metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
 
         print("avg train loss:", model.train_losses[-1])
         print("avg val loss:", model.val_losses[-1])
-        print(f"SDR: {metrics['sdr']}")
-        print(f"SIR: {metrics['sir']}")
-        print(f"SAR: {metrics['sar']}")
+        SeparationEvaluator.print_metrics(metrics)
         print("-" * 79)
 
         # Decrease lr if necessary.
