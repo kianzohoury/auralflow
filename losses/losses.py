@@ -95,11 +95,23 @@ def get_evaluation_metrics(
 ) -> OrderedDict[str, float]:
     """Returns the batch-wise mean standardized source separation scores."""
     # Collapse channels dimension to mono.
+<<<<<<< HEAD
     mix = torch.mean(mix, dim=1, keepdim=True).permute(0, 2, 1).cpu().numpy()
     estimate = torch.mean(estimate, dim=1, keepdim=True).permute(0, 2, 1).cpu().numpy()
     target = torch.mean(target, dim=1, keepdim=True).permute(0, 2, 1).cpu().numpy()
     print(mix[0].shape, estimate[0].shape, target[0].shape)
     scores = []
+=======
+    mix = torch.mean(mix, dim=1).cpu().numpy()
+    estimate = torch.mean(estimate, dim=1).cpu().numpy()
+    target = torch.mean(target, dim=1).unsqueeze(-1).cpu().numpy()
+    # print(mix[0].shape, estimate[0].shape, target[0].shape)
+    scores = []
+
+    named_metrics = bss_eval_sources(
+        reference_sources=target, estimated_sources=estimate
+    )
+>>>>>>> 9f002e09d29d93be4d087e59efb2bec8f4de3d89
 
     bss = BSSEvalScale([*target], [*estimate])
 
