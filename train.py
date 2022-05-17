@@ -99,12 +99,15 @@ def main(config_filepath: str):
                 global_step += 1
 
                 # Display and log the loss.
-                pbar.set_postfix({"loss": round(batch_loss, 6)})
+                pbar.set_postfix({"train_loss": round(batch_loss, 6)})
                 writer.add_scalar(
                     "Loss/train/iter_avg", batch_loss, global_step
                 )
 
         avg_loss = sum(train_loss) / len(train_loss)
+        pbar.set_postfix(
+            {"train_loss": round(batch_loss, 6), "avg": avg_loss}
+        )
         pbar.set_postfix({"loss": round(avg_loss, 6)})
         # Store epoch-average loss.
         model.train_losses.append(avg_loss)
@@ -125,14 +128,15 @@ def main(config_filepath: str):
         writer.add_scalars(
             "Metrics", {
                 "sdr": metrics["sdr"],
-                "sir": metrics["sir"],
-                "sar": metrics["sar"]
+                # "sir": metrics["sir"],
+                # "sar": metrics["sar"]
             }
         )    
 
         print("avg train loss:", model.train_losses[-1])
-        print("avg val loss:", model.val_losses[-1])
-        
+        print("avg valid loss:", model.val_losses[-1])
+        print("metrics:")
+        print("--------")
         SeparationEvaluator.print_metrics(metrics)
         print("-" * 79)
 

@@ -13,7 +13,7 @@ class ProgressBar(tqdm):
         fmt: bool = True,
         desc: Optional[str] = None,
     ):
-        bar_format = "{n_fmt}/{total_fmt:<10}|{bar:18}| "
+        bar_format = "{percentage:3.0f}%|{bar:18}|{n_fmt}/{total_fmt} "
         r_bar = "{elapsed}<{remaining}, {rate_fmt}{postfix}"
         bar_format += r_bar if fmt else "{rate_fmt}{postfix}"
 

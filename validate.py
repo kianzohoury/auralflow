@@ -25,7 +25,7 @@ def cross_validate(model, val_dataloader: DataLoader) -> None:
                 val_loss.append(batch_loss)
 
             # Display loss.
-            pbar.set_postfix({"loss": batch_loss})
+            pbar.set_postfix({"valid_loss": batch_loss})
 
     # Store epoch-average validation loss.
     # model.val_losses.append(total_loss / num_iters)
