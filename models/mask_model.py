@@ -1,6 +1,7 @@
 import importlib
 
 import torch
+import torch.nn as nn
 from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
 
@@ -66,7 +67,7 @@ class SpectrogramMaskModel(SeparationModel):
 
         if self.training_mode:
             # Set model criterion.
-            # self.scaler = GradScaler(2 ** 6)
+            self.scaler = GradScaler(2**5)
             self.criterion = get_model_criterion(
                 model=self, config=configuration
             )
@@ -116,7 +117,7 @@ class SpectrogramMaskModel(SeparationModel):
         """Updates and returns the current batch-wise loss."""
         self.criterion()
         # Apply scaling.
-        # self.batch_loss = self.scaler.scale(self.batch_loss)
+        self.batch_loss = self.scaler.scale(self.batch_loss)
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -126,14 +127,20 @@ class SpectrogramMaskModel(SeparationModel):
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.train()
-        # self.scaler.step(self.optimizer)
-        # self.scaler.update()
+        self.scaler.unscale_(self.optimizer)
+
+        nn.utils.clip_grad_norm_(
+            self.model.parameters(), max_norm=2
+        )
+
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
         # for param in self.model.parameters():
         #     if param.grad is not None:
         #         weight_norm = torch.linalg.norm(param)
         #         grad_norm = torch.linalg.norm(param.grad)
         #         print(f"weight norm: {weight_norm} \n grad norm {grad_norm}")
-        self.optimizer.step()
+        # self.optimizer.step()
         # Quicker gradient zeroing.
         for param in self.model.parameters():
             param.grad = None
