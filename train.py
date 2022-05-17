@@ -125,7 +125,7 @@ def main(config_filepath: str):
 
         metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
 
-        writer.add_scalars("eval_metrics", metrics)    
+        writer.add_scalars("eval_metrics", metrics, global_step=epoch)    
 
         print("avg train loss:", model.train_losses[-1])
         print("avg valid loss:", model.val_losses[-1])

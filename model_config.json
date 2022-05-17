@@ -17,9 +17,9 @@
         "num_channels": 1,
         "sample_length": 2,
         "sample_rate": 44100,
-        "num_fft": 512,
-        "window_size": 512,
-        "hop_length": 256,
+        "num_fft": 4096,
+        "window_size": 4096,
+        "hop_length": 1024,
         "power_spectrum": false,
         "learn_filterbanks": false,
         "val_split": 0.2
