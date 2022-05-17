@@ -97,7 +97,8 @@ def get_evaluation_metrics(
     # Collapse channels dimension to mono.
     mix = torch.mean(mix, dim=1).unsqueeze(-1).cpu().numpy()
     estimate = torch.mean(estimate, dim=1).unsqueeze(-1).cpu().numpy()
-    target = torch.mean(target, dim=1).cpu().numpy()
+    target = torch.mean(target, dim=1).unsqueeze(-1).cpu().numpy()
+    print(mix.shape, estimate.shape, target.shape)
     scores = []
 
     # Compute scores for each sample.
@@ -219,8 +220,10 @@ class SeparationEvaluator(object):
         self, mix: Tensor, target: Tensor
     ) -> OrderedDict[str, float]:
         """Returns evaluation metrics."""
-        estimate = self.model.separate(mix.squeeze(0).to(self.model.device))
-        mix, estimate, target = trim_audio([mix, estimate, target.squeeze(-1)])
+        estimate = self.model.separate(mix.squeeze(-1).to(self.model.device))
+        mix, estimate, target = trim_audio(
+            [mix.squeeze(-1), estimate, target.squeeze(-1)]
+        )
         eval_metrics = get_evaluation_metrics(
             mix=mix, estimate=estimate, target=target, full=self.full_metrics
         )
