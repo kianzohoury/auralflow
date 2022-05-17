@@ -43,9 +43,9 @@
         "global_step": -1
     },
     "visualizer_params": {
-        "view_images": false,
+        "view_images": true,
         "view_gradients": false,
-        "play_audio": false,
+        "play_audio": true,
         "save_images": false,
         "save_audio": false,
         "save_frequency": 5,
