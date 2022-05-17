@@ -120,7 +120,7 @@ def main(config_filepath: str):
         )
 
         metrics = get_benchmark_evaluation(
-            model=model, *next(iter(val_dataloader)), scale_invariant=True
+            model, *next(iter(val_dataloader)), scale_invariant=True
         )
 
         print("avg train loss:", model.train_losses[-1])

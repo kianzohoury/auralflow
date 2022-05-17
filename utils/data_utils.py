@@ -63,8 +63,16 @@ class AudioTransform(object):
         ).to(spectrogram.device)
         return log_normal
 
-    def to_spectrogram(self, audio: Tensor) -> Tensor:
+    def to_spectrogram(self, audio: Tensor, use_padding: bool = True) -> Tensor:
         """Transforms an audio signal to its time-freq representation."""
+        if use_padding:
+            remainder = audio.shape[-1] % self.hop_length
+            pad_size = self.hop_length - remainder
+            padding = torch.zeros(
+                size=(*audio.shape[:-1], pad_size),
+                device=audio.device
+            )
+            audio = torch.cat([audio, padding], dim=-1)
         return self.stft(audio)
 
     def to_audio(self, complex_spec: Tensor) -> Tensor:
@@ -171,9 +179,11 @@ def get_num_frames(
     num_fft: int,
     window_size: int,
     hop_length: int,
+    use_padding: bool = True
 ) -> int:
     """Returns the number of FFT/STFT frequency bins."""
-    x = torch.rand((1, sample_rate * sample_length))
+    padding = sample_rate * sample_length % hop_length if use_padding else 0
+    x = torch.rand((1, sample_rate * sample_length + padding))
     y = torch.stft(
         x,
         n_fft=num_fft,
@@ -235,3 +245,4 @@ def get_conv_shape(
     w_out = math.floor((w_in - kernel_size) / stride + 1)
     assert h_out >= 0 and w_out >= 0
     return h_out, w_out
+

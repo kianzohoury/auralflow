@@ -4,7 +4,7 @@ import torch.nn as nn
 
 from torch import FloatTensor, Tensor
 from torch.nn import functional
-from fast_bss_eval import fast_bss_eval
+from fast_bss_eval import bss_eval_sources, si_bss_eval_sources
 
 
 def component_loss(
@@ -78,17 +78,26 @@ def get_benchmark_evaluation(
 ):
     """Returns standardized music source separation metrics."""
     # Separate audio.
-    estimate = model.separate(mix)
+    estimate = target.squeeze(-1)
+    # estimate = model.separate(mix.squeeze(-1))
+    estimate = estimate[:, :, :target.squeeze(-1).shape[-1]]
+    print(estimate.shape, target.squeeze(-1).shape)
+    scale_invariant = False
 
     if scale_invariant:
-        sdr, sir, sar, perm = fast_bss_eval.si_bss_eval_sources(
-            ref=target,
-            est=estimate,
+        sdr, sir, sar, perm = si_bss_eval_sources(
+            ref=target.squeeze(-1).numpy(),
+            est=estimate.cpu().numpy(),
+            load_diag=1e-3, 
+            filter_length=256
         )
     else:
-        sdr, sir, sar, perm = fast_bss_eval.bss_eval_sources(
-            ref=target,
-            est=estimate
+        sdr, sir, sar, perm = bss_eval_sources(
+            ref=target.squeeze(-1).numpy(),
+            est=estimate.cpu().numpy(),
+            load_diag=1e-3,
+            filter_length=256,
+            zero_mean=True
         )
 
     metrics = {
