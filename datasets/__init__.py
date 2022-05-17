@@ -1,21 +1,30 @@
-from collections import OrderedDict
-from pathlib import Path
-from typing import List
-from typing import Optional
-
 import librosa
+
+
+from collections import OrderedDict
+from . datasets import AudioDataset, AudioFolder
+from pathlib import Path
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
+from typing import List, Optional
+from visualizer import ProgressBar
 
-from visualizer.progress import ProgressBar
-from . import datasets
+
+__all__ = [
+    "AudioDataset",
+    "AudioFolder",
+    "create_audio_folder",
+    "audio_to_disk",
+    "create_audio_dataset",
+    "load_dataset"
+]
 
 
 def create_audio_folder(
     dataset_params: dict, subset: str = "train"
 ) -> datasets.AudioFolder:
     """Creates an on-the-fly streamable dataset as an AudioFolder."""
-    audio_folder = datasets.AudioFolder(
+    audio_folder = AudioFolder(
         subset=subset,
         dataset_path=dataset_params["dataset_path"],
         targets=dataset_params["target"],
@@ -39,9 +48,9 @@ def audio_to_disk(
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
     max_num_tracks = max_num_tracks if max_num_tracks else float("inf")
-    num_tracks = min(len(subset_dir), max_num_tracks)
+    n_tracks = min(len(subset_dir), max_num_tracks)
     with ProgressBar(
-        subset_dir, total=num_tracks, fmt=False, unit="track"
+        subset_dir, total=n_tracks, fmt=False, unit="track"
     ) as pbar:
         for index, track_folder in enumerate(pbar):
             entry = OrderedDict()
@@ -60,10 +69,10 @@ def audio_to_disk(
             duration = (
                 int(librosa.get_duration(y=mixture_track, sr=44100)) * sr
             )
+
             entry["duration"] = duration
             audio_tracks.append(entry)
-
-            if index == num_tracks:
+            if index == n_tracks:
                 break
     return audio_tracks
 
@@ -74,7 +83,6 @@ def create_audio_dataset(
     split: str = "train",
     chunk_size: int = 1,
     num_chunks: int = int(1e6),
-    normalize: bool = False,
     max_num_tracks: Optional[int] = None,
     sample_rate: int = 44100,
 ) -> datasets.AudioDataset:

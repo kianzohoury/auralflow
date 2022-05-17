@@ -1,13 +1,10 @@
-import torch.nn as nn
-
 from argparse import ArgumentParser
 from torch.utils.tensorboard import SummaryWriter
 from datasets import create_audio_dataset, load_dataset
 from models import create_model
 from utils import load_config
 from validate import cross_validate
-from visualizer.progress import ProgressBar
-from visualizer import config_visualizer
+from visualizer import ProgressBar, config_visualizer
 from losses import SeparationEvaluator
 from torch.cuda.amp import autocast
 
@@ -101,9 +98,7 @@ def main(config_filepath: str):
                 )
 
         avg_loss = sum(train_loss) / len(train_loss)
-        pbar.set_postfix(
-            {"train_loss": round(batch_loss, 6), "avg": avg_loss}
-        )
+        pbar.set_postfix({"train_loss": round(batch_loss, 6), "avg": avg_loss})
         pbar.set_postfix({"loss": round(avg_loss, 6)})
         # Store epoch-average loss.
         model.train_losses.append(avg_loss)
@@ -121,7 +116,7 @@ def main(config_filepath: str):
 
         metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
 
-        writer.add_scalars("eval_metrics", metrics, global_step=epoch)    
+        writer.add_scalars("eval_metrics", metrics, global_step=epoch)
 
         print("avg train loss:", model.train_losses[-1])
         print("avg valid loss:", model.val_losses[-1])

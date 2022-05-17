@@ -1,17 +1,15 @@
-from collections import OrderedDict
-from pathlib import Path
-from typing import Iterator, List, Optional, Tuple
-
 import librosa
 import numpy as np
 import torch
-import torch.utils.data
 import torchaudio
+
+
+from collections import OrderedDict
+from pathlib import Path
 from torch import Tensor
 from torch.utils.data.dataset import IterableDataset, Dataset
-from tqdm import tqdm
-
-from visualizer.progress import ProgressBar
+from typing import Iterator, List, Optional, Tuple
+from visualizer import ProgressBar
 
 
 class AudioFolder(IterableDataset):
@@ -25,8 +23,8 @@ class AudioFolder(IterableDataset):
     * Instead of chunking each track and loading an entire audio folder's worth
       of chunks, samples are randomly (with replacement) as needed by the
       dataloader. Note that when a dataloader has multiple workers and memory
-      is pinned, both the sampling process and audio transfer to GPU are sped up
-      considerably, making on-the-fly audio generation a viable option.
+      is pinned, both the sampling process and audio transfer to GPU are sped
+      up considerably, making on-the-fly audio generation a viable option.
 
     * If an audio folder consists of just a few tracks, resampling can generate
       a much larger dataset via chunking. However, resampling will eventually
@@ -43,11 +41,6 @@ class AudioFolder(IterableDataset):
         num_channels (int): Number of audio channels. Default: 1.
             Default: True.
         backend (str): Torchaudio backend. Default: 'soundfile'.
-
-    Examples:
-        >>> train_data = AudioFolder('toy_dataset/wav', ['vocals'],
-        ... subset='train')
-        >>> audio_sample = next(iter(train_data))
     """
 
     def __init__(
@@ -85,6 +78,7 @@ class AudioFolder(IterableDataset):
         self._track_filepaths = track_filepaths
         # Cache the track durations to speed up sampling.
         self._duration_cache = {}
+
         # Set torchaudio backend for audio loading.
         torchaudio.set_audio_backend(backend)
         np.random.seed(1)
@@ -100,20 +94,24 @@ class AudioFolder(IterableDataset):
         """
         sampled_track = np.random.choice(self._track_filepaths)
         source_names = ["mixture"] + self.targets
-        source_filepaths = [
-            sampled_track.joinpath(name).with_suffix("." + self.audio_format)
-            for name in source_names
-        ]
+        src_filepaths = []
+
+        for name in source_names:
+            src_filepaths.append(
+                sampled_track.joinpath(name).with_suffix(
+                    "." + self.audio_format
+                )
+            )
 
         if sampled_track.name not in self._duration_cache:
-            duration = librosa.get_duration(filename=source_filepaths[0])
+            duration = librosa.get_duration(filename=src_filepaths[0])
             self._duration_cache[sampled_track.name] = duration
         else:
             duration = self._duration_cache[sampled_track.name]
         offset = np.random.randint(0, duration - self.sample_length)
 
         sources_data = []
-        for source_filepath in source_filepaths:
+        for source_filepath in src_filepaths:
             try:
                 audio_data, _ = torchaudio.load(
                     filepath=str(source_filepath),
@@ -129,6 +127,7 @@ class AudioFolder(IterableDataset):
         mix_data, target_data = sources_data[0], sources_data[1:]
         # Stack target sources along the last dimension.
         target_data = torch.stack(target_data, dim=-1)
+
         # Reshape mixture to match target tensor's shape.
         mix_data = mix_data.unsqueeze(-1)
         return mix_data, target_data
@@ -143,11 +142,8 @@ class AudioFolder(IterableDataset):
             (AudioFolder): The validation set.
 
         Example:
-            >>> train_data = AudioFolder('toy_dataset/wav', ['vocals'],
-            ... subset='train')
-            >>> val_data = train_data.split(val_split=0.2)
         """
-        assert 0 < val_split <= 1.0, "Split value must be between 0.0 and 1.0."
+        val_split = 0.2 if (val_split > 1 or val_split < 0) else val_split
 
         val_dataset = AudioFolder(
             self.path,
@@ -163,6 +159,7 @@ class AudioFolder(IterableDataset):
         # Shuffle and get the split point.
         np.random.shuffle(self._track_filepaths)
         split_index = round(len(self._track_filepaths) * (1.0 - val_split))
+
         # Make the split & update the pointers.
         train_filepaths = self._track_filepaths[:split_index]
         val_filepaths = self._track_filepaths[split_index:]
@@ -178,6 +175,7 @@ class AudioFolder(IterableDataset):
 
 
 class AudioDataset(Dataset):
+    """Audio dataset that loads full audio tracks directly into memory."""
     def __init__(
         self,
         dataset: List,
@@ -232,6 +230,7 @@ def make_chunks(
             stop = offset + int(sr * chunk_size)
             mix_chunk = torch.from_numpy(mixture[offset:stop])
 
+            # Discard silent entries.
             if torch.linalg.norm(mix_chunk) < energy_cutoff:
                 continue
 
@@ -253,28 +252,28 @@ def make_chunks(
     return chunked_dataset
 
 
-def normalize_dataset(dataset, ratio: float = 0.2):
-    sr = 44100
-    chunk_size = dataset[0]["mixture"].shape[0] // sr
-    mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros(
-        (sr * chunk_size)
-    )
-    with tqdm(iter(dataset), total=int(len(dataset) * ratio)) as tq:
-        for index, track in enumerate(tq):
-            mixture = track["mixture"]
-
-            mix_sum += mixture
-            mix_sum_square += mixture**2
-            if index == int(len(dataset) * ratio):
-                break
-
-    mix_mean = mix_sum / (int(len(dataset) * ratio))
-    mix_std = torch.sqrt(
-        mix_sum_square / (int(len(dataset) * ratio)) - mix_mean * mix_mean
-    )
-    with tqdm(iter(dataset), total=len(dataset)) as tq:
-        for index, track in enumerate(tq):
-            track["mixture"] = (track["mixture"] - mix_mean) / (mix_std + 1e-9)
-            if index == len(dataset):
-                break
-    print(f"Dataset statistics: mean: {mix_mean}, std: {mix_std}")
+# def normalize_dataset(dataset, ratio: float = 0.2):
+#     sr = 44100
+#     chunk_size = dataset[0]["mixture"].shape[0] // sr
+#     mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros(
+#         (sr * chunk_size)
+#     )
+#     with tqdm(iter(dataset), total=int(len(dataset) * ratio)) as tq:
+#         for index, track in enumerate(tq):
+#             mixture = track["mixture"]
+#
+#             mix_sum += mixture
+#             mix_sum_square += mixture**2
+#             if index == int(len(dataset) * ratio):
+#                 break
+#
+#     mix_mean = mix_sum / (int(len(dataset) * ratio))
+#     mix_std = torch.sqrt(
+#         mix_sum_square / (int(len(dataset) * ratio)) - mix_mean * mix_mean
+#     )
+#     with tqdm(iter(dataset), total=len(dataset)) as tq:
+#         for index, track in enumerate(tq):
+#             track["mixture"] = (track["mixture"] - mix_mean) / (mix_std + 1e-9)
+#             if index == len(dataset):
+#                 break
+#     print(f"Dataset statistics: mean: {mix_mean}, std: {mix_std}")

@@ -178,7 +178,9 @@ class Visualizer(object):
 
             # Send figure to tensorboard.
             self.writer.add_figure(
-                f"spectrogram/{label}", figure=spec_fig, global_step=global_step
+                f"spectrogram/{label}",
+                figure=spec_fig,
+                global_step=global_step,
             )
 
             # Save image locally.
@@ -253,9 +255,9 @@ class Visualizer(object):
         for i, label in enumerate(model.target_labels):
             # Run model.
             self.test_model(
-                model=model, 
+                model=model,
                 mixture_audio=mixture[..., i].to(model.device),
-                target_audio=target[..., i].to(model.device)
+                target_audio=target[..., i].to(model.device),
             )
 
             # Visualize images.

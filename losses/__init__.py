@@ -4,7 +4,7 @@ from .losses import (
     L1Loss,
     L2Loss,
     SeparationEvaluator,
-    SISDRLoss
+    SISDRLoss,
 )
 from typing import Union, Callable
 
@@ -19,7 +19,7 @@ __all__ = [
     "L2Loss",
     "get_model_criterion",
     "SeparationEvaluator",
-    "SISDRLoss"
+    "SISDRLoss",
 ]
 
 
@@ -40,7 +40,6 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
         criterion = KLDivergenceLoss(model=model, loss_fn=loss_fn)
     elif loss_fn == "l1":
         criterion = L1Loss(model=model)
-    elif loss_fn == "l2":
+    else:
         criterion = L2Loss(model=model)
     return criterion
-

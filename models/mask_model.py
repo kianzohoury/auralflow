@@ -31,7 +31,7 @@ class SpectrogramMaskModel(SeparationModel):
             sr=self.dataset_params["sample_rate"],
             win_size=self.dataset_params["window_size"],
             hop_len=self.dataset_params["hop_length"],
-            center=True
+            center=True,
         )
 
         # Note that num bins will be num_fft // 2 + 1 due to symmetry.
@@ -129,9 +129,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.train()
         self.scaler.unscale_(self.optimizer)
 
-        nn.utils.clip_grad_norm_(
-            self.model.parameters(), max_norm=2
-        )
+        nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=2)
 
         self.scaler.step(self.optimizer)
         self.scaler.update()

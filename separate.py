@@ -16,7 +16,7 @@ def separate(model, audio: Tensor):
     offset = 0
     while offset < max_frames:
         # Reshape and trim audio chunk.
-        audio_chunk = audio[:, offset: offset + step_size]
+        audio_chunk = audio[:, offset : offset + step_size]
 
         # Unsqueeze batch dimension if not already batched.
         if audio_chunk.dim() == 2:
@@ -33,7 +33,10 @@ def separate(model, audio: Tensor):
         offset = offset + step_size - padding
 
     # Stick chunks to create full source estimate.
-    full_estimate = torch.cat(chunks, dim=0,)
+    full_estimate = torch.cat(
+        chunks,
+        dim=0,
+    )
     return full_estimate
 
 

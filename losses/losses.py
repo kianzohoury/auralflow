@@ -1,29 +1,24 @@
-from typing import Mapping, OrderedDict
-
 import torch
 import torch.nn as nn
-import numpy as np
 
 
+from fast_bss_eval import si_sdr, si_sdr_loss
 from torch import FloatTensor, Tensor
 from torch.nn import functional
-from nussl.evaluation import scale_bss_eval, BSSEvalScale
-from mir_eval.separation import evaluate, bss_eval_sources
 from utils.data_utils import trim_audio
-from fast_bss_eval import si_sdr, si_sdr_loss
 
 
-eval_metrics_labels = [
-    "si-sdr",
-    "si-sir",
-    "si-sar",
-    "sd-sdr",
-    "snr",
-    "srr",
-    "si-sdri",
-    "sd-sdri",
-    "snri"
-]
+# eval_metrics_labels = [
+#     "si-sdr",
+#     "si-sir",
+#     "si-sar",
+#     "sd-sdr",
+#     "snr",
+#     "srr",
+#     "si-sdri",
+#     "sd-sdri",
+#     "snri",
+# ]
 
 
 def component_loss(
@@ -96,25 +91,17 @@ def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
     """Computes scale-invariant signal-distortion ratio loss."""
     return si_sdr_loss(est=estimate, ref=target, zero_mean=True, clamp_db=1)
 
+
 def get_evaluation_metrics(
-    estimate: FloatTensor, target: Tensor, scale_invariant: bool = True
-) -> OrderedDict[str, float]:
+    estimate: FloatTensor, target: Tensor
+) -> dict[str, float]:
     """Returns batch-wise means of standard source separation eval scores."""
     estimate = torch.mean(estimate, dim=1, keepdim=True)
     target = torch.mean(target, dim=1, keepdim=True)
 
-    named_metrics = OrderedDict()
-
     # Scale-invariant signal-distortion ratio.
-    si_sdr_ = si_sdr(
-        ref=target,
-        est=estimate,
-        zero_mean=True
-    )
-
-    named_metrics = {
-        "si_sdr": torch.mean(si_sdr_).item()
-    }
+    si_sdr_ = si_sdr(ref=target, est=estimate, zero_mean=True)
+    named_metrics = {"si_sdr": torch.mean(si_sdr_).item()}
 
     return named_metrics
 
@@ -211,31 +198,28 @@ class SISDRLoss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        loss = scale_invariant_sdr_loss(
-            self.model.estimate, self.model.target
-        )
+        loss = scale_invariant_sdr_loss(self.model.estimate, self.model.target)
         self.model.batch_loss = torch.mean(loss)
 
 
 class SeparationEvaluator(object):
     """Wrapper class for computing evaluation metrics."""
+
     def __init__(self, model, full_metrics: bool = True):
         super(SeparationEvaluator, self).__init__()
         self.model = model
         self.full_metrics = full_metrics
 
-    def get_metrics(self, mix: Tensor, target: Tensor) -> OrderedDict[str, float]:
+    def get_metrics(self, mix: Tensor, target: Tensor) -> dict[str, float]:
         """Returns evaluation metrics."""
         estimate = self.model.separate(mix.squeeze(-1))
-        estimate, target = trim_audio(
-            [estimate, target.squeeze(-1)]
-        )
+        estimate, target = trim_audio([estimate, target.squeeze(-1)])
         eval_metrics = get_evaluation_metrics(
             estimate=estimate, target=target.to(estimate.device)
         )
         return eval_metrics
 
     @staticmethod
-    def print_metrics(metrics: OrderedDict[str, float]) -> None:
+    def print_metrics(metrics: dict[str, float]) -> None:
         for label, value in metrics.items():
             print(f"{label}: {value}")

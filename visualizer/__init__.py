@@ -1,8 +1,9 @@
 from torch.utils.tensorboard import SummaryWriter
 from .visualizer import Visualizer
+from .progress import ProgressBar
 
 
-__all__ = ["Visualizer"]
+__all__ = ["Visualizer", "config_visualizer", "ProgressBar"]
 
 
 def config_visualizer(config: dict, writer: SummaryWriter) -> Visualizer:
