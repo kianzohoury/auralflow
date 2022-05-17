@@ -115,7 +115,7 @@ def get_evaluation_metrics(
     avg_sdr, avg_sir, avg_sar = np.mean(scores, axis=0)
 
     named_metrics = {
-        "avg SDR": avg_sdr, "avg SIR": avg_sir, "avg SAR": avg_sar
+        "sdr": avg_sdr, "sir": avg_sir, "sar": avg_sar
     }
 
     return named_metrics

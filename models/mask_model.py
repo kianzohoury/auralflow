@@ -5,7 +5,7 @@ from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
 
 from losses import get_model_criterion
-from utils.data_utils import get_num_frames, AudioTransform
+from utils.data_utils import get_num_stft_frames, AudioTransform
 from visualizer import Visualizer
 from .base import SeparationModel
 from torch.cuda.amp.grad_scaler import GradScaler
@@ -25,12 +25,12 @@ class SpectrogramMaskModel(SeparationModel):
         super(SpectrogramMaskModel, self).__init__(configuration)
 
         # Calculate number of frames (temporal dimension).
-        self.num_samples = get_num_frames(
-            sample_rate=self.dataset_params["sample_rate"],
-            sample_length=self.dataset_params["sample_length"],
-            num_fft=self.dataset_params["num_fft"],
-            window_size=self.dataset_params["window_size"],
-            hop_length=self.dataset_params["hop_length"],
+        self.num_stft_frames = get_num_stft_frames(
+            sample_len=self.dataset_params["sample_length"],
+            sr=self.dataset_params["sample_rate"],
+            win_size=self.dataset_params["window_size"],
+            hop_len=self.dataset_params["hop_length"],
+            center=True
         )
 
         # Note that num bins will be num_fft // 2 + 1 due to symmetry.
@@ -48,7 +48,7 @@ class SpectrogramMaskModel(SeparationModel):
         # Create the model instance and set to current device.
         self.model = model_name(
             num_fft_bins=self.n_fft_bins,
-            num_samples=self.num_samples,
+            num_samples=self.num_stft_frames,
             num_channels=self.num_channels,
             hidden_dim=self.model_params["hidden_size"],
             mask_act_fn=self.model_params["mask_activation"],

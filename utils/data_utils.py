@@ -66,7 +66,7 @@ class AudioTransform(object):
     def to_spectrogram(self, audio: Tensor, use_padding: bool = True) -> Tensor:
         """Transforms an audio signal to its time-freq representation."""
         if use_padding:
-            remainder = audio.shape[-1] % self.hop_length
+            remainder = int(audio.shape[-1] % self.hop_length)
             pad_size = self.hop_length - remainder
             padding = torch.zeros(
                 size=(*audio.shape[:-1], pad_size),
@@ -173,26 +173,19 @@ def get_stft(
     return transform
 
 
-def get_num_frames(
-    sample_rate: int,
-    sample_length: int,
-    num_fft: int,
-    window_size: int,
-    hop_length: int,
-    use_padding: bool = True
+def get_num_stft_frames(
+    sample_len: int, sr: int, win_size: int, hop_len: int, center: bool = True
 ) -> int:
-    """Returns the number of FFT/STFT frequency bins."""
-    padding = sample_rate * sample_length % hop_length if use_padding else 0
-    x = torch.rand((1, sample_rate * sample_length + padding))
-    y = torch.stft(
-        x,
-        n_fft=num_fft,
-        win_length=window_size,
-        hop_length=hop_length,
-        onesided=True,
-        return_complex=True,
-    )
-    return y.size(-1)
+    """Calculates number of STFT frames."""
+    # Force number of samples to be divisble by hop length.
+    n_samples = sample_len * sr
+    remainder = n_samples % hop_len
+    n_samples += hop_len - remainder
+
+    pad_size = hop_len - remainder
+    win_size = (1 - bool(center)) * win_size
+    frames = math.floor((n_samples - win_size) / hop_len + 1)
+    return frames
 
 
 def make_hann_window(
