@@ -10,7 +10,7 @@ from torch.nn import functional
 from nussl.evaluation import scale_bss_eval, BSSEvalScale
 from mir_eval.separation import evaluate, bss_eval_sources
 from utils.data_utils import trim_audio
-from fast_bss_eval import sdr_loss, si_bss_eval_sources, sdr, si_sdr
+from fast_bss_eval import si_sdr, si_sdr_loss
 
 
 eval_metrics_labels = [
@@ -92,6 +92,10 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
+def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
+    """Computes scale-invariant signal-distortion ratio loss."""
+    return si_sdr_loss(est=estimate, ref=target, zero_mean=True)
+
 def get_evaluation_metrics(
     estimate: FloatTensor, target: Tensor, scale_invariant: bool = True
 ) -> OrderedDict[str, float]:
@@ -99,32 +103,17 @@ def get_evaluation_metrics(
     estimate = torch.mean(estimate, dim=1, keepdim=True)
     target = torch.mean(target, dim=1, keepdim=True)
 
-    named_metrics = OrderedDict
+    named_metrics = OrderedDict()
 
-    
-    
-    # Compute scores for each sample.
+    # Scale-invariant signal-distortion ratio.
     si_sdr_ = si_sdr(
         ref=target,
         est=estimate,
         zero_mean=True
     )
 
-    print(sdr_.shape)
-
-    #     sdr, sir, sar, _ = bss_eval_sources(
-    #         reference_sources=target[i] + eps,
-    #         estimated_sources=estimate[i] + eps
-    #     )
-    #     scores.append([sdr[0], sir[0], sar[0]])
-    
-        # scores.append([sdr, sir, sar])
-
-    # Average scores.
-    mean_sdr = torch.mean(sdr_, dim=0)
-
     named_metrics = {
-        "sdr": mean_sdr
+        "si_sdr": torch.mean(si_sdr_).item()
     }
 
     return named_metrics
@@ -212,6 +201,20 @@ class L2Loss(nn.Module):
 
     def forward(self) -> None:
         self.model.batch_loss = l2_loss(self.model.estimate, self.model.target)
+
+
+class SISDRLoss(nn.Module):
+    """Wrapper class for si-sdr loss."""
+
+    def __init__(self, model):
+        super(SISDRLoss, self).__init__()
+        self.model = model
+
+    def forward(self) -> None:
+        loss = scale_invariant_sdr_loss(
+            self.model.estimate, self.model.target
+        )
+        self.model.batch_loss = torch.mean(loss)
 
 
 class SeparationEvaluator(object):

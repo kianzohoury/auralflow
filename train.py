@@ -125,18 +125,10 @@ def main(config_filepath: str):
 
         metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
 
-        writer.add_scalars(
-            "Metrics", {
-                "sdr": metrics["sdr"],
-                # "sir": metrics["sir"],
-                # "sar": metrics["sar"]
-            }
-        )    
+        writer.add_scalars("eval_metrics", metrics)    
 
         print("avg train loss:", model.train_losses[-1])
         print("avg valid loss:", model.val_losses[-1])
-        print("metrics:")
-        print("--------")
         SeparationEvaluator.print_metrics(metrics)
         print("-" * 79)
 
@@ -162,9 +154,9 @@ def main(config_filepath: str):
             model.save_optim(global_step=epoch)
 
         # Post-epoch callback.
-        # model.post_epoch_callback(
-        #     *next(iter(val_dataloader)), visualizer=visualizer, epoch=epoch
-        # )
+        model.post_epoch_callback(
+            *next(iter(val_dataloader)), visualizer=visualizer, epoch=epoch
+        )
 
     writer.close()
     print("Done.")

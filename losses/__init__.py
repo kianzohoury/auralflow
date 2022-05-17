@@ -3,7 +3,8 @@ from .losses import (
     KLDivergenceLoss,
     L1Loss,
     L2Loss,
-    SeparationEvaluator
+    SeparationEvaluator,
+    SISDRLoss
 )
 from typing import Union, Callable
 
@@ -17,7 +18,8 @@ __all__ = [
     "L1Loss",
     "L2Loss",
     "get_model_criterion",
-    "SeparationEvaluator"
+    "SeparationEvaluator",
+    "SISDRLoss"
 ]
 
 
@@ -32,11 +34,13 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
             alpha=config["training_params"]["alpha_constant"],
             beta=config["training_params"]["beta_constant"],
         )
+    elif loss_fn == "si_sdr_loss":
+        criterion = SISDRLoss(model=model)
     elif is_vae_model:
         criterion = KLDivergenceLoss(model=model, loss_fn=loss_fn)
     elif loss_fn == "l1":
         criterion = L1Loss(model=model)
-    else:
+    elif loss_fn == "l2":
         criterion = L2Loss(model=model)
     return criterion
 
