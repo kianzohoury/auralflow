@@ -102,19 +102,15 @@ def get_evaluation_metrics(
     print(mix[0].shape, estimate[0].shape, target[0].shape)
     scores = []
 
-    named_metrics = bss_eval_sources(
+    named_metrics = evaluate(
         reference_sources=target, estimated_sources=estimate
     )
-<<<<<<< HEAD
 
     # bss = BSSEvalScale([*target], [*estimate])
-
-=======
-
 
     # bss = BSSEvalScale([*target], [*estimate])
     #
->>>>>>> 1267805c85d7ff28657fe57a844b468949d74382
+
     # # Compute scores for each sample.
     # for i in range(mix.shape[0]):
     #     metrics = bss.evaluate_helper(
@@ -124,11 +120,7 @@ def get_evaluation_metrics(
     #     )
     #     print(len(metrics))
     #     scores.append(list(metrics))
-<<<<<<< HEAD
-
-=======
     #
->>>>>>> 1267805c85d7ff28657fe57a844b468949d74382
     # # Average scores.
     # print(scores)
     # avg_scores = np.mean(scores, axis=0, keepdims=False)
