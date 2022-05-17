@@ -94,7 +94,7 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
 
 def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
     """Computes scale-invariant signal-distortion ratio loss."""
-    return si_sdr_loss(est=estimate, ref=target, zero_mean=True)
+    return si_sdr_loss(est=estimate, ref=target, zero_mean=True, clamp_db=1)
 
 def get_evaluation_metrics(
     estimate: FloatTensor, target: Tensor, scale_invariant: bool = True

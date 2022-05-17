@@ -66,13 +66,7 @@ class AudioTransform(object):
     def to_spectrogram(self, audio: Tensor, use_padding: bool = True) -> Tensor:
         """Transforms an audio signal to its time-freq representation."""
         if use_padding:
-            remainder = int(audio.shape[-1] % self.hop_length)
-            pad_size = self.hop_length - remainder
-            padding = torch.zeros(
-                size=(*audio.shape[:-1], pad_size),
-                device=audio.device
-            )
-            audio = torch.cat([audio, padding], dim=-1)
+            audio = self.pad_audio(audio)
         return self.stft(audio)
 
     def to_audio(self, complex_spec: Tensor) -> Tensor:
@@ -92,6 +86,17 @@ class AudioTransform(object):
         amp_spectrogram = torch.abs(spectrogram)
         mel_spectrogram = self.to_mel_scale(amp_spectrogram, to_db=to_db)
         return mel_spectrogram
+
+    def pad_audio(self, audio: Tensor):
+        """Applies zero-padding to input audio."""
+        remainder = int(audio.shape[-1] % self.hop_length)
+        pad_size = self.hop_length - remainder
+        padding = torch.zeros(
+            size=(*audio.shape[:-1], pad_size),
+            device=audio.device
+        )
+        audio = torch.cat([audio, padding], dim=-1)
+        return audio
 
 
 doc_str = """The

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import torch
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
+from utils.data_utils import trim_audio
 
 
 def make_spectrogram_figure(
@@ -128,6 +129,11 @@ class Visualizer(object):
         # Separate target source(s).
         estimate_audio = model.separate(mixture_audio)
 
+        # Match audio lengths.
+        mixture_audio, estimate_audio, target_audio = trim_audio(
+            [mixture_audio, estimate_audio, target_audio]
+        )
+
         # Apply log and mel scaling to estimate and target.
         estimate_mel = model.transform.to_mel_scale(model.estimate)
         target_mel = model.transform.audio_to_mel(target_audio)
@@ -248,8 +254,8 @@ class Visualizer(object):
             # Run model.
             self.test_model(
                 model=model, 
-                mixture_audio=mixture[:, :, :, i].to(model.device),
-                target_audio=target[:, :, :, i].to(model.device)
+                mixture_audio=mixture[..., i].to(model.device),
+                target_audio=target[..., i].to(model.device)
             )
 
             # Visualize images.

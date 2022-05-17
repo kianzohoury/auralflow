@@ -1,7 +1,7 @@
+import torch.nn as nn
+
 from argparse import ArgumentParser
-
 from torch.utils.tensorboard import SummaryWriter
-
 from datasets import create_audio_dataset, load_dataset
 from models import create_model
 from utils import load_config
@@ -90,9 +90,9 @@ def main(config_filepath: str):
                 # Mid-epoch callback.
                 model.mid_epoch_callback(visualizer=visualizer, epoch=epoch)
 
-                # nn.utils.clip_grad_norm_(
-                #     model.model.parameters(), max_norm=1.0
-                # )
+                nn.utils.clip_grad_norm_(
+                    model.model.parameters(), max_norm=1
+                )
 
                 # Update model parameters.
                 model.optimizer_step()
