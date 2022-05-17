@@ -120,10 +120,9 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
         )
 
-        metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
-
         print("avg train loss:", model.train_losses[-1])
         print("avg val loss:", model.val_losses[-1])
+        metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
         SeparationEvaluator.print_metrics(metrics)
         print("-" * 79)
 

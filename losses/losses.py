@@ -8,7 +8,7 @@ import numpy as np
 from torch import FloatTensor, Tensor
 from torch.nn import functional
 from nussl.evaluation import scale_bss_eval, BSSEvalScale
-from mir_eval.separation import evaluate
+from mir_eval.separation import evaluate, bss_eval_sources
 from utils.data_utils import trim_audio
 
 
@@ -96,38 +96,28 @@ def get_evaluation_metrics(
 ) -> OrderedDict[str, float]:
     """Returns the batch-wise mean standardized source separation scores."""
     # Collapse channels dimension to mono.
-    mix = torch.mean(mix, dim=1, keepdim=True).permute(0, 2, 1).cpu().numpy()
-    estimate = torch.mean(estimate, dim=1, keepdim=True).permute(0, 2, 1).cpu().numpy()
-    target = torch.mean(target, dim=1, keepdim=True).permute(0, 2, 1).cpu().numpy()
-    print(mix[0].shape, estimate[0].shape, target[0].shape)
+    mix = torch.mean(mix, dim=1, keepdim=False).cpu().numpy()
+    estimate = torch.mean(estimate, dim=1, keepdim=False).cpu().numpy()
+    target = torch.mean(target, dim=1, keepdim=False).cpu().numpy()
     scores = []
 
-    named_metrics = evaluate(
-        reference_sources=target, estimated_sources=estimate
-    )
+    eps = np.random.normal(scale=1e-9, size=estimate[0].shape)
 
-    # bss = BSSEvalScale([*target], [*estimate])
+    # Compute scores for each sample.
+    for i in range(mix.shape[0]):
+        sdr, sir, sar, _ = bss_eval_sources(
+            reference_sources=target[i] + eps,
+            estimated_sources=estimate[i] + eps
+        )
+        scores.append([sdr[0], sir[0], sar[0]])
 
-    # bss = BSSEvalScale([*target], [*estimate])
-    #
+    # Average scores.
+    avg_sdr, avg_sir, avg_sar = np.mean(scores, axis=0)
 
-    # # Compute scores for each sample.
-    # for i in range(mix.shape[0]):
-    #     metrics = bss.evaluate_helper(
-    #         references=target[0],
-    #         estimates=estimate[0],
-    #         compute_sir_sar=full
-    #     )
-    #     print(len(metrics))
-    #     scores.append(list(metrics))
-    #
-    # # Average scores.
-    # print(scores)
-    # avg_scores = np.mean(scores, axis=0, keepdims=False)
-    # print(avg_scores)
-    # named_metrics = {
-    #     eval_metrics_labels[i]: avg_scores[i] for i in range(len(scores))
-    # }
+    named_metrics = {
+        "avg SDR": avg_sdr, "avg SIR": avg_sir, "avg SAR": avg_sar
+    }
+
     return named_metrics
 
 
@@ -226,7 +216,7 @@ class SeparationEvaluator(object):
         self, mix: Tensor, target: Tensor
     ) -> OrderedDict[str, float]:
         """Returns evaluation metrics."""
-        estimate = self.model.separate(mix.squeeze(-1).to(self.model.device))
+        estimate = self.model.separate(mix.squeeze(-1))
         mix, estimate, target = trim_audio(
             [mix.squeeze(-1), estimate, target.squeeze(-1)]
         )
