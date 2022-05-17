@@ -227,7 +227,7 @@ class Visualizer(object):
 
     def visualize_gradient(self, model, global_step: int) -> None:
         """Sends model weights and gradients to tensorboard."""
-        if not self.view_gradients:
+        if self.view_gradients:
             for name, param in model.model.named_parameters():
                 if param.grad is not None:
                     # Monitor model updates by tracking their 2-norms.

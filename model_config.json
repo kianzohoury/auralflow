@@ -1,10 +1,10 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramLSTM",
+        "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
         "normalize_input": true,
-        "mask_activation": "hardtanh",
+        "mask_activation": "relu",
         "hidden_size": 16,
         "dropout_p": 0,
         "leak_factor": 0.2
@@ -12,14 +12,14 @@
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
         "targets": ["vocals"],
-        "max_num_tracks": 2,
+        "max_num_tracks": 20,
         "max_num_samples": 1e3,
         "num_channels": 1,
         "sample_length": 2,
         "sample_rate": 44100,
-        "num_fft": 4096,
-        "window_size": 4096,
-        "hop_length": 1024,
+        "num_fft": 512,
+        "window_size": 512,
+        "hop_length": 256,
         "power_spectrum": false,
         "learn_filterbanks": false,
         "val_split": 0.2
@@ -27,7 +27,7 @@
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
-        "batch_size": 16,
+        "batch_size": 32,
         "lr": 0.008,
         "criterion": "l2",
         "alpha_constant": 0.5,
@@ -43,9 +43,9 @@
         "global_step": -1
     },
     "visualizer_params": {
-        "view_images": true,
+        "view_images": false,
         "view_gradients": false,
-        "play_audio": true,
+        "play_audio": false,
         "save_images": false,
         "save_audio": false,
         "save_frequency": 5,

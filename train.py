@@ -146,9 +146,9 @@ def main(config_filepath: str):
             model.save_optim(global_step=epoch)
 
         # Post-epoch callback.
-        model.post_epoch_callback(
-            *next(iter(val_dataloader)), visualizer=visualizer, epoch=epoch
-        )
+        # model.post_epoch_callback(
+        #     *next(iter(val_dataloader)), visualizer=visualizer, epoch=epoch
+        # )
 
     writer.close()
     print("Done.")
