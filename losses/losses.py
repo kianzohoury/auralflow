@@ -8,6 +8,7 @@ import numpy as np
 from torch import FloatTensor, Tensor
 from torch.nn import functional
 from nussl.evaluation import scale_bss_eval, BSSEvalScale
+from mir_eval.separation import evaluate
 from utils.data_utils import trim_audio
 
 
@@ -104,9 +105,16 @@ def get_evaluation_metrics(
     named_metrics = bss_eval_sources(
         reference_sources=target, estimated_sources=estimate
     )
+<<<<<<< HEAD
 
     # bss = BSSEvalScale([*target], [*estimate])
 
+=======
+
+
+    # bss = BSSEvalScale([*target], [*estimate])
+    #
+>>>>>>> 1267805c85d7ff28657fe57a844b468949d74382
     # # Compute scores for each sample.
     # for i in range(mix.shape[0]):
     #     metrics = bss.evaluate_helper(
@@ -116,7 +124,11 @@ def get_evaluation_metrics(
     #     )
     #     print(len(metrics))
     #     scores.append(list(metrics))
+<<<<<<< HEAD
 
+=======
+    #
+>>>>>>> 1267805c85d7ff28657fe57a844b468949d74382
     # # Average scores.
     # print(scores)
     # avg_scores = np.mean(scores, axis=0, keepdims=False)
