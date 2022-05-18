@@ -31,7 +31,7 @@ class ConvBlock(nn.Module):
             padding="same",
             bias=not bn,
         )
-        nn.init.kaiming_normal_(self.conv.weight)
+        nn.init.kaiming_normal_(self.conv.weight, nonlinearity="linear")
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.relu = nn.SELU()
         # self.relu = nn.LeakyReLU(leak)
@@ -57,8 +57,8 @@ class ConvBlockTriple(nn.Module):
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
             ConvBlock(in_channels, out_channels, kernel_size, False, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, True, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, True, leak)
+            ConvBlock(out_channels, out_channels, kernel_size, False, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, False, leak)
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
@@ -130,12 +130,15 @@ class CenterScaleNormalization(nn.Module):
     """Wrapper class for learning centered/scaled representations of data."""
     def __init__(self, num_fft_bins: int, apply_norm: bool = True) -> None:
         super(CenterScaleNormalization, self).__init__()
-        self.center = nn.Parameter(
-            torch.zeros(num_fft_bins).float(), requires_grad=apply_norm
-        )
-        self.scale = nn.Parameter(
-            torch.ones(num_fft_bins).float(), requires_grad=apply_norm
-        )
+
+        center_weights = torch.empty(num_fft_bins)
+        scale_weights = torch.empty(num_fft_bins)
+        nn.init.uniform_(center_weights, a=0, b=0.1)
+        nn.init.uniform_(scale_weights, a=1.0, b=1.1)
+
+        self.center = nn.Parameter(center_weights, requires_grad=apply_norm)
+        self.scale = nn.Parameter(scale_weights, requires_grad=apply_norm)
+
 
     def forward(self, data: FloatTensor) -> Tensor:
         """Forward method."""
@@ -480,7 +483,7 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
 
         # Reshape encodings to match dimensions of latent space.
         n, c, b, t = enc_6.shape
-        enc_6 = enc_4.permute(0, 2, 1, 3).reshape((n, t, c * b))
+        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
 
         # Normalizing flow.
         self.mu_data = self.mu(enc_6)
@@ -492,11 +495,11 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
 
         # Pass through recurrent stack.
         lstm_out, _ = self.lstm(self.latent_data)
-        lstm_out = lstm_out.reshape((n * t, -1))
+        lstm_out = lstm_out.reshape((n * b, -1))
 
         # Pass through affine layers and reshape for decoder.
         dec_0 = self.linear(lstm_out)
-        dec_0 = dec_0.reshape((n, b, -1, t)).permute(0, 2, 1, 3)
+        dec_0 = dec_0.reshape((n, b, c * 2, t)).permute(0, 2, 1, 3)
 
         # Pass through decoder.
         dec_1 = self.up_1(dec_0, skip_6)

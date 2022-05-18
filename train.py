@@ -73,18 +73,18 @@ def main(config_filepath: str):
         with ProgressBar(train_dataloader, total=max_iters) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
                 # Cast precision if necessary to increase training speed.
-                with autocast():
+                # with autocast():
 
-                    # Process data, run forward pass.
-                    model.set_data(mixture, target)
-                    model.forward()
+                # Process data, run forward pass.
+                model.set_data(mixture, target)
+                model.forward()
 
-                    # Calculate mini-batch loss and run backprop.
-                    batch_loss = model.compute_loss()
+                # Calculate mini-batch loss and run backprop.
+                batch_loss = model.compute_loss()
 
-                    total_loss += batch_loss
-                    train_loss.append(batch_loss)
-                    
+                total_loss += batch_loss
+                train_loss.append(batch_loss)
+                
                 model.backward()
 
                 # Mid-epoch callback.

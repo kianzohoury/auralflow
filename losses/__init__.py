@@ -38,7 +38,7 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
         )
     elif loss_fn == "si_sdr_loss":
         criterion = SISDRLoss(model=model)
-    elif is_vae_model:
+    elif is_vae_model and loss_fn == "kl_div_loss":
         criterion = KLDivergenceLoss(model=model, loss_fn=loss_fn)
     elif loss_fn == "l1":
         criterion = L1Loss(model=model)

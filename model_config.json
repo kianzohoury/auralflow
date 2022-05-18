@@ -1,7 +1,7 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramNetSimple",
+        "model_type": "SpectrogramNetLSTM",
         "model_name": "my_separation_model",
         "normalize_input": false,
         "normalize_output": false,
@@ -18,9 +18,9 @@
         "num_channels": 1,
         "sample_length": 3,
         "sample_rate": 44100,
-        "num_fft": 512,
-        "window_size": 512,
-        "hop_length": 256,
+        "num_fft": 1024,
+        "window_size": 1024,
+        "hop_length": 768,
         "power_spectrum": false,
         "learn_filterbanks": false,
         "val_split": 0.2
@@ -29,10 +29,10 @@
         "training_mode": true,
         "max_epochs": 100,
         "batch_size": 64,
-        "lr": 0.001,
+        "lr": 0.0005,
         "criterion": "l2",
-        "alpha_constant": 0.5,
-        "beta_constant": 0.5,
+        "alpha_constant": 0.8,
+        "beta_constant": 0.2,
         "num_workers": 8,
         "pin_memory": true,
         "persistent_workers": true,
@@ -44,11 +44,11 @@
         "global_step": -1
     },
     "visualizer_params": {
-        "view_images": true,
+        "view_images": false,
         "view_gradients": true,
         "play_audio": true,
         "save_images": false,
-        "save_audio": true,
+        "save_audio": false,
         "save_frequency": 5,
         "num_images": 1,
         "logs_path": "runs"
