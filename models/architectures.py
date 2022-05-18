@@ -1,12 +1,12 @@
-from typing import Tuple, Optional
-
 import torch
 import torch.nn as nn
 
-from utils.data_utils import get_deconv_pad
+
 from torch import FloatTensor, Tensor
-from losses import losses
-from torch.nn import L1Loss
+from typing import Tuple, Optional
+from utils.data_utils import get_deconv_pad
+from losses import kl_div_loss
+
 
 torch.backends.cudnn.benchmark = True
 
@@ -16,13 +16,12 @@ class ConvBlock(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        kernel_size=3,
-        bn=True,
-        leak=0,
-        dropout=0,
-    ):
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int = 3,
+        bn: bool = True,
+        leak: float = 0,
+    ) -> None:
         super(ConvBlock, self).__init__()
         self.conv = nn.Conv2d(
             in_channels=in_channels,
@@ -34,28 +33,34 @@ class ConvBlock(nn.Module):
         )
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.relu = nn.LeakyReLU(leak)
-        self.dropout = nn.Dropout2d(dropout, inplace=True)
 
-    def forward(self, data):
+    def forward(self, data: FloatTensor) -> FloatTensor:
+        """Forward method."""
         data = self.conv(data)
         data = self.relu(data)
-        data = self.bn(data)
-        output = self.dropout(data)
+        output = self.bn(data)
         return output
 
 
 class ConvBlockTriple(nn.Module):
     """(Conv => Batch Norm => ReLU) x 3 block."""
 
-    def __init__(self, in_channels, out_channels, kernel_size=3, leak=0):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int = 3,
+        leak: float = 0
+    ) -> None:
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, False, leak, 0),
-            ConvBlock(out_channels, out_channels, kernel_size, True, leak, 0)
-            # ConvBlock(out_channels, out_channels, kernel_size, True, leak),
+            ConvBlock(in_channels, out_channels, kernel_size, False, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, True, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, False, leak)
         )
 
-    def forward(self, data):
+    def forward(self, data: FloatTensor) -> FloatTensor:
+        """Forward method."""
         output = self.conv(data)
         return output
 
@@ -81,6 +86,7 @@ class DownBlock(nn.Module):
             self.down = nn.Identity()
 
     def forward(self, data: FloatTensor) -> Tuple[FloatTensor, ...]:
+        """Forward method."""
         skip = self.conv_block(data)
         output = self.down(skip)
         return output, skip
@@ -95,6 +101,7 @@ class UpBlock(nn.Module):
         out_channels: int,
         padding: Tuple[int, int],
         kernel_size: int = 3,
+        drop_p: float = 0.4
     ) -> None:
         super(UpBlock, self).__init__()
         self.conv_block = ConvBlockTriple(
@@ -107,11 +114,19 @@ class UpBlock(nn.Module):
             stride=2,
             padding=padding,
         )
+        self.dropout = nn.Dropout2d(drop_p, inplace=True)
 
     def forward(self, data: FloatTensor, skip: FloatTensor) -> FloatTensor:
+        """Forward method."""
         data = self.up(data, output_size=skip.size())
         data = self.conv_block(torch.cat([data, skip], dim=1))
-        return data
+        output = self.dropout(data)
+        return output
+
+
+class OutputScaler(nn.Module):
+    def __init__(self, n_fft: int):
+        pass
 
 
 class SpectrogramNetSimple(nn.Module):
@@ -128,7 +143,10 @@ class SpectrogramNetSimple(nn.Module):
         hidden_dim: int = 16,
         mask_act_fn: str = "sigmoid",
         leak_factor: float = 0.2,
+        dropout_p: float = 0.4,
         normalize_input: bool = False,
+        normalize_output: bool = False,
+        device: Optional[str] = None,
     ) -> None:
         super(SpectrogramNetSimple, self).__init__()
 
@@ -140,15 +158,16 @@ class SpectrogramNetSimple(nn.Module):
         self.mask_activation_fn = mask_act_fn
         self.leak_factor = leak_factor
         self.normalize_input = normalize_input
-        self.input_norm = nn.LayerNorm(
-            (num_channels, num_fft_bins, num_samples)
-        )
+        self.normalize_output = normalize_output
 
         # Use identity to prevent GPU from being slowed down in forward pass.
-        # if normalize_input:
-        #     self.input_norm = nn.BatchNorm2d(num_fft_bins)
-        # else:
-        #     self.input_norm = nn.Identity()
+        if normalize_input:
+            self.input_norm = nn.LayerNorm(
+                normalized_shape=[num_channels, num_fft_bins, num_samples],
+                device="cpu" if not device else device
+            )
+        else:
+            self.input_norm = nn.Identity()
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_dim]]
@@ -177,22 +196,31 @@ class SpectrogramNetSimple(nn.Module):
         ]
 
         # Compute transpose/deconvolution padding.
-        padding_sizes = [
-            get_deconv_pad(
-                *self.encoding_sizes[-1 - i],
-                *self.encoding_sizes[-2 - i],
-                stride=2,
-                kernel_size=5
-            )
-            for i in range(len(self.encoding_sizes) - 1)
-        ]
+        padding_sizes = []
+        for i in range(len(self.encoding_sizes) - 1):
+            padding_sizes.append(
+                get_deconv_pad(
+                    *self.encoding_sizes[-1 - i],
+                    *self.encoding_sizes[-2 - i],
+                    stride=2,
+                    kernel_size=5
+                )
 
+            )
+
+        # Deconvolution channel sizes.
         dec_channel_sizes = [size[::-1] for size in self.channel_sizes][::-1]
 
         # Define decoder layers.
-        self.up_1 = UpBlock(*dec_channel_sizes[0], padding=padding_sizes[0])
-        self.up_2 = UpBlock(*dec_channel_sizes[1], padding=padding_sizes[1])
-        self.up_3 = UpBlock(*dec_channel_sizes[2], padding=padding_sizes[2])
+        self.up_1 = UpBlock(
+            *dec_channel_sizes[0], padding=padding_sizes[0], drop_p=dropout_p
+        )
+        self.up_2 = UpBlock(
+            *dec_channel_sizes[1], padding=padding_sizes[1], drop_p=dropout_p
+        )
+        self.up_3 = UpBlock(
+            *dec_channel_sizes[2], padding=padding_sizes[2], drop_p=dropout_p
+        )
         self.up_4 = UpBlock(*dec_channel_sizes[3], padding=padding_sizes[3])
         self.up_5 = UpBlock(*dec_channel_sizes[4], padding=padding_sizes[4])
         self.up_6 = UpBlock(*dec_channel_sizes[5], padding=padding_sizes[5])
@@ -206,19 +234,17 @@ class SpectrogramNetSimple(nn.Module):
             padding="same",
         )
 
-        # Define input/output normalization parameters.
-        # self.input_center = nn.Parameter(
-        #     torch.zeros(num_fft_bins).float(), requires_grad=True
-        # )
-        # self.input_scale = nn.Parameter(
-        #     torch.ones(num_fft_bins).float(), requires_grad=True
-        # )
-        self.output_center = nn.Parameter(
-            torch.zeros(num_fft_bins).float(), requires_grad=True
-        )
-        self.output_scale = nn.Parameter(
-            torch.ones(num_fft_bins).float(), requires_grad=True
-        )
+        # Learn possible output centering/scaling.
+        if self.normalize_output:
+            self.output_center = nn.Parameter(
+                torch.zeros(num_fft_bins).float(), requires_grad=True
+            )
+            self.output_scale = nn.Parameter(
+                torch.ones(num_fft_bins).float(), requires_grad=True
+            )
+        else:
+            self.output_center = nn.Identity()
+            self.output_scale = nn.Identity()
 
         # Define activation function used for masking.
         if mask_act_fn == "sigmoid":
@@ -240,12 +266,6 @@ class SpectrogramNetSimple(nn.Module):
         """Forward method."""
         # Normalize input.
         data = self.input_norm(data)
-        # data = self.input_norm(data.permute(0, 2, 3, 1))
-        # data = data.permute(0, 3, 1, 2)
-        # data = data.permute(0, 1, 3, 2)
-        # data = data - self.input_center
-        # data = data * self.input_scale
-        # data = data.permute(0, 1, 3, 2)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
@@ -267,10 +287,10 @@ class SpectrogramNetSimple(nn.Module):
         dec_6 = self.up_6(dec_5, skip_1)
         output = self.soft_conv(dec_6)
 
-        # output = output.permute(0, 1, 3, 2)
-        # output = output - self.output_center
-        # output = output * self.output_scale
-        # output = output.permute(0, 1, 3, 2)
+        output = output.permute(0, 1, 3, 2)
+        output = output - self.output_center
+        output = output * self.output_scale
+        output = output.permute(0, 1, 3, 2)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
@@ -442,4 +462,4 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
 
     def get_kl_div(self) -> Tensor:
         """Computes KL term."""
-        return losses.kl_div_loss(self.mu_data, self.sigma_data)
+        return kl_div_loss(self.mu_data, self.sigma_data)

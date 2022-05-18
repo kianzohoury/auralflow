@@ -1,10 +1,11 @@
 from .losses import (
     WeightedComponentLoss,
     KLDivergenceLoss,
+    kl_div_loss,
     L1Loss,
     L2Loss,
     SeparationEvaluator,
-    SISDRLoss,
+    SISDRLoss
 )
 from typing import Union, Callable
 
@@ -15,11 +16,12 @@ import torch.nn as nn
 __all__ = [
     "WeightedComponentLoss",
     "KLDivergenceLoss",
+    "kl_div_loss",
     "L1Loss",
     "L2Loss",
     "get_model_criterion",
     "SeparationEvaluator",
-    "SISDRLoss",
+    "SISDRLoss"
 ]
 
 
