@@ -335,7 +335,7 @@ class SpectrogramNetSimple(nn.Module):
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
-        # Normalize input.
+        # Normalize input if applicable.
         data = self.input_norm(data)
 
         # Pass through encoder.
@@ -397,7 +397,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
-        # Normalize input.
+        # Normalize input if applicable.
         data = self.input_norm(data)
 
         # Pass through encoder.
@@ -464,7 +464,7 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
-        # Normalize input.
+        # Normalize input if applicable.
         data = self.input_norm(data)
 
         # Pass through encoder.
