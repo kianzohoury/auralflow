@@ -30,7 +30,7 @@ class SeparationModel(ABC):
         self.checkpoint_path = self.training_params["checkpoint_path"]
         self.training_mode = self.training_params["training_mode"]
 
-        # Set deice, optimize CNN processes.
+        # Set device, optimize CNN processes.
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         torch.backends.cudnn.benchmark = True
 
