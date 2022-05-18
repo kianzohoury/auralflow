@@ -110,11 +110,14 @@ def get_evaluation_metrics(
 class WeightedComponentLoss(nn.Module):
     """Wrapper class for calling weighted component loss."""
 
-    def __init__(self, model, alpha: float, beta: float):
+    def __init__(self, model, alpha: float, beta: float, regularizer: bool = True):
         super(WeightedComponentLoss, self).__init__()
         self.model = model
         self.alpha = alpha
         self.beta = beta
+        self.regularizer = regularizer
+        if regularizer:
+            self.reg_loss = l2_loss
 
     def forward(self):
         """Calculates a weighted component loss."""
@@ -140,7 +143,11 @@ class WeightedComponentLoss(nn.Module):
             kl_term = self.model.get_kl_div()
             self.model.batch_loss = self.model.batch_loss + kl_term
 
-
+        if self.regularizer:
+            self.model.batch_loss = self.model.batch_loss + self.reg_loss(
+                self.model.estimate, self.model.target
+            )
+        
 class KLDivergenceLoss(nn.Module):
     """Wrapper class for KL Divergence loss. Only to be used for VAE models.
 

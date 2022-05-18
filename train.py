@@ -84,15 +84,15 @@ def main(config_filepath: str):
                     train_loss.append(batch_loss)
                     model.backward()
 
-                # Mid-epoch callback.
-                model.mid_epoch_callback(visualizer=visualizer, epoch=epoch)
+                # # Mid-epoch callback.
+                # model.mid_epoch_callback(visualizer=visualizer, epoch=epoch)
 
                 # Update model parameters.
                 model.optimizer_step()
                 global_step += 1
 
                 # Display and log the loss.
-                pbar.set_postfix({"train_loss": round(batch_loss, 6)})
+                pbar.set_postfix({"train_loss": batch_loss})
                 writer.add_scalar(
                     "Loss/train/iter_avg", batch_loss, global_step
                 )

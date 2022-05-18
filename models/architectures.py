@@ -32,7 +32,8 @@ class ConvBlock(nn.Module):
             bias=not bn,
         )
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
-        self.relu = nn.LeakyReLU(leak)
+        self.relu = nn.SELU()
+        # self.relu = nn.LeakyReLU(leak)
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
@@ -326,6 +327,8 @@ class SpectrogramNetSimple(nn.Module):
             self.mask_activation = nn.Hardtanh(0, 1, inplace=True)
         elif mask_act_fn == "prelu":
             self.mask_activation = nn.PReLU()
+        elif mask_act_fn == "selu":
+            self.mask_activation = nn.SELU(inplace=True)
         else:
             self.mask_activation = nn.Identity()
 

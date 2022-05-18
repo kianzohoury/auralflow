@@ -146,7 +146,8 @@ class Visualizer(object):
         target_mel = torch.mean(target_mel, dim=1)[:n_images]
         estimate_wav = torch.mean(estimate_audio, dim=1)[:n_images, :n_frames]
         target_wav = torch.mean(target_audio, dim=1)[:n_images, :n_frames]
-        estimate_res_audio = mixture_audio[:, :, :n_frames] - estimate_audio
+        estimate_res_audio = mixture_audio[..., :n_frames] - estimate_audio
+        target_res_audio = mixture_audio[..., :n_frames] - target_audio[..., :n_frames]
 
         # Store spectrograms.
         self.spectrogram = {
@@ -156,9 +157,10 @@ class Visualizer(object):
 
         # Store audio.
         self.audio = {
-            "estimate": estimate_audio.cpu(),
-            "target": target_audio.cpu(),
-            "residual": estimate_res_audio.cpu(),
+            "estimate_source": estimate_audio.cpu(),
+            "target_source": target_audio.cpu(),
+            "estimate_residual": estimate_res_audio.cpu(),
+            "target_residual": target_res_audio.cpu(),
             "estimate_mono": estimate_wav.cpu(),
             "target_mono": target_wav.cpu(),
         }
@@ -216,19 +218,25 @@ class Visualizer(object):
         # Send audio to tensorboard.
         self.writer.add_audio(
             tag=f"{label}/estimate",
-            snd_tensor=self.audio["estimate"][0].T,
+            snd_tensor=self.audio["estimate_source"][0].T,
             global_step=global_step,
             sample_rate=self.sample_rate,
         )
         self.writer.add_audio(
             tag=f"{label}/true",
-            snd_tensor=self.audio["target"][0].T,
+            snd_tensor=self.audio["target_source"][0].T,
             global_step=global_step,
             sample_rate=self.sample_rate,
         )
         self.writer.add_audio(
-            tag=f"{label}/estimate_residual",
-            snd_tensor=self.audio["residual"][0].T,
+            tag=f"residual/estimate",
+            snd_tensor=self.audio["estimate_residual"][0].T,
+            global_step=global_step,
+            sample_rate=self.sample_rate,
+        )
+        self.writer.add_audio(
+            tag=f"residual/true",
+            snd_tensor=self.audio["target_residual"][0].T,
             global_step=global_step,
             sample_rate=self.sample_rate,
         )

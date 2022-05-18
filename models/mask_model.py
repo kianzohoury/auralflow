@@ -69,7 +69,7 @@ class SpectrogramMaskModel(SeparationModel):
 
         if self.training_mode:
             # Set model criterion.
-            self.scaler = GradScaler(2 ** 4)
+            self.scaler = GradScaler(2 ** 16)
             self.criterion = get_model_criterion(
                 model=self, config=configuration
             )
@@ -131,7 +131,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.train()
         self.scaler.unscale_(self.optimizer)
 
-        nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=20)
+        nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=10)
 
         self.scaler.step(self.optimizer)
         self.scaler.update()
