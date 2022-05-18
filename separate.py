@@ -32,7 +32,7 @@ def separate(model, audio: Tensor):
         # Update current frame position.
         offset = offset + step_size - padding
 
-    # Stick chunks to create full source estimate.
+    # Stitch chunks to create full source estimate.
     full_estimate = torch.cat(
         chunks,
         dim=0,
