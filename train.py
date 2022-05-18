@@ -85,7 +85,7 @@ def main(config_filepath: str):
                     model.backward()
 
                 # Mid-epoch callback.
-                # model.mid_epoch_callback(visualizer=visualizer, epoch=epoch)
+                model.mid_epoch_callback(visualizer=visualizer, epoch=epoch)
 
                 # Update model parameters.
                 model.optimizer_step()
@@ -114,13 +114,13 @@ def main(config_filepath: str):
             val_dataloader=val_dataloader,
         )
 
-        metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
+        # metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
 
-        writer.add_scalars("eval_metrics", metrics, global_step=epoch)
+        # writer.add_scalars("eval_metrics", metrics, global_step=epoch)
 
         print("avg train loss:", model.train_losses[-1])
         print("avg valid loss:", model.val_losses[-1])
-        SeparationEvaluator.print_metrics(metrics)
+        # SeparationEvaluator.print_metrics(metrics)
         print("-" * 79)
 
         # Decrease lr if necessary.

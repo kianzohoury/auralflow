@@ -54,7 +54,9 @@ class SpectrogramMaskModel(SeparationModel):
             hidden_dim=self.model_params["hidden_size"],
             mask_act_fn=self.model_params["mask_activation"],
             leak_factor=self.model_params["leak_factor"],
+            dropout_p=self.model_params["dropout_p"],
             normalize_input=self.model_params["normalize_input"],
+            normalize_output=self.model_params["normalize_output"],
         ).to(self.device)
 
         # Instantiate data transformer for pre/post audio processing.
@@ -67,7 +69,7 @@ class SpectrogramMaskModel(SeparationModel):
 
         if self.training_mode:
             # Set model criterion.
-            self.scaler = GradScaler(2**5)
+            self.scaler = GradScaler(1)
             self.criterion = get_model_criterion(
                 model=self, config=configuration
             )
@@ -129,7 +131,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.train()
         self.scaler.unscale_(self.optimizer)
 
-        nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=2)
+        nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=20)
 
         self.scaler.step(self.optimizer)
         self.scaler.update()
