@@ -380,6 +380,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         n_features = self.channel_sizes[-1][0] * self.encoding_sizes[-1][-1]
         self.n_features = n_features
 
+        # Define recurrent stack.
         self.lstm = nn.LSTM(
             input_size=n_features,
             hidden_size=lstm_hidden_size,
@@ -388,6 +389,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             dropout=0.4,
         )
 
+        # Define dense layers.
         self.linear = nn.Sequential(
             nn.Linear(lstm_hidden_size * 2, lstm_hidden_size),
             nn.ReLU(inplace=True),
