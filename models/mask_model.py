@@ -131,7 +131,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.train()
         self.scaler.unscale_(self.optimizer)
 
-        nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=10)
+        # nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=10)
 
         self.scaler.step(self.optimizer)
         self.scaler.update()
