@@ -238,7 +238,7 @@ class SpectrogramNetSimple(nn.Module):
         self.normalize_output = normalize_output
         self.device = device
 
-        # Use identity to prevent GPU from being slowed down in forward pass.
+        # Define input norm layer.
         self.input_norm = InputNorm(
             num_fft_bins=num_fft_bins,
             apply_norm=normalize_input,
@@ -284,7 +284,6 @@ class SpectrogramNetSimple(nn.Module):
                     stride=2,
                     kernel_size=5
                 )
-
             )
 
         # Deconvolution channel sizes.
@@ -313,7 +312,7 @@ class SpectrogramNetSimple(nn.Module):
             padding="same",
         )
 
-        # Learn possible output centering/scaling.
+        # Define output norm layer.
         self.output_norm = CenterScaleNormalization(
             num_fft_bins=num_fft_bins, apply_norm=normalize_output
         )
