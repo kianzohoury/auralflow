@@ -57,6 +57,7 @@ class SpectrogramMaskModel(SeparationModel):
             dropout_p=self.model_params["dropout_p"],
             normalize_input=self.model_params["normalize_input"],
             normalize_output=self.model_params["normalize_output"],
+            device=self.device
         ).to(self.device)
 
         # Instantiate data transformer for pre/post audio processing.

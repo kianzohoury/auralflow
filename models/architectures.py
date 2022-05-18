@@ -31,6 +31,7 @@ class ConvBlock(nn.Module):
             padding="same",
             bias=not bn,
         )
+        nn.init.kaiming_normal_(self.conv.weight)
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.relu = nn.SELU()
         # self.relu = nn.LeakyReLU(leak)
