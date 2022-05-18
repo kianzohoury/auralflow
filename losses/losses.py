@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-from fast_bss_eval import si_sdr, si_sdr_loss
+from fast_bss_eval import si_sdr_loss as si_sdr_loss_
 from torch import FloatTensor, Tensor
 from torch.nn import functional
 from typing import Mapping
@@ -90,7 +90,7 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
 
 def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
     """Computes scale-invariant signal-distortion ratio loss."""
-    return si_sdr_loss(est=estimate, ref=target, zero_mean=True, clamp_db=1)
+    return si_sdr_loss_(est=estimate, ref=target, zero_mean=True, clamp_db=1)
 
 
 def get_evaluation_metrics(
@@ -101,7 +101,7 @@ def get_evaluation_metrics(
     target = torch.mean(target, dim=1, keepdim=True)
 
     # Scale-invariant signal-distortion ratio.
-    si_sdr_ = si_sdr(ref=target, est=estimate, zero_mean=True)
+    si_sdr_ = si_sdr_loss_(ref=target, est=estimate, zero_mean=True)
     named_metrics = {"si_sdr": torch.mean(si_sdr_).item()}
 
     return named_metrics
