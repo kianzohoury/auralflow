@@ -241,12 +241,18 @@ class Visualizer(object):
                     # Monitor model updates by tracking their 2-norms.
                     weight_norm = torch.linalg.norm(param)
                     grad_norm = torch.linalg.norm(param.grad)
-                    self.writer.add_histogram(
-                        f"{name}_norm", weight_norm, global_step
-                    )
-                    self.writer.add_histogram(
-                        f"{name}_grad_norm", grad_norm, global_step
-                    )
+                    log_weight = not weight_norm.isnan().any() and \
+                        not weight_norm.isinf().any()
+                    log_grad = not grad_norm.isnan().any() and \
+                        not grad_norm.isinf().any()
+                    if log_weight:
+                        self.writer.add_histogram(
+                            f"{name}_norm", weight_norm, global_step
+                        )
+                    if log_grad:
+                        self.writer.add_histogram(
+                            f"{name}_grad_norm", grad_norm, global_step
+                        )
 
     def visualize(
         self, model, mixture: Tensor, target: Tensor, global_step: int
