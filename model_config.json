@@ -4,7 +4,7 @@
         "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
         "normalize_input": true,
-        "mask_activation": "hardtanh",
+        "mask_activation": "sigmoid",
         "hidden_size": 16,
         "dropout_p": 0,
         "leak_factor": 0.2
@@ -12,7 +12,7 @@
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
         "targets": ["vocals"],
-        "max_num_tracks": 5,
+        "max_num_tracks": 10,
         "max_num_samples": 2e3,
         "num_channels": 1,
         "sample_length": 2,

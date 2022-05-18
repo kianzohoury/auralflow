@@ -128,16 +128,12 @@ class CenterScaleNormalization(nn.Module):
     """Wrapper class for learning centered/scaled representations of data."""
     def __init__(self, num_fft_bins: int, apply_norm: bool = True) -> None:
         super(CenterScaleNormalization, self).__init__()
-        if apply_norm:
-            self.center = nn.Parameter(
-                torch.zeros(num_fft_bins).float(), requires_grad=True
-            )
-            self.scale = nn.Parameter(
-                torch.ones(num_fft_bins).float(), requires_grad=True
-            )
-        else:
-            self.center = nn.Identity()
-            self.scale = nn.Identity()
+        self.center = nn.Parameter(
+            torch.zeros(num_fft_bins).float(), requires_grad=apply_norm
+        )
+        self.scale = nn.Parameter(
+            torch.ones(num_fft_bins).float(), requires_grad=apply_norm
+        )
 
     def forward(self, data: FloatTensor) -> Tensor:
         """Forward method."""

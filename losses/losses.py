@@ -5,6 +5,7 @@ import torch.nn as nn
 from fast_bss_eval import si_sdr, si_sdr_loss
 from torch import FloatTensor, Tensor
 from torch.nn import functional
+from typing import Mapping
 from utils.data_utils import trim_audio
 
 
@@ -94,7 +95,7 @@ def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
 
 def get_evaluation_metrics(
     estimate: FloatTensor, target: Tensor
-) -> dict[str, float]:
+) -> Mapping[str, float]:
     """Returns batch-wise means of standard source separation eval scores."""
     estimate = torch.mean(estimate, dim=1, keepdim=True)
     target = torch.mean(target, dim=1, keepdim=True)
@@ -210,7 +211,7 @@ class SeparationEvaluator(object):
         self.model = model
         self.full_metrics = full_metrics
 
-    def get_metrics(self, mix: Tensor, target: Tensor) -> dict[str, float]:
+    def get_metrics(self, mix: Tensor, target: Tensor) -> Mapping[str, float]:
         """Returns evaluation metrics."""
         estimate = self.model.separate(mix.squeeze(-1))
         estimate, target = trim_audio([estimate, target.squeeze(-1)])
@@ -220,6 +221,6 @@ class SeparationEvaluator(object):
         return eval_metrics
 
     @staticmethod
-    def print_metrics(metrics: dict[str, float]) -> None:
+    def print_metrics(metrics: Mapping[str, float]) -> None:
         for label, value in metrics.items():
             print(f"{label}: {value}")
