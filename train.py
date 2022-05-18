@@ -8,6 +8,8 @@ from visualizer import ProgressBar, config_visualizer
 from losses import SeparationEvaluator
 from torch.cuda.amp import autocast
 
+import torch
+
 
 def main(config_filepath: str):
     """Runs training script given a configuration file."""
@@ -71,21 +73,21 @@ def main(config_filepath: str):
         with ProgressBar(train_dataloader, total=max_iters) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
                 # Cast precision if necessary to increase training speed.
-                with autocast():
+                # with autocast():
 
-                    # Process data, run forward pass.
-                    model.set_data(mixture, target)
-                    model.forward()
+                # Process data, run forward pass.
+                model.set_data(mixture, target)
+                model.forward()
 
-                    # Calculate mini-batch loss and run backprop.
-                    batch_loss = model.compute_loss()
+                # Calculate mini-batch loss and run backprop.
+                batch_loss = model.compute_loss()
 
-                    total_loss += batch_loss
-                    train_loss.append(batch_loss)
-                    model.backward()
+                total_loss += batch_loss
+                train_loss.append(batch_loss)
+                model.backward()
 
-                # # Mid-epoch callback.
-                # model.mid_epoch_callback(visualizer=visualizer, epoch=epoch)
+                # Mid-epoch callback.
+                model.mid_epoch_callback(visualizer=visualizer, epoch=epoch)
 
                 # Update model parameters.
                 model.optimizer_step()
@@ -93,8 +95,10 @@ def main(config_filepath: str):
 
                 # Display and log the loss.
                 pbar.set_postfix({"train_loss": batch_loss})
-                writer.add_scalar(
-                    "Loss/train/iter_avg", batch_loss, global_step
+                writer.add_scalars(
+                    "Loss/train/iter",
+                    {f"{model.criterion.__class__.__name__}": batch_loss},
+                    global_step
                 )
 
         avg_loss = sum(train_loss) / len(train_loss)
@@ -102,9 +106,9 @@ def main(config_filepath: str):
         pbar.set_postfix({"loss": round(avg_loss, 6)})
         # Store epoch-average loss.
         model.train_losses.append(avg_loss)
-        writer.add_scalar(
-            "Loss/train/epoch_avg",
-            avg_loss,
+        writer.add_scalars(
+            "Loss/train/epoch",
+            {f"{model.criterion.__class__.__name__}": avg_loss},
             epoch,
         )
 
@@ -127,10 +131,14 @@ def main(config_filepath: str):
         stop_early = model.scheduler_step()
 
         # Log validation loss.
-        writer.add_scalar("Loss/val/epoch_avg", model.val_losses[-1], epoch)
+        writer.add_scalars(
+            "Loss/val/epoch", 
+            {f"{model.criterion.__class__.__name__}": model.val_losses[-1]},
+            epoch
+        )
 
         writer.add_scalars(
-            "Loss",
+            "Loss/comparison",
             {"train": model.train_losses[-1], "val": model.val_losses[-1]},
             epoch,
         )

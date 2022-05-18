@@ -57,7 +57,7 @@ class ConvBlockTriple(nn.Module):
         self.conv = nn.Sequential(
             ConvBlock(in_channels, out_channels, kernel_size, False, leak),
             ConvBlock(out_channels, out_channels, kernel_size, True, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, False, leak)
+            ConvBlock(out_channels, out_channels, kernel_size, True, leak)
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
@@ -362,6 +362,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
+        mask = torch.clamp(mask, min=0, max=1.0)
         return mask
 
 
