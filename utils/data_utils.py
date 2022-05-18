@@ -8,6 +8,20 @@ from torch import Tensor
 import numpy as np
 
 
+__all__ = [
+    "AudioTransform",
+    "fast_fourier",
+    "inverse_fast_fourier",
+    "get_stft",
+    "get_num_stft_frames",
+    "make_hann_window",
+    "get_deconv_pad",
+    "get_conv_pad",
+    "get_conv_shape",
+    "trim_audio"
+]
+
+
 class AudioTransform(object):
     """Wrapper class that conveniently stores multiple transformation tools."""
 
@@ -98,23 +112,6 @@ class AudioTransform(object):
         )
         audio = torch.cat([audio, padding], dim=-1)
         return audio
-
-
-doc_str = """The
-detailed procedure is as follows:
-
-* X = |STFT(A)|
-* S = X * M
-* S_p = X * M * P
-* A_s = iSTFT(S_p)
-
-* where X: magnitude spectrogram;
-* S: output of forward pass
-* S_p: phase corrected output S
-* P: complex-valued phase matrix, i.e., exp^(i * theta), where theta
-is the angle between the real and imaginary parts of STFT(A).
-* A_s: estimate source signal converted from time-freq to time-only
-domain."""
 
 
 def fast_fourier(transform: Callable, audio: Tensor) -> Tensor:

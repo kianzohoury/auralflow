@@ -29,7 +29,7 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
     """Gets model criterion according to configuration file."""
     loss_fn = config["training_params"]["criterion"]
     model_type = config["model_params"]["model_type"]
-    is_vae_model = model_type == "SpectrogramLSTMVariational"
+    is_vae_model = model_type == "SpectrogramNetVAE"
     if loss_fn == "component_loss":
         criterion = WeightedComponentLoss(
             model=model,

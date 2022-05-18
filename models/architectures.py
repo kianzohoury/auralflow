@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 
 
-from torch import FloatTensor, Tensor
-from typing import Tuple, Optional
-from utils.data_utils import get_deconv_pad
 from losses import kl_div_loss
+from torch import FloatTensor, Tensor
+from typing import Tuple, Optional, List
+from utils.data_utils import get_deconv_pad
 
 
 torch.backends.cudnn.benchmark = True
@@ -124,9 +124,86 @@ class UpBlock(nn.Module):
         return output
 
 
-class OutputScaler(nn.Module):
-    def __init__(self, n_fft: int):
-        pass
+class CenterScaleNormalization(nn.Module):
+    """Wrapper class for learning centered/scaled representations of data."""
+    def __init__(self, num_fft_bins: int, apply_norm: bool = True) -> None:
+        super(CenterScaleNormalization, self).__init__()
+        if apply_norm:
+            self.center = nn.Parameter(
+                torch.zeros(num_fft_bins).float(), requires_grad=True
+            )
+            self.scale = nn.Parameter(
+                torch.ones(num_fft_bins).float(), requires_grad=True
+            )
+        else:
+            self.center = nn.Identity()
+            self.scale = nn.Identity()
+
+    def forward(self, data: FloatTensor) -> Tensor:
+        """Forward method."""
+        data = data.permute(0, 1, 3, 2)
+        centered = data - self.center
+        scaled = centered * self.scale
+        output = scaled.permute(0, 1, 3, 2)
+        return output
+
+
+class InputNorm(nn.Module):
+    """Wrapper class for learning input centering/scaling."""
+    def __init__(
+            self,
+            num_fft_bins: int,
+            apply_norm: bool = True,
+            use_layer_norm: bool = False,
+            num_channels: Optional[int] = None,
+            num_samples: Optional[int] = None,
+            device: Optional[str] = None,
+    ) -> None:
+        super(InputNorm, self).__init__()
+        if use_layer_norm and num_channels and num_samples:
+            self.layer_norm = LayerNorm(
+                num_fft_bins=num_fft_bins,
+                num_channels=num_channels,
+                num_samples=num_samples,
+                apply_norm=apply_norm,
+                device=device
+            )
+        elif apply_norm:
+            self.layer_norm = CenterScaleNormalization(
+                num_fft_bins=num_fft_bins, apply_norm=apply_norm
+            )
+        else:
+            self.layer_norm = nn.Identity()
+
+    def forward(self, data: FloatTensor) -> Tensor:
+        """Forward method."""
+        output = self.layer_norm.forward(data)
+        return output
+
+
+class LayerNorm(nn.Module):
+    """Wrapper class for layer normalization"""
+    def __init__(
+        self,
+        num_fft_bins: int,
+        num_channels: int,
+        num_samples: int,
+        apply_norm: bool = True,
+        device: Optional[str] = None
+    ) -> None:
+        super(LayerNorm, self).__init__()
+        if apply_norm:
+            self.layer_norm = nn.LayerNorm(
+                normalized_shape=[num_channels, num_fft_bins, num_samples],
+                device="cpu" if not device else device
+            )
+        else:
+            self.layer_norm = nn.Identity()
+
+    def forward(self, data: FloatTensor) -> Tensor:
+        """Forward method."""
+        output = self.layer_norm(data)
+        return output
 
 
 class SpectrogramNetSimple(nn.Module):
@@ -159,15 +236,17 @@ class SpectrogramNetSimple(nn.Module):
         self.leak_factor = leak_factor
         self.normalize_input = normalize_input
         self.normalize_output = normalize_output
+        self.device = device
 
         # Use identity to prevent GPU from being slowed down in forward pass.
-        if normalize_input:
-            self.input_norm = nn.LayerNorm(
-                normalized_shape=[num_channels, num_fft_bins, num_samples],
-                device="cpu" if not device else device
-            )
-        else:
-            self.input_norm = nn.Identity()
+        self.input_norm = InputNorm(
+            num_fft_bins=num_fft_bins,
+            apply_norm=normalize_input,
+            use_layer_norm=True,
+            num_channels=num_channels,
+            num_samples=num_samples,
+            device=device
+        )
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_dim]]
@@ -235,16 +314,9 @@ class SpectrogramNetSimple(nn.Module):
         )
 
         # Learn possible output centering/scaling.
-        if self.normalize_output:
-            self.output_center = nn.Parameter(
-                torch.zeros(num_fft_bins).float(), requires_grad=True
-            )
-            self.output_scale = nn.Parameter(
-                torch.ones(num_fft_bins).float(), requires_grad=True
-            )
-        else:
-            self.output_center = nn.Identity()
-            self.output_scale = nn.Identity()
+        self.output_norm = CenterScaleNormalization(
+            num_fft_bins=num_fft_bins, apply_norm=normalize_output
+        )
 
         # Define activation function used for masking.
         if mask_act_fn == "sigmoid":
@@ -285,25 +357,23 @@ class SpectrogramNetSimple(nn.Module):
         dec_4 = self.up_4(dec_3, skip_3)
         dec_5 = self.up_5(dec_4, skip_2)
         dec_6 = self.up_6(dec_5, skip_1)
-        output = self.soft_conv(dec_6)
 
-        output = output.permute(0, 1, 3, 2)
-        output = output - self.output_center
-        output = output * self.output_scale
-        output = output.permute(0, 1, 3, 2)
+        # Pass through final 1x1 conv and normalize output if applicable.
+        dec_final = self.soft_conv(dec_6)
+        output = self.output_norm(dec_final)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
         return mask
 
 
-class SpectrogramLSTM(SpectrogramNetSimple):
+class SpectrogramNetLSTM(SpectrogramNetSimple):
     """Spectrogram U-Net with an LSTM bottleneck."""
 
     def __init__(
         self, *args, lstm_layers: int = 3, lstm_hidden_size=1024, **kwargs
     ) -> None:
-        super(SpectrogramLSTM, self).__init__(*args, **kwargs)
+        super(SpectrogramNetLSTM, self).__init__(*args, **kwargs)
         self.lstm_layers = lstm_layers
         self.lstm_hidden_size = lstm_hidden_size
 
@@ -324,19 +394,12 @@ class SpectrogramLSTM(SpectrogramNetSimple):
             nn.ReLU(inplace=True),
             nn.Linear(lstm_hidden_size, n_features * 2),
             nn.ReLU(inplace=True)
-            # nn.BatchNorm1d(n_features * 2),
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
-        # data = self.input_norm(data)
-        # data = self.input_norm(data.permute(0, 2, 3, 1))
-        # data = data.permute(0, 3, 1, 2)
-        # data = data.permute(0, 1, 3, 2)
-        # data = data - self.input_center
-        # data = data * self.input_scale
-        # data = data.permute(0, 1, 3, 2)
+        data = self.input_norm(data)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
@@ -365,20 +428,17 @@ class SpectrogramLSTM(SpectrogramNetSimple):
         dec_4 = self.up_4(dec_3, skip_3)
         dec_5 = self.up_5(dec_4, skip_2)
         dec_6 = self.up_6(dec_5, skip_1)
-        output = self.soft_conv(dec_6)
 
-        # Shift and scale output.
-        # output = output.permute(0, 1, 3, 2)
-        # output = output - self.output_center
-        # output = output * self.output_scale
-        # output = output.permute(0, 1, 3, 2)
+        # Pass through final 1x1 conv and normalize output if applicable.
+        dec_final = self.soft_conv(dec_6)
+        output = self.output_norm(dec_final)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
         return mask
 
 
-class SpectrogramLSTMVariational(SpectrogramLSTM):
+class SpectrogramNetVAE(SpectrogramNetLSTM):
     """Spectrogram U-Net model with a VAE and LSTM bottleneck.
 
     Encoder => VAE => LSTM x 3 => decoder. Models a Gaussian conditional
@@ -391,7 +451,7 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
     sigma_data: FloatTensor
 
     def __init__(self, *args, **kwargs):
-        super(SpectrogramLSTMVariational, self).__init__(*args, **kwargs)
+        super(SpectrogramNetVAE, self).__init__(*args, **kwargs)
 
         # Define normalizing flow layers.
         self.mu = nn.Linear(self.n_features, self.n_features)
@@ -406,25 +466,18 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         # Normalize input.
-
-        # data = data.permute(0, 1, 3, 2)
-        # data = data - self.input_center
-        # data = data * self.input_scale
-        # data = data.permute(0, 1, 3, 2)
-
-        # data = self.input_norm(data.permute(0, 2, 3, 1))
-        # data = data.permute(0, 3, 1, 2)
+        data = self.input_norm(data)
 
         # Pass through encoder.
         enc_1, skip_1 = self.down_1(data)
         enc_2, skip_2 = self.down_2(enc_1)
         enc_3, skip_3 = self.down_3(enc_2)
         enc_4, skip_4 = self.down_4(enc_3)
-        # enc_5, skip_5 = self.down_5(enc_4)
-        # enc_6, skip_6 = self.down_6(enc_5)
+        enc_5, skip_5 = self.down_5(enc_4)
+        enc_6, skip_6 = self.down_6(enc_5)
 
         # Reshape encodings to match dimensions of latent space.
-        n, c, b, t = enc_4.shape
+        n, c, b, t = enc_6.shape
         enc_6 = enc_4.permute(0, 2, 1, 3).reshape((n, t, c * b))
 
         # Normalizing flow.
@@ -444,18 +497,17 @@ class SpectrogramLSTMVariational(SpectrogramLSTM):
         dec_0 = dec_0.reshape((n, b, -1, t)).permute(0, 2, 1, 3)
 
         # Pass through decoder.
-        dec_1 = self.up_1(dec_0, skip_4)
-        dec_2 = self.up_2(dec_1, skip_3)
-        dec_3 = self.up_3(dec_2, skip_2)
-        dec_4 = self.up_4(dec_3, skip_1)
-        # dec_5 = self.up_5(dec_4, skip_2)
-        # dec_6 = self.up_6(dec_5, skip_1)
-        output = self.soft_conv(dec_4)
+        dec_1 = self.up_1(dec_0, skip_6)
+        dec_2 = self.up_2(dec_1, skip_5)
+        dec_3 = self.up_3(dec_2, skip_4)
+        dec_4 = self.up_4(dec_3, skip_3)
+        dec_5 = self.up_5(dec_4, skip_2)
+        dec_6 = self.up_6(dec_5, skip_1)
 
-        output = output.permute(0, 1, 3, 2)
-        output = output - self.output_center
-        output = output * self.output_scale
-        output = output.permute(0, 1, 3, 2)
+        # Pass through final 1x1 conv and normalize output if applicable.
+        dec_final = self.soft_conv(dec_6)
+        output = self.output_norm(dec_final)
+
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
         return mask

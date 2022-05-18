@@ -1,5 +1,5 @@
 from . architectures import (
-    SpectrogramNetSimple, SpectrogramLSTM, SpectrogramLSTMVariational
+    SpectrogramNetSimple, SpectrogramNetLSTM, SpectrogramNetVAE
 )
 from . base import SeparationModel
 from . mask_model import SpectrogramMaskModel
@@ -7,8 +7,8 @@ from . mask_model import SpectrogramMaskModel
 
 __all__ = [
     "SpectrogramNetSimple",
-    "SpectrogramLSTM",
-    "SpectrogramLSTMVariational",
+    "SpectrogramNetLSTM",
+    "SpectrogramNetVAE",
     "SeparationModel",
     "SpectrogramMaskModel"
 ]
