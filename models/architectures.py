@@ -395,10 +395,17 @@ class SpectrogramNetSimple(nn.Module):
 
 
 class SpectrogramNetLSTM(SpectrogramNetSimple):
-    """Spectrogram U-Net with an LSTM bottleneck.
+    """Deep mask estimation model using LSTM bottleneck layers.
 
     Args:
-        recurrent_depth (int): Number of stacked lstm layers.
+        recurrent_depth (int): Number of stacked lstm layers. Default: 3.
+        hidden_size (int): Number of hidden features. Default: 1024.
+        input_axis (int): Whether to feed dim 0 (frequency axis) or dim 1
+            (time axis) as features to the lstm. Default: 1.
+
+    Keyword Args:
+        args: Positional arguments for constructor.
+        kwargs: Additional keyword arguments for constructor.
     """
 
     def __init__(
@@ -406,31 +413,38 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         *args,
         recurrent_depth: int = 3,
         hidden_size: int = 1024,
+        input_axis: int = 1,
         **kwargs
     ) -> None:
         super(SpectrogramNetLSTM, self).__init__(*args, **kwargs)
         self.recurrent_depth = recurrent_depth
         self.hidden_size = hidden_size
+        self.input_axis = input_axis
 
-        # Calculate number of input features to the LSTM.
-        n_features = self.channel_sizes[-1][0] * self.encoding_sizes[-1][-1]
-        self.n_features = n_features
+        # Calculate num in features for LSTM and store ordering of tensor dims.
+        self.num_features = self.channel_sizes[-1][0]
+        if input_axis == 0:
+            self.num_features *= self.encoding_sizes[-1][0]
+            self.input_perm = (0, 3, 1, 2)
+        else:
+            self.num_features *= self.encoding_sizes[-1][-1]
+            self.input_perm = (0, 2, 1, 3)
 
         # Define recurrent stack.
         self.lstm = nn.LSTM(
-            input_size=n_features,
+            input_size=self.num_features,
             hidden_size=hidden_size,
             bidirectional=True,
             num_layers=recurrent_depth,
-            dropout=0.4,
+            dropout=0.5,
         )
 
         # Define dense layers.
         self.linear = nn.Sequential(
             nn.Linear(hidden_size * 2, hidden_size),
-            nn.ReLU(inplace=True),
-            nn.Linear(hidden_size, n_features * 2),
-            nn.ReLU(inplace=True)
+            nn.SELU(inplace=True),
+            nn.Linear(hidden_size, self.num_features * 2),
+            nn.SELU(inplace=True)
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
@@ -447,16 +461,18 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         enc_6, skip_6 = self.down_6(enc_5)
 
         # Reshape encoded audio to pass through bottleneck.
-        n, c, b, t = enc_6.size()
-        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
+        enc_6 = enc_6.permute(self.input_perm)
+        n_batch, dim1, n_channel, dim2 = enc_6.size()
+        enc_6 = enc_6.reshape((n_batch, dim1, n_channel, dim2))
 
         # Pass through recurrent stack.
         lstm_out, _ = self.lstm(enc_6)
-        lstm_out = lstm_out.reshape((n * b, -1))
+        lstm_out = lstm_out.reshape((n_batch * dim1, -1))
 
-        # Project latent audio onto affine space and reshape for decoder.
+        # Project latent audio onto affine space, and reshape for decoder.
         latent_data = self.linear(lstm_out)
-        latent_data = latent_data.reshape((n, b, c * 2, t)).permute(0, 2, 1, 3)
+        latent_data = latent_data.reshape((n_batch, dim1, n_channel * 2, dim2))
+        latent_data = latent_data.permute(self.input_perm)
 
         # Pass through decoder.
         dec_1 = self.up_1(latent_data, skip_6)
@@ -481,18 +497,22 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
     Encoder => VAE => LSTM x 3 => decoder. Models a Gaussian conditional
     distribution p(z|x) to sample latent variable z ~ p(z|x), to feed into
     decoder to generate x' ~ p(x|z).
+
+    Keyword Args:
+        args: Positional arguments for constructor.
+        kwargs: Additional keyword arguments for constructor.
     """
 
     latent_data: FloatTensor
     mu_data: FloatTensor
     sigma_data: FloatTensor
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super(SpectrogramNetVAE, self).__init__(*args, **kwargs)
 
         # Define normalizing flow layers.
-        self.mu = nn.Linear(self.n_features, self.n_features)
-        self.log_sigma = nn.Linear(self.n_features, self.n_features)
+        self.mu = nn.Linear(self.num_features, self.num_features)
+        self.log_sigma = nn.Linear(self.num_features, self.num_features)
         self.eps = torch.distributions.Normal(0, 1)
 
         # Speed up sampling by utilizing GPU.
@@ -514,8 +534,9 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
         enc_6, skip_6 = self.down_6(enc_5)
 
         # Reshape encodings to match dimensions of latent space.
-        n, c, b, t = enc_6.shape
-        enc_6 = enc_6.permute(0, 2, 1, 3).reshape((n, b, c * t))
+        enc_6 = enc_6.permute(self.input_perm)
+        n_batch, dim1, n_channel, dim2 = enc_6.size()
+        enc_6 = enc_6.reshape((n_batch, dim1, n_channel, dim2))
 
         # Normalizing flow.
         self.mu_data = self.mu(enc_6)
@@ -527,11 +548,12 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
 
         # Pass through recurrent stack.
         lstm_out, _ = self.lstm(self.latent_data)
-        lstm_out = lstm_out.reshape((n * b, -1))
+        lstm_out = lstm_out.reshape((n_batch * dim1, -1))
 
         # Pass through affine layers and reshape for decoder.
         dec_0 = self.linear(lstm_out)
-        dec_0 = dec_0.reshape((n, b, c * 2, t)).permute(0, 2, 1, 3)
+        dec_0 = dec_0.reshape((n_batch, dim1, n_channel * 2, dim2))
+        dec_0 = dec_0.permute(self.input_perm)
 
         # Pass through decoder.
         dec_1 = self.up_1(dec_0, skip_6)
