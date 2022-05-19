@@ -63,16 +63,16 @@ class SpectrogramMaskModel(SeparationModel):
         # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(mix.to(self.device))
 
-        # Set target if passed in.
+        # Separate magnitude and phase.
+        self.mixture = torch.abs(mix_complex_stft)
+        self.phase = torch.angle(mix_complex_stft)
+
+        # Additionally set target if passed in.
         if target is not None:
             target_complex_stft = self.transform.to_spectrogram(
                 target.squeeze(-1).to(self.device)
             )
             self.target = torch.abs(target_complex_stft)
-
-        # Separate magnitude and phase.
-        self.mixture = torch.abs(mix_complex_stft)
-        self.phase = torch.angle(mix_complex_stft)
 
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
