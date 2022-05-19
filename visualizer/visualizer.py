@@ -1,11 +1,11 @@
-from pathlib import Path
-from typing import Union
-
-import matplotlib
+import matplotlib.figure
 import matplotlib.pyplot as plt
 import torch
+
+from pathlib import Path
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
+from typing import Union
 from utils.data_utils import trim_audio
 
 
@@ -14,14 +14,17 @@ def make_spectrogram_figure(
 ) -> matplotlib.figure:
     """Returns a spectrogram image as a matplotlib figure."""
     fig, ax = plt.subplots(nrows=2, figsize=(16, 8), dpi=resolution)
-    ax[0].imshow(estimate, origin="lower", aspect="auto", cmap="inferno")
-    img = ax[1].imshow(target, origin="lower", aspect="auto", cmap="inferno")
+    cmap = "inferno"
+
+    ax[0].imshow(estimate, origin="lower", aspect="auto", cmap=cmap)
+    img = ax[1].imshow(target, origin="lower", aspect="auto", cmap=cmap)
 
     # Formatting.
     ax[0].set_title(f"{label} estimate")
     ax[1].set_title(f"{label} true")
     ax[0].set(frame_on=False)
     ax[1].set(frame_on=False)
+
     _format_axes(ax)
     plt.xlabel("Frames")
     fig.supylabel("Frequency bins")
@@ -38,26 +41,16 @@ def make_waveform_figure(
 ) -> matplotlib.figure:
     """Returns a waveform image as a matplotlib figure."""
     fig, ax = plt.subplots(nrows=3, figsize=(12, 8), dpi=resolution)
+    c1, c2 = "yellowgreen", "darkorange"
+    est_label, target_label = f"{label} estimate", f"{label} target"
 
     for axis in ax:
         axis.set_facecolor("black")
 
-    ax[0].plot(estimate, color="yellowgreen", linewidth=0.2)
-    ax[1].plot(target, color="darkorange", linewidth=0.2)
-    ax[2].plot(
-        estimate,
-        color="yellowgreen",
-        alpha=0.7,
-        linewidth=0.2,
-        label=f"{label} estimate",
-    )
-    ax[2].plot(
-        target,
-        color="darkorange",
-        alpha=0.5,
-        linewidth=0.2,
-        label=f"{label} target",
-    )
+    ax[0].plot(estimate, color=c1, linewidth=0.2)
+    ax[1].plot(target, color=c2, linewidth=0.2)
+    ax[2].plot(estimate, color=c1, alpha=0.7, linewidth=0.2, label=est_label)
+    ax[2].plot(target, color=c2, alpha=0.5, linewidth=0.2, label=target_label)
 
     # Formatting.
     ax[0].set_title(f"{label} estimate")
@@ -65,21 +58,22 @@ def make_waveform_figure(
     ax[0].set_xlim(xmin=0, xmax=estimate.shape[0])
     ax[1].set_xlim(xmin=0, xmax=estimate.shape[0])
     ax[2].set_xlim(xmin=0, xmax=estimate.shape[0])
+
     _format_axes(ax)
     plt.xlabel("Frames")
     fig.supylabel("Amplitude")
     plt.tight_layout()
 
     # Set the legend.
-    legend = plt.legend(loc="upper right", framealpha=0)
-    for leg in legend.legendHandles:
-        leg.set_linewidth(3.0)
-    for text in legend.get_texts():
+    figure_legend = plt.legend(loc="upper right", framealpha=0)
+    for legend in figure_legend.legendHandles:
+        legend.set_linewidth(3.0)
+    for text in figure_legend.get_texts():
         plt.setp(text, color="w")
     return fig
 
 
-def _format_axes(axes) -> None:
+def _format_axes(axes):
     for axis in axes:
         plt.setp(axis.get_xticklabels(), visible=False)
         plt.setp(axis.get_yticklabels(), visible=False)
@@ -141,13 +135,16 @@ class Visualizer(object):
         n_frames = estimate_audio.shape[-1]
         n_images = min(self.num_images, mixture_audio.shape[0])
 
-        # Collapse channels to mono.
+        # Prepare audio for plotting.
         estimate_mel = torch.mean(estimate_mel, dim=1)[:n_images]
         target_mel = torch.mean(target_mel, dim=1)[:n_images]
         estimate_wav = torch.mean(estimate_audio, dim=1)[:n_images, :n_frames]
         target_wav = torch.mean(target_audio, dim=1)[:n_images, :n_frames]
+
+        # Prepare audio for listening.
         estimate_res_audio = mixture_audio[..., :n_frames] - estimate_audio
-        target_res_audio = mixture_audio[..., :n_frames] - target_audio[..., :n_frames]
+        target_res_audio = mixture_audio[..., :n_frames]
+        target_res_audio = target_res_audio - target_audio[..., :n_frames]
 
         # Store spectrograms.
         self.spectrogram = {
@@ -246,13 +243,17 @@ class Visualizer(object):
         if self.view_gradients:
             for name, param in model.model.named_parameters():
                 if param.grad is not None:
+
                     # Monitor model updates by tracking their 2-norms.
                     weight_norm = torch.linalg.norm(param)
                     grad_norm = torch.linalg.norm(param.grad)
+
+                    # Don't log abnormal gradients.
                     log_weight = not weight_norm.isnan().any() and \
                         not weight_norm.isinf().any()
                     log_grad = not grad_norm.isnan().any() and \
                         not grad_norm.isinf().any()
+
                     if log_weight:
                         self.writer.add_histogram(
                             f"{name}_norm", weight_norm, global_step
@@ -267,11 +268,12 @@ class Visualizer(object):
     ) -> None:
         """Runs visualizer."""
         for i, label in enumerate(model.target_labels):
+
             # Run model.
             self.test_model(
                 model=model,
-                mixture_audio=mixture[..., i].to(model.device),
-                target_audio=target[..., i].to(model.device),
+                mixture_audio=mixture.to(model.device),
+                target_audio=target.unsqueeze(-1)[..., i].to(model.device),
             )
 
             # Visualize images.

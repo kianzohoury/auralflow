@@ -1,15 +1,11 @@
-import importlib
-
 import torch
-import torch.nn as nn
+
+
+from .base import SeparationModel
 from torch import Tensor, FloatTensor
-from torch.optim import AdamW, lr_scheduler
-
-
+from typing import Optional
 from utils.data_utils import get_num_stft_frames, AudioTransform
 from visualizer import Visualizer
-from .base import SeparationModel
-from torch.cuda.amp.grad_scaler import GradScaler
 
 
 class SpectrogramMaskModel(SeparationModel):
@@ -62,53 +58,39 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
-        if self.training_mode:
-            # Set model criterion.
-            self.scaler = GradScaler(1)
-            self.criterion = get_model_criterion(
-                model=self, config=configuration
-            )
-            # Load optimizer.
-            self.optimizer = AdamW(
-                self.model.parameters(), self.training_params["lr"]
-            )
-            # Load lr scheduler.
-            self.stop_patience = self.training_params["stop_patience"]
-            self.max_lr_reductions = self.training_params["max_lr_reductions"]
-            self.is_best_model = True
-            self.scheduler = lr_scheduler.ReduceLROnPlateau(
-                self.optimizer,
-                mode="min",
-                verbose=True,
-                patience=self.stop_patience,
-            )
-            # Store train/val losses.
-            self.train_losses = []
-            self.val_losses = []
-
-    def set_data(self, mixture: Tensor, target: Tensor) -> None:
+    def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
-        # Drop last dimension if only estimating one target source.
-        mixture = mixture.squeeze(-1) if not self.multi_estimator else mixture
-        target = target.squeeze(-1) if not self.multi_estimator else target
-
         # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(
-            mixture.to(self.device)
-        )
-        target_complex_stft = self.transform.to_spectrogram(
-            target.to(self.device)
+            mix.to(self.device)
         )
 
-        # Separate magnitude and phase, and store data for internal access.
+        # Set target if passed in.
+        if target is not None:
+            target_complex_stft = self.transform.to_spectrogram(
+                target.squeeze(-1).to(self.device)
+            )
+            self.target = torch.abs(target_complex_stft)
+
+        # Separate magnitude and phase.
         self.mixture = torch.abs(mix_complex_stft)
-        self.target = torch.abs(target_complex_stft)
         self.phase = torch.angle(mix_complex_stft)
 
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
         self.mask = self.model(self.mixture)
         self.estimate = self.mask * (self.mixture.clone().detach())
+
+    def separate(self, audio: Tensor) -> Tensor:
+        """Transforms and returns source estimate in the audio domain."""
+        # Set data and estimate source.
+        self.set_data(mix=audio)
+        self.test()
+
+        # Apply phase correction to estimate.
+        phase_corrected = self.estimate * torch.exp(1j * self.phase)
+        target_estimate = self.transform.to_audio(phase_corrected)
+        return target_estimate
 
     def compute_loss(self) -> float:
         """Updates and returns the current batch-wise loss."""
@@ -154,21 +136,6 @@ class SpectrogramMaskModel(SeparationModel):
             self.max_lr_reductions -= 1 if not self.stop_patience else 0
             self.is_best_model = False
         return not self.max_lr_reductions
-
-    def separate(self, audio: Tensor) -> Tensor:
-        """Applies inv STFT to target source to retrieve time-domain signal."""
-        # Compute complex-valued STFTs and send tensors to GPU if available.
-        mix_complex_stft = self.transform.to_spectrogram(audio.to(self.device))
-
-        # Separate magnitude and phase.
-        self.mixture = torch.abs(mix_complex_stft)
-        self.phase = torch.angle(mix_complex_stft)
-
-        # Get source estimate s' = mask * mixture and apply phase correction.
-        self.test()
-        phase_corrected = self.estimate * torch.exp(1j * self.phase)
-        target_estimate = self.transform.to_audio(phase_corrected)
-        return target_estimate
 
     def mid_epoch_callback(self, visualizer: Visualizer, epoch: int) -> None:
         """Called during epoch before parameter updates."""

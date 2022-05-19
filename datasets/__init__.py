@@ -43,12 +43,14 @@ def audio_to_disk(
     max_num_tracks: Optional[int] = None,
     split: str = "train",
     sample_rate: int = 44100,
+    mono: bool = True
 ) -> List[OrderedDict]:
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
     max_num_tracks = max_num_tracks if max_num_tracks else float("inf")
     n_tracks = min(len(subset_dir), max_num_tracks)
+
     with ProgressBar(
         subset_dir, total=n_tracks, fmt=False, unit="track"
     ) as pbar:
@@ -63,7 +65,9 @@ def audio_to_disk(
             entry["mixture"] = mixture_track
             for target in sorted(targets):
                 target_name = f"{str(track_folder)}/{target}.wav"
-                entry[target], sr = librosa.load(target_name, sr=sr)
+                entry[target], sr = librosa.load(
+                    target_name, sr=sr, mono=mono
+                )
 
             # Record duration of mixture track.
             duration = (
@@ -85,16 +89,21 @@ def create_audio_dataset(
     num_chunks: int = int(1e6),
     max_num_tracks: Optional[int] = None,
     sample_rate: int = 44100,
+    mono: bool = True
 ) -> datasets.AudioDataset:
     """Creates a chunked audio dataset."""
+    # Full-length audio tracks.
     full_dataset = audio_to_disk(
         dataset_path=dataset_path,
         targets=targets,
         split=split,
         max_num_tracks=max_num_tracks,
         sample_rate=sample_rate,
+        mono=mono
     )
-    chunked_dataset = datasets.AudioDataset(
+
+    # Chunked dataset.
+    chunked_dataset = AudioDataset(
         dataset=full_dataset,
         targets=targets,
         chunk_size=chunk_size,

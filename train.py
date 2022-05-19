@@ -1,3 +1,4 @@
+import sys
 from argparse import ArgumentParser
 from datasets import create_audio_dataset, load_dataset
 from losses import SeparationEvaluator
@@ -32,6 +33,7 @@ def main(config_filepath: str):
         num_chunks=dataset_params["max_num_samples"],
         max_num_tracks=dataset_params["max_num_tracks"],
         sample_rate=dataset_params["sample_rate"],
+        mono=dataset_params["num_channels"]
     )
 
     # Load validation set into memory.
@@ -42,6 +44,7 @@ def main(config_filepath: str):
         chunk_size=dataset_params["sample_length"],
         num_chunks=dataset_params["max_num_samples"],
         max_num_tracks=dataset_params["max_num_tracks"],
+        mono=dataset_params["num_channels"]
     )
 
     # Load data into dataloaders.

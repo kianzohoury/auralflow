@@ -3,14 +3,15 @@ import torch
 import torch.backends.cudnn
 import torch.nn as nn
 
+
 from abc import abstractmethod, ABC
 from losses import get_model_criterion
-from models import save_object, load_object
 from torch import Tensor, FloatTensor
 from torch.cuda.amp.grad_scaler import GradScaler
 from torch.optim import Optimizer, AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from typing import List, Union, Callable
+from utils import save_object, load_object
 
 
 class SeparationModel(ABC):
@@ -39,9 +40,9 @@ class SeparationModel(ABC):
         self.silent_checkpoint = self.training_params["silent_checkpoint"]
         self.model_name = self.model_params["model_name"]
         self.training_mode = self.training_params["training_mode"]
-
-        # Set device, optimize CNN processes.
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        # Use CNN GPU optimizations if available.
         if torch.backends.cudnn.is_available():
             torch.backends.cudnn.benchmark = True
 
@@ -94,7 +95,7 @@ class SeparationModel(ABC):
         pass
 
     @abstractmethod
-    def separate(self, audio: Tensor):
+    def separate(self, audio: Tensor) -> Tensor:
         pass
 
     def train(self) -> None:
@@ -111,55 +112,52 @@ class SeparationModel(ABC):
         with torch.no_grad():
             return self.forward()
 
-    def save_model(self, global_step: int, silent=True) -> None:
+    def save_model(self, global_step: int) -> None:
         """Saves the model's current state."""
         save_object(
-            self, obj_name="model", global_step=global_step, silent=silent
+            model_wrapper=self, obj_name="model", global_step=global_step
         )
 
     def load_model(self, global_step: int) -> None:
         """Loads a model's previous state."""
         load_object(
-            self, obj_name="model", global_step=global_step,
+            model_wrapper=self, obj_name="model", global_step=global_step
         )
 
-    def save_optim(self, global_step: int, silent=True) -> None:
+    def save_optim(self, global_step: int) -> None:
         """Saves the optimizer's current state."""
         save_object(
-            self, obj_name="optimizer", global_step=global_step, silent=silent
+            model_wrapper=self, obj_name="optimizer", global_step=global_step
         )
 
     def load_optim(self, global_step: int) -> None:
         """Loads an optimizer's previous state."""
         load_object(
-            self, obj_name="optimizer", global_step=global_step
+            model_wrapper=self, obj_name="optimizer", global_step=global_step
         )
 
-    def save_scheduler(self, global_step: int, silent=True) -> None:
+    def save_scheduler(self, global_step: int) -> None:
         """Saves the scheduler's current state."""
         save_object(
-            self, obj_name="scheduler", global_step=global_step, silent=silent
+            model_wrapper=self, obj_name="scheduler", global_step=global_step
         )
 
     def load_scheduler(self, global_step: int) -> None:
         """Loads a scheduler's previous state."""
         load_object(
-            self, obj_name="scheduler", global_step=global_step
+            model_wrapper=self, obj_name="scheduler", global_step=global_step
         )
 
-    def save_grad_scaler(self, global_step: int, silent=True) -> None:
+    def save_grad_scaler(self, global_step: int) -> None:
         """Saves the grad scaler's current state if using mixed precision."""
         save_object(
-            self,
-            obj_name="grad_scaler",
-            global_step=global_step,
-            silent=silent
+            model_wrapper=self, obj_name="grad_scaler", global_step=global_step
         )
 
     def load_grad_scaler(self, global_step: int) -> None:
         """Load a grad scaler's previous state if one exists."""
         load_object(
-            self, obj_name="grad_scaler", global_step=global_step
+            model_wrapper=self, obj_name="grad_scaler", global_step=global_step
         )
 
     def pre_epoch_callback(self, **kwargs):

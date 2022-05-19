@@ -1,14 +1,11 @@
 import torch
 import torch.nn as nn
-
+import torch.backends.cudnn
 
 from losses import kl_div_loss
 from torch import FloatTensor, Tensor
 from typing import Tuple, Optional, List
 from utils.data_utils import get_deconv_pad
-
-
-torch.backends.cudnn.benchmark = True
 
 
 class ConvBlock(nn.Module):

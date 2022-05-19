@@ -4,7 +4,6 @@ import torch
 import torchaudio
 
 
-from collections import OrderedDict
 from pathlib import Path
 from torch import Tensor
 from torch.utils.data.dataset import IterableDataset, Dataset
@@ -197,13 +196,7 @@ class AudioDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-        mixture = self.dataset[idx]["mixture"]
-        mixture = mixture.unsqueeze(0)
-        mixture = mixture.unsqueeze(-1)
-        targets = []
-        for target in self.targets:
-            targets.append(self.dataset[idx][target].unsqueeze(0))
-        targets = torch.stack(targets, dim=-1)
+        mixture, targets = self.dataset[idx]
         return mixture, targets
 
 
@@ -213,7 +206,7 @@ def make_chunks(
     num_chunks: int,
     sr: int = 44100,
     energy_cutoff: float = 1.0,
-) -> List[OrderedDict]:
+) -> List[List[Tensor, ...]]:
     """Transforms an audio dataset into a chunked dataset."""
     chunked_dataset = []
     num_tracks = len(dataset)
@@ -234,18 +227,26 @@ def make_chunks(
             if torch.linalg.norm(mix_chunk) < energy_cutoff:
                 continue
 
-            chunked_entry = OrderedDict()
-            chunked_entry["mixture"] = mix_chunk
+            target_tensors = []
             for target_name, target_data in list(entry.items())[1:-1]:
-                chunked_entry[target_name] = target_chunk = torch.from_numpy(
-                    target_data[offset:stop]
-                )
+                target_chunk = torch.from_numpy(target_data[offset:stop])
+
+                # Discard silent entries.
                 if torch.linalg.norm(target_chunk) < energy_cutoff:
                     discard_entry = True
+                    break
+                else:
+                    target_tensors.append(target_chunk)
 
-            # Discard silent entries.
             if not discard_entry:
-                chunked_dataset.append(chunked_entry)
+                target_chunks = torch.stack(target_tensors, dim=-1)
+
+                # Unsqueeze channels dim if audio is mono.
+                if mix_chunk.dim() == 1:
+                    mix_chunk = mix_chunk.unsqueeze(0)
+                    target_chunks = target_chunks.unsqueeze(0)
+                chunked_dataset.append([mix_chunk, target_chunks])
+
             if index == num_chunks:
                 break
     del dataset
