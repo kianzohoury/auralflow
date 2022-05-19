@@ -66,11 +66,21 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         self.scale = 1e3
-        self.f32_weights = copy.deepcopy(list(self.model.parameters()))
+        self.f32_weights = self.copy_params(self.model)
 
-    def copy_gradients_to_f32(self, weights):
-        for param_f16, param_f32 in zip(weights, self.f32_weights):
-            param_f32.grad = param_f16 / self.scale
+    @staticmethod
+    def copy_params(model):
+        params_copy = {}
+        for name, param in model.named_parameters():
+            params_copy[name] = param
+        return params_copy
+
+    def copy_gradients_to_f32(self, model):
+        for name, param in model.named_parameters():
+            self.f32_weights[name].grad = param.grad / self.scale
+
+        for name, param in self.f32_weights.items():
+            self.model.register_parameter(name, param)
 
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
@@ -124,8 +134,7 @@ class SpectrogramMaskModel(SeparationModel):
                 if param.grad.isnan().any() or param.grad.isinf().any():
                     skip_update = True
         if not skip_update:
-            self.copy_gradients_to_f32(list(self.model.parameters()))
-            self.model._parameters = self.f32_weights
+            self.copy_gradients_to_f32(self.model)
             grad_norm = nn.utils.clip_grad_norm_(
                 self.model.parameters(), max_norm=2e10
             )
