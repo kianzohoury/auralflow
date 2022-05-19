@@ -66,19 +66,15 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
-        self.scale = 1e3
-<<<<<<< HEAD
-        self.f32_weights = copy.deepcopy(list(self.model.parameters()))
-=======
-        model_copy = copy.deepcopy(self.model)
-
-        self.f32_weights = self.copy_params(self.model, model_copy)
+        self.scale = 1
+        self.f32_weights = self.copy_params(self.model)
 
     @staticmethod
-    def copy_params(module_src, module_dest):
-        params_dest = dict(module_dest.named_parameters())
-        for name, param in module_src.named_parameters():
-            params_dest[name].data.copy_(param.data)
+    def copy_params(src_module):
+        params_dest = {}
+        for name, param in src_module.named_parameters():
+            params_dest[name] = copy.deepcopy(param.data)
+            param = param.to(dtype=torch.float16)
         return params_dest
 
     def update_f32_gradients(self):
@@ -87,7 +83,6 @@ class SpectrogramMaskModel(SeparationModel):
                 self.f32_weights[name].grad = param.grad.to(dtype=torch.float32)
                 self.f32_weights[name].grad /= self.scale
         self.model._parameters = self.f32_weights
->>>>>>> 82b36fdfa061530f020b96aa6bb6ca467cfe9a80
 
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
@@ -133,16 +128,23 @@ class SpectrogramMaskModel(SeparationModel):
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.train()
-        for param in self.f32_weights:
-            if param.grad is not None and not param.grad.isnan().any() and not param.grad.isinf().any():
-                param.grad /= self.scale
-            # elif param.grad is not None:
-            #     self.scale /= 2
-                
-        # self.grad_scaler.unscale_(self.optimizer)
+        skip_update = False
+        # for name, param in self.model.named_parameters():
+        #     if param.grad is not None:
+        #         if param.grad.isnan().any() or param.grad.isinf().any():
+        #             skip_update = True
+        #             print(name)
+        if not skip_update:
+            self.update_f32_gradients()
+            self.optimizer.step()
 
-        grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
-        print(grad_norm)
+        # grad_norm = nn.utils.clip_grad_norm_(
+        #     self.model.parameters(), max_norm=100
+        # ) 
+                   
+        # self.grad_scaler.unscale_(self.optimizer)
+        # grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
+        # print(grad_norm)
 
         # self.grad_scaler.step(self.optimizer)
         # self.grad_scaler.update()
@@ -151,12 +153,12 @@ class SpectrogramMaskModel(SeparationModel):
         #         weight_norm = torch.linalg.norm(param)
         #         grad_norm = torch.linalg.norm(param.grad)
         #         print(f"weight norm: {weight_norm} \n grad norm {grad_norm}")
-        self.optimizer.step()
+        
         # Quicker gradient zeroing.
         for param in self.model.parameters():
             param.grad = None
 
-        self.f32_weights = copy.deepcopy(list(self.model.parameters()))
+        self.f32_weights = self.copy_params(self.model)
 
     def scheduler_step(self) -> bool:
         """Reduces lr if val loss does not improve, and signals early stop."""

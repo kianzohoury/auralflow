@@ -73,7 +73,7 @@ class ConvBlockTriple(nn.Module):
         self.conv = nn.Sequential(
             ConvBlock(in_channels, out_channels, kernel_size, False, leak),
             ConvBlock(out_channels, out_channels, kernel_size, False, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, False, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, True, leak),
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
@@ -131,11 +131,13 @@ class UpBlock(nn.Module):
             stride=2,
             padding=padding,
         )
+        self.bn = nn.BatchNorm2d(out_channels)
         self.dropout = nn.Dropout2d(drop_p, inplace=True)
 
     def forward(self, data: FloatTensor, skip: FloatTensor) -> FloatTensor:
         """Forward method."""
         data = self.up(data, output_size=skip.size())
+        data = self.bn(data)
         data = self.conv_block(torch.cat([data, skip], dim=1))
         output = self.dropout(data)
         return output
@@ -342,12 +344,15 @@ class SpectrogramNetSimple(nn.Module):
         self.up_6 = UpBlock(*dec_channel_sizes[5], padding=padding_sizes[5])
 
         # Final conv layer squeezes output channels dimension to num_channels.
-        self.soft_conv = nn.Conv2d(
-            in_channels=hidden_channels,
-            out_channels=num_channels,
-            kernel_size=1,
-            stride=1,
-            padding="same",
+        self.soft_conv = nn.Sequential(
+            nn.Conv2d(
+                in_channels=hidden_channels,
+                out_channels=num_channels,
+                kernel_size=1,
+                stride=1,
+                padding="same"
+            ),
+            nn.BatchNorm2d(num_channels)
         )
 
         # Define output norm layer. Uses identity fn if not activated.
