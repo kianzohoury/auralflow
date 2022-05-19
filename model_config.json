@@ -1,12 +1,12 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramNetLSTM",
+        "model_type": "SpectrogramNetSimple",
         "model_name": "my_separation_model",
         "normalize_input": false,
         "normalize_output": false,
         "mask_activation": "relu",
-        "hidden_size": 16,
+        "hidden_channels": 16,
         "dropout_p": 0.4,
         "leak_factor": 0
     },
@@ -44,7 +44,7 @@
         "stop_patience": 10,
         "max_lr_steps": 5,
         "checkpoint_path": "checkpoints",
-        "silent_checkpoint": false
+        "silent_checkpoint": true
     },
     "visualizer_params": {
         "view_images": false,

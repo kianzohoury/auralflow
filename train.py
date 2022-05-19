@@ -67,8 +67,6 @@ def main(config_filepath: str):
     setup_model(model)
     print("Successful.")
 
-    print(torch.backends.cudnn.benchmark)
-
     # Initialize summary writer and visualizer.
     print("-" * 79 + "\nLoading visualization tools...")
     writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
@@ -167,14 +165,10 @@ def main(config_filepath: str):
 
         # Only save model if validation loss decreases.
         if model.is_best_model:
-            model.save_model(global_step=epoch, silent=model.silent_checkpoint)
-            model.save_optim(global_step=epoch, silent=model.silent_checkpoint)
-            model.save_scheduler(
-                global_step=epoch, silent=model.silent_checkpoint
-            )
-            model.save_grad_scaler(
-                global_step=epoch, silent=model.silent_checkpoint
-            )
+            model.save_model(global_step=epoch)
+            model.save_optim(global_step=epoch)
+            model.save_scheduler(global_step=epoch)
+            model.save_grad_scaler(global_step=epoch)
 
         # Post-epoch callback.
         model.post_epoch_callback(

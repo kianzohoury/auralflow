@@ -128,7 +128,7 @@ class Visualizer(object):
         """Runs model in inference mode and stores resulting audio tensors."""
         # Separate target source(s).
         estimate_audio = model.separate(mixture_audio)
-
+        
         # Match audio lengths.
         mixture_audio, estimate_audio, target_audio = trim_audio(
             [mixture_audio, estimate_audio, target_audio]
@@ -277,13 +277,13 @@ class Visualizer(object):
         self, model, mixture: Tensor, target: Tensor, global_step: int
     ) -> None:
         """Runs visualizer."""
+        mixture, target = mixture.to(model.device), target.to(model.device)
         for i, label in enumerate(model.target_labels):
-
             # Run model.
             self.test_model(
                 model=model,
-                mixture_audio=mixture.to(model.device),
-                target_audio=target.unsqueeze(-1)[..., i].to(model.device),
+                mixture_audio=mixture,
+                target_audio=target[..., i],
             )
 
             # Visualize images.

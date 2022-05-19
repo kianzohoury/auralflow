@@ -288,10 +288,9 @@ class SpectrogramNetSimple(nn.Module):
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_channels]]
         for i in range(6):
-            self.channel_sizes += [
-                hidden_channels << i,
-                hidden_channels << (i + 1),
-            ]
+            self.channel_sizes.append(
+                [hidden_channels << i, hidden_channels << (i + 1)]
+            )
 
         # Define encoder layers.
         self.down_1 = DownBlock(*self.channel_sizes[0], leak=leak_factor)
@@ -477,7 +476,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         # Reshape encoded audio to pass through bottleneck.
         enc_6 = enc_6.permute(self.input_perm)
         n_batch, dim1, n_channel, dim2 = enc_6.size()
-        enc_6 = enc_6.reshape((n_batch, dim1, n_channel, dim2))
+        enc_6 = enc_6.reshape((n_batch, dim1, n_channel * dim2))
 
         # Pass through recurrent stack.
         lstm_out, _ = self.lstm(enc_6)
@@ -550,7 +549,7 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
         # Reshape encodings to match dimensions of latent space.
         enc_6 = enc_6.permute(self.input_perm)
         n_batch, dim1, n_channel, dim2 = enc_6.size()
-        enc_6 = enc_6.reshape((n_batch, dim1, n_channel, dim2))
+        enc_6 = enc_6.reshape((n_batch, dim1, n_channel* dim2))
 
         # Normalizing flow.
         self.mu_data = self.mu(enc_6)

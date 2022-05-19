@@ -45,9 +45,9 @@ class SpectrogramMaskModel(SeparationModel):
         # Create the model instance and set to current device.
         self.model = self.base_model_type(
             num_fft_bins=self.n_fft_bins,
-            num_samples=self.num_stft_frames,
+            num_frames=self.num_stft_frames,
             num_channels=self.num_channels,
-            hidden_dim=self.model_params["hidden_size"],
+            hidden_channels=self.model_params["hidden_channels"],
             mask_act_fn=self.model_params["mask_activation"],
             leak_factor=self.model_params["leak_factor"],
             dropout_p=self.model_params["dropout_p"],
@@ -135,9 +135,9 @@ class SpectrogramMaskModel(SeparationModel):
             self.is_best_model = True
         else:
             self.stop_patience -= 1
-            self.max_lr_reductions -= 1 if not self.stop_patience else 0
+            self.max_lr_steps -= 1 if not self.stop_patience else 0
             self.is_best_model = False
-        return not self.max_lr_reductions
+        return not self.max_lr_steps
 
     def mid_epoch_callback(self, visualizer: Visualizer, epoch: int) -> None:
         """Called during epoch before parameter updates."""
