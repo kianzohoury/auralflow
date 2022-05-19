@@ -67,6 +67,7 @@ class SpectrogramMaskModel(SeparationModel):
 
         self.scale = 1e3
         model_copy = copy.deepcopy(self.model)
+
         self.f32_weights = self.copy_params(self.model, model_copy)
 
     @staticmethod
