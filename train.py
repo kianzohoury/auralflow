@@ -19,7 +19,6 @@ import torch.backends.cudnn
 
 def main(config_filepath: str):
     """Runs training script given a configuration file."""
-    print(torch.backends.cudnn.benchmark)
 
     # Load configuration file.
     print("-" * 79 + "\nReading configuration file...")
@@ -67,6 +66,8 @@ def main(config_filepath: str):
     model = create_model(configuration)
     setup_model(model)
     print("Successful.")
+
+    print(torch.backends.cudnn.benchmark)
 
     # Initialize summary writer and visualizer.
     print("-" * 79 + "\nLoading visualization tools...")

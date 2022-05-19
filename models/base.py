@@ -48,10 +48,6 @@ class SeparationModel(ABC):
         self.training_mode = self.training_params["training_mode"]
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        # Use CNN GPU optimizations if available.
-        if torch.backends.cudnn.is_available():
-            torch.backends.cudnn.benchmark = True
-
         # Retrieve requested base model architecture name.
         self.base_model_type = getattr(
             importlib.import_module("models"), self.model_params["model_type"]

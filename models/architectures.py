@@ -14,6 +14,11 @@ from typing import Tuple, Optional
 from utils.data_utils import get_deconv_pad
 
 
+# Use CNN GPU optimizations if available.
+if torch.backends.cudnn.is_available():
+    torch.backends.cudnn.benchmark = True
+
+
 class ConvBlock(nn.Module):
     """Conv => Batch Norm => ReLU block."""
 
