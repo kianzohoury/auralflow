@@ -26,14 +26,14 @@ def cross_validate(model: SeparationModel, val_dataloader: DataLoader) -> None:
                 with torch.no_grad():
                     model.test()
 
-                    # Compute batch-wise loss.
-                    batch_loss = model.compute_loss()
-                    total_loss += batch_loss
+                # Compute batch-wise loss.
+                batch_loss = model.compute_loss()
+                total_loss += batch_loss
 
             # Display loss.
             pbar.set_postfix({
-                "loss": f"{batch_loss:.6f}",
-                "mean_loss": f"{total_loss / (idx + 1):.6f}"
+                "loss": f"{batch_loss:6.6f}",
+                "mean_loss": f"{total_loss / (idx + 1):6.6f}"
             })
 
     # Store epoch-average validation loss.

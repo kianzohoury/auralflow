@@ -97,8 +97,8 @@ def main(config_filepath: str):
                     model.forward()
 
                     # Calculate mini-batch loss.
-                    batch_loss = model.compute_loss()
-                    total_loss += batch_loss
+                batch_loss = model.compute_loss()
+                total_loss += batch_loss
 
                 # Run backprop.
                 model.backward()
@@ -115,8 +115,8 @@ def main(config_filepath: str):
                     "Loss/train/iter", {loss_tag: batch_loss},  global_step
                 )
                 pbar.set_postfix({
-                    "loss": f"{batch_loss:.6f}",
-                    "mean_loss": f"{total_loss / (idx + 1):.6f}"
+                    "loss": f"{batch_loss:6.6f}",
+                    "mean_loss": f"{total_loss / (idx + 1):6.6f}"
                 })
 
         # Write epoch loss.

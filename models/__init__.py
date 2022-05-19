@@ -80,7 +80,9 @@ def setup_model(model: SeparationModel):
             model.use_amp = use_amp and model.device == "cuda"
             model.grad_scaler = GradScaler(
                 init_scale=model.training_params["mixed_precision_scale"],
-                enabled=model.use_amp
+                enabled=model.use_amp,
+                growth_factor=100,
+                growth_interval=20000
             )
     else:
         pass

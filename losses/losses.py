@@ -205,6 +205,8 @@ class L2Loss(nn.Module):
 
     def forward(self) -> None:
         self.model.batch_loss = l2_loss(self.model.estimate, self.model.target)
+        # gain_penalty = torch.linalg.norm(self.model.target) / torch.linalg.norm(self.model.estimate)
+        # self.model.batch_loss = self.model.batch_loss + gain_penalty
 
 
 class SISDRLoss(nn.Module):

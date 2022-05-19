@@ -5,6 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import torch
+import torch.nn as nn
 
 
 from .base import SeparationModel
@@ -64,6 +65,8 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
+        self.scale = 1
+
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
         # Compute complex-valued STFTs and send tensors to GPU if available.
@@ -98,7 +101,7 @@ class SpectrogramMaskModel(SeparationModel):
         """Updates and returns the current batch-wise loss."""
         self.criterion()
         # Apply scaling.
-        self.batch_loss = self.grad_scaler.scale(self.batch_loss)
+        self.batch_loss = self.scale * self.batch_loss
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -108,12 +111,18 @@ class SpectrogramMaskModel(SeparationModel):
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.train()
-        # self.scaler.unscale_(self.optimizer)
+        for param in self.model.parameters():
+            if param.grad is not None and not param.grad.isnan().any() and not param.grad.isinf().any():
+                param.grad /= self.scale
+            # elif param.grad is not None:
+            #     self.scale /= 2
+                
+        # self.grad_scaler.unscale_(self.optimizer)
 
-        # nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=10)
+        nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1)
 
-        # self.scaler.step(self.optimizer)
-        # self.scaler.update()
+        # self.grad_scaler.step(self.optimizer)
+        # self.grad_scaler.update()
         # for param in self.model.parameters():
         #     if param.grad is not None:
         #         weight_norm = torch.linalg.norm(param)
