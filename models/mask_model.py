@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch import Tensor, FloatTensor
 from torch.optim import AdamW, lr_scheduler
 
-from losses import get_model_criterion
+
 from utils.data_utils import get_num_stft_frames, AudioTransform
 from visualizer import Visualizer
 from .base import SeparationModel
@@ -40,14 +40,8 @@ class SpectrogramMaskModel(SeparationModel):
         self.target_labels = sorted(self.dataset_params["targets"])
         self.multi_estimator = len(self.target_labels) > 1
 
-        # Retrieve class name of the requested model architecture.
-        model_name = getattr(
-            importlib.import_module("models.architectures", "models"),
-            self.model_params["model_type"],
-        )
-
         # Create the model instance and set to current device.
-        self.model = model_name(
+        self.model = self.base_model_type(
             num_fft_bins=self.n_fft_bins,
             num_samples=self.num_stft_frames,
             num_channels=self.num_channels,

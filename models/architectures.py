@@ -59,13 +59,13 @@ class ConvBlockTriple(nn.Module):
         in_channels: int,
         out_channels: int,
         kernel_size: int = 3,
-        leak: float = 0
+        leak: float = 0,
     ) -> None:
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
             ConvBlock(in_channels, out_channels, kernel_size, False, leak),
             ConvBlock(out_channels, out_channels, kernel_size, False, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, False, leak)
+            ConvBlock(out_channels, out_channels, kernel_size, False, leak),
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
@@ -110,7 +110,7 @@ class UpBlock(nn.Module):
         out_channels: int,
         padding: Tuple[int, int],
         kernel_size: int = 3,
-        drop_p: float = 0.4
+        drop_p: float = 0.4,
     ) -> None:
         super(UpBlock, self).__init__()
         self.conv_block = ConvBlockTriple(
@@ -135,6 +135,7 @@ class UpBlock(nn.Module):
 
 class CenterScaleNormalization(nn.Module):
     """Wrapper class for learning centered/scaled representations of data."""
+
     def __init__(self, num_fft_bins: int, use_norm: bool = True) -> None:
         super(CenterScaleNormalization, self).__init__()
         center_weights = torch.empty(num_fft_bins)
@@ -162,6 +163,7 @@ class CenterScaleNormalization(nn.Module):
 
 class InputNorm(nn.Module):
     """Wrapper class for learning input centering/scaling."""
+
     def __init__(
         self,
         num_fft_bins: int,
@@ -178,7 +180,7 @@ class InputNorm(nn.Module):
                 num_channels=num_channels,
                 num_frames=num_frames,
                 use_norm=apply_norm,
-                device=device
+                device=device,
             )
         elif apply_norm:
             self.layer_norm = CenterScaleNormalization(
@@ -195,19 +197,20 @@ class InputNorm(nn.Module):
 
 class LayerNorm(nn.Module):
     """Wrapper class for layer normalization"""
+
     def __init__(
         self,
         num_fft_bins: int,
         num_channels: int,
         num_frames: int,
         use_norm: bool = True,
-        device: Optional[str] = None
+        device: Optional[str] = None,
     ) -> None:
         super(LayerNorm, self).__init__()
         if use_norm:
             self.layer_norm = nn.LayerNorm(
                 normalized_shape=[num_channels, num_fft_bins, num_frames],
-                device="cpu" if not device else device
+                device="cpu" if not device else device,
             )
         else:
             self.layer_norm = nn.Identity()
@@ -271,14 +274,15 @@ class SpectrogramNetSimple(nn.Module):
             use_layer_norm=True,
             num_channels=num_channels,
             num_frames=num_frames,
-            device=device
+            device=device,
         )
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_channels]]
         for i in range(6):
             self.channel_sizes += [
-                hidden_channels << i, hidden_channels << (i + 1)
+                hidden_channels << i,
+                hidden_channels << (i + 1),
             ]
 
         # Define encoder layers.
@@ -399,7 +403,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 
     Args:
         recurrent_depth (int): Number of stacked lstm layers. Default: 3.
-        hidden_size (int): Number of hidden features. Default: 1024.
+        hidden_size (int): Requested number of hidden features. Default: 1024.
         input_axis (int): Whether to feed dim 0 (frequency axis) or dim 1
             (time axis) as features to the lstm. Default: 1.
 
@@ -418,7 +422,9 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
     ) -> None:
         super(SpectrogramNetLSTM, self).__init__(*args, **kwargs)
         self.recurrent_depth = recurrent_depth
-        self.hidden_size = hidden_size
+
+        # Set to min between last channel size to avoid over-parameterization.
+        self.hidden_size = min(hidden_size, self.channel_sizes[-1][-1])
         self.input_axis = input_axis
 
         # Calculate num in features for LSTM and store ordering of tensor dims.
@@ -444,7 +450,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             nn.Linear(hidden_size * 2, hidden_size),
             nn.SELU(inplace=True),
             nn.Linear(hidden_size, self.num_features * 2),
-            nn.SELU(inplace=True)
+            nn.SELU(inplace=True),
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:

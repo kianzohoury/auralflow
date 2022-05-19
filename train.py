@@ -1,18 +1,18 @@
 from argparse import ArgumentParser
-from torch.utils.tensorboard import SummaryWriter
 from datasets import create_audio_dataset, load_dataset
-from models import create_model
+from losses import SeparationEvaluator
+from models import create_model, setup_model
+from torch.cuda.amp import autocast
+from torch.utils.tensorboard import SummaryWriter
 from utils import load_config
 from validate import cross_validate
 from visualizer import ProgressBar, config_visualizer
-from losses import SeparationEvaluator
-from torch.cuda.amp import autocast
-
-import torch
+import torch.backends.cudnn
 
 
 def main(config_filepath: str):
     """Runs training script given a configuration file."""
+    print(torch.backends.cudnn.benchmark)
 
     # Load configuration file.
     print("-" * 79 + "\nReading configuration file...")
@@ -22,7 +22,7 @@ def main(config_filepath: str):
     visualizer_params = configuration["visualizer_params"]
     print("Successful.")
 
-    # Load training/validation data.
+    # Load training set into memory.
     print("-" * 79 + "\nLoading training data...")
     train_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
@@ -33,6 +33,8 @@ def main(config_filepath: str):
         max_num_tracks=dataset_params["max_num_tracks"],
         sample_rate=dataset_params["sample_rate"],
     )
+
+    # Load validation set into memory.
     val_dataset = create_audio_dataset(
         dataset_params["dataset_path"],
         split="val",
@@ -41,6 +43,8 @@ def main(config_filepath: str):
         num_chunks=dataset_params["max_num_samples"],
         max_num_tracks=dataset_params["max_num_tracks"],
     )
+
+    # Load data into dataloaders.
     train_dataloader = load_dataset(train_dataset, training_params)
     val_dataloader = load_dataset(val_dataset, training_params)
     print(
@@ -49,22 +53,25 @@ def main(config_filepath: str):
         f"{dataset_params['sample_length']}s."
     )
 
-    # Load source separation model.
+    # Load model. Setup restores previous state if resuming training.
     print("-" * 79 + "\nLoading model...")
     model = create_model(configuration)
-    # model.setup()
-    print("Done.")
+    setup_model(model)
+    print("Successful.")
 
+    # Initialize summary writer and visualizer.
+    print("-" * 79 + "\nLoading visualization tools...")
     writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
     visualizer = config_visualizer(config=configuration, writer=writer)
-    evaluator = SeparationEvaluator(model=model, full_metrics=True)
+    print("Successful.")
 
+    # Number of epochs to train.
     start_epoch = training_params["last_epoch"] + 1
     stop_epoch = start_epoch + training_params["max_epochs"]
     global_step = configuration["training_params"]["global_step"]
     max_iters = len(train_dataloader)
-    print("Starting training...\n" + "-" * 79)
 
+    print("Configuration complete. Starting training...\n" + "-" * 79)
     for epoch in range(start_epoch, stop_epoch):
         print(f"Epoch {epoch}/{stop_epoch}", flush=True)
         total_loss = 0
@@ -150,8 +157,18 @@ def main(config_filepath: str):
 
         # Only save model if validation loss decreases.
         if model.is_best_model:
-            model.save_model(global_step=epoch)
-            model.save_optim(global_step=epoch)
+            model.save_model(
+                global_step=epoch, silent=model.silent_checkpoint
+            )
+            model.save_optim(
+                global_step=epoch, silent=model.silent_checkpoint
+            )
+            model.save_scheduler(
+                global_step=epoch, silent=model.silent_checkpoint
+            )
+            model.save_grad_scaler(
+                global_step=epoch, silent=model.silent_checkpoint
+            )
 
         # Post-epoch callback.
         model.post_epoch_callback(

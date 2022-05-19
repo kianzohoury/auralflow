@@ -28,9 +28,13 @@
     "training_params": {
         "training_mode": true,
         "max_epochs": 100,
+        "last_epoch": -1,
+        "global_step": -1,
         "batch_size": 64,
         "lr": 0.0005,
         "criterion": "l2",
+        "use_mixed_precision": false,
+        "mixed_precision_scale": 2e16,
         "alpha_constant": 0.8,
         "beta_constant": 0.2,
         "num_workers": 8,
@@ -40,8 +44,7 @@
         "stop_patience": 10,
         "max_lr_reductions": 5,
         "checkpoint_path": "checkpoints",
-        "last_epoch": -1,
-        "global_step": -1
+        "silent_checkpoint": false
     },
     "visualizer_params": {
         "view_images": false,
