@@ -86,7 +86,9 @@ def main(config_filepath: str):
 
         total_loss = 0
         model.train()
-        with ProgressBar(train_dataloader, total=max_iters) as pbar:
+        with ProgressBar(
+            train_dataloader, total=max_iters, desc="train"
+        ) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
                 with autocast(enabled=model.use_amp):
 
@@ -113,8 +115,8 @@ def main(config_filepath: str):
                     "Loss/train/iter", {loss_tag: batch_loss},  global_step
                 )
                 pbar.set_postfix({
-                    "train_loss": batch_loss,
-                    "mean_loss": total_loss / (idx + 1)
+                    "loss": f"{batch_loss:.6f}",
+                    "mean_loss": f"{total_loss / (idx + 1):.6f}"
                 })
 
         # Write epoch loss.

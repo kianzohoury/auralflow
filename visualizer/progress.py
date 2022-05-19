@@ -17,10 +17,12 @@ class ProgressBar(tqdm):
         total: int,
         unit: str = "batch",
         fmt: bool = True,
-        desc: Optional[str] = None,
-    ):
-        bar_format = "{percentage:3.0f}%|{bar:18}|{n_fmt}/{total_fmt} "
-        r_bar = "{elapsed}<{remaining}, {rate_fmt}{postfix}"
+        desc: str = "",
+        show_rate: bool = False
+    ):  
+        bar_format = f"{desc}: " if desc else ""
+        bar_format += "{percentage:3.0f}%|{bar:12}|{n_fmt}/{total_fmt} "
+        r_bar = "eta: {remaining}" + "{postfix}"
         bar_format += r_bar if fmt else "{rate_fmt}{postfix}"
 
         super(ProgressBar, self).__init__(

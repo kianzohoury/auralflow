@@ -17,7 +17,7 @@ def cross_validate(model: SeparationModel, val_dataloader: DataLoader) -> None:
     max_iters = len(val_dataloader)
 
     model.eval()
-    with ProgressBar(val_dataloader, total=max_iters) as pbar:
+    with ProgressBar(val_dataloader, total=max_iters, desc="valid") as pbar:
         total_loss = 0
         for idx, (mixture, target) in enumerate(pbar):
             with autocast(enabled=model.use_amp):
@@ -31,9 +31,10 @@ def cross_validate(model: SeparationModel, val_dataloader: DataLoader) -> None:
                     total_loss += batch_loss
 
             # Display loss.
-            pbar.set_postfix(
-                {"valid_loss": batch_loss, "mean_loss": total_loss / (idx + 1)}
-            )
+            pbar.set_postfix({
+                "loss": f"{batch_loss:.6f}",
+                "mean_loss": f"{total_loss / (idx + 1):.6f}"
+            })
 
     # Store epoch-average validation loss.
     model.val_losses.append(total_loss / max_iters)
