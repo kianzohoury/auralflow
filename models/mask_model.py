@@ -8,7 +8,6 @@ import copy
 import torch
 import torch.nn as nn
 
-
 from .base import SeparationModel
 from torch import Tensor, FloatTensor
 from typing import Optional
@@ -69,6 +68,10 @@ class SpectrogramMaskModel(SeparationModel):
         self.scale = 1e3
         self.f32_weights = copy.deepcopy(list(self.model.parameters()))
 
+    def copy_gradients_to_f32(self, weights):
+        for param_f16, param_f32 in zip(weights, self.f32_weights):
+            param_f32.grad = param_f16 / self.scale
+
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
         # Compute complex-valued STFTs and send tensors to GPU if available.
@@ -115,16 +118,18 @@ class SpectrogramMaskModel(SeparationModel):
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.train()
-        for param in self.f32_weights:
-            if param.grad is not None and not param.grad.isnan().any() and not param.grad.isinf().any():
-                param.grad /= self.scale
-            # elif param.grad is not None:
-            #     self.scale /= 2
-                
-        # self.grad_scaler.unscale_(self.optimizer)
-
-        grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
-        print(grad_norm)
+        skip_update = False
+        for param in self.model.parameters():
+            if param.grad is not None:
+                if param.grad.isnan().any() or param.grad.isinf().any():
+                    skip_update = True
+        if not skip_update:
+            self.copy_gradients_to_f32(list(self.model.parameters()))
+            self.model._parameters = self.f32_weights
+            grad_norm = nn.utils.clip_grad_norm_(
+                self.model.parameters(), max_norm=2e10
+            )
+            print(grad_norm)
 
         # self.grad_scaler.step(self.optimizer)
         # self.grad_scaler.update()
@@ -134,6 +139,7 @@ class SpectrogramMaskModel(SeparationModel):
         #         grad_norm = torch.linalg.norm(param.grad)
         #         print(f"weight norm: {weight_norm} \n grad norm {grad_norm}")
         self.optimizer.step()
+
         # Quicker gradient zeroing.
         for param in self.model.parameters():
             param.grad = None
@@ -160,7 +166,7 @@ class SpectrogramMaskModel(SeparationModel):
         visualizer.visualize_gradient(model=self, global_step=epoch)
 
     def post_epoch_callback(
-        self, mix: Tensor, target: Tensor, visualizer: Visualizer, epoch: int
+            self, mix: Tensor, target: Tensor, visualizer: Visualizer, epoch: int
     ) -> None:
         """Logs images and audio to tensorboard at the end of each epoch."""
         visualizer.visualize(
