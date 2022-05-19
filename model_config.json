@@ -8,7 +8,7 @@
         "mask_activation": "relu",
         "hidden_size": 16,
         "dropout_p": 0.4,
-        "leak_factor": 0.2
+        "leak_factor": 0
     },
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",

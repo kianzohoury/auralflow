@@ -31,15 +31,22 @@ class ConvBlock(nn.Module):
             padding="same",
             bias=not bn,
         )
-        nn.init.kaiming_normal_(self.conv.weight, nonlinearity="linear")
+
+        # Initialize weights depending on activation fn.
+        if leak > 0:
+            nn.init.kaiming_normal_(self.conv.weight)
+            self.activation = nn.LeakyReLU(leak)
+        else:
+            nn.init.kaiming_normal_(self.conv.weight, nonlinearity="linear")
+            self.activation = nn.SELU()
+
+        # Batch normalization.
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
-        self.relu = nn.SELU()
-        # self.relu = nn.LeakyReLU(leak)
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         data = self.conv(data)
-        data = self.relu(data)
+        data = self.activation(data)
         output = self.bn(data)
         return output
 
@@ -128,19 +135,23 @@ class UpBlock(nn.Module):
 
 class CenterScaleNormalization(nn.Module):
     """Wrapper class for learning centered/scaled representations of data."""
-    def __init__(self, num_fft_bins: int, apply_norm: bool = True) -> None:
+    def __init__(self, num_fft_bins: int, use_norm: bool = True) -> None:
         super(CenterScaleNormalization, self).__init__()
-
         center_weights = torch.empty(num_fft_bins)
         scale_weights = torch.empty(num_fft_bins)
-        nn.init.uniform_(center_weights, a=0, b=0.1)
-        nn.init.uniform_(scale_weights, a=1.0, b=1.1)
 
-        self.center = nn.Parameter(center_weights, requires_grad=apply_norm)
-        self.scale = nn.Parameter(scale_weights, requires_grad=apply_norm)
+        # Initialize weights.
+        if use_norm:
+            nn.init.uniform_(center_weights, a=0, b=0.1)
+            nn.init.uniform_(scale_weights, a=1.0, b=1.1)
+        else:
+            nn.init.zeros_(center_weights)
+            nn.init.ones_(scale_weights)
 
+        self.center = nn.Parameter(center_weights, requires_grad=use_norm)
+        self.scale = nn.Parameter(scale_weights, requires_grad=use_norm)
 
-    def forward(self, data: FloatTensor) -> Tensor:
+    def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         data = data.permute(0, 1, 3, 2)
         centered = data - self.center
@@ -152,33 +163,33 @@ class CenterScaleNormalization(nn.Module):
 class InputNorm(nn.Module):
     """Wrapper class for learning input centering/scaling."""
     def __init__(
-            self,
-            num_fft_bins: int,
-            apply_norm: bool = True,
-            use_layer_norm: bool = False,
-            num_channels: Optional[int] = None,
-            num_samples: Optional[int] = None,
-            device: Optional[str] = None,
+        self,
+        num_fft_bins: int,
+        apply_norm: bool = True,
+        use_layer_norm: bool = False,
+        num_channels: Optional[int] = None,
+        num_frames: Optional[int] = None,
+        device: Optional[str] = None,
     ) -> None:
         super(InputNorm, self).__init__()
-        if use_layer_norm and num_channels and num_samples:
+        if use_layer_norm and num_channels and num_frames:
             self.layer_norm = LayerNorm(
                 num_fft_bins=num_fft_bins,
                 num_channels=num_channels,
-                num_samples=num_samples,
-                apply_norm=apply_norm,
+                num_frames=num_frames,
+                use_norm=apply_norm,
                 device=device
             )
         elif apply_norm:
             self.layer_norm = CenterScaleNormalization(
-                num_fft_bins=num_fft_bins, apply_norm=apply_norm
+                num_fft_bins=num_fft_bins, use_norm=apply_norm
             )
         else:
             self.layer_norm = nn.Identity()
 
-    def forward(self, data: FloatTensor) -> Tensor:
+    def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
-        output = self.layer_norm.forward(data)
+        output = self.layer_norm.forward(data).float()
         return output
 
 
@@ -188,40 +199,54 @@ class LayerNorm(nn.Module):
         self,
         num_fft_bins: int,
         num_channels: int,
-        num_samples: int,
-        apply_norm: bool = True,
+        num_frames: int,
+        use_norm: bool = True,
         device: Optional[str] = None
     ) -> None:
         super(LayerNorm, self).__init__()
-        if apply_norm:
+        if use_norm:
             self.layer_norm = nn.LayerNorm(
-                normalized_shape=[num_channels, num_fft_bins, num_samples],
+                normalized_shape=[num_channels, num_fft_bins, num_frames],
                 device="cpu" if not device else device
             )
         else:
             self.layer_norm = nn.Identity()
 
-    def forward(self, data: FloatTensor) -> Tensor:
+    def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         output = self.layer_norm(data)
         return output
 
 
 class SpectrogramNetSimple(nn.Module):
-    """Vanilla spectrogram U-Net model with triple block sizes."""
+    """Vanilla spectrogram-based deep mask estimation model.
 
-    criterion: nn.Module
-    residual_mask: FloatTensor
+    Args:
+        num_fft_bins (int): Number of FFT bins (aka filterbanks).
+        num_frames (int): Number of temporal features (time axis).
+        num_channels (int): 1 for mono, 2 for stereo. Default: 1.
+        hidden_channels (int): Number of initial output channels. Default: 16.
+        mask_act_fn (str): Final activation layer that creates the
+            multiplicative soft-mask. Default: 'sigmoid'.
+        leak_factor (float): Alpha constant if using Leaky ReLU activation.
+            Default: 0.
+        dropout_p (float): Dropout probability. Default: 0.5.
+        normalize_input (bool): Whether to learn input normalization
+            parameters. Default: False.
+        normalize_output (bool): Whether to learn output normalization
+            parameters. Default: False.
+        device (optional[str]): Device. Default: None.
+    """
 
     def __init__(
         self,
         num_fft_bins: int,
-        num_samples: int,
+        num_frames: int,
         num_channels: int = 1,
-        hidden_dim: int = 16,
+        hidden_channels: int = 16,
         mask_act_fn: str = "sigmoid",
-        leak_factor: float = 0.2,
-        dropout_p: float = 0.4,
+        leak_factor: float = 0,
+        dropout_p: float = 0.5,
         normalize_input: bool = False,
         normalize_output: bool = False,
         device: Optional[str] = None,
@@ -230,30 +255,31 @@ class SpectrogramNetSimple(nn.Module):
 
         # Register attributes.
         self.num_fft_bins = num_fft_bins
-        self.num_samples = num_samples
+        self.num_frames = num_frames
         self.num_channels = num_channels
-        self.hidden_dim = hidden_dim
+        self.hidden_channels = hidden_channels
         self.mask_activation_fn = mask_act_fn
         self.leak_factor = leak_factor
         self.normalize_input = normalize_input
         self.normalize_output = normalize_output
         self.device = device
 
-        # Define input norm layer.
+        # Define input norm layer. Uses identity fn if not activated.
         self.input_norm = InputNorm(
             num_fft_bins=num_fft_bins,
             apply_norm=normalize_input,
             use_layer_norm=True,
             num_channels=num_channels,
-            num_samples=num_samples,
+            num_frames=num_frames,
             device=device
         )
 
         # Calculate input/output channel sizes for each layer.
-        self.channel_sizes = [[num_channels, hidden_dim]]
-        self.channel_sizes += [
-            [hidden_dim << i, hidden_dim << (i + 1)] for i in range(6)
-        ]
+        self.channel_sizes = [[num_channels, hidden_channels]]
+        for i in range(6):
+            self.channel_sizes += [
+                hidden_channels << i, hidden_channels << (i + 1)
+            ]
 
         # Define encoder layers.
         self.down_1 = DownBlock(*self.channel_sizes[0], leak=leak_factor)
@@ -272,7 +298,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Determine the spatial dimension sizes for computing deconv padding.
         self.encoding_sizes = [
-            [num_fft_bins >> i, num_samples >> i] for i in range(7)
+            [num_fft_bins >> i, num_frames >> i] for i in range(7)
         ]
 
         # Compute transpose/deconvolution padding.
@@ -290,7 +316,7 @@ class SpectrogramNetSimple(nn.Module):
         # Deconvolution channel sizes.
         dec_channel_sizes = [size[::-1] for size in self.channel_sizes][::-1]
 
-        # Define decoder layers.
+        # Define decoder layers. Use dropout for first 3 decoder layers.
         self.up_1 = UpBlock(
             *dec_channel_sizes[0], padding=padding_sizes[0], drop_p=dropout_p
         )
@@ -306,35 +332,33 @@ class SpectrogramNetSimple(nn.Module):
 
         # Final conv layer squeezes output channels dimension to num_channels.
         self.soft_conv = nn.Conv2d(
-            in_channels=hidden_dim,
+            in_channels=hidden_channels,
             out_channels=num_channels,
             kernel_size=1,
             stride=1,
             padding="same",
         )
 
-        # Define output norm layer.
+        # Define output norm layer. Uses identity fn if not activated.
         self.output_norm = CenterScaleNormalization(
-            num_fft_bins=num_fft_bins, apply_norm=normalize_output
+            num_fft_bins=num_fft_bins, use_norm=normalize_output
         )
 
-        # Define activation function used for masking.
-        if mask_act_fn == "sigmoid":
-            self.mask_activation = nn.Sigmoid()
-        elif mask_act_fn == "relu":
-            self.mask_activation = nn.ReLU()
-        elif mask_act_fn == "tanh":
-            self.mask_activation = nn.Tanh()
-        elif mask_act_fn == "softmask":
-            self.mask_activation = nn.Softmax()
+        # Define activation function used for final masking step.
+        if mask_act_fn == "relu":
+            self.mask_activation = nn.ReLU(inplace=True)
         elif mask_act_fn == "hardtanh":
             self.mask_activation = nn.Hardtanh(0, 1, inplace=True)
+        elif mask_act_fn == "tanh":
+            self.mask_activation = nn.Tanh()
+        elif mask_act_fn == "softmax":
+            self.mask_activation = nn.Softmax()
         elif mask_act_fn == "prelu":
-            self.mask_activation = nn.PReLU()
+            self.mask_activation = nn.PReLU(device=self.device)
         elif mask_act_fn == "selu":
             self.mask_activation = nn.SELU(inplace=True)
         else:
-            self.mask_activation = nn.Identity()
+            self.mask_activation = nn.Sigmoid()
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
@@ -366,19 +390,27 @@ class SpectrogramNetSimple(nn.Module):
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
-        mask = torch.clamp(mask, min=0, max=1.0)
+        mask = torch.clamp(mask, min=0, max=1.0).float()
         return mask
 
 
 class SpectrogramNetLSTM(SpectrogramNetSimple):
-    """Spectrogram U-Net with an LSTM bottleneck."""
+    """Spectrogram U-Net with an LSTM bottleneck.
+
+    Args:
+        recurrent_depth (int): Number of stacked lstm layers.
+    """
 
     def __init__(
-        self, *args, lstm_layers: int = 3, lstm_hidden_size=1024, **kwargs
+        self,
+        *args,
+        recurrent_depth: int = 3,
+        hidden_size: int = 1024,
+        **kwargs
     ) -> None:
         super(SpectrogramNetLSTM, self).__init__(*args, **kwargs)
-        self.lstm_layers = lstm_layers
-        self.lstm_hidden_size = lstm_hidden_size
+        self.recurrent_depth = recurrent_depth
+        self.hidden_size = hidden_size
 
         # Calculate number of input features to the LSTM.
         n_features = self.channel_sizes[-1][0] * self.encoding_sizes[-1][-1]
@@ -387,17 +419,17 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         # Define recurrent stack.
         self.lstm = nn.LSTM(
             input_size=n_features,
-            hidden_size=lstm_hidden_size,
+            hidden_size=hidden_size,
             bidirectional=True,
-            num_layers=lstm_layers,
+            num_layers=recurrent_depth,
             dropout=0.4,
         )
 
         # Define dense layers.
         self.linear = nn.Sequential(
-            nn.Linear(lstm_hidden_size * 2, lstm_hidden_size),
+            nn.Linear(hidden_size * 2, hidden_size),
             nn.ReLU(inplace=True),
-            nn.Linear(lstm_hidden_size, n_features * 2),
+            nn.Linear(hidden_size, n_features * 2),
             nn.ReLU(inplace=True)
         )
 
