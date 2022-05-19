@@ -77,7 +77,8 @@ class SpectrogramMaskModel(SeparationModel):
 
     def copy_gradients_to_f32(self, model):
         for name, param in model.named_parameters():
-            self.f32_weights[name].grad = param.grad / self.scale
+            if param.grad is not None:
+                self.f32_weights[name].grad = param.grad / self.scale
 
         for name, param in self.f32_weights.items():
             self.model.register_parameter(name, param)
