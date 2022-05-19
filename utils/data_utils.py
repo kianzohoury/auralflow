@@ -18,7 +18,7 @@ __all__ = [
     "get_deconv_pad",
     "get_conv_pad",
     "get_conv_shape",
-    "trim_audio"
+    "trim_audio",
 ]
 
 

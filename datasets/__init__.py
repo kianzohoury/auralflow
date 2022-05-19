@@ -2,7 +2,7 @@ import librosa
 
 
 from collections import OrderedDict
-from . datasets import AudioDataset, AudioFolder
+from .datasets import AudioDataset, AudioFolder
 from pathlib import Path
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
@@ -16,7 +16,7 @@ __all__ = [
     "create_audio_folder",
     "audio_to_disk",
     "create_audio_dataset",
-    "load_dataset"
+    "load_dataset",
 ]
 
 
@@ -43,7 +43,7 @@ def audio_to_disk(
     max_num_tracks: Optional[int] = None,
     split: str = "train",
     sample_rate: int = 44100,
-    mono: bool = True
+    mono: bool = True,
 ) -> List[OrderedDict]:
     """Loads chunked audio dataset directly into disk memory."""
     audio_tracks = []
@@ -65,9 +65,7 @@ def audio_to_disk(
             entry["mixture"] = mixture_track
             for target in sorted(targets):
                 target_name = f"{str(track_folder)}/{target}.wav"
-                entry[target], sr = librosa.load(
-                    target_name, sr=sr, mono=mono
-                )
+                entry[target], sr = librosa.load(target_name, sr=sr, mono=mono)
 
             # Record duration of mixture track.
             duration = (
@@ -89,7 +87,7 @@ def create_audio_dataset(
     num_chunks: int = int(1e6),
     max_num_tracks: Optional[int] = None,
     sample_rate: int = 44100,
-    mono: bool = True
+    mono: bool = True,
 ) -> datasets.AudioDataset:
     """Creates a chunked audio dataset."""
     # Full-length audio tracks.
@@ -99,7 +97,7 @@ def create_audio_dataset(
         split=split,
         max_num_tracks=max_num_tracks,
         sample_rate=sample_rate,
-        mono=mono
+        mono=mono,
     )
 
     # Chunked dataset.

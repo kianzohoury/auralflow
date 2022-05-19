@@ -175,6 +175,7 @@ class AudioFolder(IterableDataset):
 
 class AudioDataset(Dataset):
     """Audio dataset that loads full audio tracks directly into memory."""
+
     def __init__(
         self,
         dataset: List,

@@ -33,7 +33,7 @@ def main(config_filepath: str):
         num_chunks=dataset_params["max_num_samples"],
         max_num_tracks=dataset_params["max_num_tracks"],
         sample_rate=dataset_params["sample_rate"],
-        mono=dataset_params["num_channels"]
+        mono=dataset_params["num_channels"],
     )
 
     # Load validation set into memory.
@@ -44,7 +44,7 @@ def main(config_filepath: str):
         chunk_size=dataset_params["sample_length"],
         num_chunks=dataset_params["max_num_samples"],
         max_num_tracks=dataset_params["max_num_tracks"],
-        mono=dataset_params["num_channels"]
+        mono=dataset_params["num_channels"],
     )
 
     # Load data into dataloaders.
@@ -94,7 +94,7 @@ def main(config_filepath: str):
 
                 total_loss += batch_loss
                 train_loss.append(batch_loss)
-                
+
                 model.backward()
 
                 # Mid-epoch callback.
@@ -109,7 +109,7 @@ def main(config_filepath: str):
                 writer.add_scalars(
                     "Loss/train/iter",
                     {f"{model.criterion.__class__.__name__}": batch_loss},
-                    global_step
+                    global_step,
                 )
 
         avg_loss = sum(train_loss) / len(train_loss)
@@ -143,9 +143,9 @@ def main(config_filepath: str):
 
         # Log validation loss.
         writer.add_scalars(
-            "Loss/val/epoch", 
+            "Loss/val/epoch",
             {f"{model.criterion.__class__.__name__}": model.val_losses[-1]},
-            epoch
+            epoch,
         )
 
         writer.add_scalars(
@@ -160,12 +160,8 @@ def main(config_filepath: str):
 
         # Only save model if validation loss decreases.
         if model.is_best_model:
-            model.save_model(
-                global_step=epoch, silent=model.silent_checkpoint
-            )
-            model.save_optim(
-                global_step=epoch, silent=model.silent_checkpoint
-            )
+            model.save_model(global_step=epoch, silent=model.silent_checkpoint)
+            model.save_optim(global_step=epoch, silent=model.silent_checkpoint)
             model.save_scheduler(
                 global_step=epoch, silent=model.silent_checkpoint
             )

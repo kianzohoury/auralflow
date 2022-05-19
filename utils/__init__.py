@@ -1,11 +1,7 @@
 import json
 import torch
 
-__all__ = [
-    "load_config",
-    "save_object",
-    "load_object"
-]
+__all__ = ["load_config", "save_object", "load_object"]
 
 
 def load_config(config_filepath: str):

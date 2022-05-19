@@ -249,10 +249,14 @@ class Visualizer(object):
                     grad_norm = torch.linalg.norm(param.grad)
 
                     # Don't log abnormal gradients.
-                    log_weight = not weight_norm.isnan().any() and \
-                        not weight_norm.isinf().any()
-                    log_grad = not grad_norm.isnan().any() and \
-                        not grad_norm.isinf().any()
+                    log_weight = (
+                        not weight_norm.isnan().any()
+                        and not weight_norm.isinf().any()
+                    )
+                    log_grad = (
+                        not grad_norm.isnan().any()
+                        and not grad_norm.isinf().any()
+                    )
 
                     if log_weight:
                         self.writer.add_histogram(

@@ -1,8 +1,10 @@
-from . architectures import (
-    SpectrogramNetSimple, SpectrogramNetLSTM, SpectrogramNetVAE
+from .architectures import (
+    SpectrogramNetSimple,
+    SpectrogramNetLSTM,
+    SpectrogramNetVAE,
 )
-from . base import SeparationModel
-from . mask_model import SpectrogramMaskModel
+from .base import SeparationModel
+from .mask_model import SpectrogramMaskModel
 from pathlib import Path
 
 
@@ -13,7 +15,7 @@ __all__ = [
     "SeparationModel",
     "SpectrogramMaskModel",
     "create_model",
-    "setup_model"
+    "setup_model",
 ]
 
 
@@ -47,11 +49,3 @@ def setup_model(model: SeparationModel):
 
     else:
         pass
-
-
-
-
-
-
-
-

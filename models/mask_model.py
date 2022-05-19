@@ -47,7 +47,7 @@ class SpectrogramMaskModel(SeparationModel):
             dropout_p=self.model_params["dropout_p"],
             normalize_input=self.model_params["normalize_input"],
             normalize_output=self.model_params["normalize_output"],
-            device=self.device
+            device=self.device,
         ).to(self.device)
 
         # Instantiate data transformer for pre/post audio processing.
@@ -61,9 +61,7 @@ class SpectrogramMaskModel(SeparationModel):
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
         # Compute complex-valued STFTs and send tensors to GPU if available.
-        mix_complex_stft = self.transform.to_spectrogram(
-            mix.to(self.device)
-        )
+        mix_complex_stft = self.transform.to_spectrogram(mix.to(self.device))
 
         # Set target if passed in.
         if target is not None:
@@ -96,7 +94,7 @@ class SpectrogramMaskModel(SeparationModel):
         """Updates and returns the current batch-wise loss."""
         self.criterion()
         # Apply scaling.
-        self.batch_loss = self.scaler.scale(self.batch_loss)
+        # self.batch_loss = self.scaler.scale(self.batch_loss)
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -106,18 +104,18 @@ class SpectrogramMaskModel(SeparationModel):
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.train()
-        self.scaler.unscale_(self.optimizer)
+        # self.scaler.unscale_(self.optimizer)
 
         # nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=10)
 
-        self.scaler.step(self.optimizer)
-        self.scaler.update()
+        # self.scaler.step(self.optimizer)
+        # self.scaler.update()
         # for param in self.model.parameters():
         #     if param.grad is not None:
         #         weight_norm = torch.linalg.norm(param)
         #         grad_norm = torch.linalg.norm(param.grad)
         #         print(f"weight norm: {weight_norm} \n grad norm {grad_norm}")
-        # self.optimizer.step()
+        self.optimizer.step()
         # Quicker gradient zeroing.
         for param in self.model.parameters():
             param.grad = None

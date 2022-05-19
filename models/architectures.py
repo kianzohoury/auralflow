@@ -4,7 +4,7 @@ import torch.backends.cudnn
 
 from losses import kl_div_loss
 from torch import FloatTensor, Tensor
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional
 from utils.data_utils import get_deconv_pad
 
 

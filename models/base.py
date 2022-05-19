@@ -76,7 +76,7 @@ class SeparationModel(ABC):
             enable_amp = self.training_params["use_mixed_precision"]
             self.grad_scaler = GradScaler(
                 init_scale=self.training_params["mixed_precision_scale"],
-                enabled=enable_amp and self.device == "cuda"
+                enabled=enable_amp and self.device == "cuda",
             )
 
     @abstractmethod
@@ -168,4 +168,3 @@ class SeparationModel(ABC):
 
     def post_epoch_callback(self, **kwargs):
         pass
-
