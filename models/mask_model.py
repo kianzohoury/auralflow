@@ -4,6 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+import copy
 import torch
 import torch.nn as nn
 
@@ -66,6 +67,7 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         self.scale = 1
+        self.f32_weights = copy.deepcopy(self.model.parameters())
 
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
@@ -111,7 +113,7 @@ class SpectrogramMaskModel(SeparationModel):
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.train()
-        for param in self.model.parameters():
+        for param in self.f32_weights:
             if param.grad is not None and not param.grad.isnan().any() and not param.grad.isinf().any():
                 param.grad /= self.scale
             # elif param.grad is not None:
@@ -132,6 +134,8 @@ class SpectrogramMaskModel(SeparationModel):
         # Quicker gradient zeroing.
         for param in self.model.parameters():
             param.grad = None
+
+        self.f32_weights = copy.deepcopy(self.model.parameters())
 
     def scheduler_step(self) -> bool:
         """Reduces lr if val loss does not improve, and signals early stop."""

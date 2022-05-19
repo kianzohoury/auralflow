@@ -97,8 +97,8 @@ def main(config_filepath: str):
                     model.forward()
 
                     # Calculate mini-batch loss.
-                batch_loss = model.compute_loss()
-                total_loss += batch_loss
+                    batch_loss = model.compute_loss()
+                    total_loss += batch_loss
 
                 # Run backprop.
                 model.backward()
