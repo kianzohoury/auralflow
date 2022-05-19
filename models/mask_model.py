@@ -66,8 +66,8 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
-        self.scale = 1
-        self.f32_weights = copy.deepcopy(self.model.parameters())
+        self.scale = 1e3
+        self.f32_weights = copy.deepcopy(list(self.model.parameters()))
 
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
@@ -104,6 +104,8 @@ class SpectrogramMaskModel(SeparationModel):
         self.criterion()
         # Apply scaling.
         self.batch_loss = self.scale * self.batch_loss
+        print()
+        print(self.batch_loss)
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -121,7 +123,8 @@ class SpectrogramMaskModel(SeparationModel):
                 
         # self.grad_scaler.unscale_(self.optimizer)
 
-        nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1)
+        grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
+        print(grad_norm)
 
         # self.grad_scaler.step(self.optimizer)
         # self.grad_scaler.update()
@@ -135,7 +138,7 @@ class SpectrogramMaskModel(SeparationModel):
         for param in self.model.parameters():
             param.grad = None
 
-        self.f32_weights = copy.deepcopy(self.model.parameters())
+        self.f32_weights = copy.deepcopy(list(self.model.parameters()))
 
     def scheduler_step(self) -> bool:
         """Reduces lr if val loss does not improve, and signals early stop."""
