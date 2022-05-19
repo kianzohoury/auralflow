@@ -66,22 +66,22 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         self.scale = 1e3
-        self.f32_weights = self.copy_params(self.model)
+        model_copy = copy.deepcopy(self.model)
+        self.f32_weights = self.copy_params(self.model, model_copy)
 
     @staticmethod
-    def copy_params(model):
-        params_copy = {}
-        for name, param in model.named_parameters():
-            params_copy[name] = param
-        return params_copy
+    def copy_params(module_src, module_dest):
+        params_dest = dict(module_dest.named_parameters())
+        for name, param in module_src.named_parameters():
+            params_dest[name].data.copy_(param.data)
+        return params_dest
 
-    def copy_gradients_to_f32(self, model):
-        for name, param in model.named_parameters():
+    def update_f32_gradients(self):
+        for name, param in self.model.named_parameters():
             if param.grad is not None:
-                self.f32_weights[name].grad = param.grad / self.scale
-
-        for name, param in self.f32_weights.items():
-            self.model.register_parameter(name, param)
+                self.f32_weights[name].grad = param.grad.to(dtype=torch.float32)
+                self.f32_weights[name].grad /= self.scale
+        self.model._parameters = self.f32_weights
 
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
@@ -135,7 +135,7 @@ class SpectrogramMaskModel(SeparationModel):
                 if param.grad.isnan().any() or param.grad.isinf().any():
                     skip_update = True
         if not skip_update:
-            self.copy_gradients_to_f32(self.model)
+            self.update_f32_gradients()
             grad_norm = nn.utils.clip_grad_norm_(
                 self.model.parameters(), max_norm=2e10
             )
@@ -154,7 +154,8 @@ class SpectrogramMaskModel(SeparationModel):
         for param in self.model.parameters():
             param.grad = None
 
-        self.f32_weights = copy.deepcopy(list(self.model.parameters()))
+        model_copy = copy.deepcopy(self.model)
+        self.f32_weights = self.copy_params(self.model, model_copy)
 
     def scheduler_step(self) -> bool:
         """Reduces lr if val loss does not improve, and signals early stop."""
