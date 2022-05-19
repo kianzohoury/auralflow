@@ -33,6 +33,7 @@ class SeparationModel(ABC):
     stop_patience: int
     max_lr_steps: int
     grad_scaler: Any
+    use_amp: bool
     is_best_model: bool
 
     def __init__(self, config: dict):
@@ -56,8 +57,18 @@ class SeparationModel(ABC):
         )
 
     @abstractmethod
+    def set_data(self, *args) -> None:
+        """Set and process data for internal access."""
+        pass
+
+    @abstractmethod
     def forward(self) -> None:
         """Forward method."""
+        pass
+
+    @abstractmethod
+    def compute_loss(self) -> float:
+        """Updates and returns the current batch-wise loss."""
         pass
 
     @abstractmethod
@@ -71,7 +82,13 @@ class SeparationModel(ABC):
         pass
 
     @abstractmethod
+    def scheduler_step(self) -> None:
+        """Decreases learning rate if necessary."""
+        pass
+
+    @abstractmethod
     def separate(self, audio: Tensor) -> Tensor:
+        """Separates target source from mixture audio."""
         pass
 
     def train(self) -> None:
@@ -136,11 +153,11 @@ class SeparationModel(ABC):
             model_wrapper=self, obj_name="grad_scaler", global_step=global_step
         )
 
-    def pre_epoch_callback(self, **kwargs):
+    def pre_epoch_callback(self, *args, **kwargs):
         pass
 
-    def mid_epoch_callback(self, **kwargs):
+    def mid_epoch_callback(self, *args, **kwargs):
         pass
 
-    def post_epoch_callback(self, **kwargs):
+    def post_epoch_callback(self, *args, **kwargs):
         pass

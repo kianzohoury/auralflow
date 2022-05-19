@@ -71,6 +71,7 @@ def main(config_filepath: str):
     print("-" * 79 + "\nLoading visualization tools...")
     writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
     visualizer = config_visualizer(config=configuration, writer=writer)
+    loss_tag = f"{training_params['criterion']}_lr_{training_params['lr']}"
     print("Successful.")
 
     # Number of epochs to train.
@@ -82,24 +83,22 @@ def main(config_filepath: str):
     print("Configuration complete. Starting training...\n" + "-" * 79)
     for epoch in range(start_epoch, stop_epoch):
         print(f"Epoch {epoch}/{stop_epoch}", flush=True)
+
         total_loss = 0
-        train_loss = []
         model.train()
         with ProgressBar(train_dataloader, total=max_iters) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
-                # Cast precision if necessary to increase training speed.
-                # with autocast():
+                with autocast(enabled=model.use_amp):
 
-                # Process data, run forward pass.
-                model.set_data(mixture, target)
-                model.forward()
+                    # Process data, run forward pass.
+                    model.set_data(mixture, target)
+                    model.forward()
 
-                # Calculate mini-batch loss and run backprop.
-                batch_loss = model.compute_loss()
+                    # Calculate mini-batch loss.
+                    batch_loss = model.compute_loss()
+                    total_loss += batch_loss
 
-                total_loss += batch_loss
-                train_loss.append(batch_loss)
-
+                # Run backprop.
                 model.backward()
 
                 # Mid-epoch callback.
@@ -109,55 +108,50 @@ def main(config_filepath: str):
                 model.optimizer_step()
                 global_step += 1
 
-                # Display and log the loss.
-                pbar.set_postfix({"train_loss": batch_loss})
+                # Write/display iteration loss.
                 writer.add_scalars(
-                    "Loss/train/iter",
-                    {f"{model.criterion.__class__.__name__}": batch_loss},
-                    global_step,
+                    "Loss/train/iter", {loss_tag: batch_loss},  global_step
                 )
+                pbar.set_postfix({
+                    "train_loss": batch_loss,
+                    "mean_loss": total_loss / (idx + 1)
+                })
 
-        avg_loss = sum(train_loss) / len(train_loss)
-        pbar.set_postfix({"train_loss": round(batch_loss, 6), "avg": avg_loss})
-        pbar.set_postfix({"loss": round(avg_loss, 6)})
-        # Store epoch-average loss.
-        model.train_losses.append(avg_loss)
+        # Write epoch loss.
+        model.train_losses.append(total_loss / max_iters)
         writer.add_scalars(
-            "Loss/train/epoch",
-            {f"{model.criterion.__class__.__name__}": avg_loss},
-            epoch,
+            "Loss/train/epoch", {loss_tag: model.train_losses[-1]}, epoch
         )
 
-        # Validate updated model.
+        # Validate model.
         cross_validate(
             model=model,
             val_dataloader=val_dataloader,
         )
 
+        # Write validation loss.
+        writer.add_scalars(
+            "Loss/val/epoch", {loss_tag: model.val_losses[-1]}, epoch
+        )
+        writer.add_scalars(
+            "Loss/comparison",
+            {
+                f"{loss_tag}_train": model.train_losses[-1],
+                f"{loss_tag}_val": model.val_losses[-1]
+            },
+            epoch,
+        )
+
+
         # metrics = evaluator.get_metrics(*next(iter(val_dataloader)))
 
         # writer.add_scalars("eval_metrics", metrics, global_step=epoch)
 
-        print("avg train loss:", model.train_losses[-1])
-        print("avg valid loss:", model.val_losses[-1])
         # SeparationEvaluator.print_metrics(metrics)
         print("-" * 79)
 
         # Decrease lr if necessary.
         stop_early = model.scheduler_step()
-
-        # Log validation loss.
-        writer.add_scalars(
-            "Loss/val/epoch",
-            {f"{model.criterion.__class__.__name__}": model.val_losses[-1]},
-            epoch,
-        )
-
-        writer.add_scalars(
-            "Loss/comparison",
-            {"train": model.train_losses[-1], "val": model.val_losses[-1]},
-            epoch,
-        )
 
         if stop_early:
             print("No improvement. Stopping training early...")

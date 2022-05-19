@@ -98,7 +98,7 @@ class SpectrogramMaskModel(SeparationModel):
         """Updates and returns the current batch-wise loss."""
         self.criterion()
         # Apply scaling.
-        # self.batch_loss = self.scaler.scale(self.batch_loss)
+        self.batch_loss = self.grad_scaler.scale(self.batch_loss)
         return self.batch_loss.item()
 
     def backward(self) -> None:

@@ -4,35 +4,36 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from torch import autocast
+from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
+
+from models import SeparationModel
 from visualizer.progress import ProgressBar
 import torch
 
 
-def cross_validate(model, val_dataloader: DataLoader) -> None:
+def cross_validate(model: SeparationModel, val_dataloader: DataLoader) -> None:
     """Validates network updates on the validation set."""
-
-    num_iters = len(val_dataloader)
-    val_loss = []
+    max_iters = len(val_dataloader)
 
     model.eval()
-    with ProgressBar(val_dataloader, total=num_iters) as pbar:
+    with ProgressBar(val_dataloader, total=max_iters) as pbar:
         total_loss = 0
         for idx, (mixture, target) in enumerate(pbar):
-            # # Cast precision if necessary to increase training speed.
-            # with autocast(device_type=model.device):
-            model.set_data(mixture, target)
-            with torch.no_grad():
-                model.test()
-                # Compute batch-wise loss.
-                batch_loss = model.compute_loss()
-                total_loss += batch_loss
-                val_loss.append(batch_loss)
+            with autocast(enabled=model.use_amp):
+
+                model.set_data(mixture, target)
+                with torch.no_grad():
+                    model.test()
+
+                    # Compute batch-wise loss.
+                    batch_loss = model.compute_loss()
+                    total_loss += batch_loss
 
             # Display loss.
-            pbar.set_postfix({"valid_loss": batch_loss})
+            pbar.set_postfix(
+                {"valid_loss": batch_loss, "mean_loss": total_loss / (idx + 1)}
+            )
 
     # Store epoch-average validation loss.
-    # model.val_losses.append(total_loss / num_iters)
-    model.val_losses.append(sum(val_loss) / len(val_loss))
+    model.val_losses.append(total_loss / max_iters)

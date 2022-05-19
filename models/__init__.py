@@ -76,10 +76,11 @@ def setup_model(model: SeparationModel):
             )
 
             # Initialize gradient scaler. Will only be invoked if using AMP.
-            enable_amp = model.training_params["use_mixed_precision"]
+            use_amp = model.training_params["use_mixed_precision"]
+            model.use_amp = use_amp and model.device == "cuda"
             model.grad_scaler = GradScaler(
                 init_scale=model.training_params["mixed_precision_scale"],
-                enabled=enable_amp and model.device == "cuda",
+                enabled=model.use_amp
             )
     else:
         pass
