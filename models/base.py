@@ -16,7 +16,7 @@ from torch import Tensor, FloatTensor
 from torch.cuda.amp.grad_scaler import GradScaler
 from torch.optim import Optimizer, AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from typing import List, Union, Callable
+from typing import List, Union, Callable, Any
 from utils import save_object, load_object
 
 
@@ -31,7 +31,9 @@ class SeparationModel(ABC):
     train_losses: List[float]
     val_losses: List[float]
     stop_patience: int
-    max_lr_reductions: int
+    max_lr_steps: int
+    grad_scaler: Any
+    is_best_model: bool
 
     def __init__(self, config: dict):
         super(SeparationModel, self).__init__()
@@ -52,34 +54,6 @@ class SeparationModel(ABC):
         self.base_model_type = getattr(
             importlib.import_module("models"), self.model_params["model_type"]
         )
-
-        # Initialize training-time objects.
-        if self.training_mode:
-
-            # Define loss function and optimizer.
-            self.criterion = get_model_criterion(self, config=self.config)
-            self.train_losses, self.val_losses = [], []
-            self.optimizer = AdamW(
-                params=self.model.parameters(), lr=self.training_params["lr"]
-            )
-
-            # Define lr scheduler and early stopping params.
-            self.max_lr_reductions = self.training_params["max_lr_reductions"]
-            self.stop_patience = self.training_params["stop_patience"]
-            self.is_best_model = True
-            self.scheduler = ReduceLROnPlateau(
-                optimizer=self.optimizer,
-                mode="min",
-                verbose=True,
-                patience=self.stop_patience,
-            )
-
-            # Initialize gradient scaler. Will only be invoked if using AMP.
-            enable_amp = self.training_params["use_mixed_precision"]
-            self.grad_scaler = GradScaler(
-                init_scale=self.training_params["mixed_precision_scale"],
-                enabled=enable_amp and self.device == "cuda",
-            )
 
     @abstractmethod
     def forward(self) -> None:

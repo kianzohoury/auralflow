@@ -42,7 +42,7 @@
         "persistent_workers": true,
         "pre_fetch": 4,
         "stop_patience": 10,
-        "max_lr_reductions": 5,
+        "max_lr_steps": 5,
         "checkpoint_path": "checkpoints",
         "silent_checkpoint": false
     },
