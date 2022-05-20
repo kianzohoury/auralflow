@@ -65,7 +65,9 @@ def setup_model(model: SeparationModel) -> None:
         else:
             # Create checkpoint folder, save copy of config file to it.
             Path(model.checkpoint_path).mkdir(exist_ok=True)
-            save_config(model.config, model.checkpoint_path)
+            save_config(
+                model.config, model.checkpoint_path + "/model_config.json"
+            )
 
             # Define model criterion.
             model.criterion = get_model_criterion(model, config=model.config)
