@@ -4,7 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from . callbacks import TrainingCallback
+from .callbacks import TrainingCallback
 from models import SeparationModel
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
@@ -17,7 +17,7 @@ def run_training_step(
     stop_epoch: int,
     global_step: int,
     train_dataloader: DataLoader,
-    callback: TrainingCallback
+    callback: TrainingCallback,
 ) -> None:
     """Runs training loop."""
     max_iters = len(train_dataloader)
@@ -43,10 +43,12 @@ def run_training_step(
                     mean_loss = total_loss / (idx + 1)
 
                     # Display loss.
-                    pbar.set_postfix({
-                        "loss": f"{batch_loss:6.6f}",
-                        "mean_loss": f"{mean_loss:6.6f}"
-                    })
+                    pbar.set_postfix(
+                        {
+                            "loss": f"{batch_loss:6.6f}",
+                            "mean_loss": f"{mean_loss:6.6f}",
+                        }
+                    )
 
                 # Run backprop.
                 model.backward()
@@ -68,7 +70,7 @@ def run_training_step(
                 model=True,
                 optim=True,
                 scheduler=True,
-                grad_scaler=model.use_amp
+                grad_scaler=model.use_amp,
             )
 
         # Decrease lr if necessary.

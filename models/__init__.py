@@ -46,7 +46,6 @@ def create_model(configuration: dict) -> SeparationModel:
     return model
 
 
-
 # def load_pretrained_model(checkpoint_path: str):
 #     try:
 #         model = torch.load(f=checkpoint_path)
@@ -94,11 +93,7 @@ def setup_model(model: SeparationModel) -> None:
                 init_scale=model.training_params["mixed_precision_scale"],
                 enabled=model.use_amp,
                 growth_factor=100,
-                growth_interval=20000
+                growth_interval=20000,
             )
     else:
         pass
-
-
-
-

@@ -160,7 +160,7 @@ class SeparationModel(ABC):
         model: bool = True,
         optim: bool = True,
         scheduler: bool = True,
-        grad_scaler: bool = True
+        grad_scaler: bool = True,
     ) -> None:
         """Saves all training objects in one call."""
         if model:

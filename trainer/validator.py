@@ -11,7 +11,7 @@ from visualizer import ProgressBar
 
 
 def run_validation_step(
-        model: SeparationModel, val_dataloader: DataLoader
+    model: SeparationModel, val_dataloader: DataLoader
 ) -> None:
     """Runs validation loop."""
     max_iters = len(val_dataloader)
@@ -33,10 +33,12 @@ def run_validation_step(
                 mean_loss = total_loss / (idx + 1)
 
             # Display loss.
-            pbar.set_postfix({
-                "loss": f"{batch_loss:6.6f}",
-                "mean_loss": f"{mean_loss:6.6f}"
-            })
+            pbar.set_postfix(
+                {
+                    "loss": f"{batch_loss:6.6f}",
+                    "mean_loss": f"{mean_loss:6.6f}",
+                }
+            )
 
     # Store epoch-average validation loss.
     model.val_losses.append(mean_loss)

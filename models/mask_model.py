@@ -80,7 +80,9 @@ class SpectrogramMaskModel(SeparationModel):
     def update_f32_gradients(self):
         for name, param in self.model.named_parameters():
             if param.grad is not None:
-                self.f32_weights[name].grad = param.grad.to(dtype=torch.float32)
+                self.f32_weights[name].grad = param.grad.to(
+                    dtype=torch.float32
+                )
                 self.f32_weights[name].grad /= self.scale
         self.model._parameters = self.f32_weights
 
@@ -140,8 +142,8 @@ class SpectrogramMaskModel(SeparationModel):
 
         # grad_norm = nn.utils.clip_grad_norm_(
         #     self.model.parameters(), max_norm=100
-        # ) 
-                   
+        # )
+
         # self.grad_scaler.unscale_(self.optimizer)
         # grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
         # print(grad_norm)
@@ -153,7 +155,7 @@ class SpectrogramMaskModel(SeparationModel):
         #         weight_norm = torch.linalg.norm(param)
         #         grad_norm = torch.linalg.norm(param.grad)
         #         print(f"weight norm: {weight_norm} \n grad norm {grad_norm}")
-        
+
         # Quicker gradient zeroing.
         for param in self.model.parameters():
             param.grad = None
@@ -186,4 +188,3 @@ class SpectrogramMaskModel(SeparationModel):
         visualizer.visualize(
             model=self, mixture=mix, target=target, global_step=epoch
         )
-

@@ -7,7 +7,7 @@
 from models import SeparationModel
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from . validator import run_validation_step
+from .validator import run_validation_step
 from visualizer import Visualizer
 
 
@@ -51,7 +51,7 @@ class TrainingCallback(Callback):
         model: SeparationModel,
         visualizer: Visualizer,
         writer: SummaryWriter,
-        val_dataloader: DataLoader
+        val_dataloader: DataLoader,
     ) -> None:
         self.model = model
         self.visualizer = visualizer
@@ -72,7 +72,9 @@ class TrainingCallback(Callback):
 
     def on_epoch_end(self, epoch: int) -> None:
         # Run validation.
-        run_validation_step(model=self.model, val_dataloader=self.val_dataloader)
+        run_validation_step(
+            model=self.model, val_dataloader=self.val_dataloader
+        )
 
         # Write epoch train/val losses.
         self.writer_.write_epoch_loss(model=self.model, global_step=epoch)
@@ -102,13 +104,10 @@ class WriterCallback(Callback):
         global_step: int,
         log_train: bool = True,
         log_val: bool = True,
-        main_tag: str = "loss/epoch"
+        main_tag: str = "loss/epoch",
     ) -> None:
         """Writers epoch training loss to tensorboard."""
-        label = (
-            f"{model.model_name}_"
-            f"{model.training_params['criterion']}"
-        )
+        label = f"{model.model_name}_" f"{model.training_params['criterion']}"
         named_losses = {}
         if log_train:
             train_loss_tag = f"{label}_train"
@@ -116,7 +115,7 @@ class WriterCallback(Callback):
             self.update_writer(
                 main_tag=f"{main_tag}/train",
                 named_losses={train_loss_tag: model.train_losses[-1]},
-                global_step=global_step
+                global_step=global_step,
             )
         if log_val:
             val_loss_tag = f"{label}_valid"
@@ -124,19 +123,19 @@ class WriterCallback(Callback):
             self.update_writer(
                 main_tag=f"{main_tag}/train",
                 named_losses={val_loss_tag: model.val_losses[-1]},
-                global_step=global_step
+                global_step=global_step,
             )
         self.update_writer(
             main_tag=main_tag,
             named_losses=named_losses,
-            global_step=global_step
+            global_step=global_step,
         )
 
     def on_iteration_end(
         self,
         model: SeparationModel,
         global_step: int,
-        main_tag: str = "loss/iter/train"
+        main_tag: str = "loss/iter/train",
     ) -> None:
         """Writers iteration training loss to tensorboard."""
         label = (
@@ -146,7 +145,7 @@ class WriterCallback(Callback):
         self.update_writer(
             main_tag=main_tag,
             named_losses={label: model.batch_loss.item()},
-            global_step=global_step
+            global_step=global_step,
         )
 
     def on_epoch_end(self, model: SeparationModel, global_step: int) -> None:

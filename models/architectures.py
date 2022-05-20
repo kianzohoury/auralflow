@@ -350,9 +350,9 @@ class SpectrogramNetSimple(nn.Module):
                 out_channels=num_channels,
                 kernel_size=1,
                 stride=1,
-                padding="same"
+                padding="same",
             ),
-            nn.BatchNorm2d(num_channels)
+            nn.BatchNorm2d(num_channels),
         )
 
         # Define output norm layer. Uses identity fn if not activated.
@@ -554,7 +554,7 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
         # Reshape encodings to match dimensions of latent space.
         enc_6 = enc_6.permute(self.input_perm)
         n_batch, dim1, n_channel, dim2 = enc_6.size()
-        enc_6 = enc_6.reshape((n_batch, dim1, n_channel* dim2))
+        enc_6 = enc_6.reshape((n_batch, dim1, n_channel * dim2))
 
         # Normalizing flow.
         self.mu_data = self.mu(enc_6)

@@ -80,7 +80,7 @@ def main(config_filepath: str):
         model=model,
         writer=writer,
         visualizer=visualizer,
-        val_dataloader=val_dataloader
+        val_dataloader=val_dataloader,
     )
 
     print("Configuration complete. Starting training...\n" + "-" * 79)
@@ -90,7 +90,7 @@ def main(config_filepath: str):
         stop_epoch=stop_epoch,
         global_step=global_step,
         train_dataloader=train_dataloader,
-        callback=callback
+        callback=callback,
     )
 
     writer.close()

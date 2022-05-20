@@ -131,7 +131,7 @@ class Visualizer(object):
         """Runs model in inference mode and stores resulting audio tensors."""
         # Separate target source(s).
         estimate_audio = model.separate(mixture_audio)
-        
+
         # Match audio lengths.
         mixture_audio, estimate_audio, target_audio = trim_audio(
             [mixture_audio, estimate_audio, target_audio]
@@ -260,10 +260,14 @@ class Visualizer(object):
                     grad_norm = torch.linalg.norm(param.grad)
 
                     # Don't log abnormal gradients.
-                    log_weight = not weight_norm.isnan().any() and \
-                        not weight_norm.isinf().any()
-                    log_grad = not grad_norm.isnan().any() and \
-                        not grad_norm.isinf().any()
+                    log_weight = (
+                        not weight_norm.isnan().any()
+                        and not weight_norm.isinf().any()
+                    )
+                    log_grad = (
+                        not grad_norm.isnan().any()
+                        and not grad_norm.isinf().any()
+                    )
 
                     if log_weight:
                         self.writer.add_histogram(

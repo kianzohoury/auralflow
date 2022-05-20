@@ -18,8 +18,8 @@ class ProgressBar(tqdm):
         unit: str = "batch",
         fmt: bool = True,
         desc: str = "",
-        show_rate: bool = False
-    ):  
+        show_rate: bool = False,
+    ):
         bar_format = f"{desc}: " if desc else ""
         bar_format += "{percentage:3.0f}%|{bar:12}|{n_fmt}/{total_fmt} "
         r_bar = "eta: {remaining}" + "{postfix}"
@@ -41,7 +41,7 @@ def create_progress_bar(
     total: int,
     unit: str = "batch",
     fmt: bool = True,
-    desc: str = ""
+    desc: str = "",
 ) -> ProgressBar:
     """Creates a progress bar."""
     return ProgressBar(
