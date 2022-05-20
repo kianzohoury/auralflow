@@ -53,11 +53,11 @@ def run_training_step(
                 # Run backprop.
                 model.backward()
                 # Visualize gradients.
-                callback.on_loss_end(global_step=global_step)
+                # callback.on_loss_end(global_step=global_step)
                 # Update model parameters.
                 model.optimizer_step()
                 # Write/display iteration loss.
-                callback.on_iteration_end(global_step=global_step)
+                # callback.on_iteration_end(global_step=global_step)
 
         # Store epoch-average training loss.
         model.train_losses.append(mean_loss)

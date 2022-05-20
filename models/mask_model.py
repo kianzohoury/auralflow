@@ -66,7 +66,8 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
-        # self.scale = 1
+        self.scale = 1
+        self.is_best_model = True
         # self.f32_weights = self.copy_params(self.model)
 
     @staticmethod
@@ -177,4 +178,4 @@ class SpectrogramMaskModel(SeparationModel):
             self.max_lr_steps -= 1 if not self.stop_patience else 0
             self.is_best_model = False
         return not self.max_lr_steps
-        
+
