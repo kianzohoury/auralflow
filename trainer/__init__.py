@@ -8,6 +8,4 @@ from . callbacks import TrainingCallback
 from . trainer import run_training_step, run_validation_step
 
 
-__all__ = [
-    "run_training_step", "run_validation_step", "TrainingCallback"
-]
+__all__ = ["run_training_step", "run_validation_step"]

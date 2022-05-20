@@ -4,10 +4,10 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+from callbacks import TrainingCallback
 from models import SeparationModel
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
-from trainer.callbacks import TrainingCallback
 from visualizer import ProgressBar
 
 
