@@ -121,7 +121,7 @@ class WriterCallback(Callback):
             val_loss_tag = f"{label}_valid"
             named_losses[val_loss_tag] = model.val_losses[-1]
             self.update_writer(
-                main_tag=f"{main_tag}/train",
+                main_tag=f"{main_tag}/valid",
                 named_losses={val_loss_tag: model.val_losses[-1]},
                 global_step=global_step,
             )

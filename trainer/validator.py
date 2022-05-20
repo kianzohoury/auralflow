@@ -4,6 +4,9 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+import torch
+
+
 from models import SeparationModel
 from torch.cpu.amp import autocast
 from torch.utils.data import DataLoader
@@ -22,10 +25,10 @@ def run_validation_step(
         total_loss = mean_loss = 0
         for idx, (mixture, target) in enumerate(pbar):
             with autocast(enabled=model.use_amp):
-
-                # Process data, run forward pass
-                model.set_data(mixture, target)
-                model.test()
+                with torch.no_grad():
+                    # Process data, run forward pass
+                    model.set_data(mixture, target)
+                    model.test()
 
                 # Compute batch-wise loss.
                 batch_loss = model.compute_loss()

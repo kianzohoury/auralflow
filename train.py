@@ -73,7 +73,7 @@ def main(config_filepath: str):
     # Number of epochs to train.
     start_epoch = training_params["last_epoch"] + 1
     stop_epoch = start_epoch + training_params["max_epochs"]
-    global_step = configuration["training_params"]["global_step"]
+    global_step = configuration["training_params"]["global_step"] + 1
 
     # Create a callback object.
     callback = TrainingCallback(

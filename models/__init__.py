@@ -20,7 +20,7 @@ from losses import get_model_criterion
 from pathlib import Path
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from utils import save_config
+from utils import save_config, load_config
 
 
 __all__ = [
@@ -46,9 +46,18 @@ def create_model(configuration: dict) -> SeparationModel:
     return model
 
 
-# def load_pretrained_model(checkpoint_path: str):
-#     try:
-#         model = torch.load(f=checkpoint_path)
+def load_pretrained_model(checkpoint_dir: str):
+    try:
+        config = checkpoint_dir + "/model_config.json"
+        configuration = load_config(config)
+        model = create_model(configuration)
+        best_checkpoint = sorted(list(Path(checkpoint_dir).glob(f"{model.model_name}_[0-9].*")))[-1]
+        model.model.load_state_dict(torch.load(f=best_checkpoint))
+        model.training_mode = False
+        setup_model(model)
+        return model
+    except Exception as error:
+        raise error
 
 
 def setup_model(model: SeparationModel) -> None:

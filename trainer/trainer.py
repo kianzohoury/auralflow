@@ -22,7 +22,7 @@ def run_training_step(
     """Runs training loop."""
     max_iters = len(train_dataloader)
     for epoch in range(start_epoch, stop_epoch):
-        print(f"Epoch {epoch}/{stop_epoch}", flush=True)
+        print(f"Epoch {epoch + 1}/{stop_epoch}", flush=True)
         total_loss = mean_loss = 0
 
         # Set model to training mode.
@@ -53,11 +53,12 @@ def run_training_step(
                 # Run backprop.
                 model.backward()
                 # Visualize gradients.
-                # callback.on_loss_end(global_step=global_step)
+                callback.on_loss_end(global_step=global_step)
                 # Update model parameters.
                 model.optimizer_step()
                 # Write/display iteration loss.
-                # callback.on_iteration_end(global_step=global_step)
+                callback.on_iteration_end(global_step=global_step)
+                global_step += 1
 
         # Store epoch-average training loss.
         model.train_losses.append(mean_loss)
@@ -78,3 +79,4 @@ def run_training_step(
         if stop_early:
             print("No improvement. Stopping training early...")
             break
+
