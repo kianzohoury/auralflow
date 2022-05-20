@@ -174,8 +174,6 @@ class SpectrogramMaskModel(SeparationModel):
             self.max_lr_steps -= 1 if not self.stop_patience else 0
             self.is_best_model = False
         return not self.max_lr_steps
-<<<<<<< HEAD
-=======
 
     def mid_epoch_callback(self, visualizer: Visualizer, epoch: int) -> None:
         """Called during epoch before parameter updates."""
@@ -188,4 +186,4 @@ class SpectrogramMaskModel(SeparationModel):
         visualizer.visualize(
             model=self, mixture=mix, target=target, global_step=epoch
         )
->>>>>>> refs/remotes/origin/main
+
