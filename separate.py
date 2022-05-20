@@ -6,11 +6,11 @@
 
 import torch
 
-
+from argparse import ArgumentParser
 from torch import Tensor
 
 
-def separate(model, audio: Tensor):
+def main(model, audio: Tensor):
     # Split audio in chunks.
     padding = model.dataset_params["hop_length"] // 2
     step_size = model.dataset_params.num_stft_frames
@@ -47,4 +47,14 @@ def separate(model, audio: Tensor):
 
 
 if __name__ == "__main__":
-    pass
+    parser = ArgumentParser(description="Source separation script.")
+    parser.add_argument(
+        "model_checkpoint", type=str, help="Path to a source separation model."
+    )
+    parser.add_argument(
+        "audio_filepath", type=str, help="Path to an audio file."
+    )
+    args = parser.parse_args()
+    model_path, audio_filepath = args.model_checkpoint, args.audio_filepath
+
+    main(args.audio_filepath)

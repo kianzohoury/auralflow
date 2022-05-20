@@ -19,8 +19,9 @@ def config_visualizer(config: dict, writer: SummaryWriter) -> Visualizer:
     viz = Visualizer(
         writer=writer,
         save_dir=visualizer_params["logs_path"] + "/images",
-        view_images=visualizer_params["view_images"],
-        view_gradients=visualizer_params["view_gradients"],
+        view_spectrogram=visualizer_params["view_spectrogram"],
+        view_waveform=visualizer_params["view_waveform"],
+        view_gradient=visualizer_params["view_gradient"],
         play_audio=visualizer_params["play_audio"],
         num_images=visualizer_params["num_images"],
         save_image=visualizer_params["save_images"],

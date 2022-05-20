@@ -172,15 +172,3 @@ class SpectrogramMaskModel(SeparationModel):
             self.max_lr_steps -= 1 if not self.stop_patience else 0
             self.is_best_model = False
         return not self.max_lr_steps
-
-    def mid_epoch_callback(self, visualizer: Visualizer, epoch: int) -> None:
-        """Called during epoch before parameter updates."""
-        visualizer.visualize_gradient(model=self, global_step=epoch)
-
-    def post_epoch_callback(
-            self, mix: Tensor, target: Tensor, visualizer: Visualizer, epoch: int
-    ) -> None:
-        """Logs images and audio to tensorboard at the end of each epoch."""
-        visualizer.visualize(
-            model=self, mixture=mix, target=target, global_step=epoch
-        )

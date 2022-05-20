@@ -34,3 +34,16 @@ class ProgressBar(tqdm):
             total=total,
             ncols=79,
         )
+
+
+def create_progress_bar(
+    iterable: Iterable,
+    total: int,
+    unit: str = "batch",
+    fmt: bool = True,
+    desc: str = ""
+) -> ProgressBar:
+    """Creates a progress bar."""
+    return ProgressBar(
+        iterable=iterable, total=total, unit=unit, fmt=fmt, desc=desc
+    )

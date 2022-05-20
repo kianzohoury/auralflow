@@ -16,14 +16,15 @@ from torch import Tensor, FloatTensor
 from torch.cuda.amp.grad_scaler import GradScaler
 from torch.optim import Optimizer, AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from typing import List, Union, Callable, Any
-from utils import save_object, load_object
+from typing import List, Union, Callable, Any, Optional
+from models import _save_object, _load_object
 
 
 class SeparationModel(ABC):
     """Interface shared among all source separation models."""
 
     model: nn.Module
+    target_labels: List[str]
     criterion: Union[nn.Module, Callable]
     optimizer: Optimizer
     scheduler: ReduceLROnPlateau
@@ -82,7 +83,7 @@ class SeparationModel(ABC):
         pass
 
     @abstractmethod
-    def scheduler_step(self) -> None:
+    def scheduler_step(self) -> bool:
         """Decreases learning rate if necessary."""
         pass
 
@@ -107,51 +108,69 @@ class SeparationModel(ABC):
 
     def save_model(self, global_step: int) -> None:
         """Saves the model's current state."""
-        save_object(
+        _save_object(
             model_wrapper=self, obj_name="model", global_step=global_step
         )
 
     def load_model(self, global_step: int) -> None:
         """Loads a model's previous state."""
-        load_object(
+        _load_object(
             model_wrapper=self, obj_name="model", global_step=global_step
         )
 
     def save_optim(self, global_step: int) -> None:
         """Saves the optimizer's current state."""
-        save_object(
+        _save_object(
             model_wrapper=self, obj_name="optimizer", global_step=global_step
         )
 
     def load_optim(self, global_step: int) -> None:
         """Loads an optimizer's previous state."""
-        load_object(
+        _load_object(
             model_wrapper=self, obj_name="optimizer", global_step=global_step
         )
 
     def save_scheduler(self, global_step: int) -> None:
         """Saves the scheduler's current state."""
-        save_object(
+        _save_object(
             model_wrapper=self, obj_name="scheduler", global_step=global_step
         )
 
     def load_scheduler(self, global_step: int) -> None:
         """Loads a scheduler's previous state."""
-        load_object(
+        _load_object(
             model_wrapper=self, obj_name="scheduler", global_step=global_step
         )
 
     def save_grad_scaler(self, global_step: int) -> None:
         """Saves the grad scaler's current state if using mixed precision."""
-        save_object(
+        _save_object(
             model_wrapper=self, obj_name="grad_scaler", global_step=global_step
         )
 
     def load_grad_scaler(self, global_step: int) -> None:
         """Load a grad scaler's previous state if one exists."""
-        load_object(
+        _load_object(
             model_wrapper=self, obj_name="grad_scaler", global_step=global_step
         )
+
+    def save_all(
+        self,
+        global_step: int,
+        model: bool = True,
+        optim: bool = True,
+        scheduler: bool = True,
+        grad_scaler: bool = True
+    ) -> None:
+        """Saves all training objects in one call."""
+        if model:
+            self.save_model(global_step=global_step)
+        if optim:
+            self.save_optim(global_step=global_step)
+        if scheduler:
+            self.save_scheduler(global_step=global_step)
+        if grad_scaler:
+            self.save_grad_scaler(global_step=global_step)
 
     def pre_epoch_callback(self, *args, **kwargs):
         pass

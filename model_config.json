@@ -47,10 +47,11 @@
         "silent_checkpoint": true
     },
     "visualizer_params": {
-        "view_images": false,
-        "view_gradients": true,
+        "view_spectrogram": false,
+        "view_waveform": false,
+        "view_gradient": true,
         "play_audio": true,
-        "save_images": false,
+        "save_image": false,
         "save_audio": false,
         "save_frequency": 5,
         "num_images": 1,

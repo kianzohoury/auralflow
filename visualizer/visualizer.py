@@ -8,6 +8,7 @@ import matplotlib.figure
 import matplotlib.pyplot as plt
 import torch
 
+
 from pathlib import Path
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
@@ -96,8 +97,9 @@ class Visualizer(object):
         self,
         writer: SummaryWriter,
         save_dir: Union[str, Path],
-        view_images: bool = True,
-        view_gradients: bool = True,
+        view_spectrogram: bool = True,
+        view_waveform: bool = True,
+        view_gradient: bool = True,
         play_audio: bool = True,
         num_images: int = 1,
         save_image: bool = False,
@@ -108,8 +110,9 @@ class Visualizer(object):
         super(Visualizer, self).__init__()
         self.writer = writer
         self.save_dir = save_dir
-        self.view_images = view_images
-        self.view_gradients = view_gradients
+        self.view_spectrogram = view_spectrogram
+        self.view_waveform = view_waveform
+        self.view_gradient = view_gradient
         self.play_audio = play_audio
         self.num_images = num_images
         self.save_image = save_image
@@ -218,25 +221,28 @@ class Visualizer(object):
 
     def embed_audio(self, label: str, global_step: int) -> None:
         """Logs audio to tensorboard."""
-        # Send audio to tensorboard.
+        # Embed source estimate.
         self.writer.add_audio(
             tag=f"{label}/estimate",
             snd_tensor=self.audio["estimate_source"][0].T,
             global_step=global_step,
             sample_rate=self.sample_rate,
         )
+        # Embed true source.
         self.writer.add_audio(
             tag=f"{label}/true",
             snd_tensor=self.audio["target_source"][0].T,
             global_step=global_step,
             sample_rate=self.sample_rate,
         )
+        # Embed residual estimate.
         self.writer.add_audio(
             tag=f"residual/estimate",
             snd_tensor=self.audio["estimate_residual"][0].T,
             global_step=global_step,
             sample_rate=self.sample_rate,
         )
+        # Embed true residual.
         self.writer.add_audio(
             tag=f"residual/true",
             snd_tensor=self.audio["target_residual"][0].T,
@@ -246,23 +252,18 @@ class Visualizer(object):
 
     def visualize_gradient(self, model, global_step: int) -> None:
         """Sends model weights and gradients to tensorboard."""
-        if self.view_gradients:
+        if self.view_gradient:
             for name, param in model.model.named_parameters():
                 if param.grad is not None:
-
                     # Monitor model updates by tracking their 2-norms.
                     weight_norm = torch.linalg.norm(param)
                     grad_norm = torch.linalg.norm(param.grad)
 
                     # Don't log abnormal gradients.
-                    log_weight = (
-                        not weight_norm.isnan().any()
-                        and not weight_norm.isinf().any()
-                    )
-                    log_grad = (
-                        not grad_norm.isnan().any()
-                        and not grad_norm.isinf().any()
-                    )
+                    log_weight = not weight_norm.isnan().any() and \
+                        not weight_norm.isinf().any()
+                    log_grad = not grad_norm.isnan().any() and \
+                        not grad_norm.isinf().any()
 
                     if log_weight:
                         self.writer.add_histogram(
@@ -285,17 +286,17 @@ class Visualizer(object):
                 mixture_audio=mixture,
                 target_audio=target[..., i],
             )
-
-            # Visualize images.
-            if self.view_images:
+            # Visualize spectrograms.
+            if self.view_spectrogram:
                 self.visualize_spectrogram(
                     label=label, global_step=global_step
                 )
+            # Visualize waveforms.
+            if self.view_waveform:
                 self.visualize_waveform(label=label, global_step=global_step)
 
             # Play separated audio back.
             if self.play_audio:
                 self.embed_audio(label=label, global_step=global_step)
-
         # Increment save counter.
         self.save_count += 1
