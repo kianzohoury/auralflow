@@ -8,7 +8,8 @@ from argparse import ArgumentParser
 from datasets import create_audio_dataset, load_dataset
 from models import create_model, setup_model
 from torch.utils.tensorboard import SummaryWriter
-from trainer import TrainingCallback, run_training_step
+from trainer import run_training_step
+from trainer.callbacks import TrainingCallback
 from utils import load_config
 from visualizer import config_visualizer
 

@@ -7,7 +7,7 @@
 from models import SeparationModel
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from . trainer import run_validation_step
+from . validator import run_validation_step
 from visualizer import Visualizer
 
 
