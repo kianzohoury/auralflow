@@ -429,7 +429,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         *args,
         recurrent_depth: int = 3,
         hidden_size: int = 1024,
-        input_axis: int = 1,
+        input_axis: int = 0,
         **kwargs
     ) -> None:
         super(SpectrogramNetLSTM, self).__init__(*args, **kwargs)
@@ -444,9 +444,11 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         if input_axis == 0:
             self.num_features *= self.encoding_sizes[-1][0]
             self.input_perm = (0, 3, 1, 2)
+            self.output_perm = (0, 2, 3, 1)
         else:
             self.num_features *= self.encoding_sizes[-1][-1]
             self.input_perm = (0, 2, 1, 3)
+            self.output_perm = (0, 2, 1, 3)
 
         # Define recurrent stack.
         self.lstm = nn.LSTM(
@@ -490,7 +492,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         # Project latent audio onto affine space, and reshape for decoder.
         latent_data = self.linear(lstm_out)
         latent_data = latent_data.reshape((n_batch, dim1, n_channel * 2, dim2))
-        latent_data = latent_data.permute(self.input_perm)
+        latent_data = latent_data.permute(self.output_perm)
 
         # Pass through decoder.
         dec_1 = self.up_1(latent_data, skip_6)
@@ -571,7 +573,7 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
         # Pass through affine layers and reshape for decoder.
         dec_0 = self.linear(lstm_out)
         dec_0 = dec_0.reshape((n_batch, dim1, n_channel * 2, dim2))
-        dec_0 = dec_0.permute(self.input_perm)
+        dec_0 = dec_0.permute(self.output_perm)
 
         # Pass through decoder.
         dec_1 = self.up_1(dec_0, skip_6)

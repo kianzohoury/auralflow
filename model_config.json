@@ -1,7 +1,7 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramNetSimple",
+        "model_type": "SpectrogramNetVAE",
         "model_name": "my_separation_model",
         "normalize_input": true,
         "normalize_output": true,
