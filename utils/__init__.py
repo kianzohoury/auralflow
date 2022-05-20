@@ -23,7 +23,7 @@ def load_config(config_filepath: str):
 def save_config(config: dict, save_filepath: str):
     """Saves configuration data to a .json file at a given location."""
     try:
-        with open(save_filepath) as config_file:
+        with open(save_filepath, "w") as config_file:
             return json.dump(config, config_file)
     except IOError as error:
         raise error
