@@ -8,6 +8,7 @@ import copy
 import torch
 import torch.nn as nn
 
+
 from .base import SeparationModel
 from torch import Tensor, FloatTensor
 from typing import Optional
@@ -65,16 +66,15 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
-        self.scale = 1e3
-        model_copy = copy.deepcopy(self.model)
-
-        self.f32_weights = self.copy_params(self.model, model_copy)
+        self.scale = 1
+        self.f32_weights = self.copy_params(self.model)
 
     @staticmethod
-    def copy_params(module_src, module_dest):
-        params_dest = dict(module_dest.named_parameters())
-        for name, param in module_src.named_parameters():
-            params_dest[name].data.copy_(param.data)
+    def copy_params(src_module):
+        params_dest = {}
+        for name, param in src_module.named_parameters():
+            params_dest[name] = copy.deepcopy(param.data)
+            param = param.to(dtype=torch.float16)
         return params_dest
 
     def update_f32_gradients(self):
@@ -119,8 +119,6 @@ class SpectrogramMaskModel(SeparationModel):
         self.criterion()
         # Apply scaling.
         self.batch_loss = self.scale * self.batch_loss
-        print()
-        print(self.batch_loss)
         return self.batch_loss.item()
 
     def backward(self) -> None:
@@ -131,16 +129,22 @@ class SpectrogramMaskModel(SeparationModel):
         """Updates model's parameters."""
         self.train()
         skip_update = False
-        for param in self.model.parameters():
-            if param.grad is not None:
-                if param.grad.isnan().any() or param.grad.isinf().any():
-                    skip_update = True
+        # for name, param in self.model.named_parameters():
+        #     if param.grad is not None:
+        #         if param.grad.isnan().any() or param.grad.isinf().any():
+        #             skip_update = True
+        #             print(name)
         if not skip_update:
             self.update_f32_gradients()
-            grad_norm = nn.utils.clip_grad_norm_(
-                self.model.parameters(), max_norm=2e10
-            )
-            print(grad_norm)
+            self.optimizer.step()
+
+        # grad_norm = nn.utils.clip_grad_norm_(
+        #     self.model.parameters(), max_norm=100
+        # ) 
+                   
+        # self.grad_scaler.unscale_(self.optimizer)
+        # grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
+        # print(grad_norm)
 
         # self.grad_scaler.step(self.optimizer)
         # self.grad_scaler.update()
@@ -149,14 +153,12 @@ class SpectrogramMaskModel(SeparationModel):
         #         weight_norm = torch.linalg.norm(param)
         #         grad_norm = torch.linalg.norm(param.grad)
         #         print(f"weight norm: {weight_norm} \n grad norm {grad_norm}")
-        self.optimizer.step()
-
+        
         # Quicker gradient zeroing.
         for param in self.model.parameters():
             param.grad = None
 
-        model_copy = copy.deepcopy(self.model)
-        self.f32_weights = self.copy_params(self.model, model_copy)
+        self.f32_weights = self.copy_params(self.model)
 
     def scheduler_step(self) -> bool:
         """Reduces lr if val loss does not improve, and signals early stop."""
@@ -172,3 +174,18 @@ class SpectrogramMaskModel(SeparationModel):
             self.max_lr_steps -= 1 if not self.stop_patience else 0
             self.is_best_model = False
         return not self.max_lr_steps
+<<<<<<< HEAD
+=======
+
+    def mid_epoch_callback(self, visualizer: Visualizer, epoch: int) -> None:
+        """Called during epoch before parameter updates."""
+        visualizer.visualize_gradient(model=self, global_step=epoch)
+
+    def post_epoch_callback(
+        self, mix: Tensor, target: Tensor, visualizer: Visualizer, epoch: int
+    ) -> None:
+        """Logs images and audio to tensorboard at the end of each epoch."""
+        visualizer.visualize(
+            model=self, mixture=mix, target=target, global_step=epoch
+        )
+>>>>>>> refs/remotes/origin/main
