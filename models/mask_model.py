@@ -66,8 +66,8 @@ class SpectrogramMaskModel(SeparationModel):
             device=self.device,
         )
 
-        self.scale = 1
-        self.f32_weights = self.copy_params(self.model)
+        # self.scale = 1
+        # self.f32_weights = self.copy_params(self.model)
 
     @staticmethod
     def copy_params(src_module):
@@ -130,15 +130,16 @@ class SpectrogramMaskModel(SeparationModel):
     def optimizer_step(self) -> None:
         """Updates model's parameters."""
         self.train()
-        skip_update = False
+        # skip_update = False
         # for name, param in self.model.named_parameters():
         #     if param.grad is not None:
         #         if param.grad.isnan().any() or param.grad.isinf().any():
         #             skip_update = True
         #             print(name)
-        if not skip_update:
-            self.update_f32_gradients()
-            self.optimizer.step()
+        # if not skip_update:
+        #     self.update_f32_gradients()
+            # self.optimizer.step()
+        self.optimizer.step()
 
         # grad_norm = nn.utils.clip_grad_norm_(
         #     self.model.parameters(), max_norm=100
@@ -160,7 +161,7 @@ class SpectrogramMaskModel(SeparationModel):
         for param in self.model.parameters():
             param.grad = None
 
-        self.f32_weights = self.copy_params(self.model)
+        # self.f32_weights = self.copy_params(self.model)
 
     def scheduler_step(self) -> bool:
         """Reduces lr if val loss does not improve, and signals early stop."""
@@ -176,15 +177,4 @@ class SpectrogramMaskModel(SeparationModel):
             self.max_lr_steps -= 1 if not self.stop_patience else 0
             self.is_best_model = False
         return not self.max_lr_steps
-
-    def mid_epoch_callback(self, visualizer: Visualizer, epoch: int) -> None:
-        """Called during epoch before parameter updates."""
-        visualizer.visualize_gradient(model=self, global_step=epoch)
-
-    def post_epoch_callback(
-        self, mix: Tensor, target: Tensor, visualizer: Visualizer, epoch: int
-    ) -> None:
-        """Logs images and audio to tensorboard at the end of each epoch."""
-        visualizer.visualize(
-            model=self, mixture=mix, target=target, global_step=epoch
-        )
+        

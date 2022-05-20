@@ -33,7 +33,7 @@
         "batch_size": 64,
         "lr": 0.01,
         "criterion": "component_loss",
-        "use_mixed_precision": true,
+        "use_mixed_precision": false,
         "mixed_precision_scale": 2e0,
         "alpha_constant": 0.8,
         "beta_constant": 0.2,

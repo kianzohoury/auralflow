@@ -24,7 +24,7 @@ def config_visualizer(config: dict, writer: SummaryWriter) -> Visualizer:
         view_gradient=visualizer_params["view_gradient"],
         play_audio=visualizer_params["play_audio"],
         num_images=visualizer_params["num_images"],
-        save_image=visualizer_params["save_images"],
+        save_image=visualizer_params["save_image"],
         save_audio=visualizer_params["save_audio"],
         save_freq=visualizer_params["save_frequency"],
         sample_rate=dataset_params["sample_rate"],
