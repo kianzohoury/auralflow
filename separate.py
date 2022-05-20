@@ -65,7 +65,7 @@ def main(checkpoint_dir: str, audio_path: str, save_path):
 
     print(full_estimate.cpu().numpy().shape)
 
-    wavfile.write("new.wav", sr, full_estimate.cpu().numpy())
+    wavfile.write(save_path, sr, full_estimate.cpu().numpy())
     return full_estimate
 
 

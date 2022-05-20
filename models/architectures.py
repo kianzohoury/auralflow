@@ -351,8 +351,8 @@ class SpectrogramNetSimple(nn.Module):
                 kernel_size=1,
                 stride=1,
                 padding="same",
-            ),
-            nn.BatchNorm2d(num_channels),
+            )
+            # nn.BatchNorm2d(num_channels),
         )
 
         # Define output norm layer. Uses identity fn if not activated.
