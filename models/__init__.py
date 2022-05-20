@@ -31,6 +31,8 @@ __all__ = [
     "SeparationModel",
     "create_model",
     "setup_model",
+    "save_object",
+    "load_object"
 ]
 
 
@@ -65,7 +67,7 @@ def _add_checkpoint_tag(filename: str, obj_name: str, global_step: int) -> str:
     return filename
 
 
-def _save_object(model_wrapper, obj_name: str, global_step: int) -> None:
+def save_object(model_wrapper, obj_name: str, global_step: int) -> None:
     """Saves object state as .pth file under the checkpoint directory."""
     filename = f"{model_wrapper.checkpoint_path}/{model_wrapper.model_name}"
 
@@ -91,7 +93,7 @@ def _save_object(model_wrapper, obj_name: str, global_step: int) -> None:
             raise error
 
 
-def _load_object(model_wrapper, obj_name: str, global_step: int) -> None:
+def load_object(model_wrapper, obj_name: str, global_step: int) -> None:
     """Loads object and attaches it to model_wrapper and its device."""
     filename = f"{model_wrapper.checkpoint_path}/{model_wrapper.model_name}"
 
