@@ -51,7 +51,9 @@ def load_pretrained_model(checkpoint_dir: str):
         config = checkpoint_dir + "/training_template.json"
         configuration = load_config(config)
         model = create_model(configuration)
-        best_checkpoint = sorted(list(Path(checkpoint_dir).glob(f"{model.model_name}_[0-9].*")))[-1]
+        best_checkpoint = sorted(
+            list(Path(checkpoint_dir).glob(f"{model.model_name}_[0-9].*"))
+        )[-1]
         model.model.load_state_dict(torch.load(f=best_checkpoint))
         model.training_mode = False
         setup_model(model)

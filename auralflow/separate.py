@@ -6,7 +6,7 @@
 
 import torch
 import librosa
-from scipy.io import wavfile 
+from scipy.io import wavfile
 
 from argparse import ArgumentParser
 from auralflow.models import load_pretrained_model
@@ -20,7 +20,6 @@ def main(checkpoint_dir: str, audio_path: str, save_path):
     audio = torch.from_numpy(audio).unsqueeze(0)
     print(audio.shape)
     length = model.dataset_params["sample_length"]
-
 
     # Split audio in chunks.
     padding = model.dataset_params["hop_length"] // 2
@@ -55,10 +54,14 @@ def main(checkpoint_dir: str, audio_path: str, save_path):
             break
 
     # Stitch chunks to create full source estimate.
-    full_estimate = torch.cat(
-        chunks,
-        dim=2,
-    ).squeeze(0).squeeze(0)
+    full_estimate = (
+        torch.cat(
+            chunks,
+            dim=2,
+        )
+        .squeeze(0)
+        .squeeze(0)
+    )
 
     print(full_estimate.cpu().numpy().shape)
 
@@ -74,9 +77,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "audio_filepath", type=str, help="Path to an audio file."
     )
-    parser.add_argument(
-        "save", type=str, help="Path to output."
-    )
+    parser.add_argument("save", type=str, help="Path to output.")
     args = parser.parse_args()
     model_path, audio_filepath = args.checkpoint_dir, args.audio_filepath
     output_path = args.save

@@ -17,6 +17,9 @@ from typing import Iterator, List, Optional, Tuple
 from auralflow.visualizer import ProgressBar
 
 
+__all__ = ["AudioFolder", "AudioDataset"]
+
+
 class AudioFolder(IterableDataset):
     """An on-the-fly audio sample generator designed to be memory efficient.
 
@@ -258,30 +261,3 @@ def make_chunks(
                 break
     del dataset
     return chunked_dataset
-
-
-# def normalize_dataset(dataset, ratio: float = 0.2):
-#     sr = 44100
-#     chunk_size = dataset[0]["mixture"].shape[0] // sr
-#     mix_sum, mix_sum_square = torch.zeros((sr * chunk_size)), torch.zeros(
-#         (sr * chunk_size)
-#     )
-#     with tqdm(iter(dataset), total=int(len(dataset) * ratio)) as tq:
-#         for index, track in enumerate(tq):
-#             mixture = track["mixture"]
-#
-#             mix_sum += mixture
-#             mix_sum_square += mixture**2
-#             if index == int(len(dataset) * ratio):
-#                 break
-#
-#     mix_mean = mix_sum / (int(len(dataset) * ratio))
-#     mix_std = torch.sqrt(
-#         mix_sum_square / (int(len(dataset) * ratio)) - mix_mean * mix_mean
-#     )
-#     with tqdm(iter(dataset), total=len(dataset)) as tq:
-#         for index, track in enumerate(tq):
-#             track["mixture"] = (track["mixture"] - mix_mean) / (mix_std + 1e-9)
-#             if index == len(dataset):
-#                 break
-#     print(f"Dataset statistics: mean: {mix_mean}, std: {mix_std}")

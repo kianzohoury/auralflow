@@ -136,7 +136,7 @@ class SpectrogramMaskModel(SeparationModel):
         #             print(name)
         # if not skip_update:
         #     self.update_f32_gradients()
-            # self.optimizer.step()
+        # self.optimizer.step()
         self.optimizer.step()
 
         # grad_norm = nn.utils.clip_grad_norm_(
@@ -175,4 +175,3 @@ class SpectrogramMaskModel(SeparationModel):
             self.max_lr_steps -= 1 if not self.stop_patience else 0
             self.is_best_model = False
         return not self.max_lr_steps
-
