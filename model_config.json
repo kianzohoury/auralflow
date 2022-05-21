@@ -1,7 +1,7 @@
 {
     "model_params": {
         "separation_task": "mask",
-        "model_type": "SpectrogramNetVAE",
+        "model_type": "SpectrogramNetLSTM",
         "model_name": "my_separation_model",
         "normalize_input": true,
         "normalize_output": true,
@@ -13,8 +13,8 @@
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
         "targets": ["vocals"],
-        "max_num_tracks": 50,
-        "max_num_samples": 1e3,
+        "max_num_tracks": 100,
+        "max_num_samples": 1e4,
         "num_channels": 1,
         "sample_length": 3,
         "sample_rate": 44100,
@@ -31,8 +31,8 @@
         "last_epoch": -1,
         "global_step": -1,
         "batch_size": 32,
-        "lr": 0.001,
-        "criterion": "l1",
+        "lr": 0.008,
+        "criterion": "l2",
         "use_mixed_precision": false,
         "mixed_precision_scale": 2e0,
         "alpha_constant": 0.5,
