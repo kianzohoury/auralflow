@@ -4,33 +4,45 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-import torch
+from argparse import ArgumentParser
+
 import librosa
+import torch
 from scipy.io import wavfile
 
-from argparse import ArgumentParser
-from auralflow.models import load_pretrained_model
+from models import create_model, setup_model
+from utils import load_config
 
 
-def main(checkpoint_dir: str, audio_path: str, save_path):
+def main(config_filepath: str, audio_filepath: str, save_filepath: str):
+    """Separates a full audio track and saves it."""
 
-    model = load_pretrained_model(checkpoint_dir)
+    # Load configuration file.
+    print("-" * 79 + "\nReading configuration file...")
+    configuration = load_config(config_filepath)
+    print("Successful.")
 
-    audio, sr = librosa.load(audio_path, sr=44100)
+    # Load model. Setup restores previous state if resuming training.
+    print("-" * 79 + "\nLoading model...")
+    model = create_model(configuration)
+    model = setup_model(model)
+    print("Successful.")
+
+    # Load audio.
+    audio, sr = librosa.load(audio_filepath, sr=44100)
     audio = torch.from_numpy(audio).unsqueeze(0)
-    print(audio.shape)
     length = model.dataset_params["sample_length"]
 
-    # Split audio in chunks.
-    padding = model.dataset_params["hop_length"] // 2
-    step_size = model.n_fft_bins
+    # Split audio into chunks.
+    padding = 200
     step_size = length * sr
     max_frames = audio.shape[-1]
 
     # Store chunks.
     chunks = []
-
     offset = 0
+
+    print("Separating...")
     while offset < max_frames:
         # Reshape and trim audio chunk.
         audio_chunk = audio[:, offset : offset + length * sr]
@@ -38,8 +50,6 @@ def main(checkpoint_dir: str, audio_path: str, save_path):
         # Unsqueeze batch dimension if not already batched.
         if audio_chunk.dim() == 2:
             audio_chunk = audio_chunk.unsqueeze(0)
-
-        print(audio_chunk.shape)
 
         # Separate audio.
         estimate = model.separate(audio_chunk)
@@ -54,32 +64,21 @@ def main(checkpoint_dir: str, audio_path: str, save_path):
             break
 
     # Stitch chunks to create full source estimate.
-    full_estimate = (
-        torch.cat(
-            chunks,
-            dim=2,
-        )
-        .squeeze(0)
-        .squeeze(0)
-    )
-
-    print(full_estimate.cpu().numpy().shape)
-
-    wavfile.write(save_path, sr, full_estimate.cpu().numpy())
-    return full_estimate
+    full_estimate = torch.cat(chunks, dim=2).reshape(audio.shape)
+    # Export audio.
+    wavfile.write(save_filepath, rate=sr, data=full_estimate.cpu().numpy())
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Source separation script.")
     parser.add_argument(
-        "checkpoint_dir", type=str, help="Path to a source separation model."
+        "config_filepath", type=str, help="Path to a configuration file."
     )
     parser.add_argument(
         "audio_filepath", type=str, help="Path to an audio file."
     )
-    parser.add_argument("save", type=str, help="Path to output.")
+    parser.add_argument(
+        "save_filepath", type=str, help="Path to save audio to."
+    )
     args = parser.parse_args()
-    model_path, audio_filepath = args.checkpoint_dir, args.audio_filepath
-    output_path = args.save
-
-    main(model_path, args.audio_filepath, output_path)
+    main(args.config_filepath, args.audio_filepath, args.save_filepath)

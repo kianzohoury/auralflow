@@ -10,7 +10,7 @@ from auralflow.models import create_model, setup_model
 from torch.utils.tensorboard import SummaryWriter
 from auralflow.trainer import run_training
 from auralflow.trainer.callbacks import TrainingCallback
-from auralflow.utils import load_config
+from auralflow.utils import load_config, save_config
 from auralflow.visualizer import config_visualizer
 
 
@@ -61,7 +61,7 @@ def main(config_filepath: str):
     # Load model. Setup restores previous state if resuming training.
     print("-" * 79 + "\nLoading model...")
     model = create_model(configuration)
-    setup_model(model)
+    model = setup_model(model)
     print("Successful.")
 
     # Initialize summary writer and visualizer.
@@ -96,6 +96,10 @@ def main(config_filepath: str):
 
     writer.close()
     print("Finished.")
+
+    training_params["last_epoch"] = stop_epoch
+    training_params["global_step"] = global_step
+    save_config(config=configuration, save_filepath=config_filepath)
 
 
 if __name__ == "__main__":

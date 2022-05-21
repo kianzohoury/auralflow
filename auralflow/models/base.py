@@ -169,12 +169,3 @@ class SeparationModel(ABC):
             self.save_scheduler(global_step=global_step)
         if grad_scaler:
             self.save_grad_scaler(global_step=global_step)
-
-    def pre_epoch_callback(self, *args, **kwargs):
-        pass
-
-    def mid_epoch_callback(self, *args, **kwargs):
-        pass
-
-    def post_epoch_callback(self, *args, **kwargs):
-        pass

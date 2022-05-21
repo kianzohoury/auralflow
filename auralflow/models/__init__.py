@@ -46,25 +46,15 @@ def create_model(configuration: dict) -> SeparationModel:
     return model
 
 
-def load_pretrained_model(checkpoint_dir: str):
-    try:
-        config = checkpoint_dir + "/training_template.json"
-        configuration = load_config(config)
-        model = create_model(configuration)
-        best_checkpoint = sorted(
-            list(Path(checkpoint_dir).glob(f"{model.model_name}_[0-9].*"))
-        )[-1]
-        model.model.load_state_dict(torch.load(f=best_checkpoint))
-        model.training_mode = False
-        setup_model(model)
-        return model
-    except Exception as error:
-        raise error
-
-
-def setup_model(model: SeparationModel) -> None:
+def setup_model(model: SeparationModel) -> SeparationModel:
+    """Sets up a blank model."""
     if model.training_mode:
         last_epoch = model.training_params["last_epoch"]
+
+        # Define model criterion.
+        model.criterion = get_model_criterion(model, config=model.config)
+        model.train_losses, model.val_losses = [], []
+
         if model.training_params["last_epoch"] >= 0:
 
             # Load model, optim, scheduler and scaler states.
@@ -79,10 +69,6 @@ def setup_model(model: SeparationModel) -> None:
             save_config(
                 model.config, model.checkpoint_path + "/training_template.json"
             )
-
-            # Define model criterion.
-            model.criterion = get_model_criterion(model, config=model.config)
-            model.train_losses, model.val_losses = [], []
 
             # Define optimizer.
             model.optimizer = AdamW(
@@ -109,4 +95,14 @@ def setup_model(model: SeparationModel) -> None:
                 growth_interval=20000,
             )
     else:
-        pass
+        try:
+            checkpoints = list(
+                Path(model.checkpoint_path).glob(f"{model.model_name}_[0-9].*")
+            )
+            best_checkpoint = sorted(checkpoints)[-1]
+            model.model.load_state_dict(torch.load(f=best_checkpoint))
+            model.training_mode = False
+        except (OSError, FileNotFoundError) as error:
+            print(f"Failed to load model {model.model_name}.")
+            raise error
+    return model
