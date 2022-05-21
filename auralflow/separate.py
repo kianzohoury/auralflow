@@ -5,14 +5,11 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import torch
-import os
 import librosa
 from scipy.io import wavfile 
 
 from argparse import ArgumentParser
-from models import load_pretrained_model
-from torch import Tensor
-
+from auralflow.models import load_pretrained_model
 
 
 def main(checkpoint_dir: str, audio_path: str, save_path):

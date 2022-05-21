@@ -5,13 +5,13 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from argparse import ArgumentParser
-from datasets import create_audio_dataset, load_dataset
-from models import create_model, setup_model
+from auralflow.datasets import create_audio_dataset, load_dataset
+from auralflow.models import create_model, setup_model
 from torch.utils.tensorboard import SummaryWriter
-from trainer import run_training_step
-from trainer.callbacks import TrainingCallback
-from utils import load_config
-from visualizer import config_visualizer
+from auralflow.trainer import run_training_step
+from auralflow.trainer.callbacks import TrainingCallback
+from auralflow.utils import load_config
+from auralflow.visualizer import config_visualizer
 
 
 def main(config_filepath: str):

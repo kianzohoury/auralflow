@@ -5,10 +5,10 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from .callbacks import TrainingCallback
-from models import SeparationModel
+from auralflow.models import SeparationModel
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
-from visualizer import ProgressBar
+from auralflow.visualizer import ProgressBar
 
 
 def run_training_step(

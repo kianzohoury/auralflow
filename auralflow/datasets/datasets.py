@@ -14,7 +14,7 @@ from pathlib import Path
 from torch import Tensor
 from torch.utils.data.dataset import IterableDataset, Dataset
 from typing import Iterator, List, Optional, Tuple
-from visualizer import ProgressBar
+from auralflow.visualizer import ProgressBar
 
 
 class AudioFolder(IterableDataset):

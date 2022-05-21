@@ -4,11 +4,11 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from models import SeparationModel
+from auralflow.models import SeparationModel
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from .validator import run_validation_step
-from visualizer import Visualizer
+from auralflow.visualizer import Visualizer
 
 
 __all__ = ["TrainingCallback", "WriterCallback"]

@@ -7,10 +7,10 @@
 import torch
 
 
-from models import SeparationModel
+from auralflow.models import SeparationModel
 from torch.cpu.amp import autocast
 from torch.utils.data import DataLoader
-from visualizer import ProgressBar
+from auralflow.visualizer import ProgressBar
 
 
 def run_validation_step(

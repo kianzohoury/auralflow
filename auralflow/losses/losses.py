@@ -8,11 +8,11 @@ import torch
 import torch.nn as nn
 
 
-from fast_bss_eval import si_sdr_loss as si_sdr_loss_
+# from fast_bss_eval import si_sdr_loss as si_sdr_loss_
 from torch import FloatTensor, Tensor
 from torch.nn import functional
 from typing import Mapping
-from utils.data_utils import trim_audio
+from auralflow.utils.data_utils import trim_audio
 
 
 # eval_metrics_labels = [

@@ -8,10 +8,10 @@ import torch
 import torch.nn as nn
 import torch.backends.cudnn
 
-from losses import kl_div_loss
+from auralflow.losses import kl_div_loss
 from torch import FloatTensor, Tensor
 from typing import Tuple, Optional
-from utils.data_utils import get_deconv_pad
+from auralflow.utils.data_utils import get_deconv_pad
 
 
 # Use CNN GPU optimizations if available.
