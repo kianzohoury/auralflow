@@ -5,10 +5,18 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import json
+from pathlib import Path
+
 import torch
 
 
-__all__ = ["load_config", "save_config", "load_object", "save_object"]
+__all__ = ["load_config", "save_config", "load_object", "save_object", "init_configuration_file"]
+
+config_template_path = Path(__file__).parent.parent.joinpath("training_template.json")
+
+
+def init_configuration_file(save_filepath: str):
+    save_config(load_config(str(config_template_path)), save_filepath)
 
 
 def load_config(config_filepath: str):
@@ -24,7 +32,7 @@ def save_config(config: dict, save_filepath: str):
     """Saves configuration data to a .json file at a given location."""
     try:
         with open(save_filepath, "w") as config_file:
-            return json.dump(config, config_file)
+            return json.dump(config, config_file, indent=4)
     except IOError as error:
         raise error
 
