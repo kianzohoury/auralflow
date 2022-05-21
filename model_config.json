@@ -13,7 +13,7 @@
     "dataset_params": {
         "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
         "targets": ["vocals"],
-        "max_num_tracks": 100,
+        "max_num_tracks": 80,
         "max_num_samples": 1e4,
         "num_channels": 1,
         "sample_length": 3,

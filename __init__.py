@@ -5,7 +5,6 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from . import (
-    validate,
     train,
     visualizer,
     utils,
@@ -13,4 +12,5 @@ from . import (
     losses,
     datasets,
     separate,
+    trainer,
 )
