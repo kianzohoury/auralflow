@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 from auralflow.datasets import create_audio_dataset, load_dataset
 from auralflow.models import create_model, setup_model
 from torch.utils.tensorboard import SummaryWriter
-from auralflow.trainer import run_training_step
+from auralflow.trainer import run_training
 from auralflow.trainer.callbacks import TrainingCallback
 from auralflow.utils import load_config
 from auralflow.visualizer import config_visualizer
@@ -80,16 +80,17 @@ def main(config_filepath: str):
         model=model,
         writer=writer,
         visualizer=visualizer,
-        val_dataloader=val_dataloader,
+        call_metrics=True
     )
 
     print("Configuration complete. Starting training...\n" + "-" * 79)
-    run_training_step(
+    run_training(
         model=model,
         start_epoch=start_epoch,
         stop_epoch=stop_epoch,
         global_step=global_step,
         train_dataloader=train_dataloader,
+        val_dataloader=val_dataloader,
         callback=callback,
     )
 

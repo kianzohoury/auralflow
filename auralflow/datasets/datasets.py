@@ -17,8 +17,6 @@ from typing import Iterator, List, Optional, Tuple
 from auralflow.visualizer import ProgressBar
 
 
-__all__ = ["AudioFolder", "AudioDataset"]
-
 
 class AudioFolder(IterableDataset):
     """An on-the-fly audio sample generator designed to be memory efficient.

@@ -3,13 +3,14 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
+from typing import Optional
 
-from auralflow.models import SeparationModel
-from torch.utils.data import DataLoader
+from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
-from .validator import run_validation_step
-from auralflow.visualizer import Visualizer
 
+from auralflow.losses import get_evaluation_metrics
+from auralflow.models import SeparationModel
+from auralflow.visualizer import Visualizer
 
 __all__ = ["TrainingCallback", "WriterCallback"]
 
@@ -44,46 +45,83 @@ class TrainingCallback(Callback):
     model: SeparationModel
     writer: SummaryWriter
     visualizer: Visualizer
-    val_dataloader: DataLoader
 
     def __init__(
         self,
         model: SeparationModel,
-        visualizer: Visualizer,
-        writer: SummaryWriter,
-        val_dataloader: DataLoader,
+        visualizer: Optional[Visualizer] = None,
+        writer: Optional[SummaryWriter] = None,
+        call_metrics: bool = True,
     ) -> None:
         self.model = model
-        self.visualizer = visualizer
-        self.writer_ = WriterCallback(writer=writer)
-        self.val_dataloader = val_dataloader
+        if visualizer:
+            self.visualizer_ = VisualizerCallback(
+                model=model, visualizer=visualizer
+            )
+        if self.writer:
+            self.writer_ = WriterCallback(writer=writer)
+        if call_metrics:
+            self.metrics_callback = SeparationMetricCallback(model=model)
 
     def on_loss_end(self, global_step: int) -> None:
+        if self.visualizer:
+            self.visualizer_.on_loss_end(global_step=global_step)
+
+    def on_iteration_end(self, global_step: int) -> None:
+        self.writer_.on_iteration_end(
+            model=self.model, global_step=global_step
+        )
+
+    def on_epoch_end(self, mix: Tensor, target: Tensor, epoch: int) -> None:
+        if self.writer:
+            self.writer_.write_epoch_loss(model=self.model, global_step=epoch)
+        if self.visualizer:
+            self.visualizer_.on_epoch_end(mix=mix, target=target, epoch=epoch)
+        if self.metrics_callback:
+            self.metrics_callback.on_epoch_end(mix=mix, target=target)
+
+
+class VisualizerCallback(Callback):
+    """Callback class for training visualization tools."""
+
+    def __init__(self, model: SeparationModel, visualizer: Visualizer):
+        self.model = model
+        self.visualizer = visualizer
+
+    def on_loss_end(self, global_step: int) -> None:
+        """Visualize gradients."""
         # Write gradients to tensorboard.
         self.visualizer.visualize_gradient(
             model=self.model, global_step=global_step
         )
 
-    def on_iteration_end(self, global_step: int) -> None:
-        # Write iteration loss.
-        self.writer_.on_iteration_end(
-            model=self.model, global_step=global_step
-        )
-
-    def on_epoch_end(self, epoch: int) -> None:
-        # Run validation.
-        run_validation_step(
-            model=self.model, val_dataloader=self.val_dataloader
-        )
-
-        # Write epoch train/val losses.
-        self.writer_.write_epoch_loss(model=self.model, global_step=epoch)
-
-        # Visualize images and audio.
-        mix, target = next(iter(self.val_dataloader))
+    def on_epoch_end(self, mix: Tensor, target: Tensor, epoch: int) -> None:
+        """Visualize images and play audio."""
         self.visualizer.visualize(
             model=self.model, mixture=mix, target=target, global_step=epoch
         )
+
+
+class SeparationMetricCallback(Callback):
+    """Callback class for printing evaluation metrics."""
+
+    def __init__(self, model: SeparationModel):
+        self.model = model
+
+    def on_epoch_end(self, mix: Tensor, target: Tensor) -> None:
+        """Prints source separation evaluation metrics at epoch finish."""
+        estimate = self.model.separate(audio=mix)
+        print("Calculating evaluation metrics...")
+        metrics = get_evaluation_metrics(
+            mixture=mix, estimate=estimate, target=target
+        )
+        estimate_metrics = list(metrics["estim_metrics"].items())
+        target_metrics = list(metrics["target_metrics"].items())
+        for i in range(len(estimate_metrics)):
+            est_label, est_val = estimate_metrics[i]
+            tar_label, tar_val = target_metrics[i]
+            print(f"{est_label}: {est_val}")
+            print(f"{tar_label}{tar_val}")
 
 
 class WriterCallback(Callback):

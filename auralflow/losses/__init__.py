@@ -12,6 +12,7 @@ from .losses import (
     L2Loss,
     SeparationEvaluator,
     SISDRLoss,
+    get_evaluation_metrics
 )
 from typing import Union, Callable
 
@@ -28,6 +29,7 @@ __all__ = [
     "get_model_criterion",
     "SeparationEvaluator",
     "SISDRLoss",
+    "get_evaluation_metrics"
 ]
 
 

@@ -4,28 +4,16 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+from collections import OrderedDict
+from typing import Any
+
+import asteroid
+import asteroid.metrics
 import torch
 import torch.nn as nn
-
-
 from fast_bss_eval import si_sdr_loss as si_sdr_loss_
 from torch import FloatTensor, Tensor
 from torch.nn import functional
-from typing import Mapping
-from auralflow.utils.data_utils import trim_audio
-
-
-# eval_metrics_labels = [
-#     "si-sdr",
-#     "si-sir",
-#     "si-sar",
-#     "sd-sdr",
-#     "snr",
-#     "srr",
-#     "si-sdri",
-#     "sd-sdri",
-#     "snri",
-# ]
 
 
 def component_loss(
@@ -100,17 +88,60 @@ def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
 
 
 def get_evaluation_metrics(
-    estimate: FloatTensor, target: Tensor
-) -> Mapping[str, float]:
+        mixture: Tensor, estimate: Tensor, target: Tensor, sr: int = 8000
+) -> dict[str, OrderedDict[str, Any]]:
     """Returns batch-wise means of standard source separation eval scores."""
-    estimate = torch.mean(estimate, dim=1, keepdim=True)
-    target = torch.mean(target, dim=1, keepdim=True)
 
-    # Scale-invariant signal-distortion ratio.
-    si_sdr_ = si_sdr_loss_(ref=target, est=estimate, zero_mean=True)
-    named_metrics = {"si_sdr": torch.mean(si_sdr_).item()}
+    # Unsqueeze batch dimension if audio is unbatched.
+    mixture = mixture.unsqueeze(0) if mixture.dim() == 2 else mixture
+    estimate = estimate.unsqueeze(0) if estimate.dim() == 2 else estimate
+    target = target.unsqueeze(0) if target.dim() == 2 else target
 
-    return named_metrics
+    # Collapse channels to mono, convert to numpy arrays.
+    mixture = torch.mean(mixture, dim=1, keepdim=True).cpu().numpy()
+    estimate = torch.mean(estimate, dim=1, keepdim=True).cpu().numpy()
+    target = torch.mean(target, dim=1, keepdim=True).cpu().numpy()
+
+    running_metrics = {
+        "input_pesq": 0,
+        "input_sar": 0,
+        "input_sdr": 0,
+        "input_si_sdr": 0,
+        "input_sir": 0,
+        "input_stoi": 0,
+        "pesq": 0,
+        "sar": 0,
+        "sdr": 0,
+        "si_sdr": 0,
+        "sir": 0,
+        "stoi": 0
+    }
+
+    for i in range(mixture.shape[0]):
+        # Compute metrics for each triplet of data.
+        named_metrics = asteroid.metrics.get_metrics(
+            mix=mixture[i],
+            clean=target[i],
+            estimate=estimate[i],
+            sample_rate=sr,
+            metrics_list="all",
+            ignore_metrics_errors=True,
+            average=True
+        )
+        # Accumulate metrics.
+        for metric_name, val in named_metrics.items():
+            if val is not None:
+                running_metrics[metric_name] += val
+
+    estim_metrics, target_metrics = OrderedDict(), OrderedDict()
+    # Compute batch-wise average metrics.
+    for metric_name, val in running_metrics.items():
+        mean_val = val / mixture.shape[0]
+        if metric_name.split("_")[0] == "input":
+            target_metrics[f"target_{metric_name.split('_')[-1]}"] = mean_val
+        else:
+            estim_metrics[f"estim_{metric_name}"] = mean_val
+    return {"estim_metrics": estim_metrics, "target_metrics": target_metrics}
 
 
 class WeightedComponentLoss(nn.Module):
@@ -219,26 +250,3 @@ class SISDRLoss(nn.Module):
     def forward(self) -> None:
         loss = scale_invariant_sdr_loss(self.model.estimate, self.model.target)
         self.model.batch_loss = torch.mean(loss)
-
-
-class SeparationEvaluator(object):
-    """Wrapper class for computing evaluation metrics."""
-
-    def __init__(self, model, full_metrics: bool = True):
-        super(SeparationEvaluator, self).__init__()
-        self.model = model
-        self.full_metrics = full_metrics
-
-    def get_metrics(self, mix: Tensor, target: Tensor) -> Mapping[str, float]:
-        """Returns evaluation metrics."""
-        estimate = self.model.separate(mix.squeeze(-1))
-        estimate, target = trim_audio([estimate, target.squeeze(-1)])
-        eval_metrics = get_evaluation_metrics(
-            estimate=estimate, target=target.to(estimate.device)
-        )
-        return eval_metrics
-
-    @staticmethod
-    def print_metrics(metrics: Mapping[str, float]) -> None:
-        for label, value in metrics.items():
-            print(f"{label}: {value}")
