@@ -1,3 +1,6 @@
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing)
+
+
 # auralflow
 Auralflow is a music source separation training package that provides 
 out-of-the-box, customizable network architectures for different 
