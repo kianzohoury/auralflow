@@ -7,16 +7,26 @@
 import json
 from pathlib import Path
 
+
 import torch
+import shutil
+
+__all__ = [
+    "load_config",
+    "save_config",
+    "load_object",
+    "save_object",
+    "init_training_config"
+]
+
+config_template_path = Path(__file__)
 
 
-__all__ = ["load_config", "save_config", "load_object", "save_object", "init_configuration_file"]
-
-config_template_path = Path(__file__).parent.parent.joinpath("training_template.json")
-
-
-def init_configuration_file(save_filepath: str):
-    save_config(load_config(str(config_template_path)), save_filepath)
+def init_training_config(save_dir: str):
+    """Initializes a training configuration file."""
+    Path(save_dir).mkdir(exist_ok=True)
+    save_filepath = save_dir + "/config.json"
+    shutil.copy(src=str(config_template_path), dst=save_filepath)
 
 
 def load_config(config_filepath: str):
