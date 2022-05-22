@@ -10,7 +10,7 @@ import torch
 from .base import SeparationModel
 from torch import Tensor, FloatTensor
 from typing import Optional
-from auralflow.utils.data_utils import get_num_stft_frames, AudioTransform
+from utils.data_utils import get_num_stft_frames, AudioTransform
 
 
 class SpectrogramMaskModel(SeparationModel):

@@ -15,7 +15,7 @@ from torch import Tensor, FloatTensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from typing import List, Union, Callable, Any
-from auralflow.utils import load_object, save_object
+from utils import load_object, save_object
 
 
 class SeparationModel(ABC):

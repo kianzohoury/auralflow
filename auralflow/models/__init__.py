@@ -16,11 +16,11 @@ from .architectures import (
 )
 from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
-from auralflow.losses import get_model_criterion
+from losses import get_model_criterion
 from pathlib import Path
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from auralflow.utils import save_config, load_config
+from utils import save_config, load_config
 
 
 __all__ = [

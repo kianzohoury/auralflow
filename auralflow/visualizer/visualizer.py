@@ -13,7 +13,7 @@ from pathlib import Path
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
 from typing import Union
-from auralflow.utils.data_utils import trim_audio
+from utils.data_utils import trim_audio
 
 
 def make_spectrogram_figure(

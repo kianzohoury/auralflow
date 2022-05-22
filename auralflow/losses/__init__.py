@@ -10,7 +10,6 @@ from .losses import (
     kl_div_loss,
     L1Loss,
     L2Loss,
-    SeparationEvaluator,
     SISDRLoss,
     get_evaluation_metrics
 )

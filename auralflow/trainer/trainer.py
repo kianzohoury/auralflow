@@ -8,10 +8,10 @@ import torch
 
 
 from .callbacks import TrainingCallback
-from auralflow.models import SeparationModel
+from models import SeparationModel
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
-from auralflow.visualizer import ProgressBar
+from visualizer import ProgressBar
 
 
 def run_training(
