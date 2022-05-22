@@ -2,7 +2,7 @@
 
 
 # auralflow
-Auralflow is a music source separation training package that provides 
+Auralflow is a lightweight music source separation toolkit. 
 out-of-the-box, customizable network architectures for different 
 separation tasks such as deep-mask or direct source estimation. Separation 
 models are adapted for both temporal and spectral audio domains. The
