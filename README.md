@@ -2,8 +2,20 @@
 
 
 # auralflow
-Auralflow is a lightweight music source separation toolkit. 
-out-of-the-box, customizable network architectures for different 
+Auralflow is a lightweight **music source separation** toolkit, offering
+_out-of-the-box_ pretrained neural networks, audio processing, visualization tools,
+loss functions, evaluation metrics and several other useful training utilities.
+Additionally, model architectures and training hyperparameters can be tailored
+by editing configuration files provided with the package.
+
+
+# Install
+```bash
+pip install auralflow
+`````
+
+
+customizable network architectures for different 
 separation tasks such as deep-mask or direct source estimation. Separation 
 models are adapted for both temporal and spectral audio domains. The
 currently available models to use are:
