@@ -9,7 +9,7 @@ Additionally, model architectures and training hyperparameters can be tailored
 by editing configuration files provided with the package.
 
 
-# Installation
+## Installation
 Installation requires having Python version >= 3.7.1 and pip installed.
 Running
 ```bash
