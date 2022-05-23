@@ -22,16 +22,36 @@ with the pip command:
 ```bash
 pip install auralflow
 `````
+## What is Music Source Separation?
+Music source separation is a machine learning sub-task that branches from 
+the more general problem of **Music Information Retrieval (MIR)**. The goal is
+to develop a rule for splitting an audio track into separate instrument
+signals (often called *stems*) that make up a full signal
+(often called the *mixture*).
+
+Many techniques in deep learning are currently and have been successfully
+carried out, but some techniques go beyond the scope of deep learning, 
+involving techniques in digital signal processing. The purpose of this package
+is to abstract away those components and enable users and developers a friendly
+way of constructing and interacting with ML models in the audio domain.
+
+A more detailed overview on music source separation, the mathematics and 
+the implementation of the models in this package can be found in the official
+documentation.
+## Models
 
 
+| Base Model             | Input Data        | # Parameters | Pretrained | Performance (si-sdr) |
+|------------------------|-------------------|--------------|------------|----------------------|
+| AudioNetSimple         | audio             |              | yes        | + 2.9 db             |
+| AudioNetSimpleLSTM     | audio             |              | yes        | +4.3 db              |
+| AudioNetVAE            | audio             |              | yes        | +5.4 db              |
+| SpectrogramNetSimple   | spectrogram       |              | yes        | + 2.9 db             |
+| SpectrogramNetLSTM     | spectrogram       |              | yes        | +4.3 db              |
+| **SpectrogramNetVAE*** | spectrogram       |              | yes        | **+5.4 db**          |
+| HybridNet              | audio/spectrogram |              | yes        | ?                    |
 
 
-customizable network architectures for different 
-separation tasks such as deep-mask or direct source estimation. Separation 
-models are adapted for both temporal and spectral audio domains. The
-currently available models to use are:
-
-"""U-Net source separation model in the time-frequency domain.
 
     Uses the standard `soft-masking` technique to separate a single
     constituent audio source from its input mixture. The architecture
@@ -47,33 +67,6 @@ currently available models to use are:
       [0, 1], creating a `soft-mask`.
     * The mask is applied to the original audio sample x as an element-wise
       product, yielding the target source estimate y.
-
-# Target Source Retrieval Task
-
-
-
-# Table of contents
-1. [Introduction](#introduction)
-2. [Datasets](#paragraph1)
-    1. [Sub paragraph](#subparagraph1)
-3. [Training](#training)
-    1. [Command line](#command-line-usage)
-    2. [.py of .pynb](#command-line-usage)
-4. [Evaluation](#paragraph2)
-5. [Demo](#paragraph2)
-
-
-# Models
-## Spectrogram-input models
-### `UNetSpec`: Vanilla U-Net spectrogram-input model
-### `UNetVAESpec`: U-Net Variational Autoencoder spectrogram-input model
-### `UNetRecurrentSpec`: U-Net spectrogram-input model
-
-## Audio-input models
-### `UNetAudio`: Vanilla U-Net spectrogram-input model
-### `UNetVAEAudio`: U-Net Variational Autoencoder spectrogram-input model
-### `UNetRecurrentAudio`: U-Net spectrogram-input model
-
 
 # Training models
 ### Creating a session
