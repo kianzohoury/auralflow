@@ -1,7 +1,7 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing)
 
 
-# auralflow
+## auralflow
 Auralflow is a lightweight **music source separation** toolkit, offering
 _out-of-the-box_ pretrained neural networks, audio processing, visualization tools,
 loss functions, evaluation metrics and several other useful training utilities.
@@ -10,9 +10,20 @@ by editing configuration files provided with the package.
 
 
 # Install
+Installation requires having Python version >= 3.7.1 and pip installed.
+Running
+```bash
+brew install python
+python -m ensurepip --upgrade
+python3 --version
+```
+will install or upgrade the version if necessary. After, install auralflow
+with the pip command:
 ```bash
 pip install auralflow
 `````
+
+
 
 
 customizable network architectures for different 
@@ -36,10 +47,6 @@ currently available models to use are:
       [0, 1], creating a `soft-mask`.
     * The mask is applied to the original audio sample x as an element-wise
       product, yielding the target source estimate y.
-
-
-# Requirements
-
 
 # Target Source Retrieval Task
 
