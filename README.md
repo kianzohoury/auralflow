@@ -46,6 +46,8 @@ over the typical SDR is because it's an unbiased and fairer measurement.
 | SpectrogramNetLSTM       | 32.3              | yes        | yes       | +4.3                       |
 | **SpectrogramNetVAE***   | 40                | yes        | yes       | **+5.4**                   |
 | HybridNet                | 65.5              | yes        | no        | ?                          |
+
+
 The naming of models confers the the type of input data
 the model was trained on as well as its underlying architecture:
 * **Audio**-\* (prefix): model separates audio in the waveform or _time_
