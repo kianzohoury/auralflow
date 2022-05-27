@@ -1,12 +1,15 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing)
 
 
-# Auralflow: a lightweight music source separation toolkit
-Auralflow is a lightweight **music source separation** toolkit, offering
-_out-of-the-box_ pretrained neural networks, audio processing, visualization tools,
-loss functions, evaluation metrics and several other useful training utilities.
-Additionally, model architectures and training hyperparameters can be tailored
-by editing configuration files provided with the package.
+# Auralflow: Music Source Separation Made Easy
+Auralflow is a lightweight **music source separation** toolkit made for PyTorch
+integration. It offers ready-to-go, pretrained DL models capable of separating
+music tracks into multiple sources: vocals, bass, drums and other. Auralflow
+also provides customizable base model architectures, which can be trained 
+natively in auralflow or ported to your own custom training pipeline. 
+Several convenient training, audio processing, visualization
+and evaluation tools are available for a more seamless and efficient workflow.
+
 
 * [What is Music Source Separation?](#introduction)
 * [Pretrained Models](#pretrained-models)
