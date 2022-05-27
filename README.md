@@ -48,15 +48,20 @@ over the typical SDR is because it's an unbiased and fairer measurement.
 | HybridNet                | 65.5              | yes        | no        | ?                          |
 
 
-The naming of models confers the the type of input data
+The naming of models indicates the type of input data
 the model was trained on as well as its underlying architecture:
-* **Audio**-\* (prefix): model separates audio in the waveform or _time_
+
+**Audio**-\* (prefix): model separates audio in the waveform or _time_
   domain.
-* **Spectrogram**-\* (prefix): model separates audio in the spectrogram or
+
+**Spectrogram**-\* (prefix): model separates audio in the spectrogram or
   _time-frequency_ domain.
-* **\*-Simple** (suffix): model uses a simple U-Net encoder/decoder architecture.
-* **\*-LSTM** (suffix): model uses an additional stack of recurrent bottleneck layers.
-* **\*-VAE** (suffix): model uses a Variational Autoencoder (VAE) + LSTM.
+
+**\*-Simple** (suffix): model uses a simple U-Net encoder/decoder architecture.
+
+**\*-LSTM** (suffix): model uses an additional stack of recurrent bottleneck layers.
+
+**\*-VAE** (suffix): model uses a Variational Autoencoder (VAE) + LSTM.
 
 ## Installation <a name="installation"></a>
 Install auralflow with pip using the following command:
