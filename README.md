@@ -13,7 +13,7 @@ by editing configuration files provided with the package.
 * [Installation](#installation)
 * [Training](#training)
 
-## What is Music Source Separation <a name="introduction"></a>
+## What is Music Source Separation? <a name="introduction"></a>
 Music source separation is a machine learning sub-task that branches from 
 the more general problem of **Music Information Retrieval (MIR)**. The goal is
 to develop a rule for splitting an audio track into separate instrument
@@ -56,31 +56,14 @@ the model was trained on as well as its underlying architecture:
 * **\*-LSTM** (suffix): model uses an additional stack of recurrent bottleneck layers.
 * **\*-VAE** (suffix): model uses a Variational Autoencoder (VAE) + LSTM.
 
-### Installation <a name="installation"></a>
+## Installation <a name="installation"></a>
 Install auralflow with pip using the following command:
 ```bash
 pip install auralflow
 `````
 
-
-
-
-    Uses the standard `soft-masking` technique to separate a single
-    constituent audio source from its input mixture. The architecture
-    implements a vanilla U-Net design, which involves a basic
-    encoder-decoder scheme (without an additional bottleneck layer).
-    The separation procedure is as follows:
-
-    * The encoder first compresses an audio sample x in the time-frequency
-      domain to a low-resolution representation.
-    * The decoder receives the encoder's output as input, and reconstructs
-      a new sample x~, which matches the dimensionality of x.
-    * A an activation layer normalizes x~ to force its values to be between
-      [0, 1], creating a `soft-mask`.
-    * The mask is applied to the original audio sample x as an element-wise
-      product, yielding the target source estimate y.
-
 ## Training <a name="training"></a>
+### Training Files
 Training a source separation model is very simple. Auralflow uses a single
 folder to store and organize all files related to training a separation model.
 Depending on how you set the configuration file, you can expect the contents
@@ -103,8 +86,7 @@ MIR evaluation metrics
 * `images`: folder that stores spectrograms and waveforms of separated audio
 from validation data
 
-### The Configuration File
-#### Initialization
+### Initializing Configuration Files
 What kind of base model you wish to train, how the input data should be processed,
 how you wish to train your model and how you'd like to
 visualize those training runs are among the many settings that are
@@ -117,7 +99,7 @@ which will copy a template configuration for any base model of your choice. It's
 recommended that you also name the model and outer folder with the `--name`
 argument. Additionally, if `--save` is not specified, the folder will
 automatically be saved to the current directory.
-#### Modification
+### Customizing Configuration Files
 If you want to change certain settings, open the `config.json` file from your
 model training folder and replace the entry for each setting to the desired
 value. If you feel more comfortable working with the command line, you can
@@ -132,7 +114,7 @@ its layers with the `--dropout_p` argument. Note that one or more arguments can
 be changed within a single command. Optionally, running `--display` 
 will let you see the updated configurations you just made.
 
-### Running The Training Script
+## Running The Training Script
 
 
 
@@ -203,113 +185,11 @@ input-norm: False
 output-norm: False
 
 
-## Command line usage
-
-The _quickest_ way to train a model is by starting a session directly through the  
-command line option. Neither a model nor training parameters need to be  
-configured beforehand, in which case, the `trainer.py` program will create the following  
-folder structure within the current directory:
-```bash  
-<modelname>/ - your model's name  
-│  
-├── checkpoint/ - stores .pth files of model/training states  
-│     │  
-│     ├── <modelname>_1.pth  
-│    ... │     ├── <modelname>_latest.pth - latest checkpoint  
-│     └── <modelname>_best.pth - best checkpoint  
-│  
-├── metrics.txt - source separation eval metrics  
-│ ├── <modelname>_model_config.json - model architecture  
-│ └── <modelname>_training_config.json - various training settings  
-```  
-Therefore, the only **mandatory** keyword arguments are:
-* `--name`: the model's name
-* `--base`: the base model architecture (e.g. UNet). See  
-  [models](#models) for the list of base models.
-* `--data`: the root directory containing a dataset. See [Datasets](#Data)  
-  for instructions on accessing the dataset used _specifically_ for the pretrained  
-  models included in this package.
-
-A template is shown below.
-```bash  
-$ python3 trainer.py --name <modelname> --base <architecture> --data path/to/data ```  
-However, it is recommended that you [customize a model](#customze-a-model) and  
-[training parameters](#training-parameters), in order to have more control  
-and better separation performance.  
-### Making configuration files  
-There are many ways to write a configuration file, but some include using a  
-[text editor](#text-editor), an [IDE](#IDE), [online](#online) or [python](#python).   
-You may also run the following command to modify the default  
-configuration files without needing to write them from scratch:  
-```bash  
-$ cp <source_dir>/Auralate/config/template/* <destination>  
-```  
-
-### Loading configuration files
-After you've made your configuration files, you will need to place them in a  
-designated folder. Again, including one or both files is entirely optional.  
-During training, the additional checkpoint and metrics files will be exported  
-to the same folder as well.
-```bash  
-$ mkdir my_model  
-$ cp path/to/my_model_config.json path/to/my_model  
-$ cp path/to/my_training_config.json path/to/my_model  
-```  
-Now we just run the following command to train your model.
-```bash  
-$ python3 trainer.py --load path/to/my_model --data path/to/data
-```  
-
-
-
-### Configuring a training environment
-Since this package is meant as a quick-and-easy source separation tool, many  
-training parameters have been abstracted away and preselected for your convenience. However,  
-you are encouraged to play around with different training settings to produce  
-different results. Therefore, you may either
-* set a parameter through its keyword argument, or
-* use ``--load-config`` to read a .json file (_recommended for changing many parameters_).
-
-The body of your configuration file should contain key-val pairs for each  
-parameter you wish to override, as shown in an example below.
-```json  
-# Inside your_config.json file.  
-  
-{     
-  ...  
- "lr": 0.001, "loss": "l1", "batch-size": 8, ...}  
-  # Default located in Auralate/config/training_params.json  
-```  
 
 ###List of training parameters
 * `--targets<str>`: Source target to estimate. `Default: 'vocals'`
     * Optionally, `-d`, `-b`, `-o`, `-v`, `-all` are flags for drums, bass,  
       other, vocals and all respectively.
-#### Data preprocessing
-  ```yaml  
-# Name  
-  
-prg - short program summary  
-  
-# Synopsis  
-  
- [flags] [options] [--xml|--html] <file...>  
---targets [options]  
-  # Options  
-+ `bass, b` Estimates bass  
-+ `drums, d` Estimates drums  
-+ `other, o` Estimates other  
-+ `vocals, v` Estimates vocals  
-+ `all, a` Estimates all targets  
-  
-  
-# Options  
-+ `--sample-rate, Sample rate of audio tracks.  
- Default: 44100+ `drums, d` Estimates drums  
-+ `other, o` Estimates other  
-+ `vocals, v` Estimates vocals  
-+ `all, a` Estimates all targets  
-```  
 
 
 * ``--mono``: Averages stereo channels for mono source separation.
@@ -386,154 +266,8 @@ prg - short program summary
 * ``--tensorboard``: Enables tensorboard for visualizing model performance.
 
 # Usage
-### Initializing a model
-Creating an autoencoder-based network architecture is extremely simple. The 
-`auralflow.models.build.AdaptiveUNet` class allows one to construct a custom
-U-Net-like network architecture as a `torch.nn.Module`, without needing to
-explicitly write code for it. Among the arguments to its constructor method,
-`AdaptiveUNet()` accepts specifications for encoder, decoder and bottleneck
-layers as nested lists.
-
-Each entry is a pair that specifies the layer type along with a value
-(e.g. the kernel size or dropout probability). For example, we can choose to
-use the following stack of layers for each encoder block, which translates
-to 3x3 conv + batch norm + leaky relu + 2x2 maxpool.
-```python    
-encoder = [
-    ['conv', 3],
-    ['batch_norm'],
-    ['leaky_relu', 0.2],
-    ['max_pool', 2]
-]
-```
-Similarly, we can use a 2x2 transpose conv and an extra dropout layer for each
-decoder block.
-```python
-decoder = [
-    ['transpose_conv', 2],
-    ['conv', 3],
-    ['batch_norm'],
-    ['relu'],
-    ['dropout', 0.4]
-]
-```
-Unlike encoder/decoder blocks, bottlenecks are optional. To learn temporal
-features, we can use a stack of 3 recurrent layers as an lstm. 
-```python
-bottleneck = [['lstm', 3]]
-```
-Finally, we call the constructor method to initialize our model.
-```python
-from auralflow.models.build import AdaptiveUNet
-
-unet_lstm = AdaptiveUNet(
-    max_layers=6,
-    encoder=encoder,
-    decoder=decoder,
-    bottleneck=bottleneck,
-    mask_activation='sigmoid',
-    use_skip=True,
-    targets=['vocals']
-}
-```
-Here we've passed in additional arguments, such as `max_layers`,
-`mask_activation`, `use_skip` and `targets`. These entail the maximum depth of
-the model, the activation function for target-source mask estimation, whether
-to use skip connections and the target stems to separate.
-
-The model is just like any Pytorch model, which means that one could write
-their own training script.
-
-# 2. Constuct your model (with additional arguments as well).
-u_net = auralflow.models.build.UNet(
-    max_layers=6,
-    init_hidden=16,
-    encoder=encoder,
-    decoder=decoder,
-    bottleneck=bottleneck,
-    bottleneck_layers=1,
-    num_dropout=3,
-    use_skip=True,
-    mask_activation='sigmoid',
-    normalize_input=True,
-    normalize_output=False,
-    targets=['vocals']
-)  
-  
-# Load a pretrained model.  
-UNetSmall = Auralate.models.UNet(pretrained=True)  
-  
-  
-```  
 
 
-
-
-
-
-# Model Parameters
-
-`--model <str>` Base separation model. `unet, recurrent`
-* `--bottleneck <str>` bottleneck layer configuration`conv, lstm `
-* `--bottleneck-size <int>` number of layers in bottleneck
-
-
-
-
-bottleneck-depth: size of bottleneck layer (default = 1)  
-encoder-depth: max depth of encoder/decoder (default = 6)  
-block-size: number of convolutional layers in encoder/decoder blocks (default = 1)  
-downsample: downsampling method [conv, maxpool],  
-kernel_size: kernel size default = 5  
-leak: slope of leaky ReLU (default = 0.2)  
-activation: final activation (default = sigmoid)  
-dropout: dropout probability (default = 0.5)  
-input-norm: input normalization (default = False)  
-output-norm: output_normalization (default = False)  
-targets: target sources (default = vocals)  
-mono: num channels (default = True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Installation
-
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
-
-```bash  
-pip install foobar  
-```  
-
-## Usage
-
-```python  
-import foobar  
-  
-# returns 'words'  
-foobar.pluralize('word')  
-  
-# returns 'geese'  
-foobar.pluralize('goose')  
-  
-# returns 'phenomenon'  
-foobar.singularize('phenomena')  
-```  
-
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
