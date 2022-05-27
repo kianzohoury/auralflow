@@ -2,7 +2,7 @@
 
 
 # Auralflow: Music Source Separation Made Easy
-Auralflow is a lightweight **music source separation** toolkit made for PyTorch
+Auralflow is a lightweight **music source separation** toolkit designed for PyTorch
 integration. It offers ready-to-go, pretrained DL models capable of separating
 music tracks into multiple sources: vocals, bass, drums and other. Auralflow
 also provides customizable base model architectures, which can be trained 
