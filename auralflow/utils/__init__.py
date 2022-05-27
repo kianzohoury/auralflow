@@ -87,7 +87,7 @@ def save_object(model_wrapper, obj_name: str, global_step: int) -> None:
 
 
 def load_object(model_wrapper, obj_name: str, global_step: int) -> None:
-    """Loads object and attaches it to model_wrapper and its device."""
+    """Loads object's state and and attaches it to the model."""
     filename = f"{model_wrapper.checkpoint_path}/{model_wrapper.model_name}"
 
     # Get object-specific filename.
