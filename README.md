@@ -1,7 +1,7 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing)
 
 
-# Auralflow
+# Auralflow: a lightweight music source separation toolkit
 Auralflow is a lightweight **music source separation** toolkit, offering
 _out-of-the-box_ pretrained neural networks, audio processing, visualization tools,
 loss functions, evaluation metrics and several other useful training utilities.
