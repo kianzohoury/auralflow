@@ -8,13 +8,13 @@ loss functions, evaluation metrics and several other useful training utilities.
 Additionally, model architectures and training hyperparameters can be tailored
 by editing configuration files provided with the package.
 
+# Table of contents
+1. [What is Music Source Separation?](#introduction)
+2. [Pretrained Models](#pretrained-models)
+3. [Installation](#installation)
+4. [Training](#training)
 
-## Installation
-Install auralflow with pip using the following command:
-```bash
-pip install auralflow
-`````
-## What is Music Source Separation?
+### What is Music Source Separation? <a name="introduction"></a>
 Music source separation is a machine learning sub-task that branches from 
 the more general problem of **Music Information Retrieval (MIR)**. The goal is
 to develop a rule for splitting an audio track into separate instrument
@@ -30,18 +30,39 @@ in order to enable faster model development time and reduce barriers to entry.
 
 Supplementary information regarding the mathematics behind music source
 separation is available in the documentation for those interested.
-## Pretrained Models
 
+### Pretrained Models <a name="pretrained-models"></a>
+Auralflow includes several base model architectures that have already been
+trained on the musdb18 dataset. The table below compares each model relative to
+its **scale-invariant signal-to-distortion ratio (____SI-SDR____)**,
+which is averaged across audio tracks from a hidden test set. The choice of using the SI-SDR
+over the typical SDR is because it's an unbiased and fairer measurement. 
 
-| Base Model             | Input Data        | # Parameters | Pretrained | Performance (si-sdr) |
-|------------------------|-------------------|--------------|------------|----------------------|
-| AudioNetSimple         | audio             |              | yes        | + 2.9 db             |
-| AudioNetSimpleLSTM     | audio             |              | yes        | +4.3 db              |
-| AudioNetVAE            | audio             |              | yes        | +5.4 db              |
-| SpectrogramNetSimple   | spectrogram       |              | yes        | + 2.9 db             |
-| SpectrogramNetLSTM     | spectrogram       |              | yes        | +4.3 db              |
-| **SpectrogramNetVAE*** | spectrogram       |              | yes        | **+5.4 db**          |
-| HybridNet              | audio/spectrogram |              | yes        | ?                    |
+| Base Model               | # Parameters (MM) | Pretrained | Trainable | Performance (si-sdr in db) |
+|--------------------------|-------------------|------------|-----------|----------------------------|
+| AudioNetSimple           | 7.9               | yes        | yes       | + 2.9                      |
+| AudioNetSimpleLSTM       | 32.3              | yes        | yes       | +4.3                       |
+| AudioNetVAE              | 40                | yes        | yes       | +5.4                       |
+| SpectrogramNetSimple     | 7.9               | yes        | yes       | + 2.9                      |
+| SpectrogramNetLSTM       | 32.3              | yes        | yes       | +4.3                       |
+| **SpectrogramNetVAE***   | 40                | yes        | yes       | **+5.4**                   |
+| HybridNet                | 65.5              | yes        | no        | ?                          |
+The naming of models confers the the type of input data
+the model was trained on as well as its underlying architecture:
+* **Audio**-\* (prefix): model separates audio in the waveform or _time_
+  domain.
+* **Spectrogram**-\* (prefix): model separates audio in the spectrogram or
+  _time-frequency_ domain.
+* **\*-Simple** (suffix): model uses a simple U-Net encoder/decoder architecture.
+* **\*-LSTM** (suffix): model uses an additional stack of recurrent bottleneck layers.
+* **\*-VAE** (suffix): model uses a Variational Autoencoder (VAE) + LSTM.
+
+### Installation <a name="installation"></a>
+Install auralflow with pip using the following command:
+```bash
+pip install auralflow
+`````
+
 
 
 
@@ -60,7 +81,7 @@ separation is available in the documentation for those interested.
     * The mask is applied to the original audio sample x as an element-wise
       product, yielding the target source estimate y.
 
-## Training
+## Training <a name="training"></a>
 Training a source separation model is very simple. Auralflow uses a single
 folder to store and organize all files related to training a separation model.
 Depending on how you set the configuration file, you can expect the contents
