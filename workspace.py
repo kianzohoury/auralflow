@@ -3,8 +3,7 @@ import auralflow
 
 
 def main():
-    print(auralflow)
-    # auralflow.utils.init_training_config(os.getcwd())
+    auralflow.utils.pull_config_template(os.getcwd() + "/my_model")
 
 if __name__ == "__main__":
     main()

@@ -5,13 +5,13 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from argparse import ArgumentParser
-from datasets import create_audio_dataset, load_dataset
-from models import create_model, setup_model
+from auralflow.datasets import create_audio_dataset, load_dataset
+from auralflow.models import create_model, setup_model
 from torch.utils.tensorboard import SummaryWriter
-from trainer import run_training
-from trainer.callbacks import TrainingCallback
-from utils import load_config, save_config
-from visualizer import config_visualizer
+from auralflow.trainer import run_training
+from auralflow.trainer.callbacks import TrainingCallback
+from auralflow.utils import load_config, save_config
+from auralflow.visualizer import config_visualizer
 
 
 def main(config_filepath: str):
@@ -66,7 +66,9 @@ def main(config_filepath: str):
 
     # Initialize summary writer and visualizer.
     print("-" * 79 + "\nLoading visualization tools...")
-    writer = SummaryWriter(log_dir=visualizer_params["logs_path"])
+    writer = SummaryWriter(
+        log_dir=configuration["model_params"]["model_name"] + "/runs"
+    )
     visualizer = config_visualizer(config=configuration, writer=writer)
     print("Successful.")
 
@@ -102,10 +104,11 @@ def main(config_filepath: str):
     save_config(config=configuration, save_filepath=config_filepath)
 
 
-if __name__ == "__main__":
-    parser = ArgumentParser(description="Model training script.")
-    parser.add_argument(
-        "config_filepath", type=str, help="Path to a configuration file."
-    )
-    args = parser.parse_args()
-    main(args.config_filepath)
+# if __name__ == "__main__":
+#     parser = ArgumentParser(description="Model training script.")
+#     parser.add_argument(
+#         "model_folder", type=str, help="Path to a model training folder."
+#     )
+#     args = parser.parse_args()
+#     config_filepath = args.model_folder + "/config.json"
+#     main(config_filepath)

@@ -16,14 +16,14 @@ __all__ = [
     "save_config",
     "load_object",
     "save_object",
-    "init_training_config"
+    "pull_config_template"
 ]
 
-config_template_path = Path(__file__)
+config_template_path = Path(__file__).parents[2].joinpath("config.json")
 
 
-def init_training_config(save_dir: str):
-    """Initializes a training configuration file."""
+def pull_config_template(save_dir: str):
+    """Copies contents from a template configuration file into a new config."""
     Path(save_dir).mkdir(exist_ok=True)
     save_filepath = save_dir + "/config.json"
     shutil.copy(src=str(config_template_path), dst=save_filepath)

@@ -15,7 +15,7 @@ from torch import Tensor, FloatTensor
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from typing import List, Union, Callable, Any
-from utils import load_object, save_object
+from auralflow.utils import load_object, save_object
 
 
 class SeparationModel(ABC):
@@ -44,9 +44,9 @@ class SeparationModel(ABC):
         self.training_params = config["training_params"]
         self.dataset_params = config["dataset_params"]
         self.visualizer_params = config["visualizer_params"]
-        self.checkpoint_path = self.training_params["checkpoint_path"]
-        self.silent_checkpoint = self.training_params["silent_checkpoint"]
         self.model_name = self.model_params["model_name"]
+        self.checkpoint_path = self.model_name + "/checkpoint"
+        self.silent_checkpoint = self.training_params["silent_checkpoint"]
         self.training_mode = self.training_params["training_mode"]
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 

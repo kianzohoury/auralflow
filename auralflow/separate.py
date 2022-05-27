@@ -10,8 +10,8 @@ import librosa
 import torch
 from scipy.io import wavfile
 
-from models import create_model, setup_model
-from utils import load_config
+from auralflow.models import create_model, setup_model
+from auralflow.utils import load_config
 
 
 def main(config_filepath: str, audio_filepath: str, save_filepath: str):

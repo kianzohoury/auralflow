@@ -8,9 +8,9 @@ from typing import Optional
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
 
-from losses import get_evaluation_metrics
-from models import SeparationModel
-from visualizer import Visualizer
+from auralflow.losses import get_evaluation_metrics
+from auralflow.models import SeparationModel
+from auralflow.visualizer import Visualizer
 
 __all__ = ["TrainingCallback", "WriterCallback"]
 

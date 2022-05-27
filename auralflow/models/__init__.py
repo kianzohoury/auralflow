@@ -16,11 +16,11 @@ from .architectures import (
 )
 from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
-from losses import get_model_criterion
+from auralflow.losses import get_model_criterion
 from pathlib import Path
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from utils import save_config, load_config
+from auralflow.utils import save_config, load_config
 
 
 __all__ = [
@@ -32,6 +32,8 @@ __all__ = [
     "create_model",
     "setup_model",
 ]
+
+_models = __all__[:3]
 
 
 def create_model(configuration: dict) -> SeparationModel:
@@ -67,7 +69,7 @@ def setup_model(model: SeparationModel) -> SeparationModel:
             # Create checkpoint folder, save copy of config file to it.
             Path(model.checkpoint_path).mkdir(exist_ok=True)
             save_config(
-                model.config, model.checkpoint_path + "/training_template.json"
+                model.config, model.checkpoint_path + "/config.json"
             )
 
             # Define optimizer.

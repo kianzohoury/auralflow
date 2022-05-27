@@ -7,11 +7,11 @@
 from collections import OrderedDict
 from typing import Any
 
-import asteroid
+
 import asteroid.metrics
 import torch
 import torch.nn as nn
-from fast_bss_eval import si_sdr_loss as si_sdr_loss_
+# from fast_bss_eval import si_sdr_loss as si_sdr_loss_
 from torch import FloatTensor, Tensor
 from torch.nn import functional
 
@@ -240,13 +240,13 @@ class L2Loss(nn.Module):
         # self.model.batch_loss = self.model.batch_loss + gain_penalty
 
 
-class SISDRLoss(nn.Module):
-    """Wrapper class for si-sdr loss."""
-
-    def __init__(self, model):
-        super(SISDRLoss, self).__init__()
-        self.model = model
-
-    def forward(self) -> None:
-        loss = scale_invariant_sdr_loss(self.model.estimate, self.model.target)
-        self.model.batch_loss = torch.mean(loss)
+# class SISDRLoss(nn.Module):
+#     """Wrapper class for si-sdr loss."""
+#
+#     def __init__(self, model):
+#         super(SISDRLoss, self).__init__()
+#         self.model = model
+#
+#     def forward(self) -> None:
+#         loss = scale_invariant_sdr_loss(self.model.estimate, self.model.target)
+#         self.model.batch_loss = torch.mean(loss)
