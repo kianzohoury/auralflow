@@ -7,11 +7,12 @@ _out-of-the-box_ pretrained neural networks, audio processing, visualization too
 loss functions, evaluation metrics and several other useful training utilities.
 Additionally, model architectures and training hyperparameters can be tailored
 by editing configuration files provided with the package.
+
 * [What is Music Source Separation?](#introduction)
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
 * [Training](#training)
----
+___
 
 ### What is Music Source Separation? <a name="introduction"></a>
 Music source separation is a machine learning sub-task that branches from 
