@@ -30,7 +30,7 @@ in order to enable faster model development time and reduce barriers to entry.
 
 Supplementary information regarding the mathematics behind music source
 separation is available in the documentation for those interested.
-## Models
+## Pretrained Models
 
 
 | Base Model             | Input Data        | # Parameters | Pretrained | Performance (si-sdr) |
@@ -75,7 +75,7 @@ my_model
   └── runs/...
 ```
 where
-* `config.json`: configuration settings for the model, data and training.
+* `config.json`: the configuration file for model, data and training settings
 * `checkpoint`: folder that stores model, optimizer, lr scheduler and gradient scaling states
 * `evaluation.cvs`: a printout of the performance of your model using standard
 MIR evaluation metrics
@@ -107,7 +107,7 @@ auralflow config my_model --mask_activation relu --dropout_p 0.4 --display
 ```
 Here, we've changed two parameters simultaneously. We've set our model's
 masking function to ReLU by specifying the `--mask_activation` argument,
-and assigned a nonzero dropout probability for our
+and assigned a nonzero dropout probability for
 its layers with the `--dropout_p` argument. Note that one or more arguments can
 be changed within a single command. Optionally, running `--display` 
 will let you see the updated configurations you just made.
