@@ -11,7 +11,17 @@ by editing configuration files provided with the package.
 * [What is Music Source Separation?](#introduction)
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
-* [Training](#training)
+* [Usage](#usage)
+  * [Training](#training)
+  * [Models](#models)
+  * [Losses](#losses)
+  * [Trainer](#trainer)
+  * [Datasets](#datasets)
+  * [Data Utilities](#data-utils)
+  * [Visualization](#visualization)
+  * [Separation](#separation)
+  * [Evaluation](#evaluation)
+* [Notebook Demo](#demo)
 
 ## What is Music Source Separation? <a name="introduction"></a>
 Music source separation is a machine learning sub-task that branches from 
@@ -122,155 +132,12 @@ be changed within a single command. Optionally, running `--display`
 will let you see the updated configurations you just made.
 
 ## Running The Training Script
-
-
-
-
-which will create a new folder named `NAME` located `<DIR PATH>`
-
-An organized folder structure containing model configurations, data processing, training hyperparameters, training runs, metrics and more will be initialized in `<session path>`. Optionally, if `--save` is omitted, then the session path will default to `/path/to/cwd/<session name>`.  Below is what you can expect a session folder structure to look like after training one or more models.
-
-There are main 3 editable files that allow you to customize models, data processing and training parameters, which are `.yaml` formatted files. If you are unfamiliar with this type of file, its just a configuration file similar to `.json`, `'xml` or `.ini`. See this great [article](#article) for a quick tutorial.
-
-Creating a session only initializes a folder structure, so we must run another command to generate the actual configuration files needed to run a training session. The following command
+Once you've created a model training folder, you can train your model with the 
+following command:
 ```bash
-$ auralflow config --model <base architecture> --name <model name>
+auralflow train my_model
 ```
-generates the default configuration files for a separation model based on the network architecture `<base architecture>`. Currently, the base architectures available in this package are __UNet__ [1], __Demucs__ [2], and __OpenUnmix__ [3]. I recommend that you familiarize yourself with these deep learning architectures as they are great learning opportunities.
-
-### Modifying configuration files
-To customize your model's base architecture, make the desired changes to the `<model name>_config.yaml` file. Below is a table of the model parameters that are editable according to each base architecture.
-
-| `base-model`       | UNet       | Demucs     | OpenUnmix | Description | Options                |
-|--------------------|------------|------------|-----------|-------------|------------------------|
-| `max-layers`       | 6          | Title      | Title     |             |
-| `init-features`    | 16         | Text       | Title     |             |
-| bottleneck         ||
-| `type`             | conv       | conv       | lstm      |             |
-| `layers`           | 0          | 2          | 3         |             |
-| encoder            |            |            |           | __N/A__     |
-| `block-layers`     | 1          | 2          |           |             |
-| `kernel-size`      | 5          | [8, 1]     |           |             |                        |
-| `down`             | conv       | conv       |           |             | conv, maxpool, decimat |
-| `leak`             | 0.2        |            |           |             |
-| decoder            |            |            | __N/A__   |             |
-| `block-layers`     | 1          | 2          |           |             |
-| `kernel-size`      | 5          | [3, 8]     |           |             |
-| `up`               | transposed | transposed |           |             |
-| `dropout`          | 0.5        | 0          |           |             |
-| `num-dropouts`     | 3          | 0          |           |             |
-| `skip-connections` | True       | True       | True      |             |
-| `mask-activation`  | sigmoid    | relu       | relu      |             |
-| `input-norm`       | True       | True       | True      |             |
-| `output-norm`      | False      |            | True      |             |
-
-
-
-
-
-model:  
-base-model: unet  
-max-layers: 6  
-init-features: 16  
-bottleneck:  
-type: conv  
-layers: 1  
-encoder:  
-block-layers: 1  
-kernel-size: 5  
-down: conv  
-leak: 0.2  
-decoder:  
-block-layers: 1  
-kernel-size: 5  
-up: transposed  
-dropout: 0.5  
-num-dropouts: 3  
-skip-connections: True  
-mask-activation: sigmoid  
-input-norm: False  
-output-norm: False
-
-
-
-###List of training parameters
-* `--targets<str>`: Source target to estimate. `Default: 'vocals'`
-    * Optionally, `-d`, `-b`, `-o`, `-v`, `-all` are flags for drums, bass,  
-      other, vocals and all respectively.
-
-
-* ``--mono``: Averages stereo channels for mono source separation.
-
-
-* ``--sample-rate<int>``: Sample rate of audio tracks. `Default: 44100`
-
-
-* ``--num-fft<int>``: Number of Short Time Fourier Transform bins to generate. `Default: 1024`
-
-
-* ``--window-size<int>``: Sliding window size of STFT. `Default: 1024`
-
-
-* ``--hop-length<int>``: Hop length of STFT. `Default: 768`
-
-#### Data loading
-* ``--chunk-size<int>``: Duration of a each chunk of audio in seconds. `Default: 3`
-
-
-* ``--load-size<int>``: Number of chunks to resample from the dataset and feed   
-  into the dataloader at the start of every training epoch. `Default: 8192`
-
-
-* ``--batch-size<int>``: Batch size. `Default: 8`
-
-
-* ``--split<float>``: Train-validation split. `Default: 0.2`
-
-
-#### Training
-
-* ``--epochs<int>``: Number of training epochs. `Default: 100`
-
-
-
-* ``--optim<str>``: Optimizer. `Default: 'adam'`
-
-
-* ``--lr<float>``: Learning rate for optimizer. `Default: 0.001`
-
-
-* ``--loss<str>``: Loss function to optimize. `Default: 'l1'`
-
-
-* ``--patience<int>``: Number of epochs for early stopping. `Default: 10`
-
-
-#### Faster processing
-
-* ``--workers<int>``: Number of worker processes to run. `Default: '8`
-
-
-* ``--pin-mem``: Pins memory for faster data loading. `Default: True`
-
-
-* ``--cuda``: Enables cuda if available.
-
-
-* ``--num-gpus<int>``: Option to enable multi-node parallel training if available. `Default: 1`
-
-
-* ``--backend<str>``: Backend for audio file io. `Default: 'soundfile'`
-
-#### Metrics and saving
-
-
-* ``--checkpoint<str>``: Location to save model checkpoints. `Default: ./checkpoint`
-
-
-* ``--metrics``: Write separation evaluation results. `Default: ./checkpoint/<model mame>/metrics`
-
-
-* ``--tensorboard``: Enables tensorboard for visualizing model performance.
+which expects `config.json` to exist within the model training folder.
 
 # Usage
 
