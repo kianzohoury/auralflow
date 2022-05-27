@@ -14,7 +14,7 @@ by editing configuration files provided with the package.
 * [Training](#training)
 
 <h3 id="introduction">  What is Music Source Separation? </h3>
-<hr>
+<hr style="border:none">
 Music source separation is a machine learning sub-task that branches from 
 the more general problem of **Music Information Retrieval (MIR)**. The goal is
 to develop a rule for splitting an audio track into separate instrument
