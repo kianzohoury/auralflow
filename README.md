@@ -13,8 +13,7 @@ by editing configuration files provided with the package.
 * [Installation](#installation)
 * [Training](#training)
 
-<h3 id="introduction">  What is Music Source Separation? </h3>
-<hr style="height:0.1px;border:none"/>
+## What is Music Source Separation <a name="introduction"></a>
 Music source separation is a machine learning sub-task that branches from 
 the more general problem of **Music Information Retrieval (MIR)**. The goal is
 to develop a rule for splitting an audio track into separate instrument
@@ -31,7 +30,7 @@ in order to enable faster model development time and reduce barriers to entry.
 Supplementary information regarding the mathematics behind music source
 separation is available in the documentation for those interested.
 
-### Pretrained Models <a name="pretrained-models"></a>
+## Pretrained Models <a name="pretrained-models"></a>
 Auralflow includes several base model architectures that have already been
 trained on the musdb18 dataset. The table below compares each model relative to
 its **scale-invariant signal-to-distortion ratio (____SI-SDR____)**,
