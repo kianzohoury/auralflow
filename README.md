@@ -10,15 +10,7 @@ by editing configuration files provided with the package.
 
 
 ## Installation
-Installation requires having Python version >= 3.7.1 and pip installed.
-Running
-```bash
-brew install python
-python -m ensurepip --upgrade
-python3 --version
-```
-will install or upgrade the version if necessary. After, install auralflow
-with the pip command:
+Install auralflow with pip using the following command:
 ```bash
 pip install auralflow
 `````
@@ -29,15 +21,15 @@ to develop a rule for splitting an audio track into separate instrument
 signals (often called *stems*) that make up a full signal
 (often called the *mixture*).
 
-Many techniques in deep learning are currently and have been successfully
-carried out, but some techniques go beyond the scope of deep learning, 
-involving techniques in digital signal processing. The purpose of this package
-is to abstract away those components and enable users and developers a friendly
-way of constructing and interacting with ML models in the audio domain.
+While source separation models involving deep learning are no harder to
+understand than image segmentation models, there are some aspects related to
+digital signal processing (i.e. fourier transform, complex values,
+phase estimation, filtering, etc.) that go beyond the scope of deep learning.
+Thus, the purpose of this package is to abstract away some of those processes
+in order to enable faster model development time and reduce barriers to entry.
 
-A more detailed overview on music source separation, the mathematics and 
-the implementation of the models in this package can be found in the official
-documentation.
+Supplementary information regarding the mathematics behind music source
+separation is available in the documentation for those interested.
 ## Models
 
 
@@ -68,32 +60,67 @@ documentation.
     * The mask is applied to the original audio sample x as an element-wise
       product, yielding the target source estimate y.
 
-# Training models
-### Creating a session
-To begin training your own source separation model, you must first create a training session on your machine with the following command:
+## Training
+Training a source separation model is very simple. Auralflow uses a single
+folder to store and organize all files related to training a separation model.
+Depending on how you set the configuration file, you can expect the contents
+of that folder to look like the following after a single training session:
 ```bash
-$ auralflow create <session name> --save <session path>
+my_model
+  ├── audio/...
+  ├── config.json
+  ├── checkpoint/...
+  ├── evaluation.csv
+  ├── images/...
+  └── runs/...
 ```
-An organized folder structure containing model configurations, data processing, training hyperparameters, training runs, metrics and more will be initialized in `<session path>`. Optionally, if `--save` is omitted, then the session path will default to `/path/to/cwd/<session name>`.  Below is what you can expect a session folder structure to look like after training one or more models.
+where
+* `config.json`: configuration settings for the model, data and training.
+* `checkpoint`: folder that stores model, optimizer, lr scheduler and gradient scaling states
+* `evaluation.cvs`: a printout of the performance of your model using standard
+MIR evaluation metrics
+* `audio`: folder that stores .wav file snippets of separated audio from validation data
+* `images`: folder that stores spectrograms and waveforms of separated audio
+from validation data
+
+### The Configuration File
+#### Initialization
+What kind of base model you wish to train, how the input data should be processed,
+how you wish to train your model and how you'd like to
+visualize those training runs are among the many settings that are
+modifiable in the configuration file. If you want to initialize a new
+configuration, use the `config` command:
 ```bash
-<session name>
-	│
-	├── <model A name>/ - a custom model's name  
-	│     ├── <model A name>_config.yaml  - model architectural instructions
-	│	  ├── data_config.yaml - data processing instructions
-	│	  └── train_config.yaml - training instructions
-	│	  ├── checkpoint/ - model state files
-	│	  │		├── <model name>_latest.pth - latest checkpoint
-	│     │		└── <model name>_best.pth - best checkpoint   
-	│	  └──metrics.txt - model evaluation metrics 
-	├── <model B name>/ 
-	│	├── ...
-	├── <model C name>/ 
-	│	├── ...
-	...	
-	│	
-	└── runs/ - tensorboard training logs
-```  
+auralflow config SpectrogramNetSimple --name my_model --save path/to/save
+```
+which will copy a template configuration for any base model of your choice. It's
+recommended that you also name the model and outer folder with the `--name`
+argument. Additionally, if `--save` is not specified, the folder will
+automatically be saved to the current directory.
+#### Modification
+If you want to change certain settings, open the `config.json` file from your
+model training folder and replace the entry for each setting to the desired
+value. If you feel more comfortable working with the command line, you can
+edit settings directly like so:
+```bash
+auralflow config my_model --mask_activation relu --dropout_p 0.4 --display
+```
+Here, we've changed two parameters simultaneously. We've set our model's
+masking function to ReLU by specifying the `--mask_activation` argument,
+and assigned a nonzero dropout probability for our
+its layers with the `--dropout_p` argument. Note that one or more arguments can
+be changed within a single command. Optionally, running `--display` 
+will let you see the updated configurations you just made.
+
+### Running The Training Script
+
+
+
+
+which will create a new folder named `NAME` located `<DIR PATH>`
+
+An organized folder structure containing model configurations, data processing, training hyperparameters, training runs, metrics and more will be initialized in `<session path>`. Optionally, if `--save` is omitted, then the session path will default to `/path/to/cwd/<session name>`.  Below is what you can expect a session folder structure to look like after training one or more models.
+
 There are main 3 editable files that allow you to customize models, data processing and training parameters, which are `.yaml` formatted files. If you are unfamiliar with this type of file, its just a configuration file similar to `.json`, `'xml` or `.ini`. See this great [article](#article) for a quick tutorial.
 
 Creating a session only initializes a folder structure, so we must run another command to generate the actual configuration files needed to run a training session. The following command

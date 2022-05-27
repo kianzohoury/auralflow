@@ -8,7 +8,7 @@ import librosa
 
 
 from collections import OrderedDict
-from .datasets import AudioDataset, AudioFolder
+from . datasets import AudioDataset, AudioFolder
 from pathlib import Path
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
