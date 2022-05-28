@@ -594,5 +594,70 @@ loss = kl_term + recon_term
 # backprop
 loss.backward()
 ```
+
+# Data Utils
+## AudioTransform
+```python
+class AudioTransform(object):
+    """Wrapper class that conveniently stores multiple transformation tools."""
+
+    def __init__(
+        self,
+        num_fft: int,
+        hop_length: int,
+        window_size: int,
+        sample_rate: int = 44100,
+        device: str = "cpu",
+    ) -> None:
+```
+### Methods
+```python
+def to_spectrogram(
+    self, audio: Tensor, use_padding: bool = True
+) -> Tensor:
+    """Transforms an audio signal to its time-freq representation."""
+
+def to_audio(self, complex_spec: Tensor) -> Tensor:
+    """Transforms complex-valued spectrogram to its time-domain signal."""
+
+def to_mel_scale(self, spectrogram: Tensor, to_db: bool = True) -> Tensor:
+    """Transforms magnitude or log-normal spectrogram to mel scale."""
+
+def audio_to_mel(self, audio: Tensor, to_db: bool = True):
+    """Transforms raw audio signal to log-normalized mel spectrogram."""
+
+def pad_audio(self, audio: Tensor):
+    """Applies zero-padding to input audio."""
+```
+
+### Example
+```python
+from auralflow.utils.data_utils import AudioTransform
+import torch
+
+transform = AudioTransform(
+    num_fft=1024,
+    hop_length=768,
+    window_size=1024, 
+    sample_rate=44100, 
+    device="cuda"
+)
+
+# generate sample data
+mix_audio = torch.rand((16, 1024, 173, 1)).to("cuda")
+
+# transform to complex spectrogram
+spectrogram = transform.to_spectrogram(mix_audio)
+
+# magnitude spectrogram
+mag_spec = torch.abs(spectrogram)
+
+# to log normalized mel scale from magnitude spectrogram
+mel_spec = transform.to_mel_scale(mag_spec, to_db=True)
+
+# can achieve the same thing using waveforms directly
+audio_signal = torch.rand((16, 88200, 1)).to("cuda")
+mel_spec = transform.audio_to_mel(audio_signal, to_db=True)
+```
 ## License
 [MIT](LICENSE)
