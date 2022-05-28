@@ -114,12 +114,12 @@ such as *SGD* or *Adam*.
 
 ### Phase Approximation <a name="phase-approximation"></a>
 Without prior knowledge, it may not be clear how to transform the source
-estimate $|\hat{Y}_{k}|$ to a complex-valued spectrogram. Indeed, this is
+estimate $|\hat{Y_{k}}|$ to a complex-valued spectrogram. Indeed, this is
 where the second source separation method shines, as it avoids this
 predicament altogether. There are known (but rather complicated) ways of
 phase estimation such as [Griffin-Lim](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&rep=rep1&type=pdf).
 As I mentioned earlier, there is a quick-and-dirty trick that works pretty
-well. Put simply, we use the phase informaton of the mixture audio to estimate
+well. Put simply, we use the phase information of the mixture audio to estimate
 the phase information of the source estimate. Given $|\hat{Y}_{k}|$ and $P$,
 we define the phase-corrected source estimate as:
 
