@@ -73,22 +73,25 @@ to small, overlapping segments of $X$. As a disclaimer, $f$ has been trivially e
 ###### **III. Magnitude and Phase**
 Given a spectrogram $X$, its magnitude is defined as $|X|$, and its phase is defined as $P:= ∠_{\theta} X$, the element-wise angle of each complex entry. We use $|X|$ as input to our model, and use $P$ to employ a useful trick that I will describe next that makes our task much simpler.
 
-
 ## Deep-Mask Estimation Step
 
 ###### **I. Forward Pass**
 To estimate a target signal $k$, we apply the transformation to a mini-batch of mixture-target audio pairs $(A, S_{k})$.
-yielding $(|X|, |Y_{k}|)$. We feed $|X|$ into our network, which estimates a multiplicative soft-mask $M_{\theta}$, normalized such that $m_{i} \in [0, 1]$. Next, $M_{\theta}$ is *applied* to $|X|$, such that
+yielding $(|X|, |Y_{k}|)$. We feed $|X|$ into our network, which estimates a multiplicative soft-mask $M_{\theta}$,
+normalized such that $m_{i} \in [0, 1]$. Next, $M_{\theta}$ is *applied* to $|X|$, such that
 
 $$|\hat{Y}_{k}| = M_{\theta} \odot |X|$$
 where $\odot$ is the Hadamard product, and $|\hat{Y}_{k}|$ is the network's estimate of $|Y_k|$.
 
 ###### **II. Objective Function**
 
-Let $L$ be some loss criterion. The objective is to find an optimal choice of model parameters $\theta^{*}$ that minimize the loss
+Let $L$ be some loss criterion. The objective is to find an optimal choice of
+model parameters $\theta^{*}$ that minimize the loss
 $$ \theta^{*} = \arg\min_{\theta} L(|\hat{Y}_{k}|, |\hat{Y}_{k}|)$$
 
-In recent literature, the most common loss criterions employed are *mean absolute loss* and *mean squared error* (MSE), paired with optimizers such as *SGD* or *Adam*.
+In recent literature, the most common loss criterions employed are
+*mean absolute loss* and *mean squared error* (MSE), paired with optimizers
+such as *SGD* or *Adam*.
 
 ## Source Separation Step
 ###### **I. Phase Correction**
