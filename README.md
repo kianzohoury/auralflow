@@ -61,7 +61,7 @@ separation is available in the documentation for those interested.
 Below, I will go into some detail about the underlying mathematics that describe
 our problem and objective  — feel free to skip this section as it is just meant to supplement background knowledge.
 
-### Short Time Fourier Transform
+### Short Time Fourier Transform <a name="stft"></a>
 Let an input mixture signal be a $2$-dimensional audio waveform
 $A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized
 such that the amplitude of each sample $a_i \in [-1, 1]$.
@@ -74,29 +74,37 @@ a ***spectrogram***.
 Similarly, let $f^{-1}: Y ↦ S$ be the inverse transformation mapping a
 spectrogram $Y \in \mathbb{C}^{c, f, τ}$ to its audio signal
 $S \in \mathbb{R}^{c, t}$. As was alluded to in the introduction, the
-existence of noise and uncertainty ensure that $$\Huge f^{-1}(f(A)) \neq A$$
+existence of noise and uncertainty ensure that $$f^{-1}(f(A)) \neq A$$
 However, by carefully choosing a good transformation $f$, we can minimize the
 unknown additive noise factor $E_{noise}$, such that
-$$\Huge f^{-1}(f(A)) = A + E_{noise} \approx A$$
+$$f^{-1}(f(A)) = A + E_{noise} \approx A$$
 
 Without going into much detail, $f$ is an approximation algorithm to the
-**Discrete Fourier Transform (DFT)** called the **Short-Time Fourier Transform (STFT)**, which is a parameterized windowing function that applies the DFT
-to small, overlapping segments of $X$. As a disclaimer, $f$ has been trivially extended to have a channel dimension, although this is not part of the canonical convention.
+**Discrete Fourier Transform (DFT)** called the
+**Short-Time Fourier Transform (STFT)**, which is a parameterized windowing
+function that applies the DFT
+to small, overlapping segments of $X$. As a disclaimer, $f$ has been trivially
+extended to have a channel dimension, although this is not part of the
+canonical convention.
 
-###### **III. Magnitude and Phase**
-Given a spectrogram $X$, its magnitude is defined as $|X|$, and its phase is defined as $P:= ∠_{\theta} X$, the element-wise angle of each complex entry. We use $|X|$ as input to our model, and use $P$ to employ a useful trick that I will describe next that makes our task much simpler.
+### Magnitude and Phase <a name="magnitude-and-phase"></a>
+Given a spectrogram $X$, its magnitude is defined as $|X|$, and its phase is
+defined as $P:= ∠_{\theta} X$, the element-wise angle of each complex entry.
+We use $|X|$ as input to our model, and use $P$ to employ a useful trick that
+I will describe next that makes our task much simpler.
 
-## Deep-Mask Estimation Step
-
-###### **I. Forward Pass**
-To estimate a target signal $k$, we apply the transformation to a mini-batch of mixture-target audio pairs $(A, S_{k})$.
-yielding $(|X|, |Y_{k}|)$. We feed $|X|$ into our network, which estimates a multiplicative soft-mask $M_{\theta}$,
-normalized such that $m_{i} \in [0, 1]$. Next, $M_{\theta}$ is *applied* to $|X|$, such that
+### Masking and Source Estimation <a name="masking-and-source-estimation"></a>
+To estimate a target signal $k$, we apply the transformation to a mini-batch
+of mixture-target audio pairs $(A, S_{k})$. yielding $(|X|, |Y_{k}|)$. We feed
+$|X|$ into our network, which estimates a multiplicative soft-mask
+$M_{\theta}$, normalized such that $m_{i} \in [0, 1]$. Next, $M_{\theta}$ is
+*applied* to $|X|$, such that
 
 $$|\hat{Y}_{k}| = M_{\theta} \odot |X|$$
-where $\odot$ is the Hadamard product, and $|\hat{Y}_{k}|$ is the network's estimate of $|Y_k|$.
+where $\odot$ is the Hadamard product, and $|\hat{Y}_{k}|$ is the network's
+estimate of $|Y_k|$.
 
-###### **II. Objective Function**
+### Optimization <a name="optimization"></a>
 
 Let $L$ be some loss criterion. The objective is to find an optimal choice of
 model parameters $\theta^{*}$ that minimize the loss
@@ -106,27 +114,32 @@ In recent literature, the most common loss criterions employed are
 *mean absolute loss* and *mean squared error* (MSE), paired with optimizers
 such as *SGD* or *Adam*.
 
-## Source Separation Step
-###### **I. Phase Correction**
-Without prior knowledge, it may not be clear how to transform the source estimate $|\hat{Y}_{k}|$ to a complex-valued spectrogram. Indeed, this is where
-the second source separation method shines, as it avoids this predicament altogether. There are known (but rather complicated) ways of phase estimation such as [Griffin-Lim](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&rep=rep1&type=pdf). As I mentioned earlier, there is a quick-and-dirty
-trick that works pretty well. Put simply, we use the phase informaton of the mixture audio to estimate the phase information of the source estimate. Given
-$|\hat{Y}_{k}|$ and $P$, we define the phase-corrected source estimate as:
+### Phase Approximation <a name="phase-approximation"></a>
+Without prior knowledge, it may not be clear how to transform the source
+estimate $|\hat{Y}_{k}|$ to a complex-valued spectrogram. Indeed, this is
+where the second source separation method shines, as it avoids this
+predicament altogether. There are known (but rather complicated) ways of
+phase estimation such as [Griffin-Lim](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&rep=rep1&type=pdf).
+As I mentioned earlier, there is a quick-and-dirty trick that works pretty
+well. Put simply, we use the phase informaton of the mixture audio to estimate
+the phase information of the source estimate. Given $|\hat{Y}_{k}|$ and $P$,
+we define the phase-corrected source estimate as:
 
 $$\bar{Y}_{i} = |\hat{Y}_{k}| ⊙ {\rm exp}(j \cdot P)$$
 
 where $j$ is imaginary.
 
-###### **II. Final Step**
-The last necessary calculation transports data from the time-frequency domain back to the audio signal domain. All that is required is to apply the inverse STFT to the phase-corrected
-estimate, which yields the audio signal estimate $\hat{S}_{k}$:
+The last necessary calculation transports data from the time-frequency domain
+back to the audio signal domain. All that is required is to apply the inverse
+STFT to the phase-corrected estimate, which yields the audio signal estimate
+$\hat{S}_{k}$:
 
 $$\hat{S}_{k} = f^{-1}(\bar{Y}_{k})$$
 
-If the noise is indeed small, such that $||\hat{S}_{k} - {S}_{k}|| < ϵ$ for some small $ϵ$, and our model has not been overfitted to the training data, then we've objectively solved our task — the separated audio must sound good
+If the noise is indeed small, such that $||\hat{S}_{k} - {S}_{k}|| < ϵ$ for
+some small $ϵ$, and our model has not been overfitted to the training data,
+then we've objectively solved our task — the separated audio must sound good
 to our ears as well.
-
-
 
 ## Pretrained Models <a name="pretrained-models"></a>
 Auralflow includes several base model architectures that have already been
