@@ -214,8 +214,55 @@ class SpectrogramNetSimple(nn.Module):
         device: Optional[str] = None,
     ) -> None:
 ```
+Parameters
+* _num_fft_bins : int_ 
 
-Please make sure to update tests as appropriate.
+  Number of FFT bins (aka filterbanks).
+* _num_frames : int_
+
+  Number of temporal features (time axis).
+* _num_channels : int_
+
+  1 for mono, 2 for stereo. Default: 1.
+* _hidden_channels : int_ 
+
+  Number of initial output channels. Default: 16.
+* _mask_act_fn : str_ 
+
+  Final activation layer that creates the multiplicative soft-mask. Default: 'sigmoid'.
+* leak_factor : float 
+
+  Alpha constant if using Leaky ReLU activation. Default: 0.
+* _dropout_p : float_
+
+  Dropout probability. Default: 0.5.
+* _normalize_input : bool_ 
+
+  Whether to learn input normalization parameters. Default: False.
+* _normalize_output : bool_
+
+  Whether to learn output normalization parameters. Default: False.
+* _device : str, optional_
+
+  Device. Default: None.
+
+### Example
+```python
+# initialize network
+spec_net = SpectrogramNetSimple(
+    num_fft_bins=1024,
+    num_frames=173,
+    num_channels=1,
+    hidden_channels=16,
+    normalize_input=True,
+    normalize_output=True
+)
+# batch of spectrogram data
+mix_audio = torch.rand((8, 1, 1024, 173))
+# call forward method
+spectrogram_estimate = spec_net(mix_audio)
+```
+
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+[MIT](LICENSE)
