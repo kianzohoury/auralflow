@@ -103,12 +103,3 @@ def main(config_filepath: str):
     training_params["global_step"] = global_step
     save_config(config=configuration, save_filepath=config_filepath)
 
-
-# if __name__ == "__main__":
-#     parser = ArgumentParser(description="Model training script.")
-#     parser.add_argument(
-#         "model_folder", type=str, help="Path to a model training folder."
-#     )
-#     args = parser.parse_args()
-#     config_filepath = args.model_folder + "/config.json"
-#     main(config_filepath)

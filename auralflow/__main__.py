@@ -59,6 +59,12 @@ if __name__ == "__main__":
         "folder_name", type=str, help="Path to model training folder."
     )
 
+    # Define separator parser.
+    separator_parser = subparsers.add_parser(name="separate")
+    train_parser.add_argument(
+        "folder_name", type=str, help="Path to model training folder."
+    )
+
     # Parse args.
     args = parser.parse_args()
     if args.command == "config":
@@ -69,7 +75,24 @@ if __name__ == "__main__":
         )
         config = utils.load_config(folder_name + "/config.json")
         config["model_params"]["model_type"] = model_type
+        config["model_params"]["model_name"] = folder_name
+        utils.save_config(config, save_filepath=folder_name + "/config.json")
     elif args.command == "train":
         config_filepath = args.folder_name + "/config.json"
         train.main(config_filepath=config_filepath)
+    elif args.command == "separate":
+
+
+    parser = ArgumentParser(description="Source separation script.")
+    parser.add_argument(
+        "config_filepath", type=str, help="Path to a configuration file."
+    )
+    parser.add_argument(
+        "audio_filepath", type=str, help="Path to an audio file."
+    )
+    parser.add_argument(
+        "save_filepath", type=str, help="Path to save audio to."
+    )
+    args = parser.parse_args()
+    main(args.config_filepath, args.audio_filepath, args.save_filepath)
 

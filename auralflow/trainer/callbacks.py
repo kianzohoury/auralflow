@@ -7,6 +7,7 @@ from typing import Optional
 
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
+from prettytable import PrettyTable
 
 from auralflow.losses import get_evaluation_metrics
 from auralflow.models import SeparationModel
@@ -54,13 +55,17 @@ class TrainingCallback(Callback):
         call_metrics: bool = True,
     ) -> None:
         self.model = model
-        if visualizer:
+        self.visualizer = visualizer
+        self.writer = writer
+        self.call_metrics = call_metrics
+
+        if self.visualizer:
             self.visualizer_ = VisualizerCallback(
                 model=model, visualizer=visualizer
             )
         if self.writer:
             self.writer_ = WriterCallback(writer=writer)
-        if call_metrics:
+        if self.call_metrics:
             self.metrics_callback = SeparationMetricCallback(model=model)
 
     def on_loss_end(self, global_step: int) -> None:
@@ -77,7 +82,7 @@ class TrainingCallback(Callback):
             self.writer_.write_epoch_loss(model=self.model, global_step=epoch)
         if self.visualizer:
             self.visualizer_.on_epoch_end(mix=mix, target=target, epoch=epoch)
-        if self.metrics_callback:
+        if self.call_metrics:
             self.metrics_callback.on_epoch_end(mix=mix, target=target)
 
 
@@ -107,6 +112,14 @@ class SeparationMetricCallback(Callback):
 
     def __init__(self, model: SeparationModel):
         self.model = model
+        self.best_deltas = {
+            "pesq": float("-inf"),
+            "sar": float("-inf"),
+            "sdr": float("-inf"),
+            "si_sdr": float("-inf"),
+            "sir": float("inf"),
+            "stoi": float("-inf")
+        }
 
     def on_epoch_end(self, mix: Tensor, target: Tensor) -> None:
         """Prints source separation evaluation metrics at epoch finish."""
@@ -115,13 +128,25 @@ class SeparationMetricCallback(Callback):
         metrics = get_evaluation_metrics(
             mixture=mix, estimate=estimate, target=target
         )
+        table = PrettyTable(["metric", "estimate", "target", "delta"])
         estimate_metrics = list(metrics["estim_metrics"].items())
         target_metrics = list(metrics["target_metrics"].items())
         for i in range(len(estimate_metrics)):
             est_label, est_val = estimate_metrics[i]
             tar_label, tar_val = target_metrics[i]
-            print(f"{est_label}: {est_val}")
-            print(f"{tar_label}{tar_val}")
+            metric_label = "_".join(est_label.split("_")[1:])
+            # Skip SIR for now.
+            if metric_label == "sir":
+                continue
+            if est_val < float("inf") and tar_val < float("inf"):
+                delta = est_val - tar_val 
+            else:
+                delta = float("inf")
+            if self.best_deltas[metric_label] < delta:
+                self.best_deltas[metric_label] = delta
+                delta = str(delta) + "*"
+            table.add_row([metric_label, est_val, tar_val, delta])
+        print(table)
 
 
 class WriterCallback(Callback):

@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor, Tensor
 from torch.nn import functional
+from auralflow.utils.data_utils import trim_audio
 
 
 def component_loss(
@@ -87,7 +88,7 @@ def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
 
 
 def get_evaluation_metrics(
-        mixture: Tensor, estimate: Tensor, target: Tensor, sr: int = 8000
+        mixture: Tensor, estimate: Tensor, target: Tensor, sr: int = 8000, num_batch: int = 8
 ) -> Dict[str, Dict[str, Any]]:
     """Returns batch-wise means of standard source separation eval scores."""
 
@@ -96,10 +97,11 @@ def get_evaluation_metrics(
     estimate = estimate.unsqueeze(0) if estimate.dim() == 2 else estimate
     target = target.unsqueeze(0) if target.dim() == 2 else target
 
-    # Collapse channels to mono, convert to numpy arrays.
-    mixture = torch.mean(mixture, dim=1, keepdim=True).cpu().numpy()
-    estimate = torch.mean(estimate, dim=1, keepdim=True).cpu().numpy()
-    target = torch.mean(target, dim=1, keepdim=True).cpu().numpy()
+    # Collapse channels to mono, convert to numpy arrays, trim audio clips.
+    mixture = torch.mean(mixture, dim=1, keepdim=True).squeeze(-1).cpu().numpy()
+    estimate = torch.mean(estimate, dim=1, keepdim=True).squeeze(-1).cpu().numpy()
+    target = torch.mean(target, dim=1, keepdim=True).squeeze(-1).cpu().numpy()
+    mixture, estimate, target = trim_audio([mixture, estimate, target])
 
     running_metrics = {
         "input_pesq": 0,
@@ -116,7 +118,9 @@ def get_evaluation_metrics(
         "stoi": 0
     }
 
-    for i in range(mixture.shape[0]):
+    num_batch = min(num_batch, mixture.shape[0])
+
+    for i in range(num_batch):
         # Compute metrics for each triplet of data.
         named_metrics = asteroid.metrics.get_metrics(
             mix=mixture[i],
@@ -137,7 +141,8 @@ def get_evaluation_metrics(
     for metric_name, val in running_metrics.items():
         mean_val = val / mixture.shape[0]
         if metric_name.split("_")[0] == "input":
-            target_metrics[f"target_{metric_name.split('_')[-1]}"] = mean_val
+            suffix = "_".join(metric_name.split('_')[1:])
+            target_metrics[f"target_{suffix}"] = mean_val
         else:
             estim_metrics[f"estim_{metric_name}"] = mean_val
     return {"estim_metrics": estim_metrics, "target_metrics": target_metrics}

@@ -8,7 +8,7 @@ import torch
 import math
 import librosa
 
-from typing import Optional, Tuple, Callable, List
+from typing import Optional, Tuple, Callable, List, Union
 from torchaudio import transforms
 from torch import Tensor
 import numpy as np
@@ -249,11 +249,18 @@ def get_conv_shape(
     return h_out, w_out
 
 
-def trim_audio(audio_tensors: List[Tensor]) -> List[Tensor]:
+def trim_audio(
+    audio_tensors: Union[List[Tensor], List[np.ndarray]]
+) -> Union[List[Tensor], List[np.ndarray]]:
     """Trims audio tensors to have matching number of frames."""
-    assert all([aud.dim() == audio_tensors[0].dim() for aud in audio_tensors])
-    if audio_tensors[0].dim() == 2:
-        audio_tensors = [aud.unsqueeze(0) for aud in audio_tensors]
+    if len(audio_tensors) and isinstance(audio_tensors[0], np.ndarray):
+        assert all([len(aud.shape) == len(audio_tensors[0].shape) for aud in audio_tensors])
+        if len(audio_tensors[0].shape) == 2:
+            audio_tensors = [np.expand_dims(aud, axis=0) for aud in audio_tensors]
+    elif len(audio_tensors):
+        assert all([aud.dim() == audio_tensors[0].dim() for aud in audio_tensors])
+        if audio_tensors[0].dim() == 2:
+            audio_tensors = [aud.unsqueeze(0) for aud in audio_tensors]
     n_frames = min(audio_tensors, key=lambda aud: aud.shape[-1]).shape[-1]
     trimmed_audio = [aud[:, :, :n_frames] for aud in audio_tensors]
     return trimmed_audio

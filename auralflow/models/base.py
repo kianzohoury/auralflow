@@ -52,7 +52,7 @@ class SeparationModel(ABC):
 
         # Retrieve requested base model architecture name.
         self.base_model_type = getattr(
-            importlib.import_module("models"), self.model_params["model_type"]
+            importlib.import_module("auralflow.models"), self.model_params["model_type"]
         )
 
     @abstractmethod
