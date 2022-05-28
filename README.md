@@ -490,9 +490,63 @@ train_dataset = create_audio_dataset(
     mono=True,
 )
 
-# sample pair of training and target data
+# sample pair of mixture and target data
 mix_audio, target_audio = next(iter(train_dataset))
 ```
+# Losses
+## component_loss(...)
+```python
+def component_loss(
+    filtered_src: FloatTensor,
+    target_src: Tensor,
+    filtered_res: FloatTensor,
+    target_res: Tensor,
+    alpha: float = 0.2,
+    beta: float = 0.8,
+    n_components: int = 2,
+) -> Tensor:
+    """Weighted L2 loss using 2 or 3 components depending on arguments.
 
+    Balances the target source separation quality versus the amount of
+    residual noise attenuation. Optional third component balances the
+    quality of the residual noise against the other two terms.
+    """
+```
+Also available as a loss instance `WeightedComponentLoss`.
+```python
+class WeightedComponentLoss(nn.Module):
+    """Wrapper class for calling weighted component loss."""
+
+    def __init__(
+        self, model, alpha: float, beta: float, regularizer: bool = True
+    ) -> None:
+```
+### Example
+
+```python
+from auralflow import utils
+from auralflow.losses import component_loss
+import torch
+
+
+# generate sample data
+filtered_source = torch.rand((16, 512, 173, 1))
+target = torch.rand((16, 512, 173, 1))
+filtered_residual = torch.rand((16, 512, 173, 1))
+residual = torch.rand((16, 512, 173, 1))
+
+# weighted loss criterion
+loss = component_loss(
+    filtered_src=filtered_source,
+    target_src=target,
+    filtered_res=filtered_residual,
+    target_res=residual,
+    alpha=0.2,
+    beta=0.8
+)
+
+# backprop
+loss.backward()
+```
 ## License
 [MIT](LICENSE)

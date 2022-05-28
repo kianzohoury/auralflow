@@ -153,7 +153,7 @@ class WeightedComponentLoss(nn.Module):
 
     def __init__(
         self, model, alpha: float, beta: float, regularizer: bool = True
-    ):
+    ) -> None:
         super(WeightedComponentLoss, self).__init__()
         self.model = model
         self.alpha = alpha

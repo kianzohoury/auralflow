@@ -6,6 +6,7 @@
 
 from .losses import (
     WeightedComponentLoss,
+    component_loss,
     KLDivergenceLoss,
     kl_div_loss,
     L1Loss,
@@ -20,6 +21,7 @@ import torch.nn as nn
 
 __all__ = [
     "WeightedComponentLoss",
+    "component_loss",
     "KLDivergenceLoss",
     "kl_div_loss",
     "L1Loss",
