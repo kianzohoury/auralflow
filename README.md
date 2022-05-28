@@ -152,12 +152,69 @@ and should not be instantiated.
 `SpectrogramMaskModel` is the Spectrogram-domain deep mask estimation model.
 
 ```python
-config_data = load_config("/path/to/my_model/config.json")
-mask_model = SpectrogramMaskModel(config_data)
+class SpectrogramMaskModel(SeparationModel):
+  """Spectrogram-domain deep mask estimation model."""
 
+    def __init__(self, configuration: dict):
+        super(SpectrogramMaskModel, self).__init__(configuration)
+```
+Parameters
+
+
+* configuration : dict
+
+  Configuration data read from a .json file.
+
+
+### Example
+```python
+# unload configuration data
+config_data = load_config("/path/to/my_model/config.json")
+# 2 second audio data
 mix_audio = torch.rand((1, 88200))
+# initialize mask model
+mask_model = SpectrogramMaskModel(config_data)
+# separate audio
 vocals_estimate = mask_model.separate(mix_audio)
 ```
+
+## SpectrogramNetSimple
+```python
+class SpectrogramNetSimple(nn.Module):
+    """Vanilla spectrogram-based deep mask estimation model.
+
+    Args:
+        num_fft_bins (int): Number of FFT bins (aka filterbanks).
+        num_frames (int): Number of temporal features (time axis).
+        num_channels (int): 1 for mono, 2 for stereo. Default: 1.
+        hidden_channels (int): Number of initial output channels. Default: 16.
+        mask_act_fn (str): Final activation layer that creates the
+            multiplicative soft-mask. Default: 'sigmoid'.
+        leak_factor (float): Alpha constant if using Leaky ReLU activation.
+            Default: 0.
+        dropout_p (float): Dropout probability. Default: 0.5.
+        normalize_input (bool): Whether to learn input normalization
+            parameters. Default: False.
+        normalize_output (bool): Whether to learn output normalization
+            parameters. Default: False.
+        device (optional[str]): Device. Default: None.
+    """
+
+    def __init__(
+        self,
+        num_fft_bins: int,
+        num_frames: int,
+        num_channels: int = 1,
+        hidden_channels: int = 16,
+        mask_act_fn: str = "sigmoid",
+        leak_factor: float = 0,
+        dropout_p: float = 0.5,
+        normalize_input: bool = False,
+        normalize_output: bool = False,
+        device: Optional[str] = None,
+    ) -> None:
+```
+
 Please make sure to update tests as appropriate.
 
 ## License
