@@ -105,7 +105,7 @@ the model was trained on as well as its underlying architecture:
 
 **\*-VAE** (suffix): model uses a Variational Autoencoder (VAE) + LSTM.
 
-## Installation <a name="installation"></a> 🔧
+## Installation <a name="installation"></a>
 Install auralflow with pip using the following command:
 ```bash
 pip install auralflow
