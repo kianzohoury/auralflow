@@ -78,7 +78,12 @@ def l2_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
 
 
 def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
-    """Computes KL term using the closed form expression."""
+    """Computes KL term using the closed form expression.
+
+    KL term is defined as := D_KL(P||Q), where P is the modeled distribution,
+    and Q is a standard normal N(0, 1). The term is combined with the
+    reconstruction loss.
+    """
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
@@ -193,12 +198,7 @@ class WeightedComponentLoss(nn.Module):
 
 
 class KLDivergenceLoss(nn.Module):
-    """Wrapper class for KL Divergence loss. Only to be used for VAE models.
-
-    KL term is defined as := D_KL(P||Q), where P is the modeled distribution,
-    and Q is a standard normal N(0, 1). The term is combined with the
-    reconstruction loss.
-    """
+    """Wrapper class for KL Divergence loss. Only to be used for VAE models."""
 
     def __init__(self, model, loss_fn: str = "l1"):
         super(KLDivergenceLoss, self).__init__()

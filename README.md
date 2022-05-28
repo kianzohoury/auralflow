@@ -548,5 +548,42 @@ loss = component_loss(
 # backprop
 loss.backward()
 ```
+
+## kl_div_loss(...)
+```python
+def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
+    """Computes KL term using the closed form expression.
+    
+    KL term is defined as := D_KL(P||Q), where P is the modeled distribution,
+    and Q is a standard normal N(0, 1). The term is combined with the
+    reconstruction loss.
+    """
+```
+Also available as a loss instance `KLDivergenceLoss`.
+```python
+class KLDivergenceLoss(nn.Module):
+    """Wrapper class for KL Divergence loss. Only to be used for VAE models."""
+
+    def __init__(self, model, loss_fn: str = "l1"):
+```
+
+### Example
+
+```python
+from auralflow import utils
+from auralflow.losses import kl_div_loss
+import torch
+
+
+# generate sample data
+mu = torch.rand((16, 256, 256))
+sigma = torch.rand((16, 256, 256))
+
+# kl div loss
+loss = kl_div_loss(mu, sigma)
+
+# backprop
+loss.backward()
+```
 ## License
 [MIT](LICENSE)
