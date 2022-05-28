@@ -149,14 +149,14 @@ which expects `config.json` to exist within the model training folder.
 `SeparationModel` is the abstract base class for source separation models
 and should not be instantiated.
 ## SpectrogramMaskModel
-`SpectrogramMaskModel` is the Spectrogram-domain deep mask estimation model.
+`SpectrogramMaskModel` is the wrapper object for integrating PyTorch networks
+as deep mask estimation models in the spectrogram domain.
 
 ```python
 class SpectrogramMaskModel(SeparationModel):
   """Spectrogram-domain deep mask estimation model."""
 
-    def __init__(self, configuration: dict):
-        super(SpectrogramMaskModel, self).__init__(configuration)
+    def __init__(self, configuration: dict) -> None:
 ```
 Parameters
 
@@ -168,6 +168,11 @@ Parameters
 
 ### Example
 ```python
+from auralflow.utils import load_config
+from auralflow.models import SpectrogramMaskModel
+import torch
+
+
 # unload configuration data
 config_data = load_config("/path/to/my_model/config.json")
 # 2 second audio data
@@ -179,6 +184,8 @@ vocals_estimate = mask_model.separate(mix_audio)
 ```
 
 ## SpectrogramNetSimple
+`SpectrogramNetSimple` is the spectrogram-domain U-Net network with
+a simple encoder/decoder architecture.
 ```python
 class SpectrogramNetSimple(nn.Module):
     """Vanilla spectrogram-based deep mask estimation model.
@@ -248,6 +255,10 @@ Parameters
 
 ### Example
 ```python
+from auralflow.models import SpectrogramNetSimple
+import torch
+
+
 # initialize network
 spec_net = SpectrogramNetSimple(
     num_fft_bins=1024,
@@ -263,6 +274,73 @@ mix_audio = torch.rand((8, 1, 1024, 173))
 spectrogram_estimate = spec_net(mix_audio)
 ```
 
+## SpectrogramNetLSTM
+`SpectrogramNetLSTM` is the spectrogram-domain U-Net network with 
+an additional stack of LSTM layers as the bottleneck.
+```python
+class SpectrogramNetLSTM(SpectrogramNetSimple):
+    """Deep mask estimation model using LSTM bottleneck layers.
+
+    Args:
+        recurrent_depth (int): Number of stacked lstm layers. Default: 3.
+        hidden_size (int): Requested number of hidden features. Default: 1024.
+        input_axis (int): Whether to feed dim 0 (frequency axis) or dim 1
+            (time axis) as features to the lstm. Default: 1.
+
+    Keyword Args:
+        args: Positional arguments for constructor.
+        kwargs: Additional keyword arguments for constructor.
+    """
+
+    def __init__(
+        self,
+        *args,
+        recurrent_depth: int = 3,
+        hidden_size: int = 1024,
+        input_axis: int = 0,
+        **kwargs
+    ) -> None:
+```
+Parameters
+* _recurrent_depth : int_ 
+
+  Number of stacked lstm layers. Default: 3.
+* _hidden_size : int_ 
+
+  Requested number of hidden features. Default: 1024.
+* _input_axis : int_ 
+
+  Whether to feed dim 0 (frequency axis) or dim 1 (time axis) as features to the lstm. Default: 1.
+
+Keyword Args:
+* _args :_ 
+
+  Positional arguments for constructor.
+* _kwargs :_
+
+  Additional keyword arguments for constructor.
+* 
+### Example
+```python
+from auralflow.models import SpectrogramNetLSTM
+import torch
+
+
+# initialize network
+spec_net = SpectrogramNetLSTM(
+    num_fft_bins=1024,
+    num_frames=173,
+    num_channels=1,
+    hidden_channels=16,
+    recurrent_depth=2,
+    hidden_size=2048,
+    input_axis=1
+)
+# batch of spectrogram data
+mix_audio = torch.rand((8, 1, 1024, 173))
+# call forward method
+spectrogram_estimate = spec_net(mix_audio)
+```
 
 ## License
 [MIT](LICENSE)
