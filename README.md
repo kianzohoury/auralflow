@@ -14,7 +14,7 @@ and evaluation tools are available for a more seamless and efficient workflow.
 * [What is Music Source Separation?](#introduction)
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
-* [Usage](#usage)
+* [API Documentation](#documentation)
   * [Training](#training)
   * [Models](#models)
   * [Losses](#losses)
@@ -142,10 +142,22 @@ auralflow train my_model
 ```
 which expects `config.json` to exist within the model training folder.
 
-# Usage
+# API Documentation <a name="documentation"></a>
 
+# Models
+## SeparationModel
+`SeparationModel` is the abstract base class for source separation models
+and should not be instantiated.
+## SpectrogramMaskModel
+`SpectrogramMaskModel` is the Spectrogram-domain deep mask estimation model.
 
+```python
+config_data = load_config("/path/to/my_model/config.json")
+mask_model = SpectrogramMaskModel(config_data)
 
+mix_audio = torch.rand((1, 88200))
+vocals_estimate = mask_model.separate(mix_audio)
+```
 Please make sure to update tests as appropriate.
 
 ## License
