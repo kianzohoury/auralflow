@@ -557,7 +557,7 @@ $\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{filter, k} - |
 where:
 
 
-$\Huge Y_{k, filter} = M_{\theta} \odot |Y_{k}|$
+$\Huge Y_{k, filter} = M_{\theta} \odot |Y_{k}| + \frac{\alpha}{n}|| R_{filter}||^{2}_{2}$
 
 
 $\Huge R_{filter} = M_{ \theta } \odot (|X| - |Y_{k}|)$
