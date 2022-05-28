@@ -178,7 +178,7 @@ auralflow separate my_model path/to/audio --residual --duration 90 \
 --save path/to/output
 ```
 
-## Notebook Demo <a name="demo"></a>
+## [Notebook Demo](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing) <a name="demo"></a> 
 A walk-through involving training a model to separate vocals can be found [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing).
 
 # API Documentation <a name="documentation"></a> 🎶
