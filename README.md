@@ -134,8 +134,8 @@ $\hat{S}_{k}$:
 
 $$\hat{S}_{k} = f^{-1}(\bar{Y}_{k})$$
 
-If the noise is indeed small, such that $||\hat{S}_{k} - {S}_{k}|| < ϵ$ for
-some small $ϵ$, and our model has not been overfitted to the training data,
+If the noise is indeed small, such that $||\hat{S_{k}} - {S}_{k}|| < ϵ$ for
+some small $ϵ$, and our model has not been overfit to the training data,
 then we've objectively solved our task — the separated audio must sound good
 to our ears as well.
 
