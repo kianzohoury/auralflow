@@ -554,7 +554,7 @@ def component_loss(
 #### 2-Component Loss:
 $$
 L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||M_{\theta} \odot
-|Y_{k}| - |Y_{k}|||^{2}_{2} + \frac{\alpha}{n} ||||
+|Y_{k}| - |Y_{k}|||^{2}_{2} + \frac{\alpha}{n} ||||^{2}_{2}
 $$
 
 Also available as a loss instance `WeightedComponentLoss`.
