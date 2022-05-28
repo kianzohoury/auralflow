@@ -61,17 +61,23 @@ separation is available in the documentation for those interested.
 Below, I will go into some detail about the underlying mathematics that describe
 our problem and objective  — feel free to skip this section as it is just meant to supplement background knowledge.
 
-## Data Processing
+### Short Time Fourier Transform
 Let an input mixture signal be a $2$-dimensional audio waveform
 $A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized
 such that the amplitude of each sample $a_i \in [-1, 1]$.
 
-###### **II. Data Transformation**
 Let $f: A ↦ X$ be an linear transformation, mapping an audio signal $A$
-to a complex-valued time-frequency representation $X \in \mathbb{C}^{c, f, τ}$, with $f$ filterbanks, and $τ$ number of frames. $X$ is often referred to as a ***spectrogram***.
+to a complex-valued time-frequency representation $X \in \mathbb{C}^{c, f, τ}$,
+with $f$ filterbanks, and $τ$ number of frames. $X$ is often referred to as
+a ***spectrogram***.
 
-Similarly, let $f^{-1}: Y ↦ S$ be the inverse transformation mapping a spectrogram $Y \in \mathbb{C}^{c, f, τ}$ to its audio signal $S \in \mathbb{R}^{c, t}$. As was alluded to in the introduction, the existence of
-noise and uncertainty ensure that $$f^{-1}(f(A)) \neq A$$ However, by carefully choosing a good transformation $f$, we can minimize the unknown additive noise factor $E_{noise}$, such that $$f^{-1}(f(A)) = A + E_{noise} \approx A$$
+Similarly, let $f^{-1}: Y ↦ S$ be the inverse transformation mapping a
+spectrogram $Y \in \mathbb{C}^{c, f, τ}$ to its audio signal
+$S \in \mathbb{R}^{c, t}$. As was alluded to in the introduction, the
+existence of noise and uncertainty ensure that $$f^{-1}(f(A)) \neq A$$
+However, by carefully choosing a good transformation $f$, we can minimize the
+unknown additive noise factor $E_{noise}$, such that
+$$f^{-1}(f(A)) = A + E_{noise} \approx A$$
 
 Without going into much detail, $f$ is an approximation algorithm to the
 **Discrete Fourier Transform (DFT)** called the **Short-Time Fourier Transform (STFT)**, which is a parameterized windowing function that applies the DFT
