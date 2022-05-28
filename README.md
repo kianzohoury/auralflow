@@ -98,7 +98,7 @@ To estimate a target signal $k$, we apply the transformation to a mini-batch
 of mixture-target audio pairs $(A, S_{k})$. yielding $(|X|, |Y_{k}|)$. We feed
 $|X|$ into our network, which estimates a multiplicative soft-mask
 $M_{\theta}$, normalized such that $m_{i} \in \[0, 1]$. Next, $M_{\theta}$ is
-*applied* to $|X|$, such that $|\hat{Y}_{k}| = M_{\theta} \odot |X|$
+to $|X|$, such that $$|\hat{Y}_{k}| = M_{\theta} \odot |X|$$
 where $\odot$ is the Hadamard product, and $|\hat{Y}_{k}|$ is the network's
 estimate of $|Y_k|$.
 
