@@ -22,13 +22,12 @@ def main(config_filepath: str):
     configuration = load_config(config_filepath)
     training_params = configuration["training_params"]
     dataset_params = configuration["dataset_params"]
-    visualizer_params = configuration["visualizer_params"]
     print("Successful.")
 
     # Load training set into memory.
     print("-" * 79 + "\nLoading training data...")
     train_dataset = create_audio_dataset(
-        dataset_params["dataset_path"],
+        dataset_path=dataset_params["dataset_path"],
         split="train",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],
@@ -40,7 +39,7 @@ def main(config_filepath: str):
 
     # Load validation set into memory.
     val_dataset = create_audio_dataset(
-        dataset_params["dataset_path"],
+        dataset_path=dataset_params["dataset_path"],
         split="val",
         targets=dataset_params["targets"],
         chunk_size=dataset_params["sample_length"],

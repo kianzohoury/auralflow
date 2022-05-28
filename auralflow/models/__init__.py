@@ -33,14 +33,19 @@ __all__ = [
     "setup_model",
 ]
 
-_models = __all__[:3]
+_models = [
+    "SpectrogramNetSimple",
+    "SpectrogramNetLSTM",
+    "SpectrogramNetVAE",
+]
 
 
 def create_model(configuration: dict) -> SeparationModel:
     """Creates a new instance of a model with its given configuration."""
-    separation_task = configuration["model_params"]["separation_task"]
-    if configuration["model_params"]
-    if separation_task == "mask":
+    model_type = configuration["model_params"]["model_type"]
+    if model_type in {
+        "SpectrogramNetSimple", "SpectrogramNetLSTM", "SpectrogramNetVAE"
+    }:
         base_class = SpectrogramMaskModel
     else:
         base_class = lambda x: x

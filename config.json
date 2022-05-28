@@ -1,6 +1,5 @@
 {
     "model_params": {
-        "separation_task": "mask",
         "model_type": "SpectrogramNetSimple",
         "model_name": "template",
         "normalize_input": true,
@@ -11,7 +10,6 @@
         "leak_factor": 0
     },
     "dataset_params": {
-        "dataset_path": "/content/drive/MyDrive/MUSDB18/wav",
         "targets": ["vocals"],
         "max_num_tracks": 2,
         "max_num_samples": 1e3,
@@ -21,9 +19,7 @@
         "num_fft": 1024,
         "window_size": 1024,
         "hop_length": 512,
-        "power_spectrum": false,
-        "learn_filterbanks": false,
-        "val_split": 0.2
+        "learn_filterbanks": false
     },
     "training_params": {
         "training_mode": true,
@@ -43,7 +39,6 @@
         "pre_fetch": 4,
         "stop_patience": 10,
         "max_lr_steps": 5,
-        "checkpoint_path": "checkpoints",
         "silent_checkpoint": true
     },
     "visualizer_params": {
@@ -55,6 +50,5 @@
         "save_audio": false,
         "save_frequency": 5,
         "num_images": 1,
-        "logs_path": "runs"
     }
 }

@@ -5,6 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from argparse import ArgumentParser
+from pathlib import Path
 
 import librosa
 import torch
@@ -14,7 +15,14 @@ from auralflow.models import create_model, setup_model
 from auralflow.utils import load_config
 
 
-def main(config_filepath: str, audio_filepath: str, save_filepath: str):
+def main(
+    config_filepath: str,
+    audio_filepath: str,
+    save_filepath: str,
+    sr: int = 44100,
+    padding: int = 200,
+    residual: bool = True
+) -> None:
     """Separates a full audio track and saves it."""
 
     # Load configuration file.
@@ -28,57 +36,74 @@ def main(config_filepath: str, audio_filepath: str, save_filepath: str):
     model = setup_model(model)
     print("Successful.")
 
-    # Load audio.
-    audio, sr = librosa.load(audio_filepath, sr=44100)
-    audio = torch.from_numpy(audio).unsqueeze(0)
-    length = model.dataset_params["sample_length"]
+    # Folder to store output.
+    save_dir = Path(save_filepath, "separated_audio")
+    save_dir.mkdir(parents=True, exist_ok=True)
 
-    # Split audio into chunks.
-    padding = 200
-    step_size = length * sr
-    max_frames = audio.shape[-1]
-
-    # Store chunks.
-    chunks = []
-    offset = 0
+    track_paths = []
+    if Path(audio_filepath).is_dir():
+        for track_path in Path(audio_filepath).iterdir():
+            track_paths.append(track_path)
+    else:
+        track_paths.append(audio_filepath)
 
     print("Separating...")
-    while offset < max_frames:
-        # Reshape and trim audio chunk.
-        audio_chunk = audio[:, offset : offset + length * sr]
+    for track_path in track_paths:
+        # Load audio.
+        mix_audio, sr = librosa.load(track_path, sr=sr)
+        mix_audio = torch.from_numpy(mix_audio).unsqueeze(0)
 
-        # Unsqueeze batch dimension if not already batched.
-        if audio_chunk.dim() == 2:
-            audio_chunk = audio_chunk.unsqueeze(0)
+        # Split audio into chunks.
+        length = model.dataset_params["sample_length"]
+        step_size = length * sr
+        max_frames = mix_audio.shape[-1]
 
-        # Separate audio.
-        estimate = model.separate(audio_chunk)
+        # Store chunks.
+        chunks = []
+        offset = 0
 
-        # Trim end by padding amount.
-        estimate = estimate[..., :-padding]
-        chunks.append(estimate)
+        # Separate smaller windows of audio.
+        while offset < max_frames:
+            # Reshape and trim audio chunk.
+            audio_chunk = mix_audio[:, offset : offset + length * sr]
 
-        # Update current frame position.
-        offset = offset + step_size - padding
-        if offset + length * sr >= max_frames:
-            break
+            # Unsqueeze batch dimension if not already batched.
+            if audio_chunk.dim() == 2:
+                audio_chunk = audio_chunk.unsqueeze(0)
 
-    # Stitch chunks to create full source estimate.
-    full_estimate = torch.cat(chunks, dim=2).reshape(audio.shape)
-    # Export audio.
-    wavfile.write(save_filepath, rate=sr, data=full_estimate.cpu().numpy())
+            # Separate audio.
+            estimate = model.separate(audio_chunk)
 
+            # Trim end by padding amount.
+            estimate = estimate[..., :-padding]
+            chunks.append(estimate)
 
-if __name__ == "__main__":
-    parser = ArgumentParser(description="Source separation script.")
-    parser.add_argument(
-        "config_filepath", type=str, help="Path to a configuration file."
-    )
-    parser.add_argument(
-        "audio_filepath", type=str, help="Path to an audio file."
-    )
-    parser.add_argument(
-        "save_filepath", type=str, help="Path to save audio to."
-    )
-    args = parser.parse_args()
-    main(args.config_filepath, args.audio_filepath, args.save_filepath)
+            # Update current frame position.
+            offset = offset + step_size - padding
+            if offset + length * sr >= max_frames:
+                break
+
+        # Stitch chunks to create full source estimate.
+        full_estimate = torch.cat(chunks, dim=2).reshape(mix_audio.shape)
+        # Export audio.
+        track_name = track_path.name.removesuffix(".wav")
+        track_dir = save_dir.joinpath(track_name)
+        track_dir.mkdir(parents=True, exist_ok=True)
+        # Single target for now.
+        label = model.target_labels[0]
+        wavfile.write(
+            track_dir.joinpath(label).with_suffix(".wav"),
+            rate=sr,
+            data=full_estimate.cpu().numpy()
+        )
+        wavfile.write(
+            track_dir.joinpath("mixture").with_suffix(".wav"),
+            rate=sr,
+            data=mix_audio.cpu().numpy()
+        )
+        if residual:
+            wavfile.write(
+                track_dir.joinpath("residual").with_suffix(".wav"),
+                rate=sr,
+                data=full_estimate.cpu().numpy()
+            )

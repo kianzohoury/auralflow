@@ -58,6 +58,9 @@ if __name__ == "__main__":
     train_parser.add_argument(
         "folder_name", type=str, help="Path to model training folder."
     )
+    train_parser.add_argument(
+        "dataset_path", type=str, help="Path to dataset."
+    )
 
     # Define separator parser.
     separator_parser = subparsers.add_parser(name="separate")
@@ -68,31 +71,38 @@ if __name__ == "__main__":
     # Parse args.
     args = parser.parse_args()
     if args.command == "config":
-        model_type = args.model_type
-        folder_name = args.folder_name
         utils.pull_config_template(
-            save_dir=args.save + "/" + folder_name
+            save_dir=args.save + "/" + args.folder_name
         )
-        config = utils.load_config(folder_name + "/config.json")
-        config["model_params"]["model_type"] = model_type
-        config["model_params"]["model_name"] = folder_name
-        utils.save_config(config, save_filepath=folder_name + "/config.json")
+        config = utils.load_config(args.folder_name + "/config.json")
+        config["model_params"]["model_type"] = args.model_type
+        config["model_params"]["model_name"] = args.folder_name
+        utils.save_config(
+            config, save_filepath=args.folder_name + "/config.json"
+        )
     elif args.command == "train":
-        config_filepath = args.folder_name + "/config.json"
-        train.main(config_filepath=config_filepath)
+        config = utils.load_config(args.folder_name + "/config.json")
+        config["dataset_params"]["dataset_path"] = args.dataset_path
+        utils.save_config(
+            config, save_filepath=args.folder_name + "/config.json"
+        )
+        train.main(config_filepath=args.folder_name + "/config.json")
     elif args.command == "separate":
-
-
-    parser = ArgumentParser(description="Source separation script.")
-    parser.add_argument(
-        "config_filepath", type=str, help="Path to a configuration file."
-    )
-    parser.add_argument(
-        "audio_filepath", type=str, help="Path to an audio file."
-    )
-    parser.add_argument(
-        "save_filepath", type=str, help="Path to save audio to."
-    )
-    args = parser.parse_args()
-    main(args.config_filepath, args.audio_filepath, args.save_filepath)
+        separator_parser.add_argument(
+            "audio_filepath", type=str, help="Path to an audio file or folder."
+        )
+        separator_parser.add_argument(
+            "--save",
+            type=str,
+            help="Location to save separated audio.",
+            default=os.getcwd(),
+            required=False
+        )
+        separator_parser.add_argument(
+            "--residual",
+            type=bool,
+            help="Whether to include residual audio.",
+            default=True,
+            required=False
+        )
 
