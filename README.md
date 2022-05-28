@@ -27,7 +27,8 @@ and evaluation tools are available for a more seamless and efficient workflow.
 * [Notebook Demo](#demo)
 
 ## What is Music Source Separation? <a name="introduction"></a>
-Music source separation is a machine learning sub-task that branches from 
+![Auralflow Logo](docs/static/wave_form_example.png)
+Music source separation is a machine learning sub-task that branches from
 the more general problem of **Music Information Retrieval (MIR)**. The goal is
 to develop a rule for splitting an audio track into separate instrument
 signals (often called *stems*) that make up a full signal
