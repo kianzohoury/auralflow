@@ -148,13 +148,13 @@ over the typical SDR is because it's an unbiased and fairer measurement.
 
 | Base Model               | # Parameters (MM) | Pretrained | Trainable | Performance (si-sdr in db) |
 |--------------------------|-------------------|------------|-----------|----------------------------|
-| AudioNetSimple           | 7.9               | yes        | yes       | + 2.9                      |
-| AudioNetSimpleLSTM       | 32.3              | yes        | yes       | +4.3                       |
-| AudioNetVAE              | 40                | yes        | yes       | +5.4                       |
+| AudioNetSimple           | 7.9               | yes        | yes       | N/A                        |
+| AudioNetSimpleLSTM       | 32.3              | yes        | yes       | N/A                        |
+| AudioNetVAE              | 40                | yes        | yes       | N/A                        |
 | SpectrogramNetSimple     | 7.9               | yes        | yes       | + 2.9                      |
 | SpectrogramNetLSTM       | 32.3              | yes        | yes       | +4.3                       |
 | **SpectrogramNetVAE***   | 40                | yes        | yes       | **+5.4**                   |
-| HybridNet                | 65.5              | yes        | no        | ?                          |
+| HybridNet                | 65.5              | yes        | no        | N/A                        |
 
 
 The naming of models indicates the type of input data
