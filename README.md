@@ -552,7 +552,7 @@ def component_loss(
     """
 ```
 #### 2-Component Loss:
-$\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{filter, k} - |Y_{k}|||^{2}_{2} + \frac{\alpha}{n}||k||^{2}k$
+$\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{filter, k} - |Y_{k}|||^{2}_{2} + \frac{\alpha}{n}||R||^{2}k$
 
 where:
 
