@@ -105,8 +105,8 @@ estimate of $|Y_k|$.
 ### Optimization <a name="optimization"></a>
 
 Let $L$ be some loss criterion. The objective is to find an optimal choice of
-model parameters $\theta^{*}$ that minimize the loss
-$$ \theta^{*} = L(|\hat{Y_{k}}|, |\hat{Y_{k}}|)$$
+model parameters $\theta^{\*}$ that minimize the loss
+$$ \theta^{\*} = \arg\min_{\theta} L(|\hat{Y_{k}}|, |\hat{Y_{k}}|)$$
 
 In recent literature, the most common loss criterions employed are
 *mean absolute loss* and *mean squared error* (MSE), paired with optimizers
