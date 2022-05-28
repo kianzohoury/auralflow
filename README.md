@@ -555,7 +555,7 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     """Computes KL term using the closed form expression.
     
     KL term is defined as := D_KL(P||Q), where P is the modeled distribution,
-    and Q is a standard normal N(0, 1). The term is combined with the
+    and Q is a standard normal N(0, 1). The term should be combined with a
     reconstruction loss.
     """
 ```
@@ -572,15 +572,24 @@ class KLDivergenceLoss(nn.Module):
 ```python
 from auralflow import utils
 from auralflow.losses import kl_div_loss
+from torch.nn.functional import l1_loss
 import torch
 
 
 # generate sample data
-mu = torch.rand((16, 256, 256))
-sigma = torch.rand((16, 256, 256))
+mu = torch.rand((16, 256, 256)).float()
+sigma = torch.rand((16, 256, 256)).float()
+estimate_spec = torch.rand((16, 512, 173, 1))
+target_spec = torch.rand((16, 512, 173, 1))
 
 # kl div loss
-loss = kl_div_loss(mu, sigma)
+kl_term = kl_div_loss(mu, sigma)
+
+# reconstruction loss
+recon_term = l1_loss(estimate_spec, target_spec)
+
+# combine losses
+loss = kl_term + recon_term
 
 # backprop
 loss.backward()
