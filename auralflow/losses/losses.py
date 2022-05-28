@@ -5,7 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from collections import OrderedDict
-from typing import Any
+from typing import Any, Dict
 
 
 import asteroid.metrics
@@ -88,7 +88,7 @@ def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
 
 def get_evaluation_metrics(
         mixture: Tensor, estimate: Tensor, target: Tensor, sr: int = 8000
-) -> dict[str, OrderedDict[str, Any]]:
+) -> Dict[str, Dict[str, Any]]:
     """Returns batch-wise means of standard source separation eval scores."""
 
     # Unsqueeze batch dimension if audio is unbatched.
