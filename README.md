@@ -272,7 +272,7 @@ class SpectrogramMaskModel(SeparationModel):
 
     def __init__(self, configuration: dict) -> None:
 ```
-Parameters
+### Parameters
 
 
 * configuration : dict
@@ -337,7 +337,7 @@ class SpectrogramNetSimple(nn.Module):
         device: Optional[str] = None,
     ) -> None:
 ```
-Parameters
+### Parameters
 * _num_fft_bins : int_ 
 
   Number of FFT bins (aka filterbanks).
@@ -419,7 +419,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         **kwargs
     ) -> None:
 ```
-Parameters
+### Parameters
 * _recurrent_depth : int_ 
 
   Number of stacked lstm layers. Default: 3.
@@ -430,7 +430,7 @@ Parameters
 
   Whether to feed dim 0 (frequency axis) or dim 1 (time axis) as features to the lstm. Default: 1.
 
-Keyword Args:
+### Keyword Args:
 * _args :_ 
 
   Positional arguments for constructor.
@@ -480,7 +480,7 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
 
     def __init__(self, *args, **kwargs) -> None:
 ```
-Keyword Args:
+### Keyword Args:
 * _args :_
 
   Positional arguments for constructor.
