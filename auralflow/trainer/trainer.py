@@ -22,7 +22,7 @@ def run_training(
     train_dataloader: DataLoader,
     val_dataloader: DataLoader,
     callback: TrainingCallback,
-) -> None:
+) -> int:
     """Runs training loop."""
     max_iters = len(train_dataloader)
     for epoch in range(start_epoch, stop_epoch):
@@ -89,6 +89,7 @@ def run_training(
         if stop_early:
             print("No improvement. Stopping training early...")
             break
+    return global_step
 
 
 def run_validation(

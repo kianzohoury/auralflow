@@ -84,9 +84,9 @@ if __name__ == "__main__":
         required=False
     )
     separator_parser.add_argument(
-        "--length",
+        "--duration",
         type=int,
-        help="Max cutoff length in seconds.",
+        help="Max duration in seconds.",
         default=30,
         required=False
     )
@@ -116,6 +116,6 @@ if __name__ == "__main__":
             audio_filepath=args.audio_filepath,
             save_filepath=args.save,
             residual=args.residual,
-            max_length=args.length
+            duration=args.duration
         )
 
