@@ -551,6 +551,7 @@ def component_loss(
     quality of the residual noise against the other two terms.
     """
 ```
+$$ L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||M_{\theta} \odot |Y_k| - |Y_{k}|||^{2}_{2} + \frac{\alpha}{n}||M_{\theta} \odot |X| - M_{\theta} \odot |Y_k|||^{2}_{2}$$
 Also available as a loss instance `WeightedComponentLoss`.
 ```python
 class WeightedComponentLoss(nn.Module):
