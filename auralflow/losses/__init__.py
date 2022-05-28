@@ -25,7 +25,6 @@ __all__ = [
     "L1Loss",
     "L2Loss",
     "get_model_criterion",
-    "SISDRLoss",
     "get_evaluation_metrics"
 ]
 
@@ -41,8 +40,6 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
             alpha=config["training_params"]["alpha_constant"],
             beta=config["training_params"]["beta_constant"],
         )
-    elif loss_fn == "si_sdr_loss":
-        criterion = SISDRLoss(model=model)
     elif is_vae_model and loss_fn == "kl_div_loss":
         criterion = KLDivergenceLoss(model=model, loss_fn=loss_fn)
     elif loss_fn == "l1":

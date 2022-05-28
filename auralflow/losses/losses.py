@@ -82,9 +82,9 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
-def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
-    """Computes scale-invariant signal-distortion ratio loss."""
-    return si_sdr_loss_(est=estimate, ref=target, zero_mean=True, clamp_db=1)
+# def scale_invariant_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
+#     """Computes scale-invariant signal-distortion ratio loss."""
+#     return si_sdr_loss_(est=estimate, ref=target, zero_mean=True, clamp_db=1)
 
 
 def get_evaluation_metrics(

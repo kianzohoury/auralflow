@@ -39,6 +39,7 @@ _models = __all__[:3]
 def create_model(configuration: dict) -> SeparationModel:
     """Creates a new instance of a model with its given configuration."""
     separation_task = configuration["model_params"]["separation_task"]
+    if configuration["model_params"]
     if separation_task == "mask":
         base_class = SpectrogramMaskModel
     else:
