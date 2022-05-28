@@ -57,13 +57,14 @@ in order to enable faster model development time and reduce barriers to entry.
 Supplementary information regarding the mathematics behind music source
 separation is available in the documentation for those interested.
 
-# Brief Math Overview
+## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
 Below, I will go into some detail about the underlying mathematics that describe
 our problem and objective  — feel free to skip this section as it is just meant to supplement background knowledge.
 
 ## Data Processing
-###### **I. Input**
-Let an input mixture signal be a $ \Huge 2$-dimensional audio waveform $A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized such that the amplitude of each sample $a_i \in [-1, 1]$.
+Let an input mixture signal be a $2$-dimensional audio waveform
+$A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized
+such that the amplitude of each sample $a_i \in [-1, 1]$.
 
 ###### **II. Data Transformation**
 Let $f: A ↦ X$ be an linear transformation, mapping an audio signal $A$
