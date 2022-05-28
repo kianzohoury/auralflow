@@ -123,7 +123,7 @@ well. Put simply, we use the phase information of the mixture audio to estimate
 the phase information of the source estimate. Given $|\hat{Y}_{k}|$ and $P$,
 we define the phase-corrected source estimate as:
 
-$$\bar{Y}_{i} = |\hat{Y}_{k}| ⊙ {\rm exp}(j \cdot P)$$
+$$\bar{Y_{i}} = |\hat{Y_{k}}| ⊙ {\rm exp}(j \cdot P)$$
 
 where $j$ is imaginary.
 
