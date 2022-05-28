@@ -64,10 +64,34 @@ if __name__ == "__main__":
 
     # Define separator parser.
     separator_parser = subparsers.add_parser(name="separate")
-    train_parser.add_argument(
+    separator_parser.add_argument(
         "folder_name", type=str, help="Path to model training folder."
     )
-
+    separator_parser.add_argument(
+        "audio_filepath", type=str, help="Path to an audio file or folder."
+    )
+    separator_parser.add_argument(
+        "--save",
+        type=str,
+        help="Location to save separated audio.",
+        default=os.getcwd(),
+        required=False
+    )
+    separator_parser.add_argument(
+        "--residual",
+        type=bool,
+        help="Whether to include residual audio.",
+        default=True,
+        required=False
+    )
+    separator_parser.add_argument(
+        "--length",
+        type=int,
+        help="Max cutoff length in seconds.",
+        default=30,
+        required=False
+    )
+    
     # Parse args.
     args = parser.parse_args()
     if args.command == "config":
@@ -88,21 +112,11 @@ if __name__ == "__main__":
         )
         train.main(config_filepath=args.folder_name + "/config.json")
     elif args.command == "separate":
-        separator_parser.add_argument(
-            "audio_filepath", type=str, help="Path to an audio file or folder."
-        )
-        separator_parser.add_argument(
-            "--save",
-            type=str,
-            help="Location to save separated audio.",
-            default=os.getcwd(),
-            required=False
-        )
-        separator_parser.add_argument(
-            "--residual",
-            type=bool,
-            help="Whether to include residual audio.",
-            default=True,
-            required=False
+        separate.main(
+            config_filepath=args.folder_name + "/config.json",
+            audio_filepath=args.audio_filepath,
+            save_filepath=args.save,
+            residual=args.residual,
+            max_length=args.length
         )
 

@@ -49,6 +49,6 @@
         "save_image": false,
         "save_audio": false,
         "save_frequency": 5,
-        "num_images": 1,
+        "num_images": 1
     }
 }

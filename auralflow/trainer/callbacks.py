@@ -110,7 +110,7 @@ class VisualizerCallback(Callback):
 class SeparationMetricCallback(Callback):
     """Callback class for printing evaluation metrics."""
 
-    def __init__(self, model: SeparationModel):
+    def __init__(self, model: SeparationModel, disp_freq: int = 5):
         self.model = model
         self.best_deltas = {
             "pesq": float("-inf"),
@@ -120,9 +120,14 @@ class SeparationMetricCallback(Callback):
             "sir": float("inf"),
             "stoi": float("-inf")
         }
+        self.disp_freq = disp_freq
+        self.count = 0
 
     def on_epoch_end(self, mix: Tensor, target: Tensor) -> None:
         """Prints source separation evaluation metrics at epoch finish."""
+        if (self.count + 1) % self.disp_freq != 0:
+            self.count += 1
+            return
         estimate = self.model.separate(audio=mix)
         print("Calculating evaluation metrics...")
         metrics = get_evaluation_metrics(
@@ -147,6 +152,7 @@ class SeparationMetricCallback(Callback):
                 delta = str(delta) + "*"
             table.add_row([metric_label, est_val, tar_val, delta])
         print(table)
+        self.count = 0
 
 
 class WriterCallback(Callback):

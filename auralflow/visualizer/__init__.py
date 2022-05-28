@@ -18,7 +18,7 @@ def config_visualizer(config: dict, writer: SummaryWriter) -> Visualizer:
     dataset_params = config["dataset_params"]
     viz = Visualizer(
         writer=writer,
-        save_dir=visualizer_params["logs_path"] + "/images",
+        save_dir=config["model_params"]["model_name"] + "/images",
         view_spectrogram=visualizer_params["view_spectrogram"],
         view_waveform=visualizer_params["view_waveform"],
         view_gradient=visualizer_params["view_gradient"],

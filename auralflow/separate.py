@@ -21,7 +21,8 @@ def main(
     save_filepath: str,
     sr: int = 44100,
     padding: int = 200,
-    residual: bool = True
+    residual: bool = True,
+    max_length: int = 30
 ) -> None:
     """Separates a full audio track and saves it."""
 
@@ -56,7 +57,7 @@ def main(
         # Split audio into chunks.
         length = model.dataset_params["sample_length"]
         step_size = length * sr
-        max_frames = mix_audio.shape[-1]
+        max_frames = min(mix_audio.shape[-1], max_length * sr)
 
         # Store chunks.
         chunks = []
