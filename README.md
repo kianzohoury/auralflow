@@ -640,12 +640,11 @@ transform = AudioTransform(
     num_fft=1024,
     hop_length=768,
     window_size=1024, 
-    sample_rate=44100, 
-    device="cuda"
+    sample_rate=44100
 )
 
 # generate sample data
-mix_audio = torch.rand((16, 1024, 173, 1)).to("cuda")
+mix_audio = torch.rand((16, 1024, 173, 1))
 
 # transform to complex spectrogram
 spectrogram = transform.to_spectrogram(mix_audio)
