@@ -168,18 +168,18 @@ Parameters
 
 ### Example
 ```python
-import auralflow
+from auralflow import utils
+from auralflow.models import SpectrogramMaskModel
 import torch
 
-
 # unload configuration data
-config_data = auralflow.utils.load_config("/path/to/my_model/config.json")
+config_data = utils.load_config("/path/to/my_model/config.json")
 
 # 2 second audio data
 mix_audio = torch.rand((1, 88200))
 
 # initialize mask model
-mask_model = auralflow.models.SpectrogramMaskModel(config_data)
+mask_model = SpectrogramMaskModel(config_data)
 
 # separate audio
 vocals_estimate = mask_model.separate(mix_audio)
@@ -321,7 +321,7 @@ Keyword Args:
 * _kwargs :_
 
   Additional keyword arguments for constructor.
-* 
+
 ### Example
 ```python
 from auralflow.models import SpectrogramNetLSTM
@@ -344,5 +344,51 @@ mix_audio = torch.rand((8, 1, 1024, 173))
 spectrogram_estimate = spec_net(mix_audio)
 ```
 
+## SpectrogramNetVAE
+`SpectrogramNetVAE` is the spectrogram-domain Variational Autoencoder (VAE)
+network + LSTM bottleneck layers.
+```python
+class SpectrogramNetVAE(SpectrogramNetLSTM):
+    """Spectrogram U-Net model with a VAE and LSTM bottleneck.
+
+    Encoder => VAE => LSTM x 3 => decoder. Models a Gaussian conditional
+    distribution p(z|x) to sample latent variable z ~ p(z|x), to feed into
+    decoder to generate x' ~ p(x|z).
+
+    Keyword Args:
+        args: Positional arguments for constructor.
+        kwargs: Additional keyword arguments for constructor.
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+```
+Keyword Args:
+* _args :_
+
+  Positional arguments for constructor.
+* _kwargs :_
+
+  Additional keyword arguments for constructor.
+* 
+```python
+from auralflow.models import SpectrogramNetVAE
+import torch
+
+
+# initialize network
+spec_net = SpectrogramNetVAE(
+    num_fft_bins=1024,
+    num_frames=173,
+    num_channels=1,
+    hidden_channels=16,
+    recurrent_depth=2,
+    hidden_size=2048,
+    input_axis=1
+)
+# batch of spectrogram data
+mix_audio = torch.rand((8, 1, 1024, 173))
+# call forward method
+spectrogram_estimate = spec_net(mix_audio)
+```
 ## License
 [MIT](LICENSE)
