@@ -79,9 +79,8 @@ if __name__ == "__main__":
     )
     separator_parser.add_argument(
         "--residual",
-        type=bool,
         help="Whether to include residual audio.",
-        default=True,
+        action="store_true",
         required=False
     )
     separator_parser.add_argument(
@@ -91,7 +90,7 @@ if __name__ == "__main__":
         default=30,
         required=False
     )
-    
+
     # Parse args.
     args = parser.parse_args()
     if args.command == "config":

@@ -8,7 +8,6 @@ import torch
 
 
 from torch.cuda.amp import GradScaler
-
 from .architectures import (
     SpectrogramNetSimple,
     SpectrogramNetLSTM,
@@ -72,11 +71,8 @@ def setup_model(model: SeparationModel) -> SeparationModel:
             if model.training_params["use_mixed_precision"]:
                 model.load_grad_scaler(global_step=last_epoch)
         else:
-            # Create checkpoint folder, save copy of config file to it.
+            # Create checkpoint folder.
             Path(model.checkpoint_path).mkdir(exist_ok=True)
-            save_config(
-                model.config, model.checkpoint_path + "/config.json"
-            )
 
             # Define optimizer.
             model.optimizer = AdamW(
