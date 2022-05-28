@@ -13,6 +13,12 @@ and evaluation tools are available for a more seamless and efficient workflow.
 
 
 * [What is Music Source Separation?](#introduction)
+* [Deep Mask Estimation: Brief Math Overview](#deep-mask-estimation)
+  * [Short Time Fourier Transform](#stft)
+  * [Magnitude and Phase](#magnitude-and-phase)
+  * [Masking and Source Estimation](#masking-and-source-estimation)
+  * [Optimization](#optimization)
+  * [Phase Approximation](#phase-approximation)
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
 * [API Documentation](#documentation)
