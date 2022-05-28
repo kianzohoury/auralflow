@@ -14,6 +14,7 @@ and evaluation tools are available for a more seamless and efficient workflow.
 * [Introduction: What is Source Separation?](#introduction)
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
+* [Notebook Demo](#demo)
 * [API Documentation](#documentation)
   * [Training](#training)
   * [Models](#models)
@@ -30,7 +31,7 @@ and evaluation tools are available for a more seamless and efficient workflow.
   * [Masking and Source Estimation](#masking-and-source-estimation)
   * [Optimization](#optimization)
   * [Phase Approximation](#phase-approximation)
-* [Notebook Demo](#demo)
+* [Contribution](#contribution)
 * [License](#license)
 
 ## Introduction: What is Source Separation? <a name="introduction"></a>
@@ -176,6 +177,9 @@ which expects `config.json` to exist within the model training folder.
 auralflow separate my_model path/to/audio --residual --duration 90 \
 --save path/to/output
 ```
+
+## Notebook Demo <a name="demo"></a>
+A walk-through involving training a model to separate vocals can be found [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing).
 
 # API Documentation <a name="documentation"></a> 🎶
 
@@ -772,7 +776,6 @@ If the noise is indeed small, such that $||\hat{S_{k}} - {S}_{k}|| < ϵ$ for
 some small $ϵ$, and our model has not been overfit to the training data,
 then we've objectively solved our task — the separated audio must sound good
 to our ears as well.
-## Notebook Demo <a name="demo"></a>
-A walk-through involving training a model to separate vocals can be found [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing).
+
 ## License <a name="license"></a>
 [MIT](LICENSE)
