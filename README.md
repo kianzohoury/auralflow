@@ -11,7 +11,7 @@ natively in auralflow or ported to your own custom training pipeline.
 Several convenient training, audio processing, visualization
 and evaluation tools are available for a more seamless and efficient workflow.
 
-* [What is Music Source Separation?](#introduction)
+* [Introduction: What is Source Separation?](#introduction)
 * [Deep Mask Estimation: Brief Math Overview](#deep-mask-estimation)
   * [Short Time Fourier Transform](#stft)
   * [Magnitude and Phase](#magnitude-and-phase)
