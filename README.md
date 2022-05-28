@@ -554,8 +554,10 @@ def component_loss(
 #### 2-Component Loss:
 $ \Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{filter k} - |Y_{k}|||^{2}_{2} + \frac{\alpha}{n} || R_{filter}||^{2}_{2}$
 
-where $ |Y_{filter k}| = M_{\theta} \odot |Y_{k}|
+where
+$|Y_{filter k}| = M_{\theta} \odot |Y_{k}|$
 $R_{filter} = M_{ \theta } \odot |X| - M_{ \theta }\odot |Y_{k}|$
+
 Also available as a loss instance `WeightedComponentLoss`.
 ```python
 class WeightedComponentLoss(nn.Module):
