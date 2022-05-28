@@ -560,7 +560,7 @@ where:
 $Y_{k, filter} = M_{\theta} \odot |Y_{k}|$
 
 
-$R_{filter} = M_{ \theta } \odot |X| - M_{ \theta }\odot |Y_{k}|$
+$R_{filter} = M_{ \theta } \odot (|X| - |Y_{k}|)$
 
 Also available as a loss instance `WeightedComponentLoss`.
 ```python
