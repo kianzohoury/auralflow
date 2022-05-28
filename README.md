@@ -74,10 +74,10 @@ a ***spectrogram***.
 Similarly, let $f^{-1}: Y ↦ S$ be the inverse transformation mapping a
 spectrogram $Y \in \mathbb{C}^{c, f, τ}$ to its audio signal
 $S \in \mathbb{R}^{c, t}$. As was alluded to in the introduction, the
-existence of noise and uncertainty ensure that $$f^{-1}(f(A)) \neq A$$
+existence of noise and uncertainty ensure that $$\Huge f^{-1}(f(A)) \neq A$$
 However, by carefully choosing a good transformation $f$, we can minimize the
 unknown additive noise factor $E_{noise}$, such that
-$$ \Huge f^{-1}(f(A)) = A + E_{noise} \approx A$$
+$$\Huge f^{-1}(f(A)) = A + E_{noise} \approx A$$
 
 Without going into much detail, $f$ is an approximation algorithm to the
 **Discrete Fourier Transform (DFT)** called the **Short-Time Fourier Transform (STFT)**, which is a parameterized windowing function that applies the DFT
