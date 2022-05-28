@@ -392,6 +392,7 @@ spectrogram_estimate = spec_net(mix_audio)
 ```
 
 # Datasets
+## AudioFolder
 ```python
 class AudioFolder(IterableDataset):
     """An on-the-fly audio sample generator designed to be memory efficient.
@@ -436,5 +437,54 @@ class AudioFolder(IterableDataset):
         backend: str = "soundfile",
     ) -> None:
 ```
+## AudioDataset
+```python
+class AudioDataset(Dataset):
+    """Audio dataset that loads full audio tracks directly into memory."""
+
+    def __init__(
+        self,
+        dataset: List,
+        targets: List[str],
+        chunk_size: int = 1,
+        num_chunks: int = int(1e6),
+        sample_rate: int = 44100,
+    ) -> None:
+```
+# Dataset Utilities
+## create_audio_dataset(...)
+```python
+def create_audio_dataset(
+    dataset_path: str,
+    targets: List[str],
+    split: str = "train",
+    chunk_size: int = 1,
+    num_chunks: int = int(1e6),
+    max_num_tracks: Optional[int] = None,
+    sample_rate: int = 44100,
+    mono: bool = True,
+) -> AudioDataset:
+    """Creates a chunked audio dataset."""
+```
+
+### Example
+```python
+from auralflow.datasets import create_audio_dataset
+
+# expand full length dataset into a 100,000 3-sec chunks
+train_dataset = create_audio_dataset(
+    dataset_path="path/to/dataset",
+    split="train",
+    targets=["vocals"],
+    chunk_size=3,
+    num_chunks=1e5,
+    max_num_tracks=80,
+    sample_rate=44100,
+    mono=True,
+)
+# sample pair of training and target data
+mix_audio, target_audio = next(iter(train_dataset))
+```
+
 ## License
 [MIT](LICENSE)

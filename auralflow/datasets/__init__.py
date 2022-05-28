@@ -94,7 +94,7 @@ def create_audio_dataset(
     max_num_tracks: Optional[int] = None,
     sample_rate: int = 44100,
     mono: bool = True,
-) -> datasets.AudioDataset:
+) -> AudioDataset:
     """Creates a chunked audio dataset."""
     # Full-length audio tracks.
     full_dataset = audio_to_disk(
