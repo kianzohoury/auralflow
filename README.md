@@ -33,7 +33,6 @@ Source separation is the process of separating an input signal into
 separate signals that compose it. In the simplest terms, a signal is a linear
 combination of vectors that belong to a (potentially huge dimensional) sub space. 
 
-
 In the context of music and
 machine learning, we can think of music source separation as the task of
 determining a rule for splitting an audio track (referred to as a *mixture*)
