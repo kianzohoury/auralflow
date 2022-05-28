@@ -773,6 +773,6 @@ some small $ϵ$, and our model has not been overfit to the training data,
 then we've objectively solved our task — the separated audio must sound good
 to our ears as well.
 ## Notebook Demo <a name="demo"></a>
-
+A walk-through involving training a model to separate vocals can be found [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing).
 ## License <a name="license"></a>
 [MIT](LICENSE)
