@@ -174,10 +174,13 @@ import torch
 
 # unload configuration data
 config_data = auralflow.utils.load_config("/path/to/my_model/config.json")
+
 # 2 second audio data
 mix_audio = torch.rand((1, 88200))
+
 # initialize mask model
 mask_model = auralflow.models.SpectrogramMaskModel(config_data)
+
 # separate audio
 vocals_estimate = mask_model.separate(mix_audio)
 ```
