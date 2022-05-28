@@ -114,7 +114,7 @@ visualize those training runs are among the many settings that are
 modifiable in the configuration file. If you want to initialize a new
 configuration, use the `config` command:
 ```bash
-auralflow config SpectrogramNetSimple --name my_model --save path/to/save
+auralflow config my_model SpectrogramNetSimple --save path/to/save
 ```
 which will copy a template configuration for any base model of your choice. It's
 recommended that you also name the model and outer folder with the `--name`
@@ -135,13 +135,19 @@ its layers with the `--dropout_p` argument. Note that one or more arguments can
 be changed within a single command. Optionally, running `--display` 
 will let you see the updated configurations you just made.
 
-## Running The Training Script
+## Running Training 
 Once you've created a model training folder, you can train your model with the 
 following command:
 ```bash
-auralflow train my_model
+auralflow train my_model path/to/dataset
 ```
 which expects `config.json` to exist within the model training folder.
+
+## Separating Audio
+```bash
+auralflow separate my_model path/to/audio --residual --duration 90 \
+--save path/to/output
+```
 
 # API Documentation <a name="documentation"></a>
 
