@@ -94,14 +94,14 @@ if __name__ == "__main__":
     # Parse args.
     args = parser.parse_args()
     if args.command == "config":
-        utils.pull_config_template(
-            save_dir=args.save + "/" + args.folder_name
-        )
-        config = utils.load_config(args.folder_name + "/config.json")
+        save_dir = args.save + "/" + args.folder_name
+        utils.pull_config_template(save_dir=save_dir)
+        config = utils.load_config(save_dir + "/config.json")
         config["model_params"]["model_type"] = args.model_type
         config["model_params"]["model_name"] = args.folder_name
+        config["model_params"]["save_dir"] = save_dir
         utils.save_config(
-            config, save_filepath=args.folder_name + "/config.json"
+            config, save_filepath=save_dir + "/config.json"
         )
     elif args.command == "train":
         config = utils.load_config(args.folder_name + "/config.json")
@@ -111,6 +111,11 @@ if __name__ == "__main__":
         )
         train.main(config_filepath=args.folder_name + "/config.json")
     elif args.command == "separate":
+        config = utils.load_config(args.folder_name + "/config.json")
+        config["training_params"]["training_mode"] = False
+        utils.save_config(
+            config, save_filepath=args.folder_name + "/config.json"
+        )
         separate.main(
             config_filepath=args.folder_name + "/config.json",
             audio_filepath=args.audio_filepath,

@@ -66,7 +66,7 @@ def main(config_filepath: str):
     # Initialize summary writer and visualizer.
     print("-" * 79 + "\nLoading visualization tools...")
     writer = SummaryWriter(
-        log_dir=configuration["model_params"]["model_name"] + "/runs"
+        log_dir=configuration["model_params"]["save_dir"] + "/runs"
     )
     visualizer = config_visualizer(config=configuration, writer=writer)
     print("Successful.")

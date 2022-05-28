@@ -14,6 +14,9 @@ from scipy.io import wavfile
 
 from auralflow.models import create_model, setup_model
 from auralflow.utils import load_config
+from auralflow.utils.data_utils import trim_audio
+from auralflow.visualizer import ProgressBar
+
 
 
 def main(
@@ -50,24 +53,25 @@ def main(
         track_paths.append(Path(audio_filepath))
 
     print("Separating...")
-    with tqdm(total=len(track_paths)) as pbar:
-        for track_path in track_paths:
-            # Load audio.
-            mix_audio, sr = librosa.load(
-                str(track_path) + "/mixture.wav", sr=sr, duration=duration
-            )
-            mix_audio = torch.from_numpy(mix_audio).unsqueeze(0)
+    
+    for track_path in track_paths:
+        print(track_path.name, flush=True)
+        # Load audio.
+        mix_audio, sr = librosa.load(
+            str(track_path) + "/mixture.wav", sr=sr, duration=duration
+        )
+        mix_audio = torch.from_numpy(mix_audio).unsqueeze(0)
 
-            # Split audio into chunks.
-            length = model.dataset_params["sample_length"]
-            step_size = length * sr
-            max_frames = min(mix_audio.shape[-1], duration * sr)
+        # Split audio into chunks.
+        length = model.dataset_params["sample_length"]
+        step_size = length * sr
+        max_frames = min(mix_audio.shape[-1], duration * sr)
 
-            # Store chunks.
-            chunks = []
-            offset = 0
-
-            # Separate smaller windows of audio.
+        # Store chunks.
+        est_chunks, res_chunks = [], []
+        offset = 0
+        # Separate smaller windows of audio.
+        with ProgressBar(iterable=None, total=max_frames, ascii=" #") as pbar:
             while offset < max_frames:
                 # Reshape and trim audio chunk.
                 audio_chunk = mix_audio[:, offset : offset + length * sr]
@@ -76,24 +80,37 @@ def main(
                 if audio_chunk.dim() == 2:
                     audio_chunk = audio_chunk.unsqueeze(0)
 
-                # Separate audio.
-                estimate = model.separate(audio_chunk)
+                # Separate audio and trim.
+                estimate = model.separate(audio_chunk)[..., :-padding]
+                estimate, audio_chunk = trim_audio([estimate, audio_chunk])
+                residual_chunk = audio_chunk - estimate.to(audio_chunk)
 
-                # Trim end by padding amount.
-                estimate = estimate[..., :-padding]
-                chunks.append(estimate)
+                est_chunks.append(estimate)
+                res_chunks.append(residual_chunk)
 
                 # Update current frame position.
                 offset = offset + step_size - padding
+                pbar.n += step_size - padding
                 if offset + length * sr >= max_frames:
                     break
 
+            pbar.n = max_frames
+
             # Stitch chunks to create full source estimate.
-            full_estimate = torch.cat(chunks, dim=2).reshape(
+            full_estimate = torch.cat(est_chunks, dim=2).reshape(
                 (mix_audio.shape[0], -1)
-            ).cpu().numpy()
-            mix_trimmed = mix_audio.cpu().numpy()[..., :full_estimate.shape[-1]]
-            res_trimmed = mix_trimmed - full_estimate
+            )
+            full_residual = torch.cat(res_chunks, dim=2).reshape(
+                (mix_audio.shape[0], -1)
+            )
+
+            max_frames = min(full_estimate.shape[-1], mix_audio.shape[-1])
+            full_estimate = full_estimate[..., :max_frames].cpu().numpy()
+            full_residual = full_residual[..., :max_frames].cpu().numpy()
+            mix_audio = mix_audio[..., :max_frames].cpu().numpy()
+            # full_estimate, mix_audio = trim_audio(
+            #     [full_estimate, mix_audio.cpu().numpy()]
+            # )
 
             # Export audio.
             track_name = track_path.name
@@ -112,12 +129,12 @@ def main(
             wavfile.write(
                 track_dir.joinpath("mixture").with_suffix(".wav"),
                 rate=sr,
-                data=mix_trimmed.T
+                data=mix_audio.T
             )
             if residual:
                 wavfile.write(
                     track_dir.joinpath("residual").with_suffix(".wav"),
                     rate=sr,
-                    data=res_trimmed.T
+                    data=full_residual.T
                 )
-            pbar.update(1)
+            

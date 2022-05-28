@@ -45,7 +45,7 @@ class SeparationModel(ABC):
         self.dataset_params = config["dataset_params"]
         self.visualizer_params = config["visualizer_params"]
         self.model_name = self.model_params["model_name"]
-        self.checkpoint_path = self.model_name + "/checkpoint"
+        self.checkpoint_path = self.model_params["save_dir"] + "/checkpoint"
         self.silent_checkpoint = self.training_params["silent_checkpoint"]
         self.training_mode = self.training_params["training_mode"]
         self.device = "cuda" if torch.cuda.is_available() else "cpu"

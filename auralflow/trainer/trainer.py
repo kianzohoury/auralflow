@@ -89,6 +89,15 @@ def run_training(
         if stop_early:
             print("No improvement. Stopping training early...")
             break
+
+    # Save last checkpont to resume training later.
+    model.save_all(
+        global_step=epoch,
+        model=True,
+        optim=True,
+        scheduler=True,
+        grad_scaler=model.use_amp,
+    )
     return global_step
 
 
