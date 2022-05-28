@@ -63,7 +63,7 @@ our problem and objective  — feel free to skip this section as it is just mean
 
 ## Data Processing
 ###### **I. Input**
-Let an input mixture signal be a $2$-dimensional audio waveform $A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized such that the amplitude of each sample $a_i \in [-1, 1]$.
+Let an input mixture signal be a $ \Huge 2$-dimensional audio waveform $A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized such that the amplitude of each sample $a_i \in [-1, 1]$.
 
 ###### **II. Data Transformation**
 Let $f: A ↦ X$ be an linear transformation, mapping an audio signal $A$
