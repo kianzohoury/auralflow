@@ -32,7 +32,7 @@ and evaluation tools are available for a more seamless and efficient workflow.
   * [Evaluation](#evaluation)
 * [Notebook Demo](#demo)
 
-## What is Source Separation? <a name="introduction"></a>
+## Introduction: What is Source Separation? <a name="introduction"></a>
 ![Auralflow Logo](docs/static/wave_form_example.png)
 Source separation is the process of separating an input signal into
 separate signals that compose it. In the simplest terms, a signal is a linear
