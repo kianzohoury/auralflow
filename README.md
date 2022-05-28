@@ -270,8 +270,10 @@ spec_net = SpectrogramNetSimple(
     normalize_input=True,
     normalize_output=True
 )
+
 # batch of spectrogram data
 mix_audio = torch.rand((8, 1, 1024, 173))
+
 # call forward method
 spectrogram_estimate = spec_net(mix_audio)
 ```
@@ -338,8 +340,10 @@ spec_net = SpectrogramNetLSTM(
     hidden_size=2048,
     input_axis=1
 )
+
 # batch of spectrogram data
 mix_audio = torch.rand((8, 1, 1024, 173))
+
 # call forward method
 spectrogram_estimate = spec_net(mix_audio)
 ```
@@ -385,8 +389,10 @@ spec_net = SpectrogramNetVAE(
     hidden_size=2048,
     input_axis=1
 )
+
 # batch of spectrogram data
 mix_audio = torch.rand((8, 1, 1024, 173))
+
 # call forward method
 spectrogram_estimate = spec_net(mix_audio)
 ```
@@ -471,6 +477,7 @@ def create_audio_dataset(
 ```python
 from auralflow.datasets import create_audio_dataset
 
+
 # expand full length dataset into a 100,000 3-sec chunks
 train_dataset = create_audio_dataset(
     dataset_path="path/to/dataset",
@@ -482,6 +489,7 @@ train_dataset = create_audio_dataset(
     sample_rate=44100,
     mono=True,
 )
+
 # sample pair of training and target data
 mix_audio, target_audio = next(iter(train_dataset))
 ```
