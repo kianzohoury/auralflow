@@ -12,12 +12,6 @@ Several convenient training, audio processing, visualization
 and evaluation tools are available for a more seamless and efficient workflow.
 
 * [Introduction: What is Source Separation?](#introduction)
-* [Deep Mask Estimation: Brief Math Overview](#deep-mask-estimation)
-  * [Short Time Fourier Transform](#stft)
-  * [Magnitude and Phase](#magnitude-and-phase)
-  * [Masking and Source Estimation](#masking-and-source-estimation)
-  * [Optimization](#optimization)
-  * [Phase Approximation](#phase-approximation)
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
 * [API Documentation](#documentation)
@@ -30,7 +24,14 @@ and evaluation tools are available for a more seamless and efficient workflow.
   * [Visualization](#visualization)
   * [Separation](#separation)
   * [Evaluation](#evaluation)
+* [Deep Mask Estimation: More on the Mathematics](#deep-mask-estimation)
+  * [Short Time Fourier Transform](#stft)
+  * [Magnitude and Phase](#magnitude-and-phase)
+  * [Masking and Source Estimation](#masking-and-source-estimation)
+  * [Optimization](#optimization)
+  * [Phase Approximation](#phase-approximation)
 * [Notebook Demo](#demo)
+* [License](#license)
 
 ## Introduction: What is Source Separation? <a name="introduction"></a>
 ![Auralflow Logo](docs/static/wave_form_example.png)
@@ -70,85 +71,6 @@ segmentation, there are some aspects related to digital signal processing
 that go beyond the scope of deep learning. Thus, the purpose of this package
 is to abstract away some of those processes in order to enable faster model
 development time and reduce barriers to entry.
-
-## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
-### Short Time Fourier Transform <a name="stft"></a>
-Let an input mixture signal be a $2$-dimensional audio waveform
-$A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized
-such that the amplitude of each sample $a_i \in [-1, 1]$.
-
-Let $f: A ↦ X$ be an linear transformation, mapping an audio signal $A$
-to a complex-valued time-frequency representation $X \in \mathbb{C}^{c, f, τ}$,
-with $f$ filterbanks, and $τ$ number of frames. $X$ is often referred to as
-a ***spectrogram***.
-
-Similarly, let $f^{-1}: Y ↦ S$ be the inverse transformation mapping a
-spectrogram $Y \in \mathbb{C}^{c, f, τ}$ to its audio signal
-$S \in \mathbb{R}^{c, t}$. As was alluded to in the introduction, the
-existence of noise and uncertainty ensure that $$f^{-1}(f(A)) \neq A$$
-However, by carefully choosing a good transformation $f$, we can minimize the
-unknown additive noise factor $E_{noise}$, such that
-$$f^{-1}(f(A)) = A + E_{noise} \approx A$$
-
-Without going into much detail, $f$ is an approximation algorithm to the
-**Discrete Fourier Transform (DFT)** called the
-**Short-Time Fourier Transform (STFT)**, which is a parameterized windowing
-function that applies the DFT
-to small, overlapping segments of $X$. As a disclaimer, $f$ has been trivially
-extended to have a channel dimension, although this is not part of the
-canonical convention.
-
-### Magnitude and Phase <a name="magnitude-and-phase"></a>
-Given a spectrogram $X$, its magnitude is defined as $|X|$, and its phase is
-defined as $P:= ∠_{\theta} X$, the element-wise angle of each complex entry.
-We use $|X|$ as input to our model, and use $P$ to employ a useful trick that
-I will describe next that makes our task much simpler.
-
-### Masking and Source Estimation <a name="masking-and-source-estimation"></a>
-To estimate a target signal $k$, we apply the transformation to a mini-batch
-of mixture-target audio pairs $(A, S_{k})$. yielding $(|X|, |Y_{k}|)$. We feed
-$|X|$ into our network, which estimates a multiplicative soft-mask
-$M_{\theta}$, normalized such that $m_{i} \in \[0, 1]$. Next, $M_{\theta}$ is
-*applied* to $|X|$, such that $$|\hat{Y_{k}}| = M_{\theta} \odot |X|$$
-where $\odot$ is the Hadamard product, and $|\hat{Y}_{k}|$ is the network's
-estimate of $|Y_k|$.
-
-### Optimization <a name="optimization"></a>
-
-Let $L$ be some loss criterion. The objective is to find an optimal choice of
-model parameters $\theta^{\*}$ that minimize the loss
-$$ \theta^{\*} = \arg\min_{\theta} L(|\hat{Y_{k}}|, |Y_{k}|)$$
-
-In recent literature, the most common loss criterions employed are
-*mean absolute loss* and *mean squared error* (MSE), paired with optimizers
-such as *SGD* or *Adam*.
-
-### Phase Approximation <a name="phase-approximation"></a>
-Without prior knowledge, it may not be clear how to transform the source
-estimate $|\hat{Y_{k}}|$ to a complex-valued spectrogram. Indeed, this is
-where the second source separation method shines, as it avoids this
-predicament altogether. There are known (but rather complicated) ways of
-phase estimation such as [Griffin-Lim](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&rep=rep1&type=pdf).
-As I mentioned earlier, there is a quick-and-dirty trick that works pretty
-well. Put simply, we use the phase information of the mixture audio to estimate
-the phase information of the source estimate. Given $|\hat{Y}_{k}|$ and $P$,
-we define the phase-corrected source estimate as:
-
-$$\bar{Y_{i}} = |\hat{Y_{k}}| ⊙ {\rm exp}(j \cdot P)$$
-
-where $j$ is imaginary.
-
-The last necessary calculation transports data from the time-frequency domain
-back to the audio signal domain. All that is required is to apply the inverse
-STFT to the phase-corrected estimate, which yields the audio signal estimate
-$\hat{S}_{k}$:
-
-$$\hat{S}_{k} = f^{-1}(\bar{Y}_{k})$$
-
-If the noise is indeed small, such that $||\hat{S_{k}} - {S}_{k}|| < ϵ$ for
-some small $ϵ$, and our model has not been overfit to the training data,
-then we've objectively solved our task — the separated audio must sound good
-to our ears as well.
 
 ## Pretrained Models <a name="pretrained-models"></a>
 Auralflow includes several base model architectures that have already been
@@ -771,5 +693,86 @@ mel_spec = transform.to_mel_scale(mag_spec, to_db=True)
 audio_signal = torch.rand((16, 88200, 1)).to("cuda")
 mel_spec = transform.audio_to_mel(audio_signal, to_db=True)
 ```
-## License
+
+## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
+### Short Time Fourier Transform <a name="stft"></a>
+Let an input mixture signal be a $2$-dimensional audio waveform
+$A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized
+such that the amplitude of each sample $a_i \in [-1, 1]$.
+
+Let $f: A ↦ X$ be an linear transformation, mapping an audio signal $A$
+to a complex-valued time-frequency representation $X \in \mathbb{C}^{c, f, τ}$,
+with $f$ filterbanks, and $τ$ number of frames. $X$ is often referred to as
+a ***spectrogram***.
+
+Similarly, let $f^{-1}: Y ↦ S$ be the inverse transformation mapping a
+spectrogram $Y \in \mathbb{C}^{c, f, τ}$ to its audio signal
+$S \in \mathbb{R}^{c, t}$. As was alluded to in the introduction, the
+existence of noise and uncertainty ensure that $$f^{-1}(f(A)) \neq A$$
+However, by carefully choosing a good transformation $f$, we can minimize the
+unknown additive noise factor $E_{noise}$, such that
+$$f^{-1}(f(A)) = A + E_{noise} \approx A$$
+
+Without going into much detail, $f$ is an approximation algorithm to the
+**Discrete Fourier Transform (DFT)** called the
+**Short-Time Fourier Transform (STFT)**, which is a parameterized windowing
+function that applies the DFT
+to small, overlapping segments of $X$. As a disclaimer, $f$ has been trivially
+extended to have a channel dimension, although this is not part of the
+canonical convention.
+
+### Magnitude and Phase <a name="magnitude-and-phase"></a>
+Given a spectrogram $X$, its magnitude is defined as $|X|$, and its phase is
+defined as $P:= ∠_{\theta} X$, the element-wise angle of each complex entry.
+We use $|X|$ as input to our model, and use $P$ to employ a useful trick that
+I will describe next that makes our task much simpler.
+
+### Masking and Source Estimation <a name="masking-and-source-estimation"></a>
+To estimate a target signal $k$, we apply the transformation to a mini-batch
+of mixture-target audio pairs $(A, S_{k})$. yielding $(|X|, |Y_{k}|)$. We feed
+$|X|$ into our network, which estimates a multiplicative soft-mask
+$M_{\theta}$, normalized such that $m_{i} \in \[0, 1]$. Next, $M_{\theta}$ is
+*applied* to $|X|$, such that $$|\hat{Y_{k}}| = M_{\theta} \odot |X|$$
+where $\odot$ is the Hadamard product, and $|\hat{Y}_{k}|$ is the network's
+estimate of $|Y_k|$.
+
+### Optimization <a name="optimization"></a>
+
+Let $L$ be some loss criterion. The objective is to find an optimal choice of
+model parameters $\theta^{\*}$ that minimize the loss
+$$ \theta^{\*} = \arg\min_{\theta} L(|\hat{Y_{k}}|, |Y_{k}|)$$
+
+In recent literature, the most common loss criterions employed are
+*mean absolute loss* and *mean squared error* (MSE), paired with optimizers
+such as *SGD* or *Adam*.
+
+### Phase Approximation <a name="phase-approximation"></a>
+Without prior knowledge, it may not be clear how to transform the source
+estimate $|\hat{Y_{k}}|$ to a complex-valued spectrogram. Indeed, this is
+where the second source separation method shines, as it avoids this
+predicament altogether. There are known (but rather complicated) ways of
+phase estimation such as [Griffin-Lim](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&rep=rep1&type=pdf).
+As I mentioned earlier, there is a quick-and-dirty trick that works pretty
+well. Put simply, we use the phase information of the mixture audio to estimate
+the phase information of the source estimate. Given $|\hat{Y}_{k}|$ and $P$,
+we define the phase-corrected source estimate as:
+
+$$\bar{Y_{i}} = |\hat{Y_{k}}| ⊙ {\rm exp}(j \cdot P)$$
+
+where $j$ is imaginary.
+
+The last necessary calculation transports data from the time-frequency domain
+back to the audio signal domain. All that is required is to apply the inverse
+STFT to the phase-corrected estimate, which yields the audio signal estimate
+$\hat{S}_{k}$:
+
+$$\hat{S}_{k} = f^{-1}(\bar{Y}_{k})$$
+
+If the noise is indeed small, such that $||\hat{S_{k}} - {S}_{k}|| < ϵ$ for
+some small $ϵ$, and our model has not been overfit to the training data,
+then we've objectively solved our task — the separated audio must sound good
+to our ears as well.
+## Notebook Demo <a name="demo"></a>
+
+## License <a name="license"></a>
 [MIT](LICENSE)
