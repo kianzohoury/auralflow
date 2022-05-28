@@ -42,25 +42,37 @@ combination of vectors that belong to a (potentially huge dimensional) sub space
 In the context of music and
 machine learning, we can think of music source separation as the task of
 determining a rule for splitting an audio track (referred to as a *mixture*)
-into its solo instrument signals (each referred to as a  *stem*). Music source
-separation is considered a sub-task within the larger branch of
+into its solo instrument signals (each referred to as a  *stem*). While in
+theory a perfect decomposition of a mixture would amount to some linear
+combination of its source signals, the existence of noise and uncertainty
+— both in the digital representation of an audio recording and modeling
+— forces us to approximate the source signals. Fortunately, much like small,
+imperceivable perturbations in image pixels, some noises are too subtle
+in gain, or even completely outside of the frequency range amenable to the
+human ear.
+
+Currently, the two most popular methodologies of extracting these source
+signals involve source mask estimation in the time-frequency
+or ***spectrogram*** domain, and signal reconstruction directly in the
+waveform or time-only domain. The former process, while requiring intermediate
+data pre-processing and post-processing steps
+(introducing noise and uncertainty) allows for more precise learning of
+features related to signal frequencies, while the latter process works with
+a simpler data representation, but attempts to solve a more difficult task
+of reconstructing source signals entirely.
+
+Music source separation is considered a sub-task within the larger branch of
 **Music Information Retrieval (MIR)**, and is related to problems like
 **speech enhancement**.
 
-While source separation models involving deep learning are no harder to
-understand than image segmentation models, there are some aspects related to
-digital signal processing (i.e. fourier transform, complex values,
-phase estimation, filtering, etc.) that go beyond the scope of deep learning.
-Thus, the purpose of this package is to abstract away some of those processes
-in order to enable faster model development time and reduce barriers to entry.
-
-Supplementary information regarding the mathematics behind music source
-separation is available in the documentation for those interested.
+While deep mask estimation is theoretically quite similar to semantic
+segmentation, there are some aspects related to digital signal processing
+(i.e. fourier transform, complex values, phase estimation, filtering, etc.)
+that go beyond the scope of deep learning. Thus, the purpose of this package
+is to abstract away some of those processes in order to enable faster model
+development time and reduce barriers to entry.
 
 ## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
-Below, I will go into some detail about the underlying mathematics that describe
-our problem and objective  — feel free to skip this section as it is just meant to supplement background knowledge.
-
 ### Short Time Fourier Transform <a name="stft"></a>
 Let an input mixture signal be a $2$-dimensional audio waveform
 $A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized
