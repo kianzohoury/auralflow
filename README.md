@@ -51,6 +51,13 @@ in order to enable faster model development time and reduce barriers to entry.
 Supplementary information regarding the mathematics behind music source
 separation is available in the documentation for those interested.
 
+
+
+When $a \ne 0$, there are two solutions to $(ax^2 + bx + c = 0)$ and they are
+$$ x = {-b \pm \sqrt{b^2-4ac} \over 2a} $$
+
+
+
 ## Pretrained Models <a name="pretrained-models"></a>
 Auralflow includes several base model architectures that have already been
 trained on the musdb18 dataset. The table below compares each model relative to
