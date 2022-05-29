@@ -534,6 +534,11 @@ mix_audio, target_audio = next(iter(train_dataset))
 ```
 # Losses
 ## component_loss(...)
+A loss function that weights the losses of two or three components that each
+measure separation quality differently. With two components, the loss is
+balanced between target source separation quality and magnitude of residual
+noise. With three components, the quality of the residual noise is weighted in
+the balance.
 ```python
 def component_loss(
     filtered_src: FloatTensor,
@@ -542,8 +547,9 @@ def component_loss(
     target_res: Tensor,
     alpha: float = 0.2,
     beta: float = 0.8,
-    n_components: int = 2,
+    n_components: int = 2
 ) -> Tensor:
+  
     """Weighted L2 loss using 2 or 3 components depending on arguments.
 
     Balances the target source separation quality versus the amount of
