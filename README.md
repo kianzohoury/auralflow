@@ -219,12 +219,13 @@ A walk-through involving training a model to separate vocals can be found [here]
 # Models
 ## SeparationModel
 `SeparationModel` is the abstract base class for all source separation models
-and should not be instantiated directly.
+and should not be instantiated directly. Classes that inherit from this object
+wrap PyTorch `nn.Module` networks.
 ```python
 class SeparationModel(ABC):
     """Interface shared among all source separation models."""
     
-    def __init__(self, config: dict):
+    def __init__(self, config: dict) -> None:
 ```
 ### Parameters
 * _configuration : dict_
@@ -331,8 +332,8 @@ def save(
 
 
 ## SpectrogramMaskModel
-`SpectrogramMaskModel` is the wrapper object for integrating PyTorch networks
-as deep mask estimation models in the spectrogram domain.
+`SpectrogramMaskModel` is the deep mask estimation model that separates audio
+in the spectrogram domain.
 
 ```python
 class SpectrogramMaskModel(SeparationModel):
@@ -341,28 +342,29 @@ class SpectrogramMaskModel(SeparationModel):
     def __init__(self, configuration: dict) -> None:
 ```
 ### Parameters
-
+Same constructor signature as `SeparationModel`.
 
 
 
 ### Methods
-
+Same class methods as `SeparationModel`.
 ### Example
 ```python
-from auralflow import utils
+from auralflow.utils import load_config
 from auralflow.models import SpectrogramMaskModel
 import torch
 
-# unload configuration data
-config_data = utils.load_config("/path/to/my_model/config.json")
 
-# 2 second audio data
+# unload configuration data
+config_data = load_config("/path/to/my_model/config.json")
+
+# generate pretend 2 sec audio sample
 mix_audio = torch.rand((1, 88200))
 
-# initialize mask model
+# instantiate deep mask estimator from config (untrained)
 mask_model = SpectrogramMaskModel(config_data)
 
-# separate audio
+# extract vocals
 vocals_estimate = mask_model.separate(mix_audio)
 ```
 

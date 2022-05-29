@@ -35,7 +35,7 @@ class SeparationModel(ABC):
     use_amp: bool
     is_best_model: bool
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict) -> None:
         super(SeparationModel, self).__init__()
 
         # Store configuration settings as attributes.
