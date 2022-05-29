@@ -588,6 +588,9 @@ class WeightedComponentLoss(nn.Module):
         self, model, alpha: float, beta: float, regularizer: bool = True
     ) -> None:
 ```
+Sources:
+* Xu, Ziyi, et al. Components Loss for Neural Networks in Mask-Based Speech
+Enhancement. Aug. 2019. arxiv.org, https://doi.org/10.48550/arXiv.1908.05087.
 ### Example
 
 ```python
