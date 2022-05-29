@@ -796,8 +796,8 @@ train_dataset = create_audio_dataset(
 mix_audio, target_audio = next(iter(train_dataset))
 ```
 
-# Data Utils
-## AudioTransform
+## Data Utilities <a name="data-utils"></a>
+### `AudioTransform`
 ```python
 class AudioTransform(object):
     """Wrapper class that conveniently stores multiple transformation tools."""
@@ -811,22 +811,31 @@ class AudioTransform(object):
         device: str = "cpu",
     ) -> None:
 ```
-### Methods
+#### Methods
+#### `to_spectrogram(...)`
 ```python
 def to_spectrogram(
     self, audio: Tensor, use_padding: bool = True
 ) -> Tensor:
     """Transforms an audio signal to its time-freq representation."""
-
+```
+#### `to_audio(...)`
+```python
 def to_audio(self, complex_spec: Tensor) -> Tensor:
     """Transforms complex-valued spectrogram to its time-domain signal."""
-
+```
+#### `to_mel_scale(...)`
+```python
 def to_mel_scale(self, spectrogram: Tensor, to_db: bool = True) -> Tensor:
     """Transforms magnitude or log-normal spectrogram to mel scale."""
-
+```
+#### `audio_to_mel(...)`
+```python
 def audio_to_mel(self, audio: Tensor, to_db: bool = True):
     """Transforms raw audio signal to log-normalized mel spectrogram."""
-
+```
+#### `pad_audio(...)`
+```python
 def pad_audio(self, audio: Tensor):
     """Applies zero-padding to input audio."""
 ```
@@ -843,21 +852,20 @@ transform = AudioTransform(
     sample_rate=44100
 )
 
-# generate sample data
-mix_audio = torch.rand((16, 1024, 173, 1))
+# generate pretend batch of audio
+mix_audio = torch.rand((16, 1, 88200))
 
-# transform to complex spectrogram
-spectrogram = transform.to_spectrogram(mix_audio)
+# to log normalized mel scale
+mel_spec = transform.audio_to_mel(mix_audio, to_db=True)
 
-# magnitude spectrogram
-mag_spec = torch.abs(spectrogram)
+# to complex spectrogram
+mix_spec = transform.to_spectrogram(mix_audio)
 
-# to log normalized mel scale from magnitude spectrogram
-mel_spec = transform.to_mel_scale(mag_spec, to_db=True)
+# to log normalized mel scale (achieves the same thing)
+mel_spec = transform.to_mel_scale(torch.abs(mix_spec), to_db=True)
 
-# can achieve the same thing using waveforms directly
-audio_signal = torch.rand((16, 88200, 1)).to("cuda")
-mel_spec = transform.audio_to_mel(audio_signal, to_db=True)
+# back to audio domain
+mix_audio_est = transform.to_audio(mix_spec)
 ```
 
 ## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
