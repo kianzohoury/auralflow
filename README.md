@@ -457,13 +457,16 @@ spec_net = SpectrogramNetSimple(
 # generate pretend batch of spectrogram data
 mix_audio = torch.rand((8, 1, 1024, 173))
 
-# estimate mask
-mask = spec_net(mix_audio)
+# estimate source mask
+source_mask = spec_net(mix_audio)
+
+# isolate source from mixture
+source_estimate = source_mask * mix_audio
 ```
 
 ## SpectrogramNetLSTM
-`SpectrogramNetLSTM` is the spectrogram-domain U-Net network with 
-an additional stack of LSTM layers as the bottleneck.
+`SpectrogramNetLSTM` is the spectrogram-domain U-Net model with 
+an additional stack of LSTM bottleneck layers.
 ```python
 class SpectrogramNetLSTM(SpectrogramNetSimple):
     """Deep mask estimation model using LSTM bottleneck layers.
@@ -502,10 +505,10 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 ### Keyword Args:
 * _args :_ 
 
-  Positional arguments for constructor.
+  Positional arguments for constructor. Same as `SpectrogramNetSimple`.
 * _kwargs :_
 
-  Additional keyword arguments for constructor.
+  Additional keyword arguments for constructor. Same as `SpectrogramNetSimple`.
 
 ### Example
 ```python
@@ -514,7 +517,7 @@ import torch
 
 
 # initialize network
-spec_net = SpectrogramNetLSTM(
+spec_net_lstm = SpectrogramNetLSTM(
     num_fft_bins=1024,
     num_frames=173,
     num_channels=1,
@@ -524,11 +527,14 @@ spec_net = SpectrogramNetLSTM(
     input_axis=1
 )
 
-# batch of spectrogram data
+# pretend batch of spectrogram data
 mix_audio = torch.rand((8, 1, 1024, 173))
 
-# call forward method
-spectrogram_estimate = spec_net(mix_audio)
+# estimate source mask
+source_mask = spec_net_lstm(mix_audio)
+
+# isolate source from mixture
+source_estimate = source_mask * mix_audio
 ```
 
 ## SpectrogramNetVAE
