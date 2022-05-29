@@ -538,13 +538,13 @@ source_estimate = source_mask * mix_spec
 ```
 
 ## SpectrogramNetVAE
-`SpectrogramNetVAE` is the spectrogram-domain Variational Autoencoder (VAE)
-network + LSTM bottleneck layers.
+`SpectrogramNetVAE` is the spectrogram-domain U-Net model that utilizes a 
+Variational Autoencoder (VAE) along with LSTM bottleneck layers.
 ```python
 class SpectrogramNetVAE(SpectrogramNetLSTM):
     """Spectrogram U-Net model with a VAE and LSTM bottleneck.
 
-    Encoder => VAE => LSTM x 3 => decoder. Models a Gaussian conditional
+    Encoder => VAE => LSTM x depth => decoder. Models a Gaussian conditional
     distribution p(z|x) to sample latent variable z ~ p(z|x), to feed into
     decoder to generate x' ~ p(x|z).
 
@@ -558,10 +558,10 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
 ### Keyword Args:
 * _args :_
 
-  Positional arguments for constructor.
+  Positional arguments for constructor. Same as `SpectrogramNetLSTM`.
 * _kwargs :_
 
-  Additional keyword arguments for constructor.
+  Additional keyword arguments for constructor. Same as `SpectrogramNetLSTM`.
 * 
 ```python
 from auralflow.models import SpectrogramNetVAE
@@ -569,7 +569,7 @@ import torch
 
 
 # initialize network
-spec_net = SpectrogramNetVAE(
+spec_net_vae = SpectrogramNetVAE(
     num_fft_bins=1024,
     num_frames=173,
     num_channels=1,
@@ -579,11 +579,14 @@ spec_net = SpectrogramNetVAE(
     input_axis=1
 )
 
-# batch of spectrogram data
-mix_audio = torch.rand((8, 1, 1024, 173))
+# pretend batch of spectrogram data
+mix_spec = torch.rand((8, 1, 1024, 173))
 
-# call forward method
-spectrogram_estimate = spec_net(mix_audio)
+# estimate source mask
+source_mask = spec_net_vae(mix_spec)
+
+# isolate source from mixture
+source_estimate = source_mask * mix_spec
 ```
 
 # Datasets
