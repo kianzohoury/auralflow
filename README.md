@@ -454,11 +454,11 @@ spec_net = SpectrogramNetSimple(
     normalize_output=True
 )
 
-# batch of spectrogram data
+# generate pretend batch of spectrogram data
 mix_audio = torch.rand((8, 1, 1024, 173))
 
-# call forward method
-spectrogram_estimate = spec_net(mix_audio)
+# estimate mask
+mask = spec_net(mix_audio)
 ```
 
 ## SpectrogramNetLSTM
