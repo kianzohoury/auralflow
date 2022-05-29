@@ -557,10 +557,10 @@ $\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}
 where:
 
 
-$\Huge Y_{f, f} = M_{\theta} \odot |Y_{k}|$
+filtered target k: $\Huge Y_{f, k} = M_{\theta} \odot |Y_{k}|$
 
 
-$\Huge R_{filter} = M_{ \theta } \odot (|X| - |Y_{k}|)$
+filtered residual: $\Huge R_{filter} = M_{ \theta } \odot (|X| - |Y_{k}|)$
 
 Also available as a loss instance `WeightedComponentLoss`.
 ```python
