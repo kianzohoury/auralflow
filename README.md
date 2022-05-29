@@ -651,7 +651,7 @@ loss = component_loss(
     mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8
 )
 
-# loss as a scalar
+# scalar value of batch loss
 loss_val = loss.item()
 
 # backprop
