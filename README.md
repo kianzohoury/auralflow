@@ -562,7 +562,9 @@ $\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}
 
 
 #### 3-Component Loss:
-$\Huge L_{3c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha -\beta}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2} + \beta || \carrot{R_f} - \carrot{R}_2^2$
+$\Huge L_{3c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha -\beta}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2} + \beta || \hat{R_f} - \hat{R}_2^2$
+
+
 where:
 
 
