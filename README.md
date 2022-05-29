@@ -576,6 +576,7 @@ where:
 
 * _filtered unit residual_ $\Huge R_{filter} := \frac{R_{filter}}{||R_{filter}||_2}$
 
+
 * _unit residual_ $\Huge R_{filter} := \frac{R}{||R||_2}$
 
 Also available as a loss instance `WeightedComponentLoss`.
