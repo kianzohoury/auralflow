@@ -624,7 +624,7 @@ import torch
 
 
 # generate sample data
-filtered_source = torch.rand((16, 512, 173, 1))
+filtered_target = torch.rand((16, 512, 173, 1))
 target = torch.rand((16, 512, 173, 1))
 filtered_residual = torch.rand((16, 512, 173, 1))
 residual = torch.rand((16, 512, 173, 1))
