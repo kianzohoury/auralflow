@@ -38,6 +38,12 @@ and evaluation tools are available for a more seamless and efficient workflow.
 * [Contribution](#contribution)
 * [License](#license)
 
+TODO:
+- [ ] testing
+- [ ] train audio-domain models
+- [ ] documentation
+- [ ] package distribution
+
 ## Introduction: What is Source Separation? <a name="introduction"></a>
 ![Auralflow Logo](docs/static/wave_form_example.png)
 Source separation is the process of separating an input signal into
