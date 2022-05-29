@@ -20,13 +20,13 @@ and evaluation tools are available for a more seamless and efficient workflow.
   * [Separating Audio](#separating-audio)
 * [Notebook Demo](#demo)
 * [API Documentation](#documentation)
-  * [Training](#training)
   * [Models](#models)
   * [Losses](#losses)
   * [Trainer](#trainer)
   * [Datasets](#datasets)
   * [Data Utilities](#data-utils)
   * [Visualization](#visualization)
+  * [Training](#training)
   * [Separation](#separation)
   * [Evaluation](#evaluation)
 * [Deep Mask Estimation: More on the Mathematics](#deep-mask-estimation)
@@ -587,6 +587,119 @@ source_mask = spec_net_vae(mix_spec)
 # isolate source from mixture
 source_estimate = source_mask * mix_spec
 ```
+# Losses  <a name="losses"></a>
+## component_loss(...)
+A loss function that weights the losses of two or three components that each
+measure separation quality differently. With two components, the loss is
+balanced between target source separation quality and magnitude of residual
+noise. With three components, the quality of the residual noise is weighted in
+the balance.
+```python
+def component_loss(
+    mask: FloatTensor,
+    target: FloatTensor,
+    residual: FloatTensor,
+    alpha: float = 0.2,
+    beta: float = 0.8,
+) -> Tensor:
+  """Weighted L2 loss using 2 or 3 components depending on arguments.
+
+  Balances the target source separation quality versus the amount of
+  residual noise attenuation. Optional third component balances the
+  quality of the residual noise against the other two terms.
+  """
+```
+#### 2-Component Loss:
+$\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}$
+
+
+#### 3-Component Loss:
+$\Huge L_{3c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha -\beta}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2} + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2$
+
+
+where:
+
+
+* _filtered target k_ $\Huge Y_{f, k} := M_{\theta} \odot |Y_{k}|$
+
+
+* _filtered residual_ $\Huge R_{f} := M_{ \theta } \odot (|X| - |Y_{k}|)$
+
+
+* _filtered unit residual_ $\Huge \hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}$
+
+
+* _unit residual_ $\Huge \hat{R} := \frac{R}{||R||_2}$
+
+Sources:
+* Xu, Ziyi, et al. Components Loss for Neural Networks in Mask-Based Speech
+  Enhancement. Aug. 2019. arxiv.org, https://doi.org/10.48550/arXiv.1908.05087.
+### Example
+
+```python
+from auralflow.losses import component_loss
+import torch
+
+
+# generate sample data
+target = torch.rand((16, 512, 173, 1)).float()
+mask = torch.rand((16, 512, 173, 1)).float()
+residual = torch.rand((16, 512, 173, 1)).float()
+
+# weighted loss criterion
+loss = component_loss(
+    mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8
+)
+
+# backprop
+loss.backward()
+```
+
+## kl_div_loss(...)
+```python
+def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
+    """Computes KL term using the closed form expression.
+    
+    KL term is defined as := D_KL(P||Q), where P is the modeled distribution,
+    and Q is a standard normal N(0, 1). The term should be combined with a
+    reconstruction loss.
+    """
+```
+Also available as a loss instance `KLDivergenceLoss`.
+```python
+class KLDivergenceLoss(nn.Module):
+    """Wrapper class for KL Divergence loss. Only to be used for VAE models."""
+
+    def __init__(self, model, loss_fn: str = "l1"):
+```
+
+### Example
+
+```python
+from auralflow import utils
+from auralflow.losses import kl_div_loss
+from torch.nn.functional import l1_loss
+import torch
+
+
+# generate sample data
+mu = torch.rand((16, 256, 256)).float()
+sigma = torch.rand((16, 256, 256)).float()
+estimate_spec = torch.rand((16, 512, 173, 1))
+target_spec = torch.rand((16, 512, 173, 1))
+
+# kl div loss
+kl_term = kl_div_loss(mu, sigma)
+
+# reconstruction loss
+recon_term = l1_loss(estimate_spec, target_spec)
+
+# combine losses
+loss = kl_term + recon_term
+
+# backprop
+loss.backward()
+```
 
 # Datasets
 ## AudioFolder
@@ -683,119 +796,6 @@ train_dataset = create_audio_dataset(
 
 # sample pair of mixture and target data
 mix_audio, target_audio = next(iter(train_dataset))
-```
-# Losses
-## component_loss(...)
-A loss function that weights the losses of two or three components that each
-measure separation quality differently. With two components, the loss is
-balanced between target source separation quality and magnitude of residual
-noise. With three components, the quality of the residual noise is weighted in
-the balance.
-```python
-def component_loss(
-    mask: FloatTensor,
-    target: FloatTensor,
-    residual: FloatTensor,
-    alpha: float = 0.2,
-    beta: float = 0.8,
-) -> Tensor:
-  """Weighted L2 loss using 2 or 3 components depending on arguments.
-
-  Balances the target source separation quality versus the amount of
-  residual noise attenuation. Optional third component balances the
-  quality of the residual noise against the other two terms.
-  """
-```
-#### 2-Component Loss:
-$\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}$
-
-
-#### 3-Component Loss:
-$\Huge L_{3c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha -\beta}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2} + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2$
-
-
-where:
-
-
-* _filtered target k_ $\Huge Y_{f, k} := M_{\theta} \odot |Y_{k}|$
-
-
-* _filtered residual_ $\Huge R_{f} := M_{ \theta } \odot (|X| - |Y_{k}|)$
-
-
-* _filtered unit residual_ $\Huge \hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}$
-
-
-* _unit residual_ $\Huge \hat{R} := \frac{R}{||R||_2}$
-
-Sources:
-* Xu, Ziyi, et al. Components Loss for Neural Networks in Mask-Based Speech
-Enhancement. Aug. 2019. arxiv.org, https://doi.org/10.48550/arXiv.1908.05087.
-### Example
-
-```python
-from auralflow.losses import component_loss
-import torch
-
-
-# generate sample data
-target = torch.rand((16, 512, 173, 1)).float()
-mask = torch.rand((16, 512, 173, 1)).float()
-residual = torch.rand((16, 512, 173, 1)).float()
-
-# weighted loss criterion
-loss = component_loss(
-    mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8
-)
-
-# backprop
-loss.backward()
-```
-
-## kl_div_loss(...)
-```python
-def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
-    """Computes KL term using the closed form expression.
-    
-    KL term is defined as := D_KL(P||Q), where P is the modeled distribution,
-    and Q is a standard normal N(0, 1). The term should be combined with a
-    reconstruction loss.
-    """
-```
-Also available as a loss instance `KLDivergenceLoss`.
-```python
-class KLDivergenceLoss(nn.Module):
-    """Wrapper class for KL Divergence loss. Only to be used for VAE models."""
-
-    def __init__(self, model, loss_fn: str = "l1"):
-```
-
-### Example
-
-```python
-from auralflow import utils
-from auralflow.losses import kl_div_loss
-from torch.nn.functional import l1_loss
-import torch
-
-
-# generate sample data
-mu = torch.rand((16, 256, 256)).float()
-sigma = torch.rand((16, 256, 256)).float()
-estimate_spec = torch.rand((16, 512, 173, 1))
-target_spec = torch.rand((16, 512, 173, 1))
-
-# kl div loss
-kl_term = kl_div_loss(mu, sigma)
-
-# reconstruction loss
-recon_term = l1_loss(estimate_spec, target_spec)
-
-# combine losses
-loss = kl_term + recon_term
-
-# backprop
-loss.backward()
 ```
 
 # Data Utils
