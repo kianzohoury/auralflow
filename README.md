@@ -219,28 +219,12 @@ A walk-through involving training a model to separate vocals can be found [here]
 # Models
 ## SeparationModel
 `SeparationModel` is the abstract base class for source separation models
-and should not be instantiated.
-## SpectrogramMaskModel
-`SpectrogramMaskModel` is the wrapper object for integrating PyTorch networks
-as deep mask estimation models in the spectrogram domain.
-
-```python
-class SpectrogramMaskModel(SeparationModel):
-  """Spectrogram-domain deep mask estimation model."""
-
-    def __init__(self, configuration: dict) -> None:
-```
-### Parameters
-
-
-* configuration : dict
-
-  Configuration data read from a .json file.
+and should not be instantiated directly.
 
 ### Methods
 #### `set_data(...)`
 ```python
-def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
+def set_data(self, *data) -> None:
     """Wrapper method processes and sets data for internal access."""
 ```
 #### `forward()`
@@ -273,6 +257,89 @@ def optimizer_step(self) -> None:
 def scheduler_step(self) -> bool:
     """Reduces lr if val loss does not improve, and signals early stop."""
 ```
+#### `train()`
+```python
+def train(self) -> None:
+    """Sets model to training mode."""
+```
+#### `eval()`
+```python
+def eval(self) -> None:
+    """Sets model to evaluation mode."""
+```
+#### `test()`
+```python
+def test(self):
+    """Calls forward method without gradient tracking."""
+```
+#### `load_model(...)`
+```python
+def load_model(self, global_step: int) -> None:
+    """Loads a model's previous state."""
+```
+#### `save_optim(...)`
+```python
+def save_optim(self, global_step: int) -> None:
+    """Saves the optimizer's current state."""
+```
+#### `load_optim(...)`
+```python
+def load_optim(self, global_step: int) -> None:
+    """Loads an optimizer's previous state."""
+```
+#### `save_scheduler(...)`
+```python
+def save_scheduler(self, global_step: int) -> None:
+    """Saves the scheduler's current state."""
+```
+#### `load_scheduler(...)`
+```python
+def save_scheduler(self, global_step: int) -> None:
+    """Saves the scheduler's current state."""
+```
+#### `save_grad_scaler(...)`
+```python
+def save_grad_scaler(self, global_step: int) -> None:
+    """Saves the grad scaler's current state if using mixed precision."""
+```
+#### `load_grad_scaler(...)`
+```python
+def load_grad_scaler(self, global_step: int) -> None:
+    """Load a grad scaler's previous state if one exists."""
+```
+#### `save(...)`
+```python
+def save(
+    self,
+    global_step: int,
+    model: bool = True,
+    optim: bool = True,
+    scheduler: bool = True,
+    grad_scaler: bool = True,
+) -> None:
+    """Saves all training objects in one call."""
+```
+
+
+## SpectrogramMaskModel
+`SpectrogramMaskModel` is the wrapper object for integrating PyTorch networks
+as deep mask estimation models in the spectrogram domain.
+
+```python
+class SpectrogramMaskModel(SeparationModel):
+  """Spectrogram-domain deep mask estimation model."""
+
+    def __init__(self, configuration: dict) -> None:
+```
+### Parameters
+
+
+* configuration : dict
+
+  Configuration data read from a .json file.
+
+### Methods
+
 ### Example
 ```python
 from auralflow import utils

@@ -76,7 +76,7 @@ def run_training(
         callback.on_epoch_end(epoch=epoch, *next(iter(val_dataloader)))
         # Only save model if validation loss decreases.
         if model.is_best_model:
-            model.save_all(
+            model.save(
                 global_step=epoch,
                 model=True,
                 optim=True,
@@ -91,7 +91,7 @@ def run_training(
             break
 
     # Save last checkpont to resume training later.
-    model.save_all(
+    model.save(
         global_step=epoch,
         model=True,
         optim=True,

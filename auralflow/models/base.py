@@ -56,7 +56,7 @@ class SeparationModel(ABC):
         )
 
     @abstractmethod
-    def set_data(self, *args) -> None:
+    def set_data(self, *data) -> None:
         """Set and process data for internal access."""
         pass
 
@@ -152,7 +152,7 @@ class SeparationModel(ABC):
             model_wrapper=self, obj_name="grad_scaler", global_step=global_step
         )
 
-    def save_all(
+    def save(
         self,
         global_step: int,
         model: bool = True,
