@@ -218,9 +218,18 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 # Models
 ## SeparationModel
-`SeparationModel` is the abstract base class for source separation models
+`SeparationModel` is the abstract base class for all source separation models
 and should not be instantiated directly.
+```python
+class SeparationModel(ABC):
+    """Interface shared among all source separation models."""
+    
+    def __init__(self, config: dict):
+```
+### Parameters
+* _configuration : dict_
 
+  Configuration data read from a .json file.
 ### Methods
 #### `set_data(...)`
 ```python
@@ -288,13 +297,11 @@ def load_optim(self, global_step: int) -> None:
     """Loads an optimizer's previous state."""
 ```
 #### `save_scheduler(...)`
-Saves the scheduler's current state.
 ```python
 def save_scheduler(self, global_step: int) -> None:
     """Saves the scheduler's current state."""
 ```
 #### `load_scheduler(...)`
-Loads a scheduler's previous state.
 ```python
 def load_scheduler(self, global_step: int) -> None:
   """Loads a scheduler's previous state."""
@@ -336,9 +343,7 @@ class SpectrogramMaskModel(SeparationModel):
 ### Parameters
 
 
-* configuration : dict
 
-  Configuration data read from a .json file.
 
 ### Methods
 
