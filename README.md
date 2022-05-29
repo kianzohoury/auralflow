@@ -589,8 +589,8 @@ source_estimate = source_mask * mix_spec
 ```
 # Losses  <a name="losses"></a>
 ## component_loss(...)
-A loss function that weights the losses of two or three components that each
-measure separation quality differently. With two components, the loss is
+A loss function that weighs the losses of two or three components together,
+each measuring separation quality differently. With two components, the loss is
 balanced between target source separation quality and magnitude of residual
 noise. With three components, the quality of the residual noise is weighted in
 the balance.
