@@ -671,15 +671,16 @@ where
 ### Example
 
 ```python
-from auralflow import utils
 from auralflow.losses import kl_div_loss
 from torch.nn.functional import l1_loss
 import torch
 
 
-# generate sample data
-mu = torch.rand((16, 256, 256)).float()
-sigma = torch.rand((16, 256, 256)).float()
+# generate mean and std
+mu = torch.zeros((16, 256, 256)).float()
+sigma = torch.ones((16, 256, 256)).float()
+
+# generate pretend estimate and target spectrograms
 estimate_spec = torch.rand((16, 512, 173, 1))
 target_spec = torch.rand((16, 512, 173, 1))
 
@@ -689,8 +690,11 @@ kl_term = kl_div_loss(mu, sigma)
 # reconstruction loss
 recon_term = l1_loss(estimate_spec, target_spec)
 
-# combine losses
+# combine kl and reconstruction terms
 loss = kl_term + recon_term
+
+# scalar value of batch loss
+loss_val = loss.item()
 
 # backprop
 loss.backward()
