@@ -792,7 +792,7 @@ train_dataset = create_audio_dataset(
     mono=True,
 )
 
-# sample mixture and target data from the dataset
+# sample mixture and target training data from the dataset
 mix_audio, target_audio = next(iter(train_dataset))
 ```
 
