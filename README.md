@@ -562,7 +562,6 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
 * _kwargs :_
 
   Additional keyword arguments for constructor. Same as `SpectrogramNetLSTM`.
-* 
 ```python
 from auralflow.models import SpectrogramNetVAE
 import torch
