@@ -455,13 +455,13 @@ spec_net = SpectrogramNetSimple(
 )
 
 # generate pretend batch of spectrogram data
-mix_audio = torch.rand((8, 1, 1024, 173))
+mix_spec = torch.rand((8, 1, 1024, 173))
 
 # estimate source mask
-source_mask = spec_net(mix_audio)
+source_mask = spec_net(mix_spec)
 
 # isolate source from mixture
-source_estimate = source_mask * mix_audio
+source_estimate = source_mask * mix_spec
 ```
 
 ## SpectrogramNetLSTM
@@ -528,13 +528,13 @@ spec_net_lstm = SpectrogramNetLSTM(
 )
 
 # pretend batch of spectrogram data
-mix_audio = torch.rand((8, 1, 1024, 173))
+mix_spec = torch.rand((8, 1, 1024, 173))
 
 # estimate source mask
-source_mask = spec_net_lstm(mix_audio)
+source_mask = spec_net_lstm(mix_spec)
 
 # isolate source from mixture
-source_estimate = source_mask * mix_audio
+source_estimate = source_mask * mix_spec
 ```
 
 ## SpectrogramNetVAE
