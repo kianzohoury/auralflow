@@ -268,7 +268,7 @@ def backward(self) -> None:
 def optimizer_step(self) -> None:
     """Updates model's parameters."""
 ```
-##### `scheduler_step()`
+#### `scheduler_step()`
 ```python
 def scheduler_step(self) -> bool:
     """Reduces lr if val loss does not improve, and signals early stop."""
