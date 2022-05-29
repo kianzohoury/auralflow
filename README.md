@@ -216,22 +216,22 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 # API Documentation <a name="documentation"></a> 🎶
 
-# Models
-## SeparationModel
-`SeparationModel` is the abstract base class for all source separation models
-and should not be instantiated directly. Classes that inherit from this object
-wrap PyTorch `nn.Module` networks.
+## Models
+### `SeparationModel`
+The abstract base class for all source separation models. Classes that inherit
+from this object wrap PyTorch `nn.Module` networks. Note that this class
+should not be instantiated directly. 
 ```python
 class SeparationModel(ABC):
     """Interface shared among all source separation models."""
     
     def __init__(self, config: dict) -> None:
 ```
-### Parameters
+#### Parameters
 * _configuration : dict_
 
   Configuration data read from a .json file.
-### Methods
+#### Methods
 #### `set_data(...)`
 ```python
 def set_data(self, *data) -> None:
@@ -331,24 +331,19 @@ def save(
 ```
 
 
-## SpectrogramMaskModel
-`SpectrogramMaskModel` is the deep mask estimation model that separates audio
-in the spectrogram domain.
-
+### `SpectrogramMaskModel`
+The deep mask estimation model that separates audio in the spectrogram domain.
 ```python
 class SpectrogramMaskModel(SeparationModel):
   """Spectrogram-domain deep mask estimation model."""
 
     def __init__(self, configuration: dict) -> None:
 ```
-### Parameters
+#### Parameters
 Same constructor signature as `SeparationModel`.
-
-
-
-### Methods
+#### Methods
 Same class methods as `SeparationModel`.
-### Example
+#### Example
 ```python
 from auralflow.utils import load_config
 from auralflow.models import SpectrogramMaskModel
@@ -368,8 +363,8 @@ mask_model = SpectrogramMaskModel(config_data)
 vocals_estimate = mask_model.separate(mix_audio)
 ```
 
-## SpectrogramNetSimple
-`SpectrogramNetSimple` is the spectrogram-domain U-Net model with
+### `SpectrogramNetSimple`
+The spectrogram-domain U-Net model with
 a simple encoder/decoder architecture.
 ```python
 class SpectrogramNetSimple(nn.Module):
@@ -406,7 +401,7 @@ class SpectrogramNetSimple(nn.Module):
         device: Optional[str] = None,
     ) -> None:
 ```
-### Parameters
+#### Parameters
 * _num_fft_bins : int_ 
 
   Number of FFT bins (aka filterbanks).
@@ -438,7 +433,7 @@ class SpectrogramNetSimple(nn.Module):
 
   Device. Default: None.
 
-### Example
+#### Example
 ```python
 from auralflow.models import SpectrogramNetSimple
 import torch
@@ -464,8 +459,8 @@ source_mask = spec_net(mix_spec)
 source_estimate = source_mask * mix_spec
 ```
 
-## SpectrogramNetLSTM
-`SpectrogramNetLSTM` is the spectrogram-domain U-Net model with 
+### `SpectrogramNetLSTM`
+The spectrogram-domain U-Net model with 
 an additional stack of LSTM bottleneck layers.
 ```python
 class SpectrogramNetLSTM(SpectrogramNetSimple):
@@ -491,7 +486,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         **kwargs
     ) -> None:
 ```
-### Parameters
+#### Parameters
 * _recurrent_depth : int_ 
 
   Number of stacked lstm layers. Default: 3.
@@ -502,7 +497,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 
   Whether to feed dim 0 (frequency axis) or dim 1 (time axis) as features to the lstm. Default: 1.
 
-### Keyword Args:
+#### Keyword Args:
 * _args :_ 
 
   Positional arguments for constructor. Same as `SpectrogramNetSimple`.
@@ -510,7 +505,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 
   Additional keyword arguments for constructor. Same as `SpectrogramNetSimple`.
 
-### Example
+#### Example
 ```python
 from auralflow.models import SpectrogramNetLSTM
 import torch
@@ -537,8 +532,8 @@ source_mask = spec_net_lstm(mix_spec)
 source_estimate = source_mask * mix_spec
 ```
 
-## `SpectrogramNetVAE`
-`SpectrogramNetVAE` is the spectrogram-domain U-Net model that utilizes a 
+### `SpectrogramNetVAE`
+The spectrogram-domain U-Net model that utilizes a 
 Variational Autoencoder (VAE) along with LSTM bottleneck layers.
 ```python
 class SpectrogramNetVAE(SpectrogramNetLSTM):
@@ -555,7 +550,7 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
 
     def __init__(self, *args, **kwargs) -> None:
 ```
-### Keyword Args:
+#### Keyword Args:
 * _args :_
 
   Positional arguments for constructor. Same as `SpectrogramNetLSTM`.
@@ -587,7 +582,7 @@ source_mask = spec_net_vae(mix_spec)
 # isolate source from mixture
 source_estimate = source_mask * mix_spec
 ```
-# Losses  <a name="losses"></a>
+## Losses  <a name="losses"></a>
 ### `component_loss(...)`
 A loss function that weighs the losses of two or three components together,
 each measuring separation quality differently. With two components, the loss is
@@ -634,7 +629,7 @@ where
 #### Sources
 * Xu, Ziyi, et al. Components Loss for Neural Networks in Mask-Based Speech
   Enhancement. Aug. 2019. arxiv.org, https://doi.org/10.48550/arXiv.1908.05087.
-### Example
+#### Example
 
 ```python
 from auralflow.losses import component_loss
@@ -658,7 +653,7 @@ loss_val = loss.item()
 loss.backward()
 ```
 
-## kl_div_loss(...)
+### `kl_div_loss(...)`
 ```python
 def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     """Computes KL term using the closed form expression.
