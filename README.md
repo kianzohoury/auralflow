@@ -663,13 +663,10 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     reconstruction loss.
     """
 ```
-Also available as a loss instance `KLDivergenceLoss`.
-```python
-class KLDivergenceLoss(nn.Module):
-    """Wrapper class for KL Divergence loss. Only to be used for VAE models."""
+$$\frac{1}{2}\sum_{i=1}^{n}(\mu^2 + \sigma^2 - \ln\sigma^2 - 1)$$
 
-    def __init__(self, model, loss_fn: str = "l1"):
-```
+where 
+* $n$ is the number of tensor elements
 
 ### Example
 
