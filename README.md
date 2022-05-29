@@ -14,6 +14,10 @@ and evaluation tools are available for a more seamless and efficient workflow.
 * [Introduction: What is Source Separation?](#introduction)
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
+* [Command Line Usage](#usage)
+  * [Model Configuration](#model-config)
+  * [Running Training](#running-training)
+  * [Separating Audio](#separating-audio)
 * [Notebook Demo](#demo)
 * [API Documentation](#documentation)
   * [Training](#training)
@@ -112,12 +116,58 @@ Install auralflow with pip using the following command:
 pip install auralflow
 `````
 
-## Training <a name="training"></a>
-### Training Files
-Training a source separation model is very simple. Auralflow uses a single
-folder to store and organize all files related to training a separation model.
-Depending on how you set the configuration file, you can expect the contents
-of that folder to look like the following after a single training session:
+## Command Line Usage <a name="usage"></a>
+The quickest way to use auralflow is through shell commands. 
+
+### Model Configuration <a name="model-config"></a>
+Auralflow uses a single configuration file in order to store important
+training, data processing and model information, among other things. For example,
+things like
+* model base architecture
+* number of filterbanks, hop length or window size
+* visualization tools for monitoring training progress
+
+can be customized by simply editing the configuration file belonging to your
+model. Let's dive in.
+### `config`
+To initialize a new configuration file, run the `config` command:
+```bash
+auralflow config my_model SpectrogramNetSimple --save path/to/save
+```
+which will create a model folder named `my_model` and copy the starting
+template for `SpectrogramNetSimple` as `config.json` to the folder. 
+Additionally, we can specify a location
+we'd like to save the folder with the `--save` argument. By default,
+the folder will be saved in the current directory.
+
+Next, to modify some of the starting settings we can either edit the
+`config.json` file in a text editor (recommended), or pass in the desired
+value for each argument within the command line like so:
+```bash
+auralflow config my_model --mask_activation relu --dropout_p 0.4 --display
+```
+Here, we've changed two parameters simultaneously:
+* the model's masking function to ReLU by specifying the `--mask_activation` argument
+* the dropout probability for its layers with the `--dropout_p` argument
+
+Any number of [configuration settings](#config-settings) can be changed with
+one or more commands. Optionally,
+running `--display` will display your changes in the terminal output.
+
+
+## Running Training <a name="running-training"></a>
+### `train`
+Now that we've configured our model, we can train it by using the `train`
+command:
+```bash
+auralflow train my_model path/to/dataset
+```
+Note that we must pass in a path to a valid audio dataset to train on. We
+can also resume training with the same exact command, which will load the
+previous states and train for an additional `max_epochs`.
+
+Depending on the configurations we set, we can expect the contents of our
+model folder to look like the following after training is complete.
 ```bash
 my_model
   ├── audio/...
@@ -136,48 +186,31 @@ MIR evaluation metrics
 * `images`: folder that stores spectrograms and waveforms of separated audio
 from validation data
 
-### Initializing Configuration Files
-What kind of base model you wish to train, how the input data should be processed,
-how you wish to train your model and how you'd like to
-visualize those training runs are among the many settings that are
-modifiable in the configuration file. If you want to initialize a new
-configuration, use the `config` command:
-```bash
-auralflow config my_model SpectrogramNetSimple --save path/to/save
-```
-which will copy a template configuration for any base model of your choice. It's
-recommended that you also name the model and outer folder with the `--name`
-argument. Additionally, if `--save` is not specified, the folder will
-automatically be saved to the current directory.
-### Customizing Configuration Files
-If you want to change certain settings, open the `config.json` file from your
-model training folder and replace the entry for each setting to the desired
-value. If you feel more comfortable working with the command line, you can
-edit settings directly like so:
-```bash
-auralflow config my_model --mask_activation relu --dropout_p 0.4 --display
-```
-Here, we've changed two parameters simultaneously. We've set our model's
-masking function to ReLU by specifying the `--mask_activation` argument,
-and assigned a nonzero dropout probability for
-its layers with the `--dropout_p` argument. Note that one or more arguments can
-be changed within a single command. Optionally, running `--display` 
-will let you see the updated configurations you just made.
-
-## Running Training 
-Once you've created a model training folder, you can train your model with the 
-following command:
-```bash
-auralflow train my_model path/to/dataset
-```
-which expects `config.json` to exist within the model training folder.
-
-## Separating Audio
+## Separating Audio <a name="separating-audio"></a>
+The separation script allows us to separate a single song or multiple songs
+contained in a folder.
+### `separate`
+To separate audio using our model, use the `separate` command:
 ```bash
 auralflow separate my_model path/to/audio --residual --duration 90 \
 --save path/to/output
 ```
+Here we've specified a few things:
+* to save the residual or background track along with the `--residual` flag
+* to only save the first 90 seconds of the results with the `--duration` argument
+* where to save the results with the `--save` argument
 
+The results for each track will placed within a single folder called
+`separated_audio` like so:
+```bash
+path/to/save/separated_audio
+  └── artist - track name
+        ├── original.wav
+        ├── vocals.wav
+        └── residual.wav
+```
+And we're done! If you'd like for more control and functionality, read the
+[documentation](#documentation). 
 ## [Notebook Demo](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing) <a name="demo"></a> 
 A walk-through involving training a model to separate vocals can be found [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing).
 
