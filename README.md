@@ -537,7 +537,7 @@ source_mask = spec_net_lstm(mix_spec)
 source_estimate = source_mask * mix_spec
 ```
 
-## SpectrogramNetVAE
+## `SpectrogramNetVAE`
 `SpectrogramNetVAE` is the spectrogram-domain U-Net model that utilizes a 
 Variational Autoencoder (VAE) along with LSTM bottleneck layers.
 ```python
@@ -588,7 +588,7 @@ source_mask = spec_net_vae(mix_spec)
 source_estimate = source_mask * mix_spec
 ```
 # Losses  <a name="losses"></a>
-## component_loss(...)
+### `component_loss(...)`
 A loss function that weighs the losses of two or three components together,
 each measuring separation quality differently. With two components, the loss is
 balanced between target source separation quality and magnitude of residual
