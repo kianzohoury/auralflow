@@ -571,13 +571,13 @@ where:
 * _filtered target k_ $\Huge Y_{f, k} := M_{\theta} \odot |Y_{k}|$
 
 
-* _filtered residual_ $\Huge R_{filter} := M_{ \theta } \odot (|X| - |Y_{k}|)$
+* _filtered residual_ $\Huge R_{f} := M_{ \theta } \odot (|X| - |Y_{k}|)$
 
 
-* _filtered unit residual_ $\Huge R_{filter} := \frac{R_{filter}}{||R_{filter}||_2}$
+* _filtered unit residual_ $\Huge \hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}$
 
 
-* _unit residual_ $\Huge R_{filter} := \frac{R}{||R||_2}$
+* _unit residual_ $\Huge \hat{R} := \frac{R}{||R||_2}$
 
 Also available as a loss instance `WeightedComponentLoss`.
 ```python
