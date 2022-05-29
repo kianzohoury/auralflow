@@ -17,13 +17,11 @@ from auralflow.utils.data_utils import trim_audio
 
 
 def component_loss(
-    filtered_src: FloatTensor,
-    target_src: Tensor,
-    filtered_res: FloatTensor,
-    target_res: Tensor,
+    mask: FloatTensor,
+    target: FloatTensor,
+    residual: Tensor,
     alpha: float = 0.2,
     beta: float = 0.8,
-    n_components: int = 2,
 ) -> Tensor:
     """Weighted L2 loss using 2 or 3 components depending on arguments.
 
@@ -31,27 +29,28 @@ def component_loss(
     residual noise attenuation. Optional third component balances the
     quality of the residual noise against the other two terms.
     """
+
+    filtered_target = mask * target
+    filtered_residual = mask * residual
+
     # Separation quality term.
-    total_separation_loss = torch.sum((filtered_src - target_src) ** 2)
+    total_separation_loss = torch.sum((filtered_target - target) ** 2)
 
     # Noise attenuation term.
-    total_noise_loss = torch.sum(filtered_res**2)
+    total_noise_loss = torch.sum(filtered_residual**2)
 
-    summed_dims = list(range(1, filtered_res.dim()))
-    filtered_res_unit = filtered_res / torch.linalg.norm(
-        target_res, dim=summed_dims, keepdim=True
+    summed_dims = list(range(1, filtered_residual.dim()))
+    filtered_res_unit = filtered_residual / torch.linalg.norm(
+        filtered_residual, dim=summed_dims, keepdim=True
     )
-    target_res_unit = target_res / torch.linalg.norm(
-        target_res, dim=summed_dims, keepdim=True
+    target_res_unit = residual / torch.linalg.norm(
+        residual, dim=summed_dims, keepdim=True
     )
 
     # Noise quality term.
     total_noise_quality_loss = torch.sum(
         (filtered_res_unit - target_res_unit) ** 2
     )
-
-    # Discards last term if specified.
-    beta = 0 if n_components == 2 else beta
 
     # Constrain alpha + beta <= 1.
     if alpha + beta > 1:
@@ -63,7 +62,7 @@ def component_loss(
     loss = (1 - alpha - beta) * total_separation_loss
     loss = loss + alpha * total_noise_loss
     loss = loss + beta * total_noise_quality_loss
-    mean_loss = loss / filtered_src.numel()
+    mean_loss = loss / filtered_target.numel()
     return mean_loss
 
 
@@ -169,19 +168,12 @@ class WeightedComponentLoss(nn.Module):
 
     def forward(self):
         """Calculates a weighted component loss."""
-        # Apply mask to true target source.
-        filtered_src = self.model.mask * self.model.target
-
-        # Apply mask to true residual.
-        true_residual = self.model.mixture - self.model.target
-        filtered_res = self.model.mask * true_residual
 
         # Compute weighted loss.
         self.model.batch_loss = component_loss(
-            filtered_src=filtered_src,
-            target_src=self.model.target,
-            filtered_res=filtered_res,
-            target_res=true_residual,
+            mask=self.model.mask,
+            target=self.model.target,
+            residual=self.model.mixture - self.model.target,
             alpha=self.alpha,
             beta=self.beta,
         )
