@@ -574,21 +574,18 @@ noise. With three components, the quality of the residual noise is weighted in
 the balance.
 ```python
 def component_loss(
-    filtered_src: FloatTensor,
-    target_src: Tensor,
-    filtered_res: FloatTensor,
-    target_res: Tensor,
+    mask: FloatTensor,
+    target: FloatTensor,
+    residual: FloatTensor,
     alpha: float = 0.2,
     beta: float = 0.8,
-    n_components: int = 2
 ) -> Tensor:
-  
-    """Weighted L2 loss using 2 or 3 components depending on arguments.
+  """Weighted L2 loss using 2 or 3 components depending on arguments.
 
-    Balances the target source separation quality versus the amount of
-    residual noise attenuation. Optional third component balances the
-    quality of the residual noise against the other two terms.
-    """
+  Balances the target source separation quality versus the amount of
+  residual noise attenuation. Optional third component balances the
+  quality of the residual noise against the other two terms.
+  """
 ```
 #### 2-Component Loss:
 $\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}$
@@ -618,25 +615,18 @@ Enhancement. Aug. 2019. arxiv.org, https://doi.org/10.48550/arXiv.1908.05087.
 ### Example
 
 ```python
-from auralflow import utils
 from auralflow.losses import component_loss
 import torch
 
 
 # generate sample data
-filtered_target = torch.rand((16, 512, 173, 1))
-target = torch.rand((16, 512, 173, 1))
-filtered_residual = torch.rand((16, 512, 173, 1))
-residual = torch.rand((16, 512, 173, 1))
+target = torch.rand((16, 512, 173, 1)).float()
+mask = torch.rand((16, 512, 173, 1)).float()
+residual = torch.rand((16, 512, 173, 1)).float()
 
 # weighted loss criterion
 loss = component_loss(
-    filtered_src=filtered_source,
-    target_src=target,
-    filtered_res=filtered_residual,
-    target_res=residual,
-    alpha=0.2,
-    beta=0.8
+    mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8
 )
 
 # backprop

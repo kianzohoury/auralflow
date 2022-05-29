@@ -19,7 +19,7 @@ from auralflow.utils.data_utils import trim_audio
 def component_loss(
     mask: FloatTensor,
     target: FloatTensor,
-    residual: Tensor,
+    residual: FloatTensor,
     alpha: float = 0.2,
     beta: float = 0.8,
 ) -> Tensor:
