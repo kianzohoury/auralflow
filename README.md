@@ -641,15 +641,18 @@ from auralflow.losses import component_loss
 import torch
 
 
-# generate sample data
-target = torch.rand((16, 512, 173, 1)).float()
+# generate pretend mask, target and residual spectrogram data
 mask = torch.rand((16, 512, 173, 1)).float()
+target = torch.rand((16, 512, 173, 1)).float()
 residual = torch.rand((16, 512, 173, 1)).float()
 
 # weighted loss criterion
 loss = component_loss(
     mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8
 )
+
+# loss as a scalar
+loss_val = loss.item()
 
 # backprop
 loss.backward()
