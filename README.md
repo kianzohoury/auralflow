@@ -579,15 +579,6 @@ where:
 
 * _unit residual_ $\Huge \hat{R} := \frac{R}{||R||_2}$
 
-Also available as a loss instance `WeightedComponentLoss`.
-```python
-class WeightedComponentLoss(nn.Module):
-    """Wrapper class for calling weighted component loss."""
-
-    def __init__(
-        self, model, alpha: float, beta: float, regularizer: bool = True
-    ) -> None:
-```
 Sources:
 * Xu, Ziyi, et al. Components Loss for Neural Networks in Mask-Based Speech
 Enhancement. Aug. 2019. arxiv.org, https://doi.org/10.48550/arXiv.1908.05087.
