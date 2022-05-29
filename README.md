@@ -700,8 +700,8 @@ loss_val = loss.item()
 loss.backward()
 ```
 
-# Datasets
-## AudioFolder
+## Datasets
+### `AudioFolder`
 ```python
 class AudioFolder(IterableDataset):
     """An on-the-fly audio sample generator designed to be memory efficient.
@@ -746,7 +746,7 @@ class AudioFolder(IterableDataset):
         backend: str = "soundfile",
     ) -> None:
 ```
-## AudioDataset
+### `AudioDataset`
 ```python
 class AudioDataset(Dataset):
     """Audio dataset that loads full audio tracks directly into memory."""
@@ -760,8 +760,7 @@ class AudioDataset(Dataset):
         sample_rate: int = 44100,
     ) -> None:
 ```
-# Dataset Utilities
-## create_audio_dataset(...)
+### `create_audio_dataset(...)`
 ```python
 def create_audio_dataset(
     dataset_path: str,
@@ -781,19 +780,19 @@ def create_audio_dataset(
 from auralflow.datasets import create_audio_dataset
 
 
-# expand full length dataset into a 100,000 3-sec chunks
+# create 100,000 3-sec chunks from a pool of 80 total tracks
 train_dataset = create_audio_dataset(
     dataset_path="path/to/dataset",
     split="train",
     targets=["vocals"],
     chunk_size=3,
-    num_chunks=1e5,
+    num_chunks=int(1e5),
     max_num_tracks=80,
     sample_rate=44100,
     mono=True,
 )
 
-# sample pair of mixture and target data
+# sample mixture and target data from the dataset
 mix_audio, target_audio = next(iter(train_dataset))
 ```
 
