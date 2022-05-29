@@ -369,7 +369,7 @@ vocals_estimate = mask_model.separate(mix_audio)
 ```
 
 ## SpectrogramNetSimple
-`SpectrogramNetSimple` is the spectrogram-domain U-Net network with
+`SpectrogramNetSimple` is the spectrogram-domain U-Net model with
 a simple encoder/decoder architecture.
 ```python
 class SpectrogramNetSimple(nn.Module):
