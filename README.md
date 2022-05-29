@@ -237,50 +237,41 @@ class SpectrogramMaskModel(SeparationModel):
 
   Configuration data read from a .json file.
 
-## Methods
-### `set_data(...)`
+### Methods
+#### `set_data(...)`
 ```python
 def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
     """Wrapper method processes and sets data for internal access."""
 ```
-### `forward()`
+#### `forward()`
 ```python
 def forward(self) -> None:
     """Estimates target by applying the learned mask to the mixture."""
 ```
-### `separate(...)`
+#### `separate(...)`
 ```python
 def separate(self, audio: Tensor) -> Tensor:
     """Transforms and returns source estimate in the audio domain."""
 ```
-### `compute_loss()`
+#### `compute_loss()`
 ```python
 def compute_loss(self) -> float:
     """Updates and returns the current batch-wise loss."""
 ```
-### `backward()`
+#### `backward()`
 ```python
 def backward(self) -> None:
     """Performs gradient computation and backpropagation."""
 ```
-### `optimizer_step()`
+#### `optimizer_step()`
 ```python
 def optimizer_step(self) -> None:
     """Updates model's parameters."""
 ```
-#### `scheduler_step()`
+##### `scheduler_step()`
 ```python
 def scheduler_step(self) -> bool:
     """Reduces lr if val loss does not improve, and signals early stop."""
-```
-
-
-
-
-
-
-
-
 ```
 ### Example
 ```python
