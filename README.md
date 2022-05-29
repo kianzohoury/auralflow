@@ -845,6 +845,8 @@ def pad_audio(self, audio: Tensor):
 from auralflow.utils.data_utils import AudioTransform
 import torch
 
+
+# instantiate audio transform
 transform = AudioTransform(
     num_fft=1024,
     hop_length=768,
