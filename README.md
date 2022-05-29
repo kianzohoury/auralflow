@@ -609,15 +609,15 @@ def component_loss(
   quality of the residual noise against the other two terms.
   """
 ```
-#### 2-Component Loss:
+#### 2-Component Loss
 $\Huge L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}$
 
 
-#### 3-Component Loss:
+#### 3-Component Loss
 $\Huge L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2} + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2$
 
 
-where:
+where
 
 
 * _filtered target k_ $\Huge Y_{f, k} := M_{\theta} \odot |Y_{k}|$
@@ -631,7 +631,7 @@ where:
 
 * _unit residual_ $\Huge \hat{R} := \frac{R}{||R||_2}$
 
-Sources:
+#### Sources
 * Xu, Ziyi, et al. Components Loss for Neural Networks in Mask-Based Speech
   Enhancement. Aug. 2019. arxiv.org, https://doi.org/10.48550/arXiv.1908.05087.
 ### Example
