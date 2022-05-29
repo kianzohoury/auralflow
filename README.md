@@ -151,8 +151,8 @@ Here, we've changed two parameters simultaneously:
 * the dropout probability for its layers with the `--dropout_p` argument
 
 Any number of [configuration settings](#config-settings) can be changed with
-one or more commands. Optionally,
-running `--display` will display your changes in the terminal output.
+one or more commands. Optionally, running `--display` will display your
+changes in the terminal output.
 
 
 ## Running Training <a name="running-training"></a>
