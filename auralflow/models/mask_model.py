@@ -167,7 +167,7 @@ class SpectrogramMaskModel(SeparationModel):
         prev_loss = min(self.val_losses[:-1], default=float("inf"))
         delta = prev_loss - self.val_losses[-1]
 
-        if delta > 0:
+        if delta > 0.01:
             self.stop_patience = self.training_params["stop_patience"]
             self.is_best_model = True
         else:

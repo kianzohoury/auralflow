@@ -5,6 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 import os
 from argparse import ArgumentParser
+from pathlib import Path
 
 
 from auralflow import datasets
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     # Parse args.
     args = parser.parse_args()
     if args.command == "config":
-        save_dir = args.save + "/" + args.folder_name
+        save_dir = str(Path(args.save + "/" + args.folder_name).absolute())
         utils.pull_config_template(save_dir=save_dir)
         config = utils.load_config(save_dir + "/config.json")
         config["model_params"]["model_type"] = args.model_type
