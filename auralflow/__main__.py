@@ -6,7 +6,8 @@
 import os
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any
+from typing import List
+
 
 from auralflow import datasets
 from auralflow import losses
@@ -19,44 +20,36 @@ from auralflow import train
 
 
 __all__ = ["datasets", "losses", "visualizer", "models", "trainer", "utils"]
-
-_model_optionals = {
-    "--normalize-input",
-    "--normalize-output",
-    "--mask-activation",
-    "--hidden-channels",
-    "--dropout-p",
-    "--leak-factor",
+_config_optionals = {
+    "--normalize-input": bool,
+    "--normalize-output": bool,
+    "--mask-activation": str,
+    "--hidden-channels": int,
+    "--dropout-p": float,
+    "--leak-factor": float,
+    "--targets": str,
+    "--max-num-tracks": int,
+    "--max-num-samples": int,
+    "--num-channels": int,
+    "--sample-length": int,
+    "--sample-rate": int,
+    "--num-fft": int,
+    "--window-size": int,
+    "--hop-length": int,
+    "--max-epochs": int,
+    "--batch-size": int,
+    "--lr": float,
+    "--criterion": str,
+    "--max-lr-steps": int,
+    "--stop-patience": int,
+    # "--view-spectrogram": bool,
+    # "--view-waveform": bool,
+    # "--view-gradient": bool,
+    # "--play-audio": bool,
+    # "--save-image": bool,
+    # "--save-audio": bool,
+    "--save-frequency": int
 }
-_dataset_optionals = {
-    "--targets",
-    "--max-num-tracks",
-    "--max-num-samples",
-    "--num-channels",
-    "--sample-length",
-    "--sample-rate",
-    "--num-fft",
-    "--window-size",
-    "--hop-length",
-}
-_training_optionals = {
-    "--max-epochs",
-    "--lr",
-    "--criterion",
-    "--max-lr-steps",
-}
-_viz_optionals = {
-    "--view-spectrogram",
-    "--view-waveform",
-    "--view-gradient",
-    "--play-audio",
-    "--save-image",
-    "--save-audio",
-    "--save-frequency",
-}
-
-_optionals = _model_optionals | _dataset_optionals | _training_optionals \
-             | _viz_optionals
 
 
 if __name__ == "__main__":
@@ -89,10 +82,17 @@ if __name__ == "__main__":
         required=False
     )
 
-    for optional_key in _optionals:
-        config_parser.add_argument(
-            optional_key, type=Any, required=False
-        )
+    for optional_key, optional_type in _config_optionals.items():
+        if optional_type is bool:
+            config_parser.add_argument(
+                optional_key,
+                action="store_true",
+                required=False
+            )   
+        else:        
+            config_parser.add_argument(
+                optional_key, type=optional_type, required=False
+            )
 
     # Define training parser.
     train_parser = subparsers.add_parser(name="train")
@@ -143,17 +143,17 @@ if __name__ == "__main__":
         config["model_params"]["save_dir"] = save_dir
 
         for optional_key, val in args.__dict__.items():
-            if optional_key not in _optionals:
+            if val is None:
                 continue
-            if optional_key in _model_optionals:
+            elif optional_key in config["model_params"]:
                 config["model_params"][optional_key] = val
-            elif optional_key in _dataset_optionals:
+            elif optional_key in config["dataset_params"]:
                 config["dataset_params"][optional_key] = val
-            elif optional_key in _training_optionals:
+            elif optional_key in config["training_params"]:
                 config["training_params"][optional_key] = val
-            elif optional_key in _viz_optionals:
-                config["visualization_params"][optional_key] = val
-
+            elif optional_key in config["visualizer_params"]:
+                config["visualizer_params"][optional_key] = val
+  
         utils.save_config(
             config, save_filepath=save_dir + "/config.json"
         )
@@ -161,6 +161,7 @@ if __name__ == "__main__":
     elif args.command == "train":
         config = utils.load_config(args.folder_name + "/config.json")
         config["dataset_params"]["dataset_path"] = args.dataset_path
+        config["training_params"]["training_mode"] = True
         utils.save_config(
             config, save_filepath=args.folder_name + "/config.json"
         )

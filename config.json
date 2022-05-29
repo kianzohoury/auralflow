@@ -29,7 +29,7 @@
         "batch_size": 32,
         "lr": 0.008,
         "criterion": "l2",
-        "use_mixed_precision": false,
+        "use_mixed_precision": true,
         "mixed_precision_scale": 2e0,
         "alpha_constant": 0.5,
         "beta_constant": 0,

@@ -98,7 +98,7 @@ def run_training(
         scheduler=True,
         grad_scaler=model.use_amp,
     )
-    return global_step
+    return epoch, global_step
 
 
 def run_validation(

@@ -85,7 +85,7 @@ def main(config_filepath: str):
     )
 
     print("Configuration complete. Starting training...\n" + "-" * 79)
-    global_step = run_training(
+    epoch, global_step = run_training(
         model=model,
         start_epoch=start_epoch,
         stop_epoch=stop_epoch,

@@ -429,7 +429,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         *args,
         recurrent_depth: int = 3,
         hidden_size: int = 1024,
-        input_axis: int = 0,
+        input_axis: int = 1,
         **kwargs
     ) -> None:
         super(SpectrogramNetLSTM, self).__init__(*args, **kwargs)
@@ -456,7 +456,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             hidden_size=hidden_size,
             bidirectional=True,
             num_layers=recurrent_depth,
-            dropout=0.5,
+            dropout=0.3,
         )
 
         # Define dense layers.
