@@ -288,14 +288,16 @@ def load_optim(self, global_step: int) -> None:
     """Loads an optimizer's previous state."""
 ```
 #### `save_scheduler(...)`
+Saves the scheduler's current state.
 ```python
 def save_scheduler(self, global_step: int) -> None:
     """Saves the scheduler's current state."""
 ```
 #### `load_scheduler(...)`
+Loads a scheduler's previous state.
 ```python
-def save_scheduler(self, global_step: int) -> None:
-    """Saves the scheduler's current state."""
+def load_scheduler(self, global_step: int) -> None:
+  """Loads a scheduler's previous state."""
 ```
 #### `save_grad_scaler(...)`
 ```python
