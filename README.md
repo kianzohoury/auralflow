@@ -666,7 +666,7 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
 $$\Huge L_{kl}(\sigma; \mu) = \frac{1}{2} \sum_{i=1}^{n} (\mu^2 + \sigma^2 - \ln(\sigma^2) - 1)$$
 
 where 
-* $n$ is the number of tensor elements
+* $\Huge n$ is the number of tensor elements
 
 ### Example
 
