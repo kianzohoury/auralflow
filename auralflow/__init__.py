@@ -10,6 +10,15 @@ from auralflow import visualizer
 from auralflow import models
 from auralflow import trainer
 from auralflow import utils
+from . import separate
 
 
-__all__ = ["datasets", "losses", "visualizer", "models", "trainer", "utils"]
+__all__ = [
+    "datasets",
+    "losses",
+    "visualizer",
+    "models",
+    "trainer",
+    "utils",
+    "separate"
+]
