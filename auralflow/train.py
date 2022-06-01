@@ -12,6 +12,7 @@ from auralflow.trainer import run_training
 from auralflow.trainer.callbacks import TrainingCallback
 from auralflow.utils import load_config, save_config
 from auralflow.visualizer import config_visualizer
+from auralflow import test
 
 
 def main(config_filepath: str):
@@ -99,3 +100,10 @@ def main(config_filepath: str):
 
     # Save updated config file.
     save_config(config=configuration, save_filepath=config_filepath)
+
+    print("Testing model...")
+    test.main(
+        config_filepath=config_filepath,
+        save_filepath=model_params["save_dir"]
+    )
+
