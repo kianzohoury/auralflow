@@ -205,6 +205,16 @@ class WriterCallback(Callback):
             global_step=global_step,
         )
 
+    def write_epoch_metrics(
+        self, 
+        model: SeparationModel,
+        global_step: int,
+        log_train: bool = True,
+        log_val: bool = True,
+        main_tag: str = "loss/epoch",     
+    ) -> None:
+        
+
     def on_iteration_end(
         self,
         model: SeparationModel,
