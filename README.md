@@ -879,12 +879,12 @@ mix_audio_est = transform.to_audio(mix_spec)
 ## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
 ### Short Time Fourier Transform <a name="stft"></a>
 Let an input mixture signal be a $\Huge 2$-dimensional audio waveform
-$\Huge A \in \mathbb{R}^{c, t}$ with $\Huge c$ channels and $t$ samples, often normalized
+$\Huge A \in \mathbb{R}^{c, t}$ with $\Huge c$ channels and $\Huge t$ samples, often normalized
 such that the amplitude of each sample $\Huge a_i \in [-1, 1]$.
 
 Let $\Huge f: A ↦ X$ be an linear transformation, mapping an audio signal $\Huge A$
 to a complex-valued time-frequency representation $\Huge X \in \mathbb{C}^{c, f, τ}$,
-with $\Huge f$ filterbanks, and $τ$ number of frames. $\Huge X$ is often referred to as
+with $\Huge f$ filterbanks, and $\Huge τ$ number of frames. $\Huge X$ is often referred to as
 a ***spectrogram***.
 
 Similarly, let $\Huge f^{-1}: Y ↦ S$ be the inverse transformation mapping a
