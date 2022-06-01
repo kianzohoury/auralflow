@@ -910,13 +910,13 @@ We use $|X|$ as input to our model, and use $P$ to employ a useful trick that
 I will describe next that makes our task much simpler.
 
 ### Masking and Source Estimation <a name="masking-and-source-estimation"></a>
-To estimate a target signal $k$, we apply the transformation to a mini-batch
-of mixture-target audio pairs $(A, S_{k})$. yielding $(|X|, |Y_{k}|)$. We feed
+To estimate a target signal $\Huge k$, we apply the transformation to a mini-batch
+of mixture-target audio pairs $\Huge (A, S_{k})$. yielding $\Huge (|X|, |Y_{k}|)$. We feed
 $|X|$ into our network, which estimates a multiplicative soft-mask
-$M_{\theta}$, normalized such that $m_{i} \in \[0, 1]$. Next, $M_{\theta}$ is
-*applied* to $|X|$, such that $$|\hat{Y_{k}}| = M_{\theta} \odot |X|$$
+$M_{\theta}$, normalized such that $\Huge m_{i} \in \[0, 1]$. Next, $\Huge M_{\theta}$ is
+*applied* to $\Huge |X|$, such that $$\Huge |\hat{Y_{k}}| = M_{\theta} \odot |X|$$
 where $\odot$ is the Hadamard product, and $|\hat{Y}_{k}|$ is the network's
-estimate of $|Y_k|$.
+estimate of $\Huge |Y_k|$.
 
 ### Optimization <a name="optimization"></a>
 
@@ -950,7 +950,7 @@ $\hat{S}_{k}$:
 
 $$\Huge \hat{S}_{k} = f^{-1}(\bar{Y}_{k})$$
 
-If the noise is indeed small, such that $||\hat{S_{k}} - {S}_{k}|| < ϵ$ for
+If the noise is indeed small, such that $\Huge ||\hat{S_{k}} - {S}_{k}|| < ϵ$ for
 some small $ϵ$, and our model has not been overfit to the training data,
 then we've objectively solved our task — the separated audio must sound good
 to our ears as well.
