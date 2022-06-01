@@ -5,8 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from collections import OrderedDict
-from typing import Any, Dict
-
+from typing import Any, Dict, Mapping
 
 import asteroid.metrics
 import torch
@@ -92,7 +91,7 @@ def get_evaluation_metrics(
     target: Tensor,
     sr: int = 8000,
     num_batch: int = 8,
-) -> Dict[str, Dict[str, Any]]:
+) -> Mapping[str, float]:
     """Returns batch-wise means of standard source separation eval scores."""
 
     # Unsqueeze batch dimension if audio is unbatched.
@@ -111,12 +110,6 @@ def get_evaluation_metrics(
     mixture, estimate, target = trim_audio([mixture, estimate, target])
 
     running_metrics = {
-        "input_pesq": 0,
-        "input_sar": 0,
-        "input_sdr": 0,
-        "input_si_sdr": 0,
-        "input_sir": 0,
-        "input_stoi": 0,
         "pesq": 0,
         "sar": 0,
         "sdr": 0,
@@ -128,7 +121,7 @@ def get_evaluation_metrics(
     num_batch = min(num_batch, mixture.shape[0])
 
     for i in range(num_batch):
-        # Compute metrics for each triplet of data.
+        # Compute metrics.
         named_metrics = asteroid.metrics.get_metrics(
             mix=mixture[i],
             clean=target[i],
@@ -140,19 +133,15 @@ def get_evaluation_metrics(
         )
         # Accumulate metrics.
         for metric_name, val in named_metrics.items():
-            if val is not None:
+            if val is not None and val in running_metrics:
                 running_metrics[metric_name] += val
 
-    estim_metrics, target_metrics = OrderedDict(), OrderedDict()
+    metrics = {}
     # Compute batch-wise average metrics.
     for metric_name, val in running_metrics.items():
         mean_val = val / mixture.shape[0]
-        if metric_name.split("_")[0] == "input":
-            suffix = "_".join(metric_name.split("_")[1:])
-            target_metrics[f"target_{suffix}"] = mean_val
-        else:
-            estim_metrics[f"estim_{metric_name}"] = mean_val
-    return {"estim_metrics": estim_metrics, "target_metrics": target_metrics}
+        metrics[metric_name] = mean_val
+    return metrics
 
 
 class WeightedComponentLoss(nn.Module):

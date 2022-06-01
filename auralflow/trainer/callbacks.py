@@ -116,7 +116,7 @@ class SeparationMetricCallback(Callback):
 
     def __init__(self, model: SeparationModel, disp_freq: int = 5):
         self.model = model
-        self.best_deltas = {
+        self.best_metrics = {
             "pesq": float("-inf"),
             "sar": float("-inf"),
             "sdr": float("-inf"),
@@ -137,26 +137,17 @@ class SeparationMetricCallback(Callback):
         metrics = get_evaluation_metrics(
             mixture=mix, estimate=estimate, target=target
         )
-        table = PrettyTable(["metric", "estimate", "target", "delta"])
+        table = PrettyTable(["Metric", "Value"])
         table.align = "l"
-        estimate_metrics = list(metrics["estim_metrics"].items())
-        target_metrics = list(metrics["target_metrics"].items())
-        for i in range(len(estimate_metrics)):
-            est_label, est_val = estimate_metrics[i]
-            tar_label, tar_val = target_metrics[i]
-            metric_label = "_".join(est_label.split("_")[1:])
+        for metric_label, val in metrics.items():
             # Skip SIR for now.
+            self.model.metrics[metric_label] = val
             if metric_label == "sir":
                 continue
-            if est_val < float("inf") and tar_val < float("inf"):
-                delta = est_val - tar_val
-            else:
-                delta = float("inf")
-            if self.best_deltas[metric_label] < delta:
-                self.best_deltas[metric_label] = delta
-                delta = str(delta) + "*"
-            table.add_row([metric_label, est_val, tar_val, delta])
-            self.model.metrics[metric_label] = est_val
+            if val > self.best_metrics[metric_label]:
+                self.best_metrics[metric_label] = val
+                val = str(val) + "*"
+            table.add_row([metric_label, val])
         print(table)
         self.count = 0
 
