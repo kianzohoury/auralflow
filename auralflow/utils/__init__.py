@@ -16,7 +16,7 @@ __all__ = [
     "save_config",
     "load_object",
     "save_object",
-    "pull_config_template"
+    "pull_config_template",
 ]
 
 config_template_path = Path(__file__).parents[2].joinpath("config.json")

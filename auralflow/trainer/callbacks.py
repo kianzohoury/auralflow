@@ -76,6 +76,8 @@ class TrainingCallback(Callback):
         self.writer_.on_iteration_end(
             model=self.model, global_step=global_step
         )
+        # Update global step count.
+        self.model.training_params["global_step"] = global_step
 
     def on_epoch_end(self, mix: Tensor, target: Tensor, epoch: int) -> None:
         if self.writer:
@@ -84,6 +86,8 @@ class TrainingCallback(Callback):
             self.visualizer_.on_epoch_end(mix=mix, target=target, epoch=epoch)
         if self.call_metrics:
             self.metrics_callback.on_epoch_end(mix=mix, target=target)
+        # Update epoch count.
+        self.model.training_params["last_epoch"] = epoch
 
 
 class VisualizerCallback(Callback):
@@ -118,7 +122,7 @@ class SeparationMetricCallback(Callback):
             "sdr": float("-inf"),
             "si_sdr": float("-inf"),
             "sir": float("inf"),
-            "stoi": float("-inf")
+            "stoi": float("-inf"),
         }
         self.disp_freq = disp_freq
         self.count = 0
@@ -144,7 +148,7 @@ class SeparationMetricCallback(Callback):
             if metric_label == "sir":
                 continue
             if est_val < float("inf") and tar_val < float("inf"):
-                delta = est_val - tar_val 
+                delta = est_val - tar_val
             else:
                 delta = float("inf")
             if self.best_deltas[metric_label] < delta:

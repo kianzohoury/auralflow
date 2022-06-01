@@ -71,34 +71,31 @@ def main(config_filepath: str):
     visualizer = config_visualizer(config=configuration, writer=writer)
     print("Successful.")
 
-    # Number of epochs to train.
-    start_epoch = training_params["last_epoch"] + 1
-    stop_epoch = start_epoch + training_params["max_epochs"]
-    global_step = configuration["training_params"]["global_step"] + 1
-
     # Create a callback object.
     callback = TrainingCallback(
-        model=model,
-        writer=writer,
-        visualizer=visualizer,
-        call_metrics=True
+        model=model, writer=writer, visualizer=visualizer, call_metrics=True
     )
 
+    # Run training loop.
     print("Configuration complete. Starting training...\n" + "-" * 79)
-    epoch, global_step = run_training(
+    run_training(
         model=model,
-        start_epoch=start_epoch,
-        stop_epoch=stop_epoch,
-        global_step=global_step,
         train_dataloader=train_dataloader,
         val_dataloader=val_dataloader,
         callback=callback,
     )
 
+    # Save last checkpoint to resume training later.
+    model.save(
+        global_step=model.training_params["last_epoch"],
+        model=True,
+        optim=True,
+        scheduler=True,
+        grad_scaler=model.use_amp,
+    )
+
     writer.close()
     print("Finished.")
 
-    training_params["last_epoch"] = stop_epoch
-    training_params["global_step"] = global_step
+    # Save updated config file.
     save_config(config=configuration, save_filepath=config_filepath)
-

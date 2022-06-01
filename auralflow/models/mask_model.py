@@ -64,7 +64,7 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         self.scale = 1
-        self.is_best_model = True
+        self.best_epoch = self.training_params.get("best_epoch", 0)
         # self.f32_weights = self.copy_params(self.model)
 
     @staticmethod
@@ -169,9 +169,8 @@ class SpectrogramMaskModel(SeparationModel):
 
         if delta > 0.01:
             self.stop_patience = self.training_params["stop_patience"]
-            self.is_best_model = True
+            self.best_epoch = self.training_params["last_epoch"]
         else:
             self.stop_patience -= 1
             self.max_lr_steps -= 1 if not self.stop_patience else 0
-            self.is_best_model = False
         return not self.max_lr_steps

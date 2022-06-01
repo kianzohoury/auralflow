@@ -33,7 +33,7 @@ class SeparationModel(ABC):
     max_lr_steps: int
     grad_scaler: Any
     use_amp: bool
-    is_best_model: bool
+    best_epoch: int
 
     def __init__(self, config: dict) -> None:
         super(SeparationModel, self).__init__()
@@ -52,7 +52,8 @@ class SeparationModel(ABC):
 
         # Retrieve requested base model architecture name.
         self.base_model_type = getattr(
-            importlib.import_module("auralflow.models"), self.model_params["model_type"]
+            importlib.import_module("auralflow.models"),
+            self.model_params["model_type"],
         )
 
     @abstractmethod

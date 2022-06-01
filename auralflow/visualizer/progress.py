@@ -19,7 +19,7 @@ class ProgressBar(tqdm):
         fmt: bool = True,
         desc: str = "",
         show_rate: bool = False,
-        ascii: str = None
+        ascii: str = None,
     ):
         bar_format = f"{desc}: " if desc else ""
         bar_format += "{percentage:3.0f}%|{bar:12}|{n_fmt}/{total_fmt} "
@@ -34,7 +34,7 @@ class ProgressBar(tqdm):
             bar_format=bar_format,
             total=total,
             ncols=79,
-            ascii=ascii
+            ascii=ascii,
         )
 
 

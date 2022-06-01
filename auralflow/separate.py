@@ -18,7 +18,6 @@ from auralflow.utils.data_utils import trim_audio
 from auralflow.visualizer import ProgressBar
 
 
-
 def main(
     config_filepath: str,
     audio_filepath: str,
@@ -26,7 +25,7 @@ def main(
     sr: int = 44100,
     padding: int = 200,
     residual: bool = True,
-    duration: int = 30
+    duration: int = 30,
 ) -> None:
     """Separates a full audio track and saves it."""
 
@@ -53,7 +52,7 @@ def main(
         track_paths.append(Path(audio_filepath))
 
     print("Separating...")
-    
+
     for track_path in track_paths:
         print(track_path.name, flush=True)
         # Load audio.
@@ -124,17 +123,16 @@ def main(
             wavfile.write(
                 track_dir.joinpath(label).with_suffix(".wav"),
                 rate=sr,
-                data=full_estimate.T
+                data=full_estimate.T,
             )
             wavfile.write(
                 track_dir.joinpath("mixture").with_suffix(".wav"),
                 rate=sr,
-                data=mix_audio.T
+                data=mix_audio.T,
             )
             if residual:
                 wavfile.write(
                     track_dir.joinpath("residual").with_suffix(".wav"),
                     rate=sr,
-                    data=full_residual.T
+                    data=full_residual.T,
                 )
-            

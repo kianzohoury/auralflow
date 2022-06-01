@@ -87,7 +87,11 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
 
 
 def get_evaluation_metrics(
-        mixture: Tensor, estimate: Tensor, target: Tensor, sr: int = 8000, num_batch: int = 8
+    mixture: Tensor,
+    estimate: Tensor,
+    target: Tensor,
+    sr: int = 8000,
+    num_batch: int = 8,
 ) -> Dict[str, Dict[str, Any]]:
     """Returns batch-wise means of standard source separation eval scores."""
 
@@ -97,8 +101,12 @@ def get_evaluation_metrics(
     target = target.unsqueeze(0) if target.dim() == 2 else target
 
     # Collapse channels to mono, convert to numpy arrays, trim audio clips.
-    mixture = torch.mean(mixture, dim=1, keepdim=True).squeeze(-1).cpu().numpy()
-    estimate = torch.mean(estimate, dim=1, keepdim=True).squeeze(-1).cpu().numpy()
+    mixture = (
+        torch.mean(mixture, dim=1, keepdim=True).squeeze(-1).cpu().numpy()
+    )
+    estimate = (
+        torch.mean(estimate, dim=1, keepdim=True).squeeze(-1).cpu().numpy()
+    )
     target = torch.mean(target, dim=1, keepdim=True).squeeze(-1).cpu().numpy()
     mixture, estimate, target = trim_audio([mixture, estimate, target])
 
@@ -114,7 +122,7 @@ def get_evaluation_metrics(
         "sdr": 0,
         "si_sdr": 0,
         "sir": 0,
-        "stoi": 0
+        "stoi": 0,
     }
 
     num_batch = min(num_batch, mixture.shape[0])
@@ -128,7 +136,7 @@ def get_evaluation_metrics(
             sample_rate=sr,
             metrics_list="all",
             ignore_metrics_errors=True,
-            average=True
+            average=True,
         )
         # Accumulate metrics.
         for metric_name, val in named_metrics.items():
@@ -140,7 +148,7 @@ def get_evaluation_metrics(
     for metric_name, val in running_metrics.items():
         mean_val = val / mixture.shape[0]
         if metric_name.split("_")[0] == "input":
-            suffix = "_".join(metric_name.split('_')[1:])
+            suffix = "_".join(metric_name.split("_")[1:])
             target_metrics[f"target_{suffix}"] = mean_val
         else:
             estim_metrics[f"estim_{metric_name}"] = mean_val

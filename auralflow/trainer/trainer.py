@@ -16,15 +16,16 @@ from auralflow.visualizer import ProgressBar
 
 def run_training(
     model: SeparationModel,
-    start_epoch: int,
-    stop_epoch: int,
-    global_step: int,
     train_dataloader: DataLoader,
     val_dataloader: DataLoader,
     callback: TrainingCallback,
-) -> int:
+) -> None:
     """Runs training loop."""
+    start_epoch = model.training_params["last_epoch"] + 1
+    stop_epoch = start_epoch + model.training_params["max_epochs"]
+    global_step = model.training_params["global_step"]
     max_iters = len(train_dataloader)
+
     for epoch in range(start_epoch, stop_epoch):
         print(f"Epoch {epoch + 1}/{stop_epoch}", flush=True)
         total_loss = mean_loss = 0
@@ -68,14 +69,12 @@ def run_training(
         model.train_losses.append(mean_loss)
 
         # Run validation loop.
-        run_validation(
-            model=model, val_dataloader=val_dataloader
-        )
+        run_validation(model=model, val_dataloader=val_dataloader)
 
         # Write/display train and val losses.
         callback.on_epoch_end(epoch=epoch, *next(iter(val_dataloader)))
         # Only save model if validation loss decreases.
-        if model.is_best_model:
+        if model.best_epoch == epoch:
             model.save(
                 global_step=epoch,
                 model=True,
@@ -90,20 +89,8 @@ def run_training(
             print("No improvement. Stopping training early...")
             break
 
-    # Save last checkpont to resume training later.
-    model.save(
-        global_step=epoch,
-        model=True,
-        optim=True,
-        scheduler=True,
-        grad_scaler=model.use_amp,
-    )
-    return epoch, global_step
 
-
-def run_validation(
-     model: SeparationModel, val_dataloader: DataLoader
-) -> None:
+def run_validation(model: SeparationModel, val_dataloader: DataLoader) -> None:
     """Runs validation loop."""
     max_iters = len(val_dataloader)
 

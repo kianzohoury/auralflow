@@ -48,7 +48,7 @@ _config_optionals = {
     # "--play-audio": bool,
     # "--save-image": bool,
     # "--save-audio": bool,
-    "--save-frequency": int
+    "--save-frequency": int,
 }
 
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         "folder_name",
         type=str,
         help="Model training folder name.",
-        default="my_model"
+        default="my_model",
     )
     config_parser.add_argument(
         "model_type", type=str, choices=models._models, help="Base model."
@@ -72,24 +72,22 @@ if __name__ == "__main__":
         type=str,
         help="Location to save model training folder.",
         default=os.getcwd(),
-        required=False
+        required=False,
     )
     config_parser.add_argument(
         "--display",
         type=bool,
         help="Print configuration file.",
         default=False,
-        required=False
+        required=False,
     )
 
     for optional_key, optional_type in _config_optionals.items():
         if optional_type is bool:
             config_parser.add_argument(
-                optional_key,
-                action="store_true",
-                required=False
-            )   
-        else:        
+                optional_key, action="store_true", required=False
+            )
+        else:
             config_parser.add_argument(
                 optional_key, type=optional_type, required=False
             )
@@ -116,20 +114,20 @@ if __name__ == "__main__":
         type=str,
         help="Location to save separated audio.",
         default=os.getcwd(),
-        required=False
+        required=False,
     )
     separator_parser.add_argument(
         "--residual",
         help="Whether to include residual audio.",
         action="store_true",
-        required=False
+        required=False,
     )
     separator_parser.add_argument(
         "--duration",
         type=int,
         help="Max duration in seconds.",
         default=30,
-        required=False
+        required=False,
     )
 
     # Parse args.
@@ -153,10 +151,8 @@ if __name__ == "__main__":
                 config["training_params"][optional_key] = val
             elif optional_key in config["visualizer_params"]:
                 config["visualizer_params"][optional_key] = val
-  
-        utils.save_config(
-            config, save_filepath=save_dir + "/config.json"
-        )
+
+        utils.save_config(config, save_filepath=save_dir + "/config.json")
 
     elif args.command == "train":
         config = utils.load_config(args.folder_name + "/config.json")
@@ -177,6 +173,5 @@ if __name__ == "__main__":
             audio_filepath=args.audio_filepath,
             save_filepath=args.save,
             residual=args.residual,
-            duration=args.duration
+            duration=args.duration,
         )
-

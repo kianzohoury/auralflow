@@ -43,7 +43,9 @@ def create_model(configuration: dict) -> SeparationModel:
     """Creates a new instance of a model with its given configuration."""
     model_type = configuration["model_params"]["model_type"]
     if model_type in {
-        "SpectrogramNetSimple", "SpectrogramNetLSTM", "SpectrogramNetVAE"
+        "SpectrogramNetSimple",
+        "SpectrogramNetLSTM",
+        "SpectrogramNetVAE",
     }:
         base_class = SpectrogramMaskModel
     else:
@@ -99,11 +101,8 @@ def setup_model(model: SeparationModel) -> SeparationModel:
             Path(model.checkpoint_path).mkdir(exist_ok=True)
     else:
         try:
-            checkpoints = list(
-                Path(model.checkpoint_path).glob(f"{model.model_name}_[0-9].*")
-            )
-            best_checkpoint = sorted(checkpoints)[-1]
-            model.model.load_state_dict(torch.load(f=best_checkpoint))
+            best_epoch = model.training_params["best_epoch"]
+            model.load_model(global_step=best_epoch)
             model.training_mode = False
         except (OSError, FileNotFoundError) as error:
             print(f"Failed to load model {model.model_name}.")
