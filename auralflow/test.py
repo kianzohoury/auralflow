@@ -35,6 +35,7 @@ def main(config_filepath: str, save_filepath: str) -> None:
     }
     table_entries = []
 
+    print("Testing model...")
     for track_name in Path(test_filepath).iterdir():
         label = model.target_labels[0]
 
