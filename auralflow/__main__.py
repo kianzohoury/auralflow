@@ -6,6 +6,7 @@
 import os
 from argparse import ArgumentParser
 from pathlib import Path
+from prettytable import PrettyTable
 from typing import List
 
 
@@ -149,9 +150,16 @@ if __name__ == "__main__":
                 config["visualizer_params"][optional_key] = val
         if args.display:
             for group_label, group in config.items():
-                print(f"{group_label}:")
+                param_table = PrettyTable(["Parameter", "Value"])
+                param_table.align = "l"
+                param_table.title = group_label
+                param_table.min_width = 21
+                p_labels, p_vals = [], []
                 for param_label, param in group.items():
-                    print(f"  {param_label}: {param}")
+                    p_labels.append(param_label)
+                    p_vals.append([param])
+                    param_table.add_row([param_label, param])
+                print(param_table)
         utils.save_config(config, save_filepath=save_dir + "/config.json")
 
     elif args.command == "train":

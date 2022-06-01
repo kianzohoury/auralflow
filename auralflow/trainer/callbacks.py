@@ -138,6 +138,7 @@ class SeparationMetricCallback(Callback):
             mixture=mix, estimate=estimate, target=target
         )
         table = PrettyTable(["metric", "estimate", "target", "delta"])
+        table.align = "l"
         estimate_metrics = list(metrics["estim_metrics"].items())
         target_metrics = list(metrics["target_metrics"].items())
         for i in range(len(estimate_metrics)):
