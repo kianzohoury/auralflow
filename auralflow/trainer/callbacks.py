@@ -214,7 +214,7 @@ class WriterCallback(Callback):
         """Writes epoch evaluation metrics to tensorboard."""
         if model.metrics:
             self.update_writer(
-                main_tag="metrics/sdr/valid",
+                main_tag="metrics/valid",
                 named_values=model.metrics,
                 global_step=global_step,
             )
