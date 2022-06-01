@@ -920,7 +920,7 @@ estimate of $\Huge |Y_k|$.
 
 ### Optimization <a name="optimization"></a>
 
-Let $L$ be some loss criterion. The objective is to find an optimal choice of
+Let $\Huge L$ be some loss criterion. The objective is to find an optimal choice of
 model parameters $\theta^{\*}$ that minimize the loss
 $$ \Huge \theta^{\*} = \arg\min_{\theta} L(|\hat{Y_{k}}|, |Y_{k}|)$$
 
