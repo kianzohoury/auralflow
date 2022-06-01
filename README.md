@@ -946,7 +946,7 @@ where $ \Huge j$ is imaginary.
 The last necessary calculation transports data from the time-frequency domain
 back to the audio signal domain. All that is required is to apply the inverse
 STFT to the phase-corrected estimate, which yields the audio signal estimate
-$\hat{S}_{k}$:
+$\Huge \hat{S}_{k}$:
 
 $$\Huge \hat{S}_{k} = f^{-1}(\bar{Y}_{k})$$
 
