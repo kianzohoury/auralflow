@@ -64,7 +64,7 @@ class SpectrogramMaskModel(SeparationModel):
         )
 
         self.scale = 1
-        self.best_epoch = self.training_params.get("best_epoch", 0)
+        self.is_best_model = False
         # self.f32_weights = self.copy_params(self.model)
 
     @staticmethod

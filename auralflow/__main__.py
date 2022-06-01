@@ -75,11 +75,7 @@ if __name__ == "__main__":
         required=False,
     )
     config_parser.add_argument(
-        "--display",
-        type=bool,
-        help="Print configuration file.",
-        default=False,
-        required=False,
+        "--display", help="Print configuration file.", action="store_true", required=False,
     )
 
     for optional_key, optional_type in _config_optionals.items():
@@ -151,7 +147,11 @@ if __name__ == "__main__":
                 config["training_params"][optional_key] = val
             elif optional_key in config["visualizer_params"]:
                 config["visualizer_params"][optional_key] = val
-
+        if args.display:
+            for group_label, group in config.items():
+                print(f"{group_label}:")
+                for param_label, param in group.items():
+                    print(f"  {param_label}: {param}")
         utils.save_config(config, save_filepath=save_dir + "/config.json")
 
     elif args.command == "train":

@@ -23,11 +23,11 @@ def run_training(
     """Runs training loop."""
     start_epoch = model.training_params["last_epoch"] + 1
     stop_epoch = start_epoch + model.training_params["max_epochs"]
-    global_step = model.training_params["global_step"]
+    global_step = model.training_params["global_step"] + 1
     max_iters = len(train_dataloader)
 
     for epoch in range(start_epoch, stop_epoch):
-        print(f"Epoch {epoch + 1}/{stop_epoch}", flush=True)
+        print(f"Epoch {epoch}/{stop_epoch - 1}", flush=True)
         total_loss = mean_loss = 0
 
         # Set model to training mode.

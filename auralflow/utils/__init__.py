@@ -63,7 +63,7 @@ def _add_checkpoint_tag(filename: str, obj_name: str, global_step: int) -> str:
 def save_object(model_wrapper, obj_name: str, global_step: int) -> None:
     """Saves object state as .pth file under the checkpoint directory."""
     filename = f"{model_wrapper.checkpoint_path}/{model_wrapper.model_name}"
-
+    print(f"Saving {obj_name}...")
     # Get object-specific filename.
     filename = _add_checkpoint_tag(
         filename=filename, obj_name=obj_name, global_step=global_step
@@ -80,16 +80,16 @@ def save_object(model_wrapper, obj_name: str, global_step: int) -> None:
             # Save object's state to filename.
             torch.save(state_dict, f=filename)
             if not model_wrapper.training_params["silent_checkpoint"]:
-                print(f"Successfully saved {obj_name}.")
+                print(f"  Successful.")
         except OSError as error:
-            print(f"Failed to save {obj_name} state.")
+            print(f"  Failed.")
             raise error
 
 
 def load_object(model_wrapper, obj_name: str, global_step: int) -> None:
     """Loads object's state and and attaches it to the model."""
     filename = f"{model_wrapper.checkpoint_path}/{model_wrapper.model_name}"
-
+    print(f"Loading {obj_name}...")
     # Get object-specific filename.
     filename = _add_checkpoint_tag(
         filename=filename, obj_name=obj_name, global_step=global_step
@@ -98,9 +98,9 @@ def load_object(model_wrapper, obj_name: str, global_step: int) -> None:
         # Try to read object state from the given file.
         state_dict = torch.load(filename, map_location=model_wrapper.device)
     except (OSError, FileNotFoundError) as error:
-        print(f"Failed to load {obj_name} state.")
+        print("  Failed.")
         raise error
     if hasattr(model_wrapper, obj_name):
         # Load state into object.
         getattr(model_wrapper, obj_name).load_state_dict(state_dict)
-        print(f"Loaded {obj_name} successfully.")
+        print(f"  Successful.")

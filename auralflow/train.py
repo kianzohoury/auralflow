@@ -18,14 +18,15 @@ def main(config_filepath: str):
     """Runs training script given a configuration file."""
 
     # Load configuration file.
-    print("-" * 79 + "\nReading configuration file...")
+    print("Reading configuration file...")
     configuration = load_config(config_filepath)
+    model_params = configuration["model_params"]
     training_params = configuration["training_params"]
     dataset_params = configuration["dataset_params"]
-    print("Successful.")
+    print("  Successful.")
 
     # Load training set into memory.
-    print("-" * 79 + "\nLoading training data...")
+    print("Loading training data...")
     train_dataset = create_audio_dataset(
         dataset_path=dataset_params["dataset_path"],
         split="train",
@@ -52,24 +53,23 @@ def main(config_filepath: str):
     train_dataloader = load_dataset(train_dataset, training_params)
     val_dataloader = load_dataset(val_dataset, training_params)
     print(
-        f"Successful. Loaded {len(train_dataset)} training and "
+        f"  Successful.\nLoaded {len(train_dataset)} training and "
         f"{len(val_dataset)} validation samples of length "
         f"{dataset_params['sample_length']}s."
     )
 
     # Load model. Setup restores previous state if resuming training.
-    print("-" * 79 + "\nLoading model...")
+    print(f"Loading {model_params['model_name']}...")
     model = create_model(configuration)
     model = setup_model(model)
-    print("Successful.")
 
     # Initialize summary writer and visualizer.
-    print("-" * 79 + "\nLoading visualization tools...")
+    print("Loading visualization tools...")
     writer = SummaryWriter(
-        log_dir=configuration["model_params"]["save_dir"] + "/runs"
+        log_dir=model_params["save_dir"] + "/runs"
     )
     visualizer = config_visualizer(config=configuration, writer=writer)
-    print("Successful.")
+    print("  Successful.")
 
     # Create a callback object.
     callback = TrainingCallback(
@@ -77,7 +77,7 @@ def main(config_filepath: str):
     )
 
     # Run training loop.
-    print("Configuration complete. Starting training...\n" + "-" * 79)
+    print("Starting training...\n" + "-" * 79)
     run_training(
         model=model,
         train_dataloader=train_dataloader,
@@ -95,7 +95,7 @@ def main(config_filepath: str):
     )
 
     writer.close()
-    print("Finished.")
+    print("Finished training.")
 
     # Save updated config file.
     save_config(config=configuration, save_filepath=config_filepath)
