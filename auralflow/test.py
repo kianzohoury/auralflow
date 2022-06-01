@@ -3,14 +3,22 @@ from pathlib import Path
 
 import asteroid.metrics
 import librosa
+import torch
 import csv
 
 from auralflow.models import create_model, setup_model
 from auralflow.separate import separate_audio
 from auralflow.utils import load_config
+from torchaudio.transforms import Resample
 
 
-def main(config_filepath: str, save_filepath: str) -> None:
+def main(
+    config_filepath: str,
+    save_filepath: str,
+    duration: int = 30,
+    max_tracks: int = 20,
+    resample_rate: int = 44100
+) -> None:
     """Tests separated audio and saves metrics as a csv file."""
 
     # Load configuration file.
@@ -19,15 +27,12 @@ def main(config_filepath: str, save_filepath: str) -> None:
     print("  Successful.")
 
     # Load model. Setup restores previous state if resuming training.
-    print("Loading model...")
     model = create_model(configuration)
     model = setup_model(model)
-    print("  Successful.")
 
     # Path to test set.
     test_filepath = model.dataset_params["dataset_path"] + "/test"
     global_metrics = {
-        "pesq": 0,
         "sar": 0,
         "sdr": 0,
         "si_sdr": 0,
@@ -36,7 +41,7 @@ def main(config_filepath: str, save_filepath: str) -> None:
     table_entries = []
 
     print("Testing model...")
-    for track_name in Path(test_filepath).iterdir():
+    for track_name in list(Path(test_filepath).iterdir())[:max_tracks]:
         label = model.target_labels[0]
 
         # Load target audio.
@@ -49,19 +54,31 @@ def main(config_filepath: str, save_filepath: str) -> None:
             model=model,
             filename=str(track_name),
             sr=44100,
-            duration=4
+            duration=duration
         )
 
         max_frames = stems["estimate"].shape[-1]
 
+        # Reduce sample rate.
+        resampler = Resample(
+            orig_freq=44100, new_freq=resample_rate, dtype=torch.float32
+        )
+        mix = resampler(stems["mix"][..., :max_frames].cpu()).numpy()
+        target = resampler(
+            torch.from_numpy(target_audio[..., :max_frames]).float()
+        ).numpy()
+        estimate = resampler(stems["estimate"].cpu()).numpy()
+
         named_metrics = asteroid.metrics.get_metrics(
-            mix=stems["mix"][..., :max_frames].cpu().numpy(),
-            clean=target_audio[..., :max_frames],
-            estimate=stems["estimate"].cpu().numpy(),
+            mix=mix,
+            clean=target,
+            estimate=estimate,
             sample_rate=sr,
-            metrics_list="all",
+            compute_permutation=True,
             ignore_metrics_errors=True,
             average=True,
+            filename=track_name.name,
+            metrics_list=["sar", "sdr", "si_sdr", "stoi"]
         )
 
         row = {"track_name": track_name.name}

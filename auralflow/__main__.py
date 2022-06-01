@@ -133,6 +133,27 @@ if __name__ == "__main__":
     test_parser.add_argument(
         "folder_name", type=str, help="Path to model training folder."
     )
+    test_parser.add_argument(
+        "--duration",
+        type=int,
+        help="Max duration in seconds.",
+        default=30,
+        required=False,
+    )
+    test_parser.add_argument(
+        "--max-tracks",
+        type=int,
+        help="Max number of tracks to test.",
+        default=20,
+        required=False,
+    )
+    test_parser.add_argument(
+        "--resample-rate",
+        type=int,
+        help="Reduce sample rate.",
+        default=44100,
+        required=False,
+    )
 
     # Parse args.
     args = parser.parse_args()
@@ -198,5 +219,8 @@ if __name__ == "__main__":
         )
         test.main(
             config_filepath=args.folder_name + "/config.json",
-            save_filepath=args.folder_name
+            save_filepath=args.folder_name,
+            duration=args.duration,
+            max_tracks=args.max_tracks,
+            resample_rate=args.resample_rate
         )

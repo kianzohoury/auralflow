@@ -13,6 +13,7 @@ import torch.nn as nn
 from torch import FloatTensor, Tensor
 from torch.nn import functional
 from auralflow.utils.data_utils import trim_audio
+from torchaudio.transforms import Resample
 
 
 def component_loss(
@@ -89,7 +90,7 @@ def get_evaluation_metrics(
     mixture: Tensor,
     estimate: Tensor,
     target: Tensor,
-    sr: int = 8000,
+    sr: int = 16000,
     num_batch: int = 8,
 ) -> Mapping[str, float]:
     """Returns batch-wise means of standard source separation eval scores."""
@@ -98,6 +99,12 @@ def get_evaluation_metrics(
     mixture = mixture.unsqueeze(0) if mixture.dim() == 2 else mixture
     estimate = estimate.unsqueeze(0) if estimate.dim() == 2 else estimate
     target = target.unsqueeze(0) if target.dim() == 2 else target
+
+    # Reduce sample rate.
+    resampler = Resample(orig_freq=44100, new_freq=sr)
+    mixture = resampler(mixture)
+    estimate = resampler(estimate)
+    target = resampler(target)
 
     # Collapse channels to mono, convert to numpy arrays, trim audio clips.
     mixture = (
