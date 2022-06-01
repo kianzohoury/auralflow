@@ -895,16 +895,16 @@ However, by carefully choosing a good transformation $f$, we can minimize the
 unknown additive noise factor $E_{noise}$, such that
 $$f^{-1}(f(A)) = A + E_{noise} \approx A$$
 
-Without going into much detail, $f$ is an approximation algorithm to the
+Without going into much detail, $\Huge f$ is an approximation algorithm to the
 **Discrete Fourier Transform (DFT)** called the
 **Short-Time Fourier Transform (STFT)**, which is a parameterized windowing
 function that applies the DFT
-to small, overlapping segments of $X$. As a disclaimer, $f$ has been trivially
+to small, overlapping segments of $\Huge X$. As a disclaimer, $\Huge f$ has been trivially
 extended to have a channel dimension, although this is not part of the
 canonical convention.
 
 ### Magnitude and Phase <a name="magnitude-and-phase"></a>
-Given a spectrogram $X$, its magnitude is defined as $\Huge |X|$, and its phase is
+Given a spectrogram $\Huge X$, its magnitude is defined as $\Huge |X|$, and its phase is
 defined as $\Huge P:= ∠_{\theta} X$, the element-wise angle of each complex entry.
 We use $\Huge |X|$ as input to our model, and use $\Huge P$ to employ a useful trick that
 I will describe next that makes our task much simpler.
@@ -912,7 +912,7 @@ I will describe next that makes our task much simpler.
 ### Masking and Source Estimation <a name="masking-and-source-estimation"></a>
 To estimate a target signal $\Huge k$, we apply the transformation to a mini-batch
 of mixture-target audio pairs $\Huge (A, S_{k})$. yielding $\Huge (|X|, |Y_{k}|)$. We feed
-$|X|$ into our network, which estimates a multiplicative soft-mask
+$\Huge |X|$ into our network, which estimates a multiplicative soft-mask
 $M_{\theta}$, normalized such that $\Huge m_{i} \in \[0, 1]$. Next, $\Huge M_{\theta}$ is
 *applied* to $\Huge |X|$, such that $$\Huge |\hat{Y_{k}}| = M_{\theta} \odot |X|$$
 where $\Huge \odot$ is the Hadamard product, and $\Huge |\hat{Y}_{k}|$ is the network's
