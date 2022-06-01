@@ -922,7 +922,7 @@ estimate of $|Y_k|$.
 
 Let $L$ be some loss criterion. The objective is to find an optimal choice of
 model parameters $\theta^{\*}$ that minimize the loss
-$$ \theta^{\*} = \arg\min_{\theta} L(|\hat{Y_{k}}|, |Y_{k}|)$$
+$$ \Huge \theta^{\*} = \arg\min_{\theta} L(|\hat{Y_{k}}|, |Y_{k}|)$$
 
 In recent literature, the most common loss criterions employed are
 *mean absolute loss* and *mean squared error* (MSE), paired with optimizers
@@ -930,25 +930,25 @@ such as *SGD* or *Adam*.
 
 ### Phase Approximation <a name="phase-approximation"></a>
 Without prior knowledge, it may not be clear how to transform the source
-estimate $|\hat{Y_{k}}|$ to a complex-valued spectrogram. Indeed, this is
+estimate $\Huge |\hat{Y_{k}}|$ to a complex-valued spectrogram. Indeed, this is
 where the second source separation method shines, as it avoids this
 predicament altogether. There are known (but rather complicated) ways of
 phase estimation such as [Griffin-Lim](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&rep=rep1&type=pdf).
 As I mentioned earlier, there is a quick-and-dirty trick that works pretty
 well. Put simply, we use the phase information of the mixture audio to estimate
-the phase information of the source estimate. Given $|\hat{Y}_{k}|$ and $P$,
+the phase information of the source estimate. Given $\Huge |\hat{Y}_{k}|$ and $P$,
 we define the phase-corrected source estimate as:
 
-$$\bar{Y_{i}} = |\hat{Y_{k}}| ⊙ {\rm exp}(j \cdot P)$$
+$$\Huge \bar{Y_{i}} = |\hat{Y_{k}}| ⊙ {\rm exp}(j \cdot P)$$
 
-where $j$ is imaginary.
+where $ \Huge j$ is imaginary.
 
 The last necessary calculation transports data from the time-frequency domain
 back to the audio signal domain. All that is required is to apply the inverse
 STFT to the phase-corrected estimate, which yields the audio signal estimate
 $\hat{S}_{k}$:
 
-$$\hat{S}_{k} = f^{-1}(\bar{Y}_{k})$$
+$$\Huge \hat{S}_{k} = f^{-1}(\bar{Y}_{k})$$
 
 If the noise is indeed small, such that $||\hat{S_{k}} - {S}_{k}|| < ϵ$ for
 some small $ϵ$, and our model has not been overfit to the training data,
