@@ -18,6 +18,7 @@ from auralflow import trainer
 from auralflow import utils
 from auralflow import separate
 from auralflow import train
+from auralflow import test
 
 
 __all__ = ["datasets", "losses", "visualizer", "models", "trainer", "utils"]
@@ -127,6 +128,12 @@ if __name__ == "__main__":
         required=False,
     )
 
+    # Define training parser.
+    test_parser = subparsers.add_parser(name="test")
+    test_parser.add_argument(
+        "folder_name", type=str, help="Path to model training folder."
+    )
+
     # Parse args.
     args = parser.parse_args()
     if args.command == "config":
@@ -182,4 +189,14 @@ if __name__ == "__main__":
             save_filepath=args.save,
             residual=args.residual,
             duration=args.duration,
+        )
+    elif args.command == "test":
+        config = utils.load_config(args.folder_name + "/config.json")
+        config["training_params"]["training_mode"] = False
+        utils.save_config(
+            config, save_filepath=args.folder_name + "/config.json"
+        )
+        test.main(
+            config_filepath=args.folder_name + "/config.json",
+            save_filepath=args.folder_name
         )
