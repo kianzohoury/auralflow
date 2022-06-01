@@ -19,7 +19,7 @@ from auralflow.models import create_model, setup_model
 from auralflow.utils import load_config
 from auralflow.utils.data_utils import trim_audio
 from auralflow.visualizer import ProgressBar
-from models import SeparationModel
+from auralflow.models import SeparationModel
 
 
 __all__ = ["separate_audio"]

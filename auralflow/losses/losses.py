@@ -133,7 +133,7 @@ def get_evaluation_metrics(
         )
         # Accumulate metrics.
         for metric_name, val in named_metrics.items():
-            if val is not None and val in running_metrics:
+            if val is not None and metric_name in running_metrics:
                 running_metrics[metric_name] += val
 
     metrics = {}

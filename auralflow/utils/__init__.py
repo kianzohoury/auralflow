@@ -63,7 +63,8 @@ def _add_checkpoint_tag(filename: str, obj_name: str, global_step: int) -> str:
 def save_object(model_wrapper, obj_name: str, global_step: int) -> None:
     """Saves object state as .pth file under the checkpoint directory."""
     filename = f"{model_wrapper.checkpoint_path}/{model_wrapper.model_name}"
-    print(f"Saving {obj_name}...")
+    if not model_wrapper.training_params["silent_checkpoint"]:
+        print(f"Saving {obj_name}...")
     # Get object-specific filename.
     filename = _add_checkpoint_tag(
         filename=filename, obj_name=obj_name, global_step=global_step
