@@ -33,7 +33,7 @@ class SeparationModel(ABC):
     max_lr_steps: int
     grad_scaler: Any
     use_amp: bool
-    best_epoch: int
+    is_best_model: int
 
     def __init__(self, config: dict) -> None:
         super(SeparationModel, self).__init__()

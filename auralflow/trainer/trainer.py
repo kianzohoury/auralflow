@@ -74,7 +74,8 @@ def run_training(
         # Write/display train and val losses.
         callback.on_epoch_end(epoch=epoch, *next(iter(val_dataloader)))
         # Only save model if validation loss decreases.
-        if model.best_epoch == epoch:
+        if model.is_best_model:
+            model.training_params["best_epoch"] = epoch
             model.save(
                 global_step=epoch,
                 model=True,

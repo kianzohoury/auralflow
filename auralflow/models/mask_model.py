@@ -169,8 +169,9 @@ class SpectrogramMaskModel(SeparationModel):
 
         if delta > 0.01:
             self.stop_patience = self.training_params["stop_patience"]
-            self.best_epoch = self.training_params["last_epoch"]
+            self.is_best_model = True
         else:
             self.stop_patience -= 1
             self.max_lr_steps -= 1 if not self.stop_patience else 0
+            self.is_best_model = False
         return not self.max_lr_steps
