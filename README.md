@@ -878,22 +878,22 @@ mix_audio_est = transform.to_audio(mix_spec)
 
 ## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
 ### Short Time Fourier Transform <a name="stft"></a>
-Let an input mixture signal be a $2$-dimensional audio waveform
-$A \in \mathbb{R}^{c, t}$ with $c$ channels and $t$ samples, often normalized
-such that the amplitude of each sample $a_i \in [-1, 1]$.
+Let an input mixture signal be a $\Huge 2$-dimensional audio waveform
+$\Huge A \in \mathbb{R}^{c, t}$ with $\Huge c$ channels and $t$ samples, often normalized
+such that the amplitude of each sample $\Huge a_i \in [-1, 1]$.
 
-Let $f: A ↦ X$ be an linear transformation, mapping an audio signal $A$
-to a complex-valued time-frequency representation $X \in \mathbb{C}^{c, f, τ}$,
-with $f$ filterbanks, and $τ$ number of frames. $X$ is often referred to as
+Let $\Huge f: A ↦ X$ be an linear transformation, mapping an audio signal $\Huge A$
+to a complex-valued time-frequency representation $\Huge X \in \mathbb{C}^{c, f, τ}$,
+with $\Huge f$ filterbanks, and $τ$ number of frames. $\Huge X$ is often referred to as
 a ***spectrogram***.
 
-Similarly, let $f^{-1}: Y ↦ S$ be the inverse transformation mapping a
-spectrogram $Y \in \mathbb{C}^{c, f, τ}$ to its audio signal
-$S \in \mathbb{R}^{c, t}$. As was alluded to in the introduction, the
-existence of noise and uncertainty ensure that $$f^{-1}(f(A)) \neq A$$
+Similarly, let $\Huge f^{-1}: Y ↦ S$ be the inverse transformation mapping a
+spectrogram $\Huge Y \in \mathbb{C}^{c, f, τ}$ to its audio signal
+$\Huge S \in \mathbb{R}^{c, t}$. As was alluded to in the introduction, the
+existence of noise and uncertainty ensure that $$\Huge f^{-1}(f(A)) \neq A$$
 However, by carefully choosing a good transformation $f$, we can minimize the
-unknown additive noise factor $E_{noise}$, such that
-$$f^{-1}(f(A)) = A + E_{noise} \approx A$$
+unknown additive noise factor $\Huge E_{noise}$, such that
+$$\Huge f^{-1}(f(A)) = A + E_{noise} \approx A$$
 
 Without going into much detail, $\Huge f$ is an approximation algorithm to the
 **Discrete Fourier Transform (DFT)** called the
