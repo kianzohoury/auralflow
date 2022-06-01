@@ -29,6 +29,7 @@ class SeparationModel(ABC):
     batch_loss: FloatTensor
     train_losses: List[float]
     val_losses: List[float]
+    metrics: dict
     stop_patience: int
     max_lr_steps: int
     grad_scaler: Any

@@ -156,6 +156,7 @@ class SeparationMetricCallback(Callback):
                 self.best_deltas[metric_label] = delta
                 delta = str(delta) + "*"
             table.add_row([metric_label, est_val, tar_val, delta])
+            self.model.metrics[metric_label] = est_val
         print(table)
         self.count = 0
 
@@ -167,10 +168,10 @@ class WriterCallback(Callback):
         self.writer = writer
 
     def update_writer(
-        self, main_tag: str, named_losses: dict, global_step: int
+        self, main_tag: str, named_values: dict, global_step: int
     ) -> None:
         """Writes loss metric to tensorboard."""
-        self.writer.add_scalars(main_tag, named_losses, global_step)
+        self.writer.add_scalars(main_tag, named_values, global_step)
 
     def write_epoch_loss(
         self,
@@ -188,7 +189,7 @@ class WriterCallback(Callback):
             named_losses[train_loss_tag] = model.train_losses[-1]
             self.update_writer(
                 main_tag=f"{main_tag}/train",
-                named_losses={train_loss_tag: model.train_losses[-1]},
+                named_values={train_loss_tag: model.train_losses[-1]},
                 global_step=global_step,
             )
         if log_val:
@@ -196,12 +197,12 @@ class WriterCallback(Callback):
             named_losses[val_loss_tag] = model.val_losses[-1]
             self.update_writer(
                 main_tag=f"{main_tag}/valid",
-                named_losses={val_loss_tag: model.val_losses[-1]},
+                named_values={val_loss_tag: model.val_losses[-1]},
                 global_step=global_step,
             )
         self.update_writer(
             main_tag=main_tag,
-            named_losses=named_losses,
+            named_values=named_losses,
             global_step=global_step,
         )
 
@@ -209,11 +210,14 @@ class WriterCallback(Callback):
         self, 
         model: SeparationModel,
         global_step: int,
-        log_train: bool = True,
-        log_val: bool = True,
-        main_tag: str = "loss/epoch",     
     ) -> None:
-        
+        """Writes epoch evaluation metrics to tensorboard."""
+        if model.metrics:
+            self.update_writer(
+                main_tag="metrics/sdr/valid",
+                named_values=model.metrics,
+                global_step=global_step,
+            )
 
     def on_iteration_end(
         self,
@@ -228,13 +232,14 @@ class WriterCallback(Callback):
         )
         self.update_writer(
             main_tag=main_tag,
-            named_losses={label: model.batch_loss.item()},
+            named_values={label: model.batch_loss.item()},
             global_step=global_step,
         )
 
     def on_epoch_end(self, model: SeparationModel, global_step: int) -> None:
         """Writers epoch train and validation loss to tensorboard."""
         self.write_epoch_loss(model=model, global_step=global_step)
+        self.write_epoch_metrics(model=model, global_step=global_step)
 
 
 def _attach_to_callback(callback: Callback, **kwargs) -> None:
