@@ -52,7 +52,7 @@ class TrainingCallback(Callback):
         model: SeparationModel,
         visualizer: Optional[Visualizer] = None,
         writer: Optional[SummaryWriter] = None,
-        call_metrics: bool = True,
+        call_metrics: bool = False,
     ) -> None:
         self.model = model
         self.visualizer = visualizer
@@ -84,8 +84,8 @@ class TrainingCallback(Callback):
             self.writer_.write_epoch_loss(model=self.model, global_step=epoch)
         if self.visualizer:
             self.visualizer_.on_epoch_end(mix=mix, target=target, epoch=epoch)
-        if self.call_metrics:
-            self.metrics_callback.on_epoch_end(mix=mix, target=target)
+        # if self.call_metrics:
+        #     self.metrics_callback.on_epoch_end(mix=mix, target=target)
         # Update epoch count.
         self.model.training_params["last_epoch"] = epoch
 
@@ -230,7 +230,7 @@ class WriterCallback(Callback):
     def on_epoch_end(self, model: SeparationModel, global_step: int) -> None:
         """Writers epoch train and validation loss to tensorboard."""
         self.write_epoch_loss(model=model, global_step=global_step)
-        self.write_epoch_metrics(model=model, global_step=global_step)
+        # self.write_epoch_metrics(model=model, global_step=global_step)
 
 
 def _attach_to_callback(callback: Callback, **kwargs) -> None:

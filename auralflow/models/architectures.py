@@ -424,7 +424,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
     def __init__(
         self,
         *args,
-        recurrent_depth: int = 3,
+        recurrent_depth: int = 2,
         hidden_size: int = 1024,
         input_axis: int = 1,
         **kwargs
@@ -451,17 +451,17 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         self.lstm = nn.LSTM(
             input_size=self.num_features,
             hidden_size=hidden_size,
-            bidirectional=False,
+            bidirectional=True,
             num_layers=recurrent_depth,
-            dropout=0.3,
+            # dropout=0.3,
         )
 
         # Define dense layers.
         self.linear = nn.Sequential(
             nn.Linear(hidden_size * 2, hidden_size),
-            # nn.SELU(inplace=True),
+            nn.SELU(inplace=True),
             nn.Linear(hidden_size, self.num_features * 2),
-            # nn.SELU(inplace=True),
+            nn.SELU(inplace=True)
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
