@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
+from typing import List, Tuple
 
 import torch
 
@@ -65,9 +66,18 @@ def setup_model(model: SeparationModel) -> SeparationModel:
         model.train_losses, model.val_losses = [], []
 
         # Define optimizer.
-        model.optimizer = AdamW(
-            params=model.model.parameters(), lr=model.training_params["lr"]
-        )
+        if isinstance(model.model, SpectrogramNetLSTM):
+            param1, param2 = model.model.split_lstm_parameters()
+            params = [
+                {"params": param1, "lr": model.training_params["lr"]},
+                {"params": param2, "lr": model.training_params["lr"] * 1e-3},
+            ]
+        else:
+            param1 = model.model.parameters()
+            params = [
+                {"params": param1, "lr": model.training_params["lr"]},
+            ]
+        model.optimizer = AdamW(params=params)
 
         # Define lr scheduler and early stopping params.
         model.max_lr_steps = model.training_params["max_lr_steps"]
@@ -108,3 +118,4 @@ def setup_model(model: SeparationModel) -> SeparationModel:
             print(f"Failed to load model {model.model_name}.")
             raise error
     return model
+

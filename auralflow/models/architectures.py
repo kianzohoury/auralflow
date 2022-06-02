@@ -507,6 +507,15 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         mask = self.mask_activation(output)
         return mask
 
+    def split_lstm_parameters(self) -> Tuple[dict, dict]:
+        """Separates model's LSTM parameters from non-LSTM parameters."""
+        lstm_params = {**list(self.lstm.named_parameters())}
+        other_params = {}
+        for param_name, param_val in self.named_parameters():
+            if param_name not in lstm_params:
+                other_params[param_name] = param_val
+        return lstm_params, other_params
+
 
 class SpectrogramNetVAE(SpectrogramNetLSTM):
     """Spectrogram U-Net model with a VAE and LSTM bottleneck.
