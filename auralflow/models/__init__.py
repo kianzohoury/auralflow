@@ -69,7 +69,7 @@ def setup_model(model: SeparationModel) -> SeparationModel:
         if isinstance(model.model, SpectrogramNetLSTM):
             param1, param2 = model.model.split_lstm_parameters()
             params = [
-                {"params": param1, "lr": model.training_params["lr"] * 1e-2},
+                {"params": param1, "lr": model.training_params["lr"] * 1e-3},
                 {"params": param2, "lr": model.training_params["lr"]},
             ]
         else:
