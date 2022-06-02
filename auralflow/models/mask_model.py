@@ -6,6 +6,8 @@
 
 import copy
 import torch
+import torch.nn as nn
+
 
 from .base import SeparationModel
 from torch import Tensor, FloatTensor
@@ -138,11 +140,12 @@ class SpectrogramMaskModel(SeparationModel):
         # if not skip_update:
         #     self.update_f32_gradients()
         # self.optimizer.step()
+        # grad_norm = nn.utils.clip_grad_norm_(
+        #     self.model.parameters(), max_norm=2
+        # )
         self.optimizer.step()
 
-        # grad_norm = nn.utils.clip_grad_norm_(
-        #     self.model.parameters(), max_norm=100
-        # )
+
 
         # self.grad_scaler.unscale_(self.optimizer)
         # grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
