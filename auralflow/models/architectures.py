@@ -303,7 +303,7 @@ class SpectrogramNetSimple(nn.Module):
         self.down_3 = DownBlock(*self.channel_sizes[2], leak=leak_factor, bn=True)
         self.down_4 = DownBlock(*self.channel_sizes[3], leak=leak_factor, bn=True)
         self.down_5 = DownBlock(*self.channel_sizes[4], leak=leak_factor, bn=True)
-        self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor, bn=True)
+        self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor, bn=False)
 
         # Define simple bottleneck layer.
         self.bottleneck = ConvBlockTriple(
