@@ -303,7 +303,7 @@ class SpectrogramNetSimple(nn.Module):
         self.down_3 = DownBlock(*self.channel_sizes[2], leak=leak_factor, bn=True)
         self.down_4 = DownBlock(*self.channel_sizes[3], leak=leak_factor, bn=True)
         self.down_5 = DownBlock(*self.channel_sizes[4], leak=leak_factor, bn=True)
-        self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor, bn=False)
+        self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor, bn=True)
 
         # Define simple bottleneck layer.
         self.bottleneck = ConvBlockTriple(
@@ -370,6 +370,8 @@ class SpectrogramNetSimple(nn.Module):
             self.mask_activation = nn.PReLU(device=self.device)
         elif mask_act_fn == "selu":
             self.mask_activation = nn.SELU(inplace=True)
+        elif mask_act_fn == "elu":
+            self.mask_activation = nn.ELU(inplace=True)     
         else:
             self.mask_activation = nn.Sigmoid()
 
@@ -507,14 +509,16 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         mask = self.mask_activation(output)
         return mask
 
-    def split_lstm_parameters(self) -> Tuple[dict, dict]:
+    def split_lstm_parameters(self) -> Tuple[list, list]:
         """Separates model's LSTM parameters from non-LSTM parameters."""
-        lstm_params = {**list(self.lstm.named_parameters())}
-        other_params = {}
+        lstm_params, other_params = [], []
         for param_name, param_val in self.named_parameters():
-            if param_name not in lstm_params:
-                other_params[param_name] = param_val
+            if param_name.split(".")[0] in ["lstm", "linear"]:
+                lstm_params.append(param_val)
+            else:
+                other_params.append(param_val)
         return lstm_params, other_params
+    
 
 
 class SpectrogramNetVAE(SpectrogramNetLSTM):

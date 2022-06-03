@@ -69,15 +69,13 @@ def setup_model(model: SeparationModel) -> SeparationModel:
         if isinstance(model.model, SpectrogramNetLSTM):
             param1, param2 = model.model.split_lstm_parameters()
             params = [
-                {"params": param1, "lr": model.training_params["lr"]},
-                {"params": param2, "lr": model.training_params["lr"] * 1e-3},
+                {"params": param1, "lr": model.training_params["lr"] * 1e-3},
+                {"params": param2, "lr": model.training_params["lr"]},
             ]
         else:
             param1 = model.model.parameters()
-            params = [
-                {"params": param1, "lr": model.training_params["lr"]},
-            ]
-        model.optimizer = AdamW(params=params)
+            params = [{"params": param1}]
+        model.optimizer = AdamW(params=params, lr=model.training_params["lr"])
 
         # Define lr scheduler and early stopping params.
         model.max_lr_steps = model.training_params["max_lr_steps"]
