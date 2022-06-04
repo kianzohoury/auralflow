@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 import asteroid.metrics
@@ -17,7 +16,7 @@ def main(
     save_filepath: str,
     duration: int = 30,
     max_tracks: int = 20,
-    resample_rate: int = 44100
+    resample_rate: int = 44100,
 ) -> None:
     """Tests separated audio and saves metrics as a csv file."""
 
@@ -51,10 +50,7 @@ def main(
 
         # Get stems.
         stems = separate_audio(
-            model=model,
-            filename=str(track_name),
-            sr=44100,
-            duration=duration
+            model=model, filename=str(track_name), sr=44100, duration=duration
         )
 
         max_frames = stems["estimate"].shape[-1]
@@ -78,7 +74,7 @@ def main(
             ignore_metrics_errors=True,
             average=True,
             filename=track_name.name,
-            metrics_list=["sar", "sdr", "si_sdr", "stoi"]
+            metrics_list=["sar", "sdr", "si_sdr", "stoi"],
         )
 
         row = {"track_name": track_name.name}

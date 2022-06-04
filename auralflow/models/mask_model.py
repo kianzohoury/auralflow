@@ -145,8 +145,6 @@ class SpectrogramMaskModel(SeparationModel):
         # )
         self.optimizer.step()
 
-
-
         # self.grad_scaler.unscale_(self.optimizer)
         # grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
         # print(grad_norm)

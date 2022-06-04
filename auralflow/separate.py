@@ -95,7 +95,7 @@ def separate_audio(
     return {
         "estimate": full_estimate,
         "residual": full_residual,
-        "mix": mix_audio
+        "mix": mix_audio,
     }
 
 
@@ -148,23 +148,23 @@ def main(
             filename=str(track_path),
             sr=sr,
             duration=duration,
-            padding=padding
+            padding=padding,
         )
 
         # Save outputs.
         wavfile.write(
             track_dir.joinpath(label).with_suffix(".wav"),
             rate=sr,
-            data=stems["estimate"].cpu().numpy().T
+            data=stems["estimate"].cpu().numpy().T,
         )
         wavfile.write(
             track_dir.joinpath("mixture").with_suffix(".wav"),
             rate=sr,
-            data=stems["mix"].cpu().numpy().T
+            data=stems["mix"].cpu().numpy().T,
         )
         if residual:
             wavfile.write(
                 track_dir.joinpath("residual").with_suffix(".wav"),
                 rate=sr,
-                data=stems["residual"].cpu().numpy().T
+                data=stems["residual"].cpu().numpy().T,
             )

@@ -7,13 +7,13 @@
 import librosa
 
 
+from auralflow.visualizer import ProgressBar
 from collections import OrderedDict
 from .datasets import AudioDataset, AudioFolder
 from pathlib import Path
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 from typing import List, Optional
-from auralflow.visualizer import ProgressBar
 
 
 __all__ = [
@@ -105,7 +105,6 @@ def create_audio_dataset(
         sample_rate=sample_rate,
         mono=mono,
     )
-
     # Chunked dataset.
     chunked_dataset = AudioDataset(
         dataset=full_dataset,

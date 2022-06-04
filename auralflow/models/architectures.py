@@ -93,7 +93,7 @@ class DownBlock(nn.Module):
         kernel_size: int = 3,
         leak: float = 0,
         reduce: bool = True,
-        bn: bool = True
+        bn: bool = True,
     ) -> None:
         super(DownBlock, self).__init__()
         self.conv_block = ConvBlockTriple(
@@ -121,7 +121,7 @@ class UpBlock(nn.Module):
         padding: Tuple[int, int],
         kernel_size: int = 3,
         drop_p: float = 0.4,
-        bn: bool = True
+        bn: bool = True,
     ) -> None:
         super(UpBlock, self).__init__()
         self.conv_block = ConvBlockTriple(
@@ -298,12 +298,24 @@ class SpectrogramNetSimple(nn.Module):
             )
 
         # Define encoder layers.
-        self.down_1 = DownBlock(*self.channel_sizes[0], leak=leak_factor, bn=True)
-        self.down_2 = DownBlock(*self.channel_sizes[1], leak=leak_factor, bn=True)
-        self.down_3 = DownBlock(*self.channel_sizes[2], leak=leak_factor, bn=True)
-        self.down_4 = DownBlock(*self.channel_sizes[3], leak=leak_factor, bn=True)
-        self.down_5 = DownBlock(*self.channel_sizes[4], leak=leak_factor, bn=True)
-        self.down_6 = DownBlock(*self.channel_sizes[5], leak=leak_factor, bn=True)
+        self.down_1 = DownBlock(
+            *self.channel_sizes[0], leak=leak_factor, bn=True
+        )
+        self.down_2 = DownBlock(
+            *self.channel_sizes[1], leak=leak_factor, bn=True
+        )
+        self.down_3 = DownBlock(
+            *self.channel_sizes[2], leak=leak_factor, bn=True
+        )
+        self.down_4 = DownBlock(
+            *self.channel_sizes[3], leak=leak_factor, bn=True
+        )
+        self.down_5 = DownBlock(
+            *self.channel_sizes[4], leak=leak_factor, bn=True
+        )
+        self.down_6 = DownBlock(
+            *self.channel_sizes[5], leak=leak_factor, bn=True
+        )
 
         # Define simple bottleneck layer.
         self.bottleneck = ConvBlockTriple(
@@ -333,12 +345,33 @@ class SpectrogramNetSimple(nn.Module):
         dec_channel_sizes = [size[::-1] for size in self.channel_sizes][::-1]
 
         # Define decoder layers. Use dropout for first 3 decoder layers.
-        self.up_1 = UpBlock(*dec_channel_sizes[0], padding=padding_sizes[0], drop_p=dropout_p, bn=True)
-        self.up_2 = UpBlock(*dec_channel_sizes[1], padding=padding_sizes[1], drop_p=dropout_p, bn=True)
-        self.up_3 = UpBlock(*dec_channel_sizes[2], padding=padding_sizes[2], drop_p=dropout_p, bn=True)
-        self.up_4 = UpBlock(*dec_channel_sizes[3], padding=padding_sizes[3], bn=True)
-        self.up_5 = UpBlock(*dec_channel_sizes[4], padding=padding_sizes[4], bn=True)
-        self.up_6 = UpBlock(*dec_channel_sizes[5], padding=padding_sizes[5], bn=True)
+        self.up_1 = UpBlock(
+            *dec_channel_sizes[0],
+            padding=padding_sizes[0],
+            drop_p=dropout_p,
+            bn=True
+        )
+        self.up_2 = UpBlock(
+            *dec_channel_sizes[1],
+            padding=padding_sizes[1],
+            drop_p=dropout_p,
+            bn=True
+        )
+        self.up_3 = UpBlock(
+            *dec_channel_sizes[2],
+            padding=padding_sizes[2],
+            drop_p=dropout_p,
+            bn=True
+        )
+        self.up_4 = UpBlock(
+            *dec_channel_sizes[3], padding=padding_sizes[3], bn=True
+        )
+        self.up_5 = UpBlock(
+            *dec_channel_sizes[4], padding=padding_sizes[4], bn=True
+        )
+        self.up_6 = UpBlock(
+            *dec_channel_sizes[5], padding=padding_sizes[5], bn=True
+        )
 
         # Final conv layer squeezes output channels dimension to num_channels.
         self.soft_conv = nn.Sequential(
@@ -371,7 +404,7 @@ class SpectrogramNetSimple(nn.Module):
         elif mask_act_fn == "selu":
             self.mask_activation = nn.SELU(inplace=True)
         elif mask_act_fn == "elu":
-            self.mask_activation = nn.ELU(inplace=True)     
+            self.mask_activation = nn.ELU(inplace=True)
         else:
             self.mask_activation = nn.Sigmoid()
 
@@ -463,7 +496,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             nn.Linear(hidden_size * 2, hidden_size),
             nn.SELU(inplace=True),
             nn.Linear(hidden_size, self.num_features * 2),
-            nn.SELU(inplace=True)
+            nn.SELU(inplace=True),
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
@@ -518,7 +551,6 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             else:
                 other_params.append(param_val)
         return lstm_params, other_params
-    
 
 
 class SpectrogramNetVAE(SpectrogramNetLSTM):

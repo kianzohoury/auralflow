@@ -116,4 +116,3 @@ def setup_model(model: SeparationModel) -> SeparationModel:
             print(f"Failed to load model {model.model_name}.")
             raise error
     return model
-

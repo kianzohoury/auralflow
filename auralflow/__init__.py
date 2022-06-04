@@ -20,5 +20,5 @@ __all__ = [
     "models",
     "trainer",
     "utils",
-    "separate"
+    "separate",
 ]

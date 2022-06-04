@@ -198,7 +198,7 @@ class WriterCallback(Callback):
         )
 
     def write_epoch_metrics(
-        self, 
+        self,
         model: SeparationModel,
         global_step: int,
     ) -> None:

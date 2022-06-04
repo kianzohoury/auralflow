@@ -77,7 +77,10 @@ if __name__ == "__main__":
         required=False,
     )
     config_parser.add_argument(
-        "--display", help="Print configuration file.", action="store_true", required=False,
+        "--display",
+        help="Print configuration file.",
+        action="store_true",
+        required=False,
     )
 
     for optional_key, optional_type in _config_optionals.items():
@@ -222,5 +225,5 @@ if __name__ == "__main__":
             save_filepath=args.folder_name,
             duration=args.duration,
             max_tracks=args.max_tracks,
-            resample_rate=args.resample_rate
+            resample_rate=args.resample_rate,
         )

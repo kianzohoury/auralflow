@@ -107,12 +107,8 @@ def get_evaluation_metrics(
     target = resampler(target.cpu())
 
     # Collapse channels to mono, convert to numpy arrays, trim audio clips.
-    mixture = (
-        torch.mean(mixture, dim=1, keepdim=True).squeeze(-1).numpy()
-    )
-    estimate = (
-        torch.mean(estimate, dim=1, keepdim=True).squeeze(-1).numpy()
-    )
+    mixture = torch.mean(mixture, dim=1, keepdim=True).squeeze(-1).numpy()
+    estimate = torch.mean(estimate, dim=1, keepdim=True).squeeze(-1).numpy()
     target = torch.mean(target, dim=1, keepdim=True).squeeze(-1).numpy()
     mixture, estimate, target = trim_audio([mixture, estimate, target])
 

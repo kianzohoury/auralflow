@@ -10,11 +10,11 @@ import torch
 import torchaudio
 
 
+from auralflow.visualizer import ProgressBar
 from pathlib import Path
 from torch import Tensor
 from torch.utils.data.dataset import IterableDataset, Dataset
 from typing import Iterator, List, Optional, Tuple
-from auralflow.visualizer import ProgressBar
 
 
 class AudioFolder(IterableDataset):
@@ -212,7 +212,7 @@ def make_chunks(
     chunk_size: int,
     num_chunks: int,
     sr: int = 44100,
-    energy_cutoff: float = 1.0,
+    energy_cutoff: float = 2.0,
 ) -> List[List[Tensor]]:
     """Transforms an audio dataset into a chunked dataset."""
     chunked_dataset = []
