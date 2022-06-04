@@ -292,7 +292,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Calculate input/output channel sizes for each layer.
         self.channel_sizes = [[num_channels, hidden_channels]]
-        for i in range(6):
+        for i in range(5):
             self.channel_sizes.append(
                 [hidden_channels << i, hidden_channels << (i + 1)]
             )
@@ -313,9 +313,9 @@ class SpectrogramNetSimple(nn.Module):
         self.down_5 = DownBlock(
             *self.channel_sizes[4], leak=leak_factor, bn=True
         )
-        self.down_6 = DownBlock(
-            *self.channel_sizes[5], leak=leak_factor, bn=True
-        )
+        # self.down_6 = DownBlock(
+        #     *self.channel_sizes[5], leak=leak_factor, bn=True
+        # )
 
         # Define simple bottleneck layer.
         self.bottleneck = ConvBlockTriple(
@@ -326,7 +326,7 @@ class SpectrogramNetSimple(nn.Module):
 
         # Determine the spatial dimension sizes for computing deconv padding.
         self.encoding_sizes = [
-            [num_fft_bins >> i, num_frames >> i] for i in range(7)
+            [num_fft_bins >> i, num_frames >> i] for i in range(6)
         ]
 
         # Compute transpose/deconvolution padding.
@@ -369,9 +369,9 @@ class SpectrogramNetSimple(nn.Module):
         self.up_5 = UpBlock(
             *dec_channel_sizes[4], padding=padding_sizes[4], bn=True
         )
-        self.up_6 = UpBlock(
-            *dec_channel_sizes[5], padding=padding_sizes[5], bn=True
-        )
+        # self.up_6 = UpBlock(
+        #     *dec_channel_sizes[5], padding=padding_sizes[5], bn=True
+        # )
 
         # Final conv layer squeezes output channels dimension to num_channels.
         self.soft_conv = nn.Sequential(
@@ -419,21 +419,21 @@ class SpectrogramNetSimple(nn.Module):
         enc_3, skip_3 = self.down_3(enc_2)
         enc_4, skip_4 = self.down_4(enc_3)
         enc_5, skip_5 = self.down_5(enc_4)
-        enc_6, skip_6 = self.down_6(enc_5)
+        # enc_6, skip_6 = self.down_6(enc_5)
 
         # Pass through bottleneck.
-        latent_data = self.bottleneck(enc_6)
+        latent_data = self.bottleneck(enc_5)
 
         # Pass through decoder.
-        dec_1 = self.up_1(latent_data, skip_6)
-        dec_2 = self.up_2(dec_1, skip_5)
-        dec_3 = self.up_3(dec_2, skip_4)
-        dec_4 = self.up_4(dec_3, skip_3)
-        dec_5 = self.up_5(dec_4, skip_2)
-        dec_6 = self.up_6(dec_5, skip_1)
+        dec_1 = self.up_1(latent_data, skip_5)
+        dec_2 = self.up_2(dec_1, skip_4)
+        dec_3 = self.up_3(dec_2, skip_3)
+        dec_4 = self.up_4(dec_3, skip_2)
+        dec_5 = self.up_5(dec_4, skip_1)
+        # dec_6 = self.up_6(dec_5, skip_1)
 
         # Pass through final 1x1 conv and normalize output if applicable.
-        dec_final = self.soft_conv(dec_6)
+        dec_final = self.soft_conv(dec_5)
         output = self.output_norm(dec_final)
 
         # Generate multiplicative soft-mask.
@@ -510,15 +510,15 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         enc_3, skip_3 = self.down_3(enc_2)
         enc_4, skip_4 = self.down_4(enc_3)
         enc_5, skip_5 = self.down_5(enc_4)
-        enc_6, skip_6 = self.down_6(enc_5)
+        # enc_6, skip_6 = self.down_6(enc_5)
 
         # Reshape encoded audio to pass through bottleneck.
-        enc_6 = enc_6.permute(self.input_perm)
-        n_batch, dim1, n_channel, dim2 = enc_6.size()
-        enc_6 = enc_6.reshape((n_batch, dim1, n_channel * dim2))
+        enc_5 = enc_5.permute(self.input_perm)
+        n_batch, dim1, n_channel, dim2 = enc_5.size()
+        enc_5 = enc_5.reshape((n_batch, dim1, n_channel * dim2))
 
         # Pass through recurrent stack.
-        lstm_out, _ = self.lstm(enc_6)
+        lstm_out, _ = self.lstm(enc_5)
         lstm_out = lstm_out.reshape((n_batch * dim1, -1))
 
         # Project latent audio onto affine space, and reshape for decoder.
@@ -527,15 +527,15 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         latent_data = latent_data.permute(self.output_perm)
 
         # Pass through decoder.
-        dec_1 = self.up_1(latent_data, skip_6)
-        dec_2 = self.up_2(dec_1, skip_5)
-        dec_3 = self.up_3(dec_2, skip_4)
-        dec_4 = self.up_4(dec_3, skip_3)
-        dec_5 = self.up_5(dec_4, skip_2)
-        dec_6 = self.up_6(dec_5, skip_1)
+        dec_1 = self.up_1(latent_data, skip_5)
+        dec_2 = self.up_2(dec_1, skip_4)
+        dec_3 = self.up_3(dec_2, skip_3)
+        dec_4 = self.up_4(dec_3, skip_2)
+        dec_5 = self.up_5(dec_4, skip_1)
+        # dec_6 = self.up_6(dec_5, skip_1)
 
         # Pass through final 1x1 conv and normalize output if applicable.
-        dec_final = self.soft_conv(dec_6)
+        dec_final = self.soft_conv(dec_5)
         output = self.output_norm(dec_final)
 
         # Generate multiplicative soft-mask.
