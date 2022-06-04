@@ -3,24 +3,20 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
-from typing import List, Tuple
-
-import torch
 
 
-from torch.cuda.amp import GradScaler
 from .architectures import (
     SpectrogramNetSimple,
     SpectrogramNetLSTM,
     SpectrogramNetVAE,
 )
+from auralflow.losses import get_model_criterion
 from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
-from auralflow.losses import get_model_criterion
 from pathlib import Path
+from torch.cuda.amp import GradScaler
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from auralflow.utils import save_config, load_config
 
 
 __all__ = [
@@ -32,11 +28,8 @@ __all__ = [
     "create_model",
     "setup_model",
 ]
-
 _models = [
-    "SpectrogramNetSimple",
-    "SpectrogramNetLSTM",
-    "SpectrogramNetVAE",
+    "SpectrogramNetSimple", "SpectrogramNetLSTM", "SpectrogramNetVAE",
 ]
 
 

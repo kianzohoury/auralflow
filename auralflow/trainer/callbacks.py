@@ -76,8 +76,6 @@ class TrainingCallback(Callback):
         self.writer_.on_iteration_end(
             model=self.model, global_step=global_step
         )
-        # Update global step count.
-        self.model.training_params["global_step"] = global_step
 
     def on_epoch_end(self, mix: Tensor, target: Tensor, epoch: int) -> None:
         if self.writer:
@@ -86,8 +84,6 @@ class TrainingCallback(Callback):
             self.visualizer_.on_epoch_end(mix=mix, target=target, epoch=epoch)
         # if self.call_metrics:
         #     self.metrics_callback.on_epoch_end(mix=mix, target=target)
-        # Update epoch count.
-        self.model.training_params["last_epoch"] = epoch
 
 
 class VisualizerCallback(Callback):

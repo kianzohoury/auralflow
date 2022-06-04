@@ -97,4 +97,6 @@ def main(config_filepath: str):
     print("Finished training.")
 
     # Save updated config file.
-    save_config(config=configuration, save_filepath=config_filepath)
+    save_config(
+        config=model.config, save_filepath=model.model_params["save_dir"]
+    )

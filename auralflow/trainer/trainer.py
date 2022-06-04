@@ -12,6 +12,7 @@ from auralflow.models import SeparationModel
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
 from auralflow.visualizer import ProgressBar
+from auralflow.utils import save_config
 
 
 def run_training(
@@ -63,6 +64,8 @@ def run_training(
                 model.optimizer_step()
                 # Write/display iteration loss.
                 callback.on_iteration_end(global_step=global_step)
+                # Update global step count.
+                model.training_params["global_step"] = global_step
                 global_step += 1
 
         # Store epoch-average training loss.
@@ -73,6 +76,10 @@ def run_training(
 
         # Write/display train and val losses.
         callback.on_epoch_end(epoch=epoch, *next(iter(val_dataloader)))
+
+        # Update epoch count.
+        model.training_params["last_epoch"] = epoch
+
         # Only save model if validation loss decreases.
         if model.is_best_model:
             model.training_params["best_epoch"] = epoch
@@ -89,6 +96,11 @@ def run_training(
         if stop_early:
             print("No improvement. Stopping training early...")
             break
+
+        # Save updated config file.
+        save_config(
+            config=model.config, save_filepath=model.model_params["save_dir"]
+        )
 
 
 def run_validation(model: SeparationModel, val_dataloader: DataLoader) -> None:
