@@ -91,22 +91,21 @@ class SpectrogramMaskModel(SeparationModel):
         """Wrapper method processes and sets data for internal access."""
         # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(mix.to(self.device))
-        # Separate magnitude and phase.
-        self.mixture = torch.abs(mix_complex_stft)
-        self.phase = torch.angle(mix_complex_stft)
-
         if target is not None:
             target_complex_stft = self.transform.to_spectrogram(
                 target.squeeze(-1).to(self.device)
             )
             self.target = torch.abs(target_complex_stft)
-            # Use target source phase during training.
-            self.phase = torch.angle(target_complex_stft)
+
+        # Separate magnitude and phase.
+        self.mixture = torch.abs(mix_complex_stft)
+        self.phase = torch.angle(mix_complex_stft)
 
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
         self.mask = self.model(self.mixture)
         self.estimate = self.mask * (self.mixture.clone().detach())
+        self.phase = self.mask * self.phase
 
     def separate(self, audio: Tensor) -> Tensor:
         """Transforms and returns source estimate in the audio domain."""
