@@ -48,6 +48,10 @@ def main(
             str(track_name) + f"/{label}.wav", sr=44100
         )
 
+        target_audio = torch.from_numpy(target_audio).to(model.device).float()
+        target_spec = model.transform.to_spectrogram(target_audio)
+        target_audio = model.transform.to_audio(target_spec).cpu().numpy()
+
         # Get stems.
         stems = separate_audio(
             model=model, filename=str(track_name), sr=44100, duration=duration

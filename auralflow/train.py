@@ -98,5 +98,6 @@ def main(config_filepath: str):
 
     # Save updated config file.
     save_config(
-        config=model.config, save_filepath=model.model_params["save_dir"]
+        config=configuration,
+        save_filepath=model_params["save_dir"] + "/config.json"
     )

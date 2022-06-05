@@ -68,7 +68,7 @@ def make_waveform_figure(
 
     _format_axes(ax)
     plt.xlabel("Frames")
-    fig.supylabel("Amplitude")
+    # fig.supylabel("Amplitude")
     plt.tight_layout()
 
     # Set the legend.

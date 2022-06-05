@@ -50,7 +50,7 @@ def separate_audio(
     max_frames = min(mix_audio.shape[-1], duration * sr)
 
     # Store chunks.
-    est_chunks, res_chunks = [], []
+    est_chunks, res_chunks, mix_chunks = [], [], []
     offset = 0
 
     # Separate smaller windows of audio.
@@ -70,6 +70,7 @@ def separate_audio(
 
             est_chunks.append(estimate)
             res_chunks.append(residual_chunk)
+            mix_chunks.append(audio_chunk)
 
             # Update current frame position.
             offset = offset + step_size - padding
@@ -86,8 +87,13 @@ def separate_audio(
         full_residual = torch.cat(res_chunks, dim=2).reshape(
             (mix_audio.shape[0], -1)
         )
+        mix_audio = torch.cat(mix_chunks, dim=2).reshape(
+            (mix_audio.shape[0], -1)
+        )
 
-        max_frames = min(full_estimate.shape[-1], mix_audio.shape[-1])
+        max_frames = min(
+            full_estimate.shape[-1], mix_audio.shape[-1], max_frames
+        )
         full_estimate = full_estimate[..., :max_frames]
         full_residual = full_residual[..., :max_frames]
         mix_audio = mix_audio[..., :max_frames]

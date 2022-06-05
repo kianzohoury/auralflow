@@ -37,7 +37,7 @@ def run_training(
             train_dataloader, total=max_iters, desc="train"
         ) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
-                with autocast(enabled=model.use_amp):
+                with autocast(enabled=model.use_amp or True):
 
                     # Process data, run forward pass.
                     model.set_data(mixture, target)
@@ -99,7 +99,8 @@ def run_training(
 
         # Save updated config file.
         save_config(
-            config=model.config, save_filepath=model.model_params["save_dir"]
+            config=model.config,
+            save_filepath=model.model_params["save_dir"] + "/config.json"
         )
 
 
