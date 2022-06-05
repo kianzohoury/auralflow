@@ -75,6 +75,7 @@ def l2_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
     """L2 loss."""
     return functional.mse_loss(estimate, target)
 
+
 def rmse_loss(
     estimate: FloatTensor, target: Tensor, eps: float = 1e-6
 ) -> Tensor:
@@ -90,6 +91,13 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     reconstruction loss.
     """
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
+
+
+def sdr_loss(estimate: FloatTensor, target: Tensor):
+    target_signal = torch.dot(estimate, target) * target / torch.sum(target**2, dim=2)
+    error_noise = target - target_signal
+    loss = 10 * torch.log10(torch.sum(target ** 2) / torch.sum(error_noise ** 2))
+    return loss
 
 
 def get_evaluation_metrics(
@@ -264,6 +272,18 @@ class L2MaskLoss(nn.Module):
         )
         self.model.batch_loss = l2_loss(self.model.mask, ideal_mask)
 
+
+class SDRLoss(nn.Module):
+    """Wrapper class for sdr loss."""
+
+    def __init__(self, model):
+        super(SDRLoss, self).__init__()
+        self.model = model
+
+    def forward(self) -> None:
+        self.model.batch_loss = sdr_loss(
+            self.model.estimate, self.model.target
+        )
 
 # class SISDRLoss(nn.Module):
 #     """Wrapper class for si-sdr loss."""
