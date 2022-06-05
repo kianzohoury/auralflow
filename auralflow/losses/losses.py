@@ -75,6 +75,12 @@ def l2_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
     """L2 loss."""
     return functional.mse_loss(estimate, target)
 
+def rmse_loss(
+    estimate: FloatTensor, target: Tensor, eps: float = 1e-6
+) -> Tensor:
+    """RMSE loss."""
+    return torch.sqrt(functional.mse_loss(estimate, target) + eps)
+
 
 def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     """Computes KL term using the closed form expression.
@@ -226,11 +232,23 @@ class L2Loss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        self.model.batch_loss = l2_loss(self.model.estimate, self.model.target)\
-                                + l2_loss(self.model.mix_phase, self.model.target_phase)
+        self.model.batch_loss = 0.5 * l2_loss(self.model.estimate, self.model.target)\
+                                + 0.5 * l2_loss(self.model.mix_phase, self.model.target_phase)
         # gain_penalty = torch.linalg.norm(self.model.target) / torch.linalg.norm(self.model.estimate)
         # self.model.batch_loss = self.model.batch_loss + gain_penalty
 
+class RMSELoss(nn.Module):
+    """Wrapper class for rmse loss."""
+
+    def __init__(self, model):
+        super(RMSELoss, self).__init__()
+        self.model = model
+
+    def forward(self) -> None:
+        sep_loss = rmse_loss(self.model.estimate, self.model.target)
+        mask_loss = rmse_loss(self.model.mix_phase, self.model.target_phase)
+        self.model.batch_loss = 0.5 * sep_loss + 0.5 * mask_loss
+        
 
 # class SISDRLoss(nn.Module):
 #     """Wrapper class for si-sdr loss."""

@@ -381,8 +381,20 @@ class SpectrogramNetSimple(nn.Module):
                 kernel_size=1,
                 stride=1,
                 padding="same",
-            )
-            # nn.BatchNorm2d(num_channels),
+            ),
+            nn.BatchNorm2d(num_channels)
+        )
+        
+        self.phase_head = nn.Sequential(
+            nn.Conv2d(
+                in_channels=hidden_channels,
+                out_channels=num_channels,
+                kernel_size=1,
+                stride=1,
+                padding="same",
+            ),
+            nn.BatchNorm2d(num_channels),
+            nn.Tanh()
         )
 
         # Define output norm layer. Uses identity fn if not activated.
@@ -536,10 +548,15 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 
         # Pass through final 1x1 conv and normalize output if applicable.
         dec_final = self.soft_conv(dec_5)
+        self.phase_mask = torch.clamp(
+            self.phase_head(dec_5), min=-3.14, max=3.14
+        ).float()
+
         output = self.output_norm(dec_final)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
+        mask = torch.clamp(mask, min=0, max=1.0).float()
         return mask
 
     def split_lstm_parameters(self) -> Tuple[list, list]:

@@ -11,6 +11,7 @@ from .losses import (
     kl_div_loss,
     L1Loss,
     L2Loss,
+    RMSELoss,
     get_evaluation_metrics,
 )
 from typing import Union, Callable
@@ -28,6 +29,7 @@ __all__ = [
     "L2Loss",
     "get_model_criterion",
     "get_evaluation_metrics",
+    "RMSELoss"
 ]
 
 
@@ -46,6 +48,8 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
         criterion = KLDivergenceLoss(model=model, loss_fn=loss_fn)
     elif loss_fn == "l1":
         criterion = L1Loss(model=model)
+    elif loss_fn == "rmse":
+        criterion = RMSELoss(model=model)
     else:
         criterion = L2Loss(model=model)
     return criterion

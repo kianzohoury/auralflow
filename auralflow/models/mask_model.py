@@ -107,8 +107,9 @@ class SpectrogramMaskModel(SeparationModel):
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
         self.mask = self.model(self.mixture)
+        self.phase_mask = self.model.phase_mask
         self.estimate = self.mask * (self.mixture.clone().detach())
-        self.mix_phase = self.mask * (self.mix_phase.clone().detach())
+        self.mix_phase = self.phase_mask * (self.mix_phase.clone().detach())
 
         # phase_corrected = self.estimate * torch.exp(1j * self.phase)
         # target_estimate = self.transform.to_audio(phase_corrected)
