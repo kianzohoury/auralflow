@@ -237,6 +237,7 @@ class L2Loss(nn.Module):
         # gain_penalty = torch.linalg.norm(self.model.target) / torch.linalg.norm(self.model.estimate)
         # self.model.batch_loss = self.model.batch_loss + gain_penalty
 
+
 class RMSELoss(nn.Module):
     """Wrapper class for rmse loss."""
 
@@ -248,7 +249,21 @@ class RMSELoss(nn.Module):
         sep_loss = rmse_loss(self.model.estimate, self.model.target)
         mask_loss = rmse_loss(self.model.mix_phase, self.model.target_phase)
         self.model.batch_loss = 0.5 * sep_loss + 0.5 * mask_loss
-        
+
+
+class L2MaskLoss(nn.Module):
+    """Wrapper class for l2 loss directly on masks."""
+
+    def __init__(self, model):
+        super(L2MaskLoss, self).__init__()
+        self.model = model
+
+    def forward(self) -> None:
+        ideal_mask = self.model.target / torch.max(
+            self.model.mixture, torch.ones_like(self.model.mixture)
+        )
+        self.model.batch_loss = l2_loss(self.model.mask, ideal_mask)
+
 
 # class SISDRLoss(nn.Module):
 #     """Wrapper class for si-sdr loss."""

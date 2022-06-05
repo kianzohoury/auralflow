@@ -11,6 +11,7 @@ from .losses import (
     kl_div_loss,
     L1Loss,
     L2Loss,
+    L2MaskLoss,
     RMSELoss,
     get_evaluation_metrics,
 )
