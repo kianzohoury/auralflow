@@ -57,7 +57,7 @@ def separate_audio(
     with ProgressBar(iterable=None, total=max_frames, ascii=" #") as pbar:
         while offset < max_frames:
             # Reshape and trim audio chunk.
-            audio_chunk = mix_audio[:, offset : offset + length * sr]
+            audio_chunk = mix_audio[:, offset: offset + step_size - padding]
 
             # Unsqueeze batch dimension if not already batched.
             if audio_chunk.dim() == 2:
@@ -75,7 +75,7 @@ def separate_audio(
             # Update current frame position.
             offset = offset + step_size - padding
             pbar.n += step_size - padding
-            if offset + length * sr >= max_frames:
+            if offset + step_size >= max_frames:
                 break
 
         pbar.n = max_frames

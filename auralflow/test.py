@@ -2,6 +2,7 @@ from pathlib import Path
 
 import asteroid.metrics
 import librosa
+import numpy as np
 import torch
 import csv
 
@@ -9,6 +10,7 @@ from auralflow.models import create_model, setup_model
 from auralflow.separate import separate_audio
 from auralflow.utils import load_config
 from torchaudio.transforms import Resample
+import matplotlib.pyplot as plt
 
 
 def main(
@@ -43,15 +45,6 @@ def main(
     for track_name in list(Path(test_filepath).iterdir())[:max_tracks]:
         label = model.target_labels[0]
 
-        # Load target audio.
-        target_audio, sr = librosa.load(
-            str(track_name) + f"/{label}.wav", sr=44100
-        )
-
-        target_audio = torch.from_numpy(target_audio).to(model.device).float()
-        target_spec = model.transform.to_spectrogram(target_audio)
-        target_audio = model.transform.to_audio(target_spec).cpu().numpy()
-
         # Get stems.
         stems = separate_audio(
             model=model, filename=str(track_name), sr=44100, duration=duration
@@ -59,15 +52,27 @@ def main(
 
         max_frames = stems["estimate"].shape[-1]
 
-        # Reduce sample rate.
-        resampler = Resample(
-            orig_freq=44100, new_freq=resample_rate, dtype=torch.float32
+        # Load target audio.
+        target_audio, sr = librosa.load(
+            str(track_name) + f"/{label}.wav", sr=44100, dtype=np.float32
         )
-        mix = resampler(stems["mix"][..., :max_frames].cpu()).numpy()
-        target = resampler(
-            torch.from_numpy(target_audio[..., :max_frames]).float()
-        ).numpy()
-        estimate = resampler(stems["estimate"].cpu()).numpy()
+
+        # # Reduce sample rate.
+        # resampler = Resample(
+        #     orig_freq=44100, new_freq=resample_rate, dtype=torch.float32
+        # )
+        # mix = resampler(stems["mix"][..., :max_frames].cpu()).numpy()
+        # estimate = resampler(stems["estimate"].cpu()).numpy()
+        # target = resampler(
+        #     torch.from_numpy(target_audio[..., :max_frames]).float()
+        # ).reshape(estimate.shape).numpy()
+
+        mix = stems["mix"][..., :max_frames].cpu().numpy()
+        estimate = stems["estimate"].cpu().numpy()
+        # target = torch.from_numpy(
+        #     target_audio[..., :max_frames]
+        # ).float().reshape(estimate.shape).numpy()
+        target = target_audio[:max_frames].reshape(estimate.shape)
 
         named_metrics = asteroid.metrics.get_metrics(
             mix=mix,
