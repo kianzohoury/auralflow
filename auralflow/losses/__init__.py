@@ -28,6 +28,8 @@ __all__ = [
     "kl_div_loss",
     "L1Loss",
     "L2Loss",
+    "L2MaskLoss",
+    "RMSELoss",
     "get_model_criterion",
     "get_evaluation_metrics",
     "RMSELoss"
@@ -51,6 +53,8 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
         criterion = L1Loss(model=model)
     elif loss_fn == "rmse":
         criterion = RMSELoss(model=model)
+    elif loss_fn == "l2_mask_loss":
+        criterion = L2MaskLoss(model=model)
     else:
         criterion = L2Loss(model=model)
     return criterion
