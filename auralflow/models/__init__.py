@@ -15,7 +15,7 @@ from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
 from pathlib import Path
 from torch.cuda.amp import GradScaler
-from torch.optim import AdamW
+from torch.optim import Adam, AdamW, SGD
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
@@ -68,7 +68,7 @@ def setup_model(model: SeparationModel) -> SeparationModel:
         else:
             param1 = model.model.parameters()
             params = [{"params": param1}]
-        model.optimizer = AdamW(params=params, lr=model.training_params["lr"])
+        model.optimizer = Adam(params=params, lr=model.training_params["lr"])
 
         # Define lr scheduler and early stopping params.
         model.max_lr_steps = model.training_params["max_lr_steps"]
