@@ -43,7 +43,7 @@
     },
     "visualizer_params": {
         "view_spectrogram": false,
-        "view_waveform": false,
+        "view_waveform": true,
         "view_gradient": true,
         "play_audio": true,
         "save_image": false,
