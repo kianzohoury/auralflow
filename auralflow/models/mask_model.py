@@ -98,7 +98,7 @@ class SpectrogramMaskModel(SeparationModel):
             # )
             # # Separate target magnitude and phase.
             # self.target = torch.abs(target_complex_stft)
-            self.target = target.squeeze(-1).float()
+            self.target = target.squeeze(-1).to(self.device).float()
             # self.target_phase = torch.angle(target_complex_stft).float()
 
         # Separate mixture magnitude and phase.

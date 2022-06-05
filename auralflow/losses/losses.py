@@ -93,8 +93,15 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
+def batch_dot(v1, v2):
+    return torch.sum(v1 * v2, dim=1)
+
+
 def sdr_loss(estimate: FloatTensor, target: Tensor):
-    target_signal = torch.dot(estimate, target) * target / torch.sum(target**2, dim=2)
+    target = torch.mean(target, dim=1, keepdim=False)
+    estimate = torch.mean(estimate, dim=1, keepdim=False)[..., :target.shape[-1]]
+    print(torch.linalg.norm(target, dim=1, keepdim=True).shape)
+    target_signal = batch_dot(estimate, target) * target / torch.linalg.norm(target, dim=1, keepdim=True) ** 2
     error_noise = target - target_signal
     loss = 10 * torch.log10(torch.sum(target ** 2) / torch.sum(error_noise ** 2))
     return loss
