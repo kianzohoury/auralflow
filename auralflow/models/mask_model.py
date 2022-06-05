@@ -93,12 +93,13 @@ class SpectrogramMaskModel(SeparationModel):
         # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(mix.to(self.device))
         if target is not None:
-            target_complex_stft = self.transform.to_spectrogram(
-                target.squeeze(-1).to(self.device)
-            )
-            # Separate target magnitude and phase.
-            self.target = torch.abs(target_complex_stft)
-            self.target_phase = torch.angle(target_complex_stft).float()
+            # target_complex_stft = self.transform.to_spectrogram(
+            #     target.squeeze(-1).to(self.device)
+            # )
+            # # Separate target magnitude and phase.
+            # self.target = torch.abs(target_complex_stft)
+            self.target = target.squeeze(-1).float()
+            # self.target_phase = torch.angle(target_complex_stft).float()
 
         # Separate mixture magnitude and phase.
         self.mixture = torch.abs(mix_complex_stft)
@@ -109,11 +110,11 @@ class SpectrogramMaskModel(SeparationModel):
         self.mask = self.model(self.mixture)
         self.phase_mask = self.model.phase_mask
         self.estimate = self.mask * (self.mixture.clone().detach())
-        self.mix_phase = self.phase_mask * (self.mix_phase.clone().detach())
+        # self.mix_phase = self.phase_mask * (self.mix_phase.clone().detach())
 
-        # phase_corrected = self.estimate * torch.exp(1j * self.phase)
-        # target_estimate = self.transform.to_audio(phase_corrected)
-        # self.estimate = target_estimate.float()
+        phase_corrected = self.estimate * torch.exp(1j * self.mix_phase)
+        target_estimate = self.transform.to_audio(phase_corrected)
+        self.estimate = target_estimate.float()
 
     def separate(self, audio: Tensor) -> Tensor:
         """Transforms and returns source estimate in the audio domain."""
