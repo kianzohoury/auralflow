@@ -19,11 +19,12 @@ class SpectrogramMaskModel(SeparationModel):
     """Spectrogram-domain deep mask estimation model."""
 
     mixture: Tensor
-    phase: Tensor
     target: Tensor
     estimate: FloatTensor
     residual: Tensor
     mask: FloatTensor
+    mix_phase: FloatTensor
+    target_phase: FloatTensor
 
     def __init__(self, configuration: dict):
         super(SpectrogramMaskModel, self).__init__(configuration)
@@ -95,17 +96,23 @@ class SpectrogramMaskModel(SeparationModel):
             target_complex_stft = self.transform.to_spectrogram(
                 target.squeeze(-1).to(self.device)
             )
+            # Separate target magnitude and phase.
             self.target = torch.abs(target_complex_stft)
+            self.target_phase = torch.angle(target_complex_stft).float()
 
-        # Separate magnitude and phase.
+        # Separate mixture magnitude and phase.
         self.mixture = torch.abs(mix_complex_stft)
-        self.phase = torch.angle(mix_complex_stft)
+        self.mix_phase = torch.angle(mix_complex_stft).float()
 
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
         self.mask = self.model(self.mixture)
         self.estimate = self.mask * (self.mixture.clone().detach())
-        self.phase = self.mask * self.phase
+        self.mix_phase = self.mask * (self.mix_phase.clone().detach())
+
+        # phase_corrected = self.estimate * torch.exp(1j * self.phase)
+        # target_estimate = self.transform.to_audio(phase_corrected)
+        # self.estimate = target_estimate.float()
 
     def separate(self, audio: Tensor) -> Tensor:
         """Transforms and returns source estimate in the audio domain."""
@@ -114,7 +121,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.test()
 
         # Apply phase correction to estimate.
-        phase_corrected = self.estimate * torch.exp(1j * self.phase)
+        phase_corrected = self.estimate * torch.exp(1j * self.mix_phase)
         target_estimate = self.transform.to_audio(phase_corrected)
         return target_estimate
 

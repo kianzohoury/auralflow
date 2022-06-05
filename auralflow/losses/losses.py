@@ -226,7 +226,8 @@ class L2Loss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        self.model.batch_loss = l2_loss(self.model.estimate, self.model.target)
+        self.model.batch_loss = l2_loss(self.model.estimate, self.model.target)\
+                                + l2_loss(self.model.mix_phase, self.model.target_phase)
         # gain_penalty = torch.linalg.norm(self.model.target) / torch.linalg.norm(self.model.estimate)
         # self.model.batch_loss = self.model.batch_loss + gain_penalty
 
