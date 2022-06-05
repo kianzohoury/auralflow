@@ -13,6 +13,7 @@ from .losses import (
     L2Loss,
     L2MaskLoss,
     RMSELoss,
+    SDRLoss,
     get_evaluation_metrics,
 )
 from typing import Union, Callable
@@ -30,6 +31,7 @@ __all__ = [
     "L2Loss",
     "L2MaskLoss",
     "RMSELoss",
+    "SDRLoss",
     "get_model_criterion",
     "get_evaluation_metrics",
     "RMSELoss"
@@ -55,6 +57,8 @@ def get_model_criterion(model, config: dict) -> Union[nn.Module, Callable]:
         criterion = RMSELoss(model=model)
     elif loss_fn == "l2_mask_loss":
         criterion = L2MaskLoss(model=model)
+    elif loss_fn == "sdr_loss":
+        criterion = SDRLoss(model=model)
     else:
         criterion = L2Loss(model=model)
     return criterion
