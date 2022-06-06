@@ -302,7 +302,7 @@ class SIDRLoss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        estimate = self.model.estimate[..., :self.model.target.shape[-1]]
+        estimate = self.model.estimate_audio[..., :self.model.target.shape[-1]]
         target = self.model.target.squeeze(-1)
         self.model.batch_loss = si_sdr_loss(
             estimate, target

@@ -25,6 +25,8 @@ class SpectrogramMaskModel(SeparationModel):
     mask: FloatTensor
     mix_phase: FloatTensor
     target_phase: FloatTensor
+    target_audio: FloatTensor
+    estimate_audio: FloatTensor
 
     def __init__(self, configuration: dict):
         super(SpectrogramMaskModel, self).__init__(configuration)
@@ -114,7 +116,7 @@ class SpectrogramMaskModel(SeparationModel):
 
         phase_corrected = self.estimate * torch.exp(1j * self.mix_phase)
         target_estimate = self.transform.to_audio(phase_corrected)
-        self.estimate = target_estimate.float()
+        self.estimate_audio = target_estimate.float()
 
     def separate(self, audio: Tensor) -> Tensor:
         """Transforms and returns source estimate in the audio domain."""
