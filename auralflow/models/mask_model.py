@@ -152,9 +152,9 @@ class SpectrogramMaskModel(SeparationModel):
         # if not skip_update:
         #     self.update_f32_gradients()
         # self.optimizer.step()
-        # grad_norm = nn.utils.clip_grad_norm_(
-        #     self.model.parameters(), max_norm=2
-        # )
+        grad_norm = nn.utils.clip_grad_norm_(
+            self.model.parameters(), max_norm=100
+        )
         self.optimizer.step()
 
         # self.grad_scaler.unscale_(self.optimizer)
