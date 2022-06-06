@@ -112,7 +112,7 @@ def si_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
     error_residual = estimate - error_target
     loss = torch.sum(error_target**2, dim=(1, 2))  \
         / torch.sum(error_residual**2, dim=(1, 2))
-    loss = -torch.mean(loss, dim=0)
+    loss = -torch.mean(10 * torch.log10(loss), dim=0)
     return loss
 
 
