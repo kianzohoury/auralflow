@@ -93,17 +93,31 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
-def batch_dot(v1, v2):
-    return torch.sum(v1 * v2, dim=1)
+# def sdr_loss(estimate: FloatTensor, target: Tensor):
+#     target = torch.mean(target, dim=1, keepdim=False)
+#     estimate = torch.mean(estimate, dim=1, keepdim=False)[..., :target.shape[-1]]
+#     print(torch.linalg.norm(target, dim=1, keepdim=True).shape)
+#     target_signal = batch_dot(estimate, target) * target / torch.linalg.norm(target, dim=1, keepdim=True) ** 2
+#     error_noise = target - target_signal
+#     loss = 10 * torch.log10(torch.sum(target ** 2) / torch.sum(error_noise ** 2))
+#     return loss
 
 
-def sdr_loss(estimate: FloatTensor, target: Tensor):
-    target = torch.mean(target, dim=1, keepdim=False)
-    estimate = torch.mean(estimate, dim=1, keepdim=False)[..., :target.shape[-1]]
-    print(torch.linalg.norm(target, dim=1, keepdim=True).shape)
-    target_signal = batch_dot(estimate, target) * target / torch.linalg.norm(target, dim=1, keepdim=True) ** 2
-    error_noise = target - target_signal
-    loss = 10 * torch.log10(torch.sum(target ** 2) / torch.sum(error_noise ** 2))
+def si_sdr_loss(
+    estimate: FloatTensor, target: Tensor, reduce="mean"
+) -> Tensor:
+    """Batch-wise SI-SDR loss."""
+    # Optimal scaling factor alpha.
+    alpha = torch.sum(estimate * target, dim=-1) \
+        / torch.sum(target ** 2, dim=-1)
+    error_target = alpha * target
+    error_residual = estimate - error_target
+    loss = torch.sum(error_target**2, dim=(1, 2))  \
+        / torch.sum(error_residual**2, dim=(1, 2))
+    if reduce == "mean":
+        loss = torch.mean(loss)
+    else:
+        loss = torch.sum(loss)
     return loss
 
 
@@ -280,15 +294,15 @@ class L2MaskLoss(nn.Module):
         self.model.batch_loss = l2_loss(self.model.mask, ideal_mask)
 
 
-class SDRLoss(nn.Module):
-    """Wrapper class for sdr loss."""
+class SIDRLoss(nn.Module):
+    """Wrapper class for si_sdr loss."""
 
     def __init__(self, model):
-        super(SDRLoss, self).__init__()
+        super(SIDRLoss, self).__init__()
         self.model = model
 
     def forward(self) -> None:
-        self.model.batch_loss = sdr_loss(
+        self.model.batch_loss = si_sdr_loss(
             self.model.estimate, self.model.target
         )
 
