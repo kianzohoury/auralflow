@@ -108,8 +108,8 @@ def si_sdr_loss(
 ) -> Tensor:
     """Batch-wise SI-SDR loss."""
     # Optimal scaling factor alpha.
-    alpha = torch.sum(estimate * target, dim=-1) \
-        / torch.sum(target ** 2, dim=-1)
+    alpha = torch.sum(estimate * target, dim=-1, keepdim=True) \
+        / torch.sum(target ** 2, dim=-1, keepdim=True)
     error_target = alpha * target
     error_residual = estimate - error_target
     loss = torch.sum(error_target**2, dim=(1, 2))  \
@@ -118,7 +118,7 @@ def si_sdr_loss(
         loss = torch.mean(loss)
     else:
         loss = torch.sum(loss)
-    return loss
+    return -loss
 
 
 def get_evaluation_metrics(
@@ -302,8 +302,10 @@ class SIDRLoss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
+        estimate = self.model.estimate[..., :self.model.target.shape[-1]]
+        target = self.model.target.squeeze(-1)
         self.model.batch_loss = si_sdr_loss(
-            self.model.estimate, self.model.target
+            estimate, target
         )
 
 # class SISDRLoss(nn.Module):
