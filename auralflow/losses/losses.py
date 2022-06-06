@@ -108,11 +108,18 @@ def si_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
     # Optimal scaling factor alpha.
     alpha = torch.sum(estimate * target, dim=-1, keepdim=True) \
         / torch.sum(target ** 2, dim=-1, keepdim=True)
+
+    # Target signal error term.
     error_target = alpha * target
+    # Residual/noise signal error term.
     error_residual = estimate - error_target
-    loss = torch.sum(error_target**2, dim=(1, 2))  \
-        / torch.sum(error_residual**2, dim=(1, 2))
-    loss = -torch.mean(10 * torch.log10(loss), dim=0)
+
+    # Numerator term.
+    signal_term = torch.sum(error_target**2, dim=(1, 2))
+    distortion_term = torch.sum(error_residual**2, dim=(1, 2))
+
+    # Loss.
+    loss = -torch.mean(10 * torch.log10(signal_term / distortion_term), dim=0)
     return loss
 
 

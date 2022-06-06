@@ -74,22 +74,25 @@ def main(
         #     target_audio[..., :max_frames]
         # ).float().reshape(estimate.shape).numpy()
         target = target_audio[:max_frames].reshape(estimate.shape)
-        print(si_sdr_loss(
-            torch.from_numpy(estimate).float().unsqueeze(0), 
-            torch.from_numpy(target).float().unsqueeze(0)
-            ))
 
-        named_metrics = asteroid.metrics.get_metrics(
-            mix=mix,
-            clean=target,
-            estimate=estimate,
-            sample_rate=sr,
-            compute_permutation=False,
-            ignore_metrics_errors=True,
-            average=True,
-            filename=track_name.name,
-            metrics_list=["sar", "sdr", "si_sdr", "stoi"],
-        )
+        named_metrics = {
+            "si_sdr": si_sdr_loss(
+                torch.from_numpy(estimate).float().unsqueeze(0),
+                torch.from_numpy(target).float().unsqueeze(0)
+            )
+        }
+
+        # named_metrics = asteroid.metrics.get_metrics(
+        #     mix=mix,
+        #     clean=target,
+        #     estimate=estimate,
+        #     sample_rate=sr,
+        #     compute_permutation=False,
+        #     ignore_metrics_errors=True,
+        #     average=True,
+        #     filename=track_name.name,
+        #     metrics_list=["sar", "sdr", "si_sdr", "stoi"],
+        # )
 
         row = {"track_name": track_name.name}
         for metric_label, val in named_metrics.items():
