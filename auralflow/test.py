@@ -10,6 +10,7 @@ from auralflow.models import create_model, setup_model
 from auralflow.separate import separate_audio
 from auralflow.utils import load_config
 from torchaudio.transforms import Resample
+from auralflow.losses import si_sdr_loss
 import matplotlib.pyplot as plt
 
 
@@ -73,13 +74,17 @@ def main(
         #     target_audio[..., :max_frames]
         # ).float().reshape(estimate.shape).numpy()
         target = target_audio[:max_frames].reshape(estimate.shape)
+        print(si_sdr_loss(
+            torch.from_numpy(estimate).float().unsqueeze(0), 
+            torch.from_numpy(target).float().unsqueeze(0)
+            ))
 
         named_metrics = asteroid.metrics.get_metrics(
             mix=mix,
             clean=target,
             estimate=estimate,
             sample_rate=sr,
-            compute_permutation=True,
+            compute_permutation=False,
             ignore_metrics_errors=True,
             average=True,
             filename=track_name.name,

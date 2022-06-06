@@ -14,6 +14,7 @@ from .losses import (
     L2MaskLoss,
     RMSELoss,
     SIDRLoss,
+    si_sdr_loss,
     get_evaluation_metrics,
 )
 from typing import Union, Callable
@@ -32,6 +33,7 @@ __all__ = [
     "L2MaskLoss",
     "RMSELoss",
     "SIDRLoss",
+    "si_sdr_loss",
     "get_model_criterion",
     "get_evaluation_metrics",
     "RMSELoss"
