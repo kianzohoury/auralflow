@@ -212,7 +212,7 @@ def make_chunks(
     chunk_size: int,
     num_chunks: int,
     sr: int = 44100,
-    energy_cutoff: float = 2.0,
+    energy_cutoff: float = 0,
 ) -> List[List[Tensor]]:
     """Transforms an audio dataset into a chunked dataset."""
     chunked_dataset = []
