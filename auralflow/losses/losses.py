@@ -103,9 +103,7 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
 #     return loss
 
 
-def si_sdr_loss(
-    estimate: FloatTensor, target: Tensor, reduce="mean"
-) -> Tensor:
+def si_sdr_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
     """Batch-wise SI-SDR loss."""
     # Optimal scaling factor alpha.
     alpha = torch.sum(estimate * target, dim=-1, keepdim=True) \
@@ -114,11 +112,8 @@ def si_sdr_loss(
     error_residual = estimate - error_target
     loss = torch.sum(error_target**2, dim=(1, 2))  \
         / torch.sum(error_residual**2, dim=(1, 2))
-    if reduce == "mean":
-        loss = torch.mean(loss)
-    else:
-        loss = torch.sum(loss)
-    return -loss
+    loss = -torch.mean(loss, dim=0)
+    return loss
 
 
 def get_evaluation_metrics(
