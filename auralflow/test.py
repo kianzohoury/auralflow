@@ -75,11 +75,13 @@ def main(
         # ).float().reshape(estimate.shape).numpy()
         target = target_audio[:max_frames].reshape(estimate.shape)
 
+        si_sdr = si_sdr_loss(
+            torch.from_numpy(estimate).float().unsqueeze(0),
+            torch.from_numpy(target).float().unsqueeze(0)
+        )
+
         named_metrics = {
-            "si_sdr": si_sdr_loss(
-                torch.from_numpy(estimate).float().unsqueeze(0),
-                torch.from_numpy(target).float().unsqueeze(0)
-            )
+            "si_sdr": -si_sdr.item()
         }
 
         # named_metrics = asteroid.metrics.get_metrics(
