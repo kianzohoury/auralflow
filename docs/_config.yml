@@ -55,3 +55,4 @@ plugins:
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+color_scheme: my_color_scheme
