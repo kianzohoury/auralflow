@@ -56,3 +56,5 @@ plugins:
 #   - vendor/gems/
 #   - vendor/ruby/
 color_scheme: my_color_scheme
+compress_html:
+  blanklines: true
