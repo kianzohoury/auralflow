@@ -186,8 +186,8 @@ class AudioDataset(Dataset):
         self,
         dataset: List,
         targets: List[str],
-        chunk_size: int = 1,
-        num_chunks: int = int(1e6),
+        chunk_size: int = 3,
+        num_chunks: int = int(1e4),
         sample_rate: int = 44100,
     ):
         super(AudioDataset, self).__init__()
