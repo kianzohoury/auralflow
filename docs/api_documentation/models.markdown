@@ -3,6 +3,7 @@ layout: default
 title: Models
 parent: API Documentation
 nav_order: 1
+math: mathjax2
 ---
 
 # Models
@@ -14,9 +15,12 @@ should not be instantiated directly.
 ## SEPARATION MODEL
 <div class="doc-container-class">
   <div class="doc-class">
-    <p style="vertical-align: middle">
-      CLASS &nbsp; auralflow.models.SeparationModel(<i>config</i>)
-    </p>
+      <div class="doc-label">
+        CLASS
+      </div>
+      <div class="doc-label">
+        auralflow.models.SeparationModel(<i>config</i>)
+      </div>
   </div>
   <p>
     Interface shared among all source separation models.
@@ -27,7 +31,7 @@ should not be instantiated directly.
     <ul>
       <li>
         <p> 
-          <i> configuration (dict) </i> &nbsp; : &nbsp; Configuration data read from a .json file.
+          <i> config (dict) </i> &nbsp; : &nbsp; Configuration data read from a .json file.
         </p>
       </li>
     </ul>
@@ -36,10 +40,10 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <h4> Methods</h4>
-  <div class="doc-method"> 
-    <p style="vertical-align: middle">
-      set_data(<i>self, *data</i>)
-    </p>
+  <div class="doc-method">
+      <div class="doc-label">
+        set_data(<i>self, *data</i>)
+      </div>
   </div>
   <p>
     Wrapper method processes and sets data for internal access.
@@ -59,9 +63,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       forward(<i>self</i>)
-    </p>
+    </div>
   </div>
   <p>
     Estimates target by applying the learned mask to the mixture.
@@ -70,9 +74,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       separate(<i>self, audio</i>)
-    </p>
+    </div>
   </div>
   <p>
     Transforms and returns source estimate in the audio domain.
@@ -97,9 +101,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       compute_loss(<i>self</i>)
-    </p>
+    </div>
   </div>
   <p>
     Calculates the batch-wise loss.
@@ -115,9 +119,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       backward(<i>self</i>)
-    </p>
+    </div>
   </div>
   <p>
     Performs gradient computation and backpropagation.
@@ -126,9 +130,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       optimizer_step(<i>self</i>)
-    </p>
+    </div>
   </div>
   <p>
     Updates model parameters.
@@ -137,9 +141,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       scheduler_step(<i>self</i>)
-    </p>
+    </div>
   </div>
   <p>
     Reduces learning rate if the validation loss does not improve and signals early stopping.
@@ -155,9 +159,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       train(<i>self</i>)
-    </p>
+    </div>
   </div>
   <p>
     Sets the model to training mode.
@@ -166,9 +170,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       eval(<i>self</i>)
-    </p>
+    </div>
   </div>
   <p>
     Sets the model to evaluation mode.
@@ -177,9 +181,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       test(<i>self</i>)
-    </p>
+    </div>
   </div>
   <p>
     Calls the forward method in evaluation mode.
@@ -188,9 +192,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       save_model(<i>self, global_step</i>)
-    </p>
+    </div>
   </div>
   <p>
     Saves the parameters belonging to the current state of the model.
@@ -210,9 +214,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       load_model(<i>self, global_step</i>)
-    </p>
+    </div>
   </div>
   <p>
     Loads the parameters belonging to the state of the model at a specified timestep.
@@ -232,9 +236,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       save_optim(<i>self, global_step</i>)
-    </p>
+    </div>
   </div>
   <p>
     Saves the current state of the optimizer.
@@ -254,9 +258,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       load_optim(<i>self, global_step</i>)
-    </p>
+    </div>
   </div>
   <p>
     Loads the state of the optimizer according to a specified timestep.
@@ -276,9 +280,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       save_scheduler(<i>self, global_step</i>)
-    </p>
+    </div>
   </div>
   <p>
     Saves the current state of the learning rate scheduler.
@@ -298,9 +302,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       load_scheduler(<i>self, global_step</i>)
-    </p>
+    </div>
   </div>
   <p>
     Loads the state of the scheduler according to a specified timestep.
@@ -320,9 +324,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       save_grad_scaler(<i>self, global_step</i>)
-    </p>
+    </div>
   </div>
   <p>
     Saves the current state of the gradient scaler if using automatic mixed precision.
@@ -342,9 +346,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       load_grad_scaler(<i>self, global_step</i>)
-    </p>
+    </div>
   </div>
   <p>
     Loads the state of the gradient scaler according to a specified timestep.
@@ -364,9 +368,9 @@ should not be instantiated directly.
 
 <div class="doc-container-method">
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       save(<i>self, global_step, model, optim, scheduler, grad_scaler</i>)
-    </p>
+    </div>
   </div>
   <p>
     Wrapper method for saving all objects at once.
@@ -408,9 +412,12 @@ should not be instantiated directly.
 The deep mask estimation model that separates audio in the spectrogram domain.
 <div class="doc-container-class">
   <div class="doc-class">
-    <p style="vertical-align: middle">
-      CLASS &nbsp; auralflow.models.SpectrogramMaskModel(<i>config</i>)
-    </p>
+    <div class="doc-label">
+        CLASS
+    </div>
+    <div class="doc-label">
+      auralflow.models.SpectrogramMaskModel(<i>config</i>)
+    </div>
   </div>
   <p>
     Spectrogram-domain deep mask estimation model.
@@ -421,7 +428,7 @@ The deep mask estimation model that separates audio in the spectrogram domain.
     <ul>
       <li>
         <p> 
-          <i> configuration (dict) </i> &nbsp; : &nbsp; Configuration data read from a .json file.
+          <i> config (dict) </i> &nbsp; : &nbsp; Configuration data read from a .json file.
         </p>
       </li>
     </ul>
@@ -459,13 +466,15 @@ vocals_estimate = mask_model.separate(mix_audio)
 The spectrogram-domain U-Net model with a simple encoder/decoder architecture.
 
 <div class="doc-container-class">
-  <div class="doc-class" style="height: 80px">
-    <p style="vertical-align: middle">
-      CLASS &nbsp; auralflow.models.SpectrogramNetSimple(<i>num_fft_bins,
+  <div class="doc-class" style="height: 86px">
+    <div class="doc-label">CLASS</div>
+    <div class="doc-label-multi">
+        auralflow.models.SpectrogramNetSimple(<i>num_fft_bins,
           num_frames, num_channels, hidden_channels=16,
           mask_act_fn='sigmoid', leak_factor=0, dropout_p=0.5,
-          normalize_input=False, normalize_output=False, device=None</i>)
-    </p>
+          normalize_input=False, normalize_output=False,
+          device=None</i>)
+    </div>
   </div>
   <p>
     Vanilla spectrogram-based deep mask estimation model.
@@ -476,7 +485,7 @@ The spectrogram-domain U-Net model with a simple encoder/decoder architecture.
     <ul>
       <li>
         <p> 
-          <i> num_fft_bins (int) </i> &nbsp; : &nbsp; Number of FFT bins (aka filterbanks).
+          <i><b> num_fft_bins (int) </b></i> &nbsp; : &nbsp; Number of FFT bins (aka filterbanks).
         </p>
       </li>
       <li>
@@ -535,9 +544,9 @@ The spectrogram-domain U-Net model with a simple encoder/decoder architecture.
 <div class="doc-container-method">
   <h4> Methods</h4>
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       forward(<i>self, data</i>)
-    </p>
+    </div>
   </div>
   <p>
     Forward method.
@@ -592,11 +601,12 @@ source_estimate = source_mask * mix_spec
 The spectrogram-domain U-Net model with an additional stack of LSTM bottleneck layers.
 
 <div class="doc-container-class">
-  <div class="doc-class" style="height: 80px">
-    <p style="vertical-align: middle">
-      CLASS &nbsp; auralflow.models.SpectrogramNetLSTM(<i>*args,
+  <div class="doc-class" style="height: 60px">
+    <div class="doc-label">CLASS</div>
+    <div class="doc-label-multi">
+      auralflow.models.SpectrogramNetLSTM(<i>*args,
         recurrent_depth=3, hidden_size=1024, input_axis=1, **kwargs</i>)
-    </p>
+    </div>
   </div>
   <p>
     Deep mask estimation model using LSTM bottleneck layers.
@@ -638,9 +648,9 @@ The spectrogram-domain U-Net model with an additional stack of LSTM bottleneck l
 <div class="doc-container-method">
   <h4> Methods</h4>
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       forward(<i>self, data</i>)
-    </p>
+    </div>
   </div>
   <p>
     Forward method.
@@ -697,39 +707,41 @@ The spectrogram-domain U-Net model that utilizes a Variational Autoencoder (VAE)
 
 <div class="doc-container-class">
   <div class="doc-class">
-    <p style="vertical-align: middle">
-      CLASS &nbsp; auralflow.models.SpectrogramNetVAE(<i>*args, **kwargs</i>)
-    </p>
-  </div>
-  <p>
-    Encoder => VAE => LSTM x depth => decoder. Models a Gaussian conditional
-    distribution p(z|x) to sample latent variable z ~ p(z|x), to feed into
-    decoder to generate x' ~ p(x|z).
-  </p>
-  <div class="doc-sub-container-method">
-    <h4>Parameters</h4>
-    <hr style="padding: 0px; margin: 0px; height: 2px">
-    <ul>
-      <li>
-        <p> 
-          <i> *args </i> &nbsp; : &nbsp; Positional arguments inherited from SpectrogramNetLSTM.
-        </p>
-      </li>
-      <li>
-        <p>
-          <i> **kwargs </i> &nbsp; : &nbsp; Keyword arguments inherited from SpectrogramNetLSTM.
-        </p>
-      </li>
-    </ul>
+    <div class="doc-label">CLASS</div>
+    <div class="doc-label">
+      auralflow.models.SpectrogramNetVAE(<i>*args, **kwargs</i>)
+    </div>
   </div>
 </div>
+
+Models a Gaussian conditional
+distribution $$p(z|x)$$ to sample a latent variable $$z \sim p(z|x)$$, which
+gets fed as input into the decoder to generate $$x' \sim p(x|z)$$.
+
+<div class="doc-sub-container-method">
+<h4>Parameters</h4>
+<hr style="padding: 0px; margin: 0px; height: 2px">
+<ul>
+  <li>
+    <p>
+      <i> *args </i> &nbsp; : &nbsp; Positional arguments inherited from SpectrogramNetLSTM.
+    </p>
+  </li>
+  <li>
+    <p>
+      <i> **kwargs </i> &nbsp; : &nbsp; Keyword arguments inherited from SpectrogramNetLSTM.
+    </p>
+  </li>
+</ul>
+</div>
+
 
 <div class="doc-container-method">
   <h4> Methods</h4>
   <div class="doc-method"> 
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       forward(<i>self, data</i>)
-    </p>
+    </div>
   </div>
   <p>
     Forward method.

@@ -10,11 +10,11 @@ mathjax: true
 
 ## AUDIO TRANSFORM
 <div class="doc-container-class">
-  <div class="doc-class" style="height: 80px">
-    <p style="vertical-align: middle">
-      CLASS &nbsp; auralflow.utils.data_utils.AudioTransform(
-    <i>num_fft, hop_length, window_size, sample_rate=44100, device='cpu'</i>)
-    </p>
+  <div class="doc-class" style="height: 60px">
+    <div class="doc-label">CLASS</div>
+    <div class="doc-label-multi">auralflow.utils.data_utils.AudioTransform(<i>num_fft,
+    hop_length, window_size, sample_rate=44100, device='cpu'</i>)
+    </div>
   </div>
   <p>
     Wrapper class that conveniently stores multiple transformation tools.
@@ -55,9 +55,9 @@ mathjax: true
 <div class="doc-container-method">
   <h4> Methods</h4>
   <div class="doc-method">
-    <p style="vertical-align: middle">
-      to_spectrogram(<i>self, audio, use_padding=True</i>)
-    </p>
+    <div class="doc-label">
+        to_spectrogram(<i>self, audio, use_padding=True</i>)
+    </div>
   </div>
   <p>
     Transforms an audio signal to its time-freq representation.
@@ -90,9 +90,9 @@ mathjax: true
 
 <div class="doc-container-method">
   <div class="doc-method">
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       to_audio(<i>self, complex_spec</i>)
-    </p>
+    </div>
   </div>
   <p>
     Transforms a complex-valued spectrogram to its time-domain signal.
@@ -119,9 +119,9 @@ mathjax: true
 
 <div class="doc-container-method">
   <div class="doc-method">
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       to_mel_scale(<i>self, spectrogram, to_db=True</i>)
-    </p>
+    </div>
   </div>
   <p>
     Transforms a magnitude or log-normal spectrogram to the mel scale.
@@ -154,9 +154,9 @@ mathjax: true
 
 <div class="doc-container-method">
   <div class="doc-method">
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       audio_to_mel(<i>self, audio, to_db=True</i>)
-    </p>
+    </div>
   </div>
   <p>
     Transforms a time-domain signal to a log-normalized mel spectrogram.
@@ -189,9 +189,9 @@ mathjax: true
 
 <div class="doc-container-method">
   <div class="doc-method">
-    <p style="vertical-align: middle">
+    <div class="doc-label">
       pad_audio(<i>self, audio</i>)
-    </p>
+    </div>
   </div>
   <p>
     Applies zero-padding to make the number of samples a multiple of the hop length.

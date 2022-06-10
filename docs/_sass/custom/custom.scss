@@ -1,3 +1,12 @@
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+@import url('https://fonts.googleapis.com/css2?family=Questrial:wght@400&display=swap.css');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap.css');
+
+
+$fa-font-path: "fonts/font-awesome/";
+@import 'font-awesome';
+
+
 $light-blue: rgba(29,54,79,1);
 $dark-blue: rgba(0,0,0,1);
 
@@ -7,26 +16,26 @@ $link-color: white;
 
 .doc-class {
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-content: center;
-  flex-direction: column;
+  flex-direction: row;
   background-color: #eaeaea;
   border-top: 2px solid orange;
-  padding-left: 10px;
   height: 40px;
-  color: #636369;
+  color: #586E75;
+  font-weight: bold;
 }
 
 .doc-method {
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-content: center;
-  flex-direction: column;
+  flex-direction: row;
   background-color: #eaeaea;
   border-left: 2px solid #4b9ad6;
-  padding-left: 10px;
   height: 40px;
-  color: #636369;
+  color: #586E75;
+  font-weight: bold;
 }
 
 .doc-container-class{
@@ -49,14 +58,39 @@ $link-color: white;
     flex-direction: column;
 }
 
+.doc-label {
+    display: flex;
+//     text-align: center;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    vertical-align: middle;
+    padding-left: 10px;
+}
+
+.doc-label-multi {
+//     text-align: center;
+    padding-top: 2px;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    vertical-align: middle;
+    padding-left: 10px;
+}
+
+i {
+    color: #93A1A1;
+}
 
 
 code {
-    color: #1c1c1c;
     background-color: $code-background-color;
-    word-spacing: 8px;
+    word-spacing: 4px;
     font-size: 16px;
+    font-weight: bold;
 }
+
+
 div.highlighter-rouge {
     background-color: $code-background-color;
 }
@@ -118,8 +152,6 @@ a {
 }
 
 
-@import url('https://fonts.googleapis.com/css2?family=Questrial:wght@400&display=swap.css');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap.css');
 
 .text-mono {
     font-family: 'Questrial', sans-serif !important;
@@ -151,3 +183,15 @@ body {
         }
     }
 }
+
+.btn {
+    .btn-primary,
+    .btn-primary:hover,
+    .btn-primary:active,
+    .btn-primary:visited,
+    .btn-primary:focus {
+        background-color: orange !important;
+        border-color: #8064A2 !important;
+    }
+}
+
