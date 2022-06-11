@@ -18,7 +18,7 @@ layout: default
 </div>
 
 <span style="display: block; font-size: 60px; line-height: 3.5rem; font-weight: bold; text-align: center; margin: 10px">
-    Build and train music source separation models with Auralflow
+    Build and train music source separation models with Auralflow.
 </span>
 
 <span style="margin: 0px; display: block; text-align: center; font-size: 20px; color: dimgray">
