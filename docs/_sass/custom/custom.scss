@@ -2,12 +2,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap.css');
 
 
-$fa-font-path: "../webfonts";
-
-@import "../scss/fontawesome.scss";
-@import "../scss/solid.scss";
-@import "../scss/brands.scss";
-
 // for Duotones need both files
 // @import "../scss/duotone.scss";
 // @import "../scss/_duotone-icons.scss";
@@ -21,7 +15,7 @@ $light-blue: rgba(29,54,79,1);
 $dark-blue: rgba(0,0,0,1);
 
 
-$code-background-color: #eaeaea;
+$code-background-color: #f8f9fa;
 $link-color: white;
 
 .doc-class {
@@ -29,7 +23,7 @@ $link-color: white;
   justify-content: left;
   align-content: center;
   flex-direction: row;
-  background-color: #eaeaea;
+  background-color: #f8f9fa;
   border-top: 2px solid orange;
   height: 40px;
   color: #586E75;
@@ -41,7 +35,7 @@ $link-color: white;
   justify-content: left;
   align-content: center;
   flex-direction: row;
-  background-color: #eaeaea;
+  background-color: #f8f9fa;
   border-left: 2px solid #4b9ad6;
   height: 40px;
   color: #586E75;
@@ -97,6 +91,8 @@ code {
     background-color: $code-background-color;
     word-spacing: 4px;
     font-size: 16px;
+    border: none;
+    border-color: transparent;
 //     font-weight: bold;
 }
 
@@ -168,7 +164,7 @@ a {
 }
 
 body {
-    background-color: whitesmoke;
+    background-color: white;
     font-family: 'Questrial', sans-serif, font-weight;
     font-weight: 300;
 
