@@ -8,7 +8,6 @@
    .. rubric:: Functions
 
    .. autosummary::
-
    :nosignatures:
 
    
@@ -22,7 +21,6 @@
    .. rubric:: Classes
 
    .. autosummary::
-
    :nosignatures:
 
    
