@@ -1,5 +1,5 @@
-auralflow.losses package
-========================
+auralflow.losses
+================
 
 Module contents
 ---------------

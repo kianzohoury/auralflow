@@ -1,5 +1,5 @@
-auralflow.trainer package
-=========================
+auralflow.trainer
+=================
 
 Module contents
 ---------------

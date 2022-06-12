@@ -1,5 +1,5 @@
-auralflow.datasets package
-==========================
+auralflow.datasets
+==================
 
 Module contents
 ---------------

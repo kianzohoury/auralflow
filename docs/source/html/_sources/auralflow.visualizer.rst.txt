@@ -1,5 +1,5 @@
-auralflow.visualizer package
-============================
+auralflow.visualizer
+====================
 
 Module contents
 ---------------

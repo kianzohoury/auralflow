@@ -1,5 +1,5 @@
-auralflow.utils package
-=======================
+auralflow.utils
+===============
 
 Module contents
 ---------------

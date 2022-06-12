@@ -1,5 +1,5 @@
-auralflow.models package
-========================
+auralflow.models
+================
 
 Module contents
 ---------------
