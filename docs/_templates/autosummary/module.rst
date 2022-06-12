@@ -31,7 +31,7 @@
    .. rubric:: Exceptions
 
    .. autosummary::
-
+   :nosignatures:
    {% for item in exceptions %}
       {{ item }}
    {%- endfor %}
