@@ -5,13 +5,11 @@
 
    
    
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
+   :nosignature:
+
    
       create_audio_folder
       audio_to_disk
@@ -25,6 +23,8 @@
    .. rubric:: Classes
 
    .. autosummary::
+   :nosignature:
+
    
       AudioDataset
       AudioFolder
@@ -34,6 +34,3 @@
    
    
    
-
-
-

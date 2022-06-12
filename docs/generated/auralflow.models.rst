@@ -5,13 +5,11 @@
 
    
    
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
+   :nosignature:
+
    
       create_model
       setup_model
@@ -23,6 +21,8 @@
    .. rubric:: Classes
 
    .. autosummary::
+   :nosignature:
+
    
       SpectrogramNetSimple
       SpectrogramNetLSTM
@@ -35,6 +35,3 @@
    
    
    
-
-
-

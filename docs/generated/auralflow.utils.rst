@@ -5,13 +5,11 @@
 
    
    
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
+   :nosignature:
+
    
       load_config
       save_config
@@ -28,6 +26,3 @@
    
    
    
-
-
-

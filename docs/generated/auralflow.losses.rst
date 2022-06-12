@@ -5,13 +5,11 @@
 
    
    
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
+   :nosignature:
+
    
       component_loss
       kl_div_loss
@@ -26,6 +24,8 @@
    .. rubric:: Classes
 
    .. autosummary::
+   :nosignature:
+
    
       WeightedComponentLoss
       KLDivergenceLoss
@@ -40,6 +40,3 @@
    
    
    
-
-
-

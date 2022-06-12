@@ -1,10 +1,5 @@
 auralflow.models
 ================
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   models
 
 Module contents
 ---------------
