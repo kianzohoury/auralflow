@@ -30,3 +30,11 @@
 
 
 
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   auralflow.datasets.datasets
+

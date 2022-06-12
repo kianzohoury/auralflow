@@ -12,6 +12,7 @@ Auralflow Documentation
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :recursive:
 
    auralflow.datasets
    auralflow.models
