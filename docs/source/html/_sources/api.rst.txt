@@ -5,15 +5,15 @@ API
     :toctree: generated
 
 .. automodule:: auralflow.datasets
-    :members: __init__
+    :members: auralflow.datasets
 
 .. automodule:: auralflow.losses
-    :members: __init__
+    :members:
 .. automodule:: auralflow.models
-    :members: __init__
+    :members:
 .. automodule:: auralflow.trainer
-    :members: __init__
+    :members:
 .. automodule:: auralflow.utils
-    :members: __init__
+    :members:
 .. automodule:: auralflow.visualizer
-    :members: __init__
+    :members:

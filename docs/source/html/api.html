@@ -201,7 +201,544 @@
 </tbody>
 </table>
 </div>
-<span class="target" id="module-auralflow.datasets"></span><span class="target" id="module-auralflow.losses"></span><span class="target" id="module-auralflow.models"></span><span class="target" id="module-auralflow.trainer"></span><span class="target" id="module-auralflow.utils"></span><span class="target" id="module-auralflow.visualizer"></span></section>
+<span class="target" id="module-auralflow.datasets"></span><span class="target" id="module-auralflow.losses"></span><dl class="py class">
+<dt class="sig sig-object py" id="auralflow.losses.KLDivergenceLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">KLDivergenceLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'l1'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.losses.KLDivergenceLoss" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper class for KL Divergence loss. Only to be used for VAE models.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.losses.KLDivergenceLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.losses.KLDivergenceLoss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Construction loss + KL loss.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.losses.L1Loss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">L1Loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.losses.L1Loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper class for l1 loss.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.losses.L1Loss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.losses.L1Loss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.losses.L2Loss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">L2Loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.losses.L2Loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper class for l2 loss.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.losses.L2Loss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.losses.L2Loss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.losses.L2MaskLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">L2MaskLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.losses.L2MaskLoss" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper class for l2 loss directly on masks.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.losses.L2MaskLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.losses.L2MaskLoss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.losses.RMSELoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">RMSELoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.losses.RMSELoss" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper class for rmse loss.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.losses.RMSELoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.losses.RMSELoss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.losses.SIDRLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">SIDRLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.losses.SIDRLoss" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper class for si_sdr loss.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.losses.SIDRLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.losses.SIDRLoss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.losses.WeightedComponentLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">WeightedComponentLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.losses.WeightedComponentLoss" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper class for calling weighted component loss.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.losses.WeightedComponentLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.losses.WeightedComponentLoss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculates a weighted component loss.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.losses.component_loss">
+<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">component_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="headerlink" href="#auralflow.losses.component_loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Weighted L2 loss using 2 or 3 components depending on arguments.</p>
+<p>Balances the target source separation quality versus the amount of
+residual noise attenuation. Optional third component balances the
+quality of the residual noise against the other two terms.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.losses.get_evaluation_metrics">
+<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">get_evaluation_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#auralflow.losses.get_evaluation_metrics" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns batch-wise means of standard source separation eval scores.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.losses.get_model_criterion">
+<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">get_model_criterion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.modules.module.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#auralflow.losses.get_model_criterion" title="Permalink to this definition">#</a></dt>
+<dd><p>Gets model criterion according to configuration file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.losses.kl_div_loss">
+<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">kl_div_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="headerlink" href="#auralflow.losses.kl_div_loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes KL term using the closed form expression.</p>
+<p>KL term is defined as := D_KL(P||Q), where P is the modeled distribution,
+and Q is a standard normal N(0, 1). The term is combined with the
+reconstruction loss.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.losses.si_sdr_loss">
+<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">si_sdr_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">estimate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="headerlink" href="#auralflow.losses.si_sdr_loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Batch-wise SI-SDR loss.</p>
+</dd></dl>
+
+<span class="target" id="module-auralflow.models"></span><dl class="py class">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SeparationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.models.SeparationModel" title="Permalink to this definition">#</a></dt>
+<dd><p>Interface shared among all source separation models.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.backward">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.backward" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes batch-wise loss between estimate and target sources.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.compute_loss">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_loss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.compute_loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Updates and returns the current batch-wise loss.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.eval">
+<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.eval" title="Permalink to this definition">#</a></dt>
+<dd><p>Sets model to evaluation mode.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.forward">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.load_grad_scaler">
+<span class="sig-name descname"><span class="pre">load_grad_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.load_grad_scaler" title="Permalink to this definition">#</a></dt>
+<dd><p>Load a grad scaler's previous state if one exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.load_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads a model's previous state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.load_optim">
+<span class="sig-name descname"><span class="pre">load_optim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.load_optim" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads an optimizer's previous state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.load_scheduler">
+<span class="sig-name descname"><span class="pre">load_scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.load_scheduler" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads a scheduler's previous state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.optimizer_step">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.optimizer_step" title="Permalink to this definition">#</a></dt>
+<dd><p>Performs gradient computation and parameter optimization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_scaler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.save" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves all training objects in one call.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save_grad_scaler">
+<span class="sig-name descname"><span class="pre">save_grad_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.save_grad_scaler" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves the grad scaler's current state if using mixed precision.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save_model">
+<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.save_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves the model's current state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save_optim">
+<span class="sig-name descname"><span class="pre">save_optim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.save_optim" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves the optimizer's current state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save_scheduler">
+<span class="sig-name descname"><span class="pre">save_scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.save_scheduler" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves the scheduler's current state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.scheduler_step">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheduler_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.scheduler_step" title="Permalink to this definition">#</a></dt>
+<dd><p>Decreases learning rate if necessary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.separate">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">separate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.separate" title="Permalink to this definition">#</a></dt>
+<dd><p>Separates target source from mixture audio.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.set_data">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.set_data" title="Permalink to this definition">#</a></dt>
+<dd><p>Set and process data for internal access.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.test">
+<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.models.SeparationModel.test" title="Permalink to this definition">#</a></dt>
+<dd><p>Calls forward method without gradient tracking.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SeparationModel.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SeparationModel.train" title="Permalink to this definition">#</a></dt>
+<dd><p>Sets model to training mode.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramMaskModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel" title="Permalink to this definition">#</a></dt>
+<dd><p>Spectrogram-domain deep mask estimation model.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.backward" title="Permalink to this definition">#</a></dt>
+<dd><p>Performs gradient computation and backpropagation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.compute_loss">
+<span class="sig-name descname"><span class="pre">compute_loss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.compute_loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Updates and returns the current batch-wise loss.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Estimates target by applying the learned mask to the mixture.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.optimizer_step">
+<span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.optimizer_step" title="Permalink to this definition">#</a></dt>
+<dd><p>Updates model's parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.scheduler_step">
+<span class="sig-name descname"><span class="pre">scheduler_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.scheduler_step" title="Permalink to this definition">#</a></dt>
+<dd><p>Reduces lr if val loss does not improve, and signals early stop.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.separate">
+<span class="sig-name descname"><span class="pre">separate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.separate" title="Permalink to this definition">#</a></dt>
+<dd><p>Transforms and returns source estimate in the audio domain.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.set_data">
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.set_data" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper method processes and sets data for internal access.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetLSTM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetLSTM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recurrent_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.models.SpectrogramNetLSTM" title="Permalink to this definition">#</a></dt>
+<dd><p>Deep mask estimation model using LSTM bottleneck layers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recurrent_depth</strong> (<em>int</em>) -- Number of stacked lstm layers. Default: 3.</p></li>
+<li><p><strong>hidden_size</strong> (<em>int</em>) -- Requested number of hidden features. Default: 1024.</p></li>
+<li><p><strong>input_axis</strong> (<em>int</em>) -- Whether to feed dim 0 (frequency axis) or dim 1
+(time axis) as features to the lstm. Default: 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>args</strong> -- Positional arguments for constructor.</p></li>
+<li><p><strong>kwargs</strong> -- Additional keyword arguments for constructor.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetLSTM.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.FloatTensor</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramNetLSTM.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetLSTM.split_lstm_parameters">
+<span class="sig-name descname"><span class="pre">split_lstm_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramNetLSTM.split_lstm_parameters" title="Permalink to this definition">#</a></dt>
+<dd><p>Separates model's LSTM parameters from non-LSTM parameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetSimple">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetSimple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_fft_bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_act_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leak_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.models.SpectrogramNetSimple" title="Permalink to this definition">#</a></dt>
+<dd><p>Vanilla spectrogram-based deep mask estimation model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_fft_bins</strong> (<em>int</em>) -- Number of FFT bins (aka filterbanks).</p></li>
+<li><p><strong>num_frames</strong> (<em>int</em>) -- Number of temporal features (time axis).</p></li>
+<li><p><strong>num_channels</strong> (<em>int</em>) -- 1 for mono, 2 for stereo. Default: 1.</p></li>
+<li><p><strong>hidden_channels</strong> (<em>int</em>) -- Number of initial output channels. Default: 16.</p></li>
+<li><p><strong>mask_act_fn</strong> (<em>str</em>) -- Final activation layer that creates the
+multiplicative soft-mask. Default: 'sigmoid'.</p></li>
+<li><p><strong>leak_factor</strong> (<em>float</em>) -- Alpha constant if using Leaky ReLU activation.
+Default: 0.</p></li>
+<li><p><strong>dropout_p</strong> (<em>float</em>) -- Dropout probability. Default: 0.5.</p></li>
+<li><p><strong>normalize_input</strong> (<em>bool</em>) -- Whether to learn input normalization
+parameters. Default: False.</p></li>
+<li><p><strong>normalize_output</strong> (<em>bool</em>) -- Whether to learn output normalization
+parameters. Default: False.</p></li>
+<li><p><strong>device</strong> (<em>optional</em><em>[</em><em>str</em><em>]</em>) -- Device. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetSimple.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.FloatTensor</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramNetSimple.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward method.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetVAE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.models.SpectrogramNetVAE" title="Permalink to this definition">#</a></dt>
+<dd><p>Spectrogram U-Net model with a VAE and LSTM bottleneck.</p>
+<p>Encoder =&gt; VAE =&gt; LSTM x 3 =&gt; decoder. Models a Gaussian conditional
+distribution p(z|x) to sample latent variable z ~ p(z|x), to feed into
+decoder to generate x' ~ p(x|z).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> -- Positional arguments for constructor.</p></li>
+<li><p><strong>kwargs</strong> -- Additional keyword arguments for constructor.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetVAE.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.FloatTensor</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramNetVAE.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetVAE.get_kl_div">
+<span class="sig-name descname"><span class="pre">get_kl_div</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="headerlink" href="#auralflow.models.SpectrogramNetVAE.get_kl_div" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes KL term.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.models.create_model">
+<span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">create_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="headerlink" href="#auralflow.models.create_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Creates a new instance of a model with its given configuration.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.models.setup_model">
+<span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">setup_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="headerlink" href="#auralflow.models.setup_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Sets up a blank model.</p>
+</dd></dl>
+
+<span class="target" id="module-auralflow.trainer"></span><dl class="py function">
+<dt class="sig sig-object py" id="auralflow.trainer.run_training">
+<span class="sig-prename descclassname"><span class="pre">auralflow.trainer.</span></span><span class="sig-name descname"><span class="pre">run_training</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_dataloader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.utils.data.dataloader.DataLoader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_dataloader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.utils.data.dataloader.DataLoader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">auralflow.trainer.callbacks.TrainingCallback</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.trainer.run_training" title="Permalink to this definition">#</a></dt>
+<dd><p>Runs training loop.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.trainer.run_validation">
+<span class="sig-prename descclassname"><span class="pre">auralflow.trainer.</span></span><span class="sig-name descname"><span class="pre">run_validation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_dataloader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.utils.data.dataloader.DataLoader</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.trainer.run_validation" title="Permalink to this definition">#</a></dt>
+<dd><p>Runs validation loop.</p>
+</dd></dl>
+
+<span class="target" id="module-auralflow.utils"></span><dl class="py function">
+<dt class="sig sig-object py" id="auralflow.utils.load_config">
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.utils.load_config" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads a .json configuration file given a filepath.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.utils.load_object">
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">load_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_wrapper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.utils.load_object" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads object's state and and attaches it to the model.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.utils.pull_config_template">
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">pull_config_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.utils.pull_config_template" title="Permalink to this definition">#</a></dt>
+<dd><p>Copies contents from a template configuration file into a new config.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.utils.save_config">
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">save_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.utils.save_config" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves configuration data to a .json file at a given location.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.utils.save_object">
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">save_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_wrapper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.utils.save_object" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves object state as .pth file under the checkpoint directory.</p>
+</dd></dl>
+
+<span class="target" id="module-auralflow.visualizer"></span><dl class="py class">
+<dt class="sig sig-object py" id="auralflow.visualizer.ProgressBar">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.visualizer.</span></span><span class="sig-name descname"><span class="pre">ProgressBar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">_</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">__</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.visualizer.ProgressBar" title="Permalink to this definition">#</a></dt>
+<dd><p>Wraps tqdm progress bar.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.visualizer.Visualizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.visualizer.</span></span><span class="sig-name descname"><span class="pre">Visualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.utils.tensorboard.writer.SummaryWriter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_spectrogram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_waveform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_gradient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">play_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.visualizer.Visualizer" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper class for visualizing/listening to results during training.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.visualizer.Visualizer.embed_audio">
+<span class="sig-name descname"><span class="pre">embed_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.visualizer.Visualizer.embed_audio" title="Permalink to this definition">#</a></dt>
+<dd><p>Logs audio to tensorboard.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.visualizer.Visualizer.save_figure">
+<span class="sig-name descname"><span class="pre">save_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figure:</span> <span class="pre">&lt;module</span> <span class="pre">'matplotlib.figure'</span> <span class="pre">from</span> <span class="pre">'/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages/matplotlib/figure.py'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename:</span> <span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.visualizer.Visualizer.save_figure" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves a matplotlib figure as an image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.visualizer.Visualizer.test_model">
+<span class="sig-name descname"><span class="pre">test_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixture_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.visualizer.Visualizer.test_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Runs model in inference mode and stores resulting audio tensors.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.visualizer.Visualizer.visualize">
+<span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixture</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.visualizer.Visualizer.visualize" title="Permalink to this definition">#</a></dt>
+<dd><p>Runs visualizer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.visualizer.Visualizer.visualize_gradient">
+<span class="sig-name descname"><span class="pre">visualize_gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.visualizer.Visualizer.visualize_gradient" title="Permalink to this definition">#</a></dt>
+<dd><p>Sends model weights and gradients to tensorboard.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.visualizer.Visualizer.visualize_spectrogram">
+<span class="sig-name descname"><span class="pre">visualize_spectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.visualizer.Visualizer.visualize_spectrogram" title="Permalink to this definition">#</a></dt>
+<dd><p>Logs spectrogram images to tensorboard.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.visualizer.Visualizer.visualize_waveform">
+<span class="sig-name descname"><span class="pre">visualize_waveform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.visualizer.Visualizer.visualize_waveform" title="Permalink to this definition">#</a></dt>
+<dd><p>Logs waveform images to tensorboard.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.visualizer.config_visualizer">
+<span class="sig-prename descclassname"><span class="pre">auralflow.visualizer.</span></span><span class="sig-name descname"><span class="pre">config_visualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.utils.tensorboard.writer.SummaryWriter</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.visualizer.html#auralflow.visualizer.Visualizer" title="auralflow.visualizer.visualizer.Visualizer"><span class="pre">auralflow.visualizer.visualizer.Visualizer</span></a></span></span><a class="headerlink" href="#auralflow.visualizer.config_visualizer" title="Permalink to this definition">#</a></dt>
+<dd><p>Initializes and returns a visualizer object.</p>
+</dd></dl>
+
+</section>
 
         </article>
       </div>
