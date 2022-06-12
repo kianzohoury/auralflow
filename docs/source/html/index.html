@@ -210,21 +210,19 @@
 </section>
 <section id="basic-usage">
 <h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">#</a></h2>
-<p>Build Customize deep source separation models from the available base architecture classes without needing to write out PyTorch modules.
-.. code-block:: console</p>
-<blockquote>
-<div><p>$ auralflow config my_model SpectrogramNetVAE --num-fft 8192 --window-size 8192 --hop-length 4096 --mask-activation sigmoid --normalize-input</p>
-</div></blockquote>
-<p>Train Train models and visualize training progress.
-.. code-block:: console</p>
-<blockquote>
-<div><p>$ auralflow train my_model ~/musdb18 --max-epochs 100 --lr 0.0008 --batch-size 32 --criterion si_sdr --max-lr steps 5 --num-workers 8 --use-mixed-precision --view-gradient --view-waveform --view-spectrogram</p>
-</div></blockquote>
-<p>Separate Separate audio files.
-.. code-block:: console</p>
-<blockquote>
-<div><p>$ auralflow separate my_model &quot;AI James - Schoolboy Fascination.wav&quot;</p>
-</div></blockquote>
+<p>Build Customize deep source separation models from the available base
+architecture classes without needing to write out PyTorch modules.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow config my_model SpectrogramNetVAE --num-fft <span class="m">8192</span> --window-size <span class="m">8192</span> --hop-length <span class="m">4096</span> --mask-activation sigmoid --normalize-input
+</pre></div>
+</div>
+<p>Train models and visualize training progress.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow train my_model ~/musdb18 --max-epochs <span class="m">100</span> --lr <span class="m">0</span>.0008 --batch-size <span class="m">32</span> --criterion si_sdr --max-lr steps <span class="m">5</span> --num-workers <span class="m">8</span> --use-mixed-precision --view-gradient --view-waveform --view-spectrogram
+</pre></div>
+</div>
+<p>Separate Separate audio files.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow separate my_model <span class="s2">&quot;AI James - Schoolboy Fascination.wav&quot;</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="indices-and-tables">
