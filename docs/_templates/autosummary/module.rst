@@ -19,7 +19,7 @@
    .. rubric:: Classes
 
    .. autosummary::
-
+   :nosignatures:
    {% for item in classes %}
       {{ item }}
    {%- endfor %}

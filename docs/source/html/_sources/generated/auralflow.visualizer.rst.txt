@@ -19,7 +19,7 @@
    .. rubric:: Classes
 
    .. autosummary::
-
+   :nosignatures:
    
       Visualizer
       ProgressBar

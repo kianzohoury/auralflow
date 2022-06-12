@@ -20,7 +20,7 @@
    .. rubric:: Classes
 
    .. autosummary::
-
+   :nosignatures:
    
       SpectrogramNetSimple
       SpectrogramNetLSTM

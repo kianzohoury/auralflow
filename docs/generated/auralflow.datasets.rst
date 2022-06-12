@@ -22,7 +22,7 @@
    .. rubric:: Classes
 
    .. autosummary::
-
+   :nosignatures:
    
       AudioDataset
       AudioFolder

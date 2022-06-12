@@ -23,7 +23,7 @@
    .. rubric:: Classes
 
    .. autosummary::
-
+   :nosignatures:
    
       WeightedComponentLoss
       KLDivergenceLoss
