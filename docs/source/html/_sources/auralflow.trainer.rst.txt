@@ -1,6 +1,9 @@
 auralflow.trainer
 =================
 
+.. toctree::
+   :maxdepth: 2
+
 Module contents
 ---------------
 

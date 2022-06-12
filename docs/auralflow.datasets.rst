@@ -1,6 +1,9 @@
 auralflow.datasets
 ==================
 
+.. toctree::
+   :maxdepth: 2
+
 Module contents
 ---------------
 

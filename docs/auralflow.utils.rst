@@ -1,6 +1,9 @@
 auralflow.utils
 ===============
 
+.. toctree::
+   :maxdepth: 2
+
 Module contents
 ---------------
 
