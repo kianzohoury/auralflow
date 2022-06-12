@@ -212,11 +212,15 @@
 <h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">#</a></h2>
 <p>Build Customize deep source separation models from the available base
 architecture classes without needing to write out PyTorch modules.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow config my_model SpectrogramNetVAE --num-fft <span class="m">8192</span> --window-size <span class="m">8192</span> --hop-length <span class="m">4096</span> --mask-activation sigmoid --normalize-input
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow config my_model SpectrogramNetVAE --num-fft <span class="m">8192</span>
+<span class="go">--window-size 8192 --hop-length 4096 --mask-activation sigmoid</span>
+<span class="go">--normalize-input</span>
 </pre></div>
 </div>
 <p>Train models and visualize training progress.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow train my_model ~/musdb18 --max-epochs <span class="m">100</span> --lr <span class="m">0</span>.0008 --batch-size <span class="m">32</span> --criterion si_sdr --max-lr steps <span class="m">5</span> --num-workers <span class="m">8</span> --use-mixed-precision --view-gradient --view-waveform --view-spectrogram
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow train my_model ~/musdb18 --max-epochs <span class="m">100</span> --lr <span class="m">0</span>.0008
+<span class="go">--batch-size 32 --criterion si_sdr --max-lr steps 5 --num-workers 8</span>
+<span class="go">--use-mixed-precision --view-gradient --view-waveform --view-spectrogram</span>
 </pre></div>
 </div>
 <p>Separate Separate audio files.</p>
