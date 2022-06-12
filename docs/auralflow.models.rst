@@ -8,6 +8,5 @@ Module contents
 ---------------
 
 .. automodule:: auralflow.models
-   :members:
    :undoc-members:
    :show-inheritance:
