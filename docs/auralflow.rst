@@ -14,9 +14,6 @@ Subpackages
    auralflow.utils
    auralflow.visualizer
 
-Submodules
-----------
-
 auralflow.separate module
 -------------------------
 

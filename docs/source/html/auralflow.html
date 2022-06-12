@@ -196,46 +196,37 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="auralflow.datasets.html">auralflow.datasets package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="auralflow.datasets.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.datasets.html#module-auralflow.datasets">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="auralflow.losses.html">auralflow.losses package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="auralflow.losses.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.losses.html#module-auralflow.losses">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="auralflow.models.html">auralflow.models package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="auralflow.models.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.models.html#module-auralflow.models">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="auralflow.trainer.html">auralflow.trainer package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="auralflow.trainer.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.trainer.html#module-auralflow.trainer">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="auralflow.utils.html">auralflow.utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="auralflow.utils.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.utils.html#module-auralflow.utils">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="auralflow.visualizer.html">auralflow.visualizer package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="auralflow.visualizer.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.visualizer.html#module-auralflow.visualizer">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </section>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">#</a></h2>
-</section>
 <section id="module-auralflow.separate">
 <span id="auralflow-separate-module"></span><h2>auralflow.separate module<a class="headerlink" href="#module-auralflow.separate" title="Permalink to this headline">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.separate.separate_audio">
-<span class="sig-prename descclassname"><span class="pre">auralflow.separate.</span></span><span class="sig-name descname"><span class="pre">separate_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">auralflow.models.base.SeparationModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#auralflow.separate.separate_audio" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">auralflow.separate.</span></span><span class="sig-name descname"><span class="pre">separate_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#auralflow.separate.separate_audio" title="Permalink to this definition">#</a></dt>
 <dd><p>Separates a single audio track and returns the stems as tensors.</p>
 </dd></dl>
 
@@ -304,7 +295,6 @@
             <ul>
 <li><a class="reference internal" href="#">auralflow package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-auralflow.separate">auralflow.separate module</a></li>
 <li><a class="reference internal" href="#module-auralflow.test">auralflow.test module</a></li>
 <li><a class="reference internal" href="#module-auralflow.train">auralflow.train module</a></li>

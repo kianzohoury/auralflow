@@ -1,12 +1,9 @@
 auralflow.models package
 ========================
 
-Submodules
-----------
-
 Module contents
 ---------------
 
 .. automodule:: auralflow.models
-   :undoc-members:
+   :members:
    :show-inheritance:
