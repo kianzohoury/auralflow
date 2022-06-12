@@ -8,6 +8,7 @@
    .. rubric:: Functions
 
    .. autosummary::
+      :nosignatures:
 
    
       load_config

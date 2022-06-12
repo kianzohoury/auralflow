@@ -8,6 +8,7 @@
    .. rubric:: Functions
 
    .. autosummary::
+      :nosignatures:
 
    
       config_visualizer
@@ -19,7 +20,8 @@
    .. rubric:: Classes
 
    .. autosummary::
-   :nosignatures:
+     :nosignatures:
+
    
       Visualizer
       ProgressBar
