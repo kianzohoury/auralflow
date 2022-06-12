@@ -1,11 +1,6 @@
-
-section {
-    color: #FF4136;
-}
-
 h1 {
     font-weight: 300;
-    color: #FF4136;
+    color: #212529;
 }
 
 h2 {
@@ -14,6 +9,16 @@ h2 {
 }
 
 h3 {
+    font-weight: 300;
+    color: #212529;
+}
+
+h4 {
+    font-weight: 300;
+    color: #212529;
+}
+
+h5 {
     font-weight: 300;
     color: #212529;
 }
