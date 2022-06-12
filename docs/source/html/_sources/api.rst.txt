@@ -1,7 +1,7 @@
-API
-===
+API Documentation
+=================
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    auralflow.datasets
    auralflow.models
