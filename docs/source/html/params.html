@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Quickstart" href="quickstart.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="API Documentation" href="api.html" /><link rel="prev" title="Basic Usage" href="usage.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>auralflow</title>
+        <title>Parameters - auralflow</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
@@ -124,7 +124,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="#"><div class="brand">auralflow</div></a>
+      <a href="index.html"><div class="brand">auralflow</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -144,7 +144,7 @@
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
       
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
   <span class="sidebar-brand-text">auralflow</span>
@@ -155,12 +155,12 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="quickstart.html">Quickstart</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="usage.html">Basic Usage</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="params.html">Parameters</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="usage.html">Basic Usage</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">Parameters</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -207,56 +207,82 @@
           </label>
         </div>
         <article role="main">
-          <section id="auralflow-documentation">
-<h1>Auralflow Documentation<a class="headerlink" href="#auralflow-documentation" title="Permalink to this headline">#</a></h1>
+          <section id="parameters">
+<h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h2>
-<p>Install auralflow via PyPi package manager:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip install auralflow
-</pre></div>
-</div>
+<section id="model">
+<h2>Model<a class="headerlink" href="#model" title="Permalink to this headline">#</a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">--model-type</span></code></dt><dd><p><strong>str</strong> - base model architecture</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--model-name</span></code></dt><dd><p><strong>str</strong> - model name</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--normalize-input</span></code></dt><dd><p><strong>bool</strong> - trains learnable input normalization parameters</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--normalize-output</span></code></dt><dd><p><strong>bool</strong> - trains learnable output normalization parameters</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--mask-activation</span></code></dt><dd><p><strong>str</strong> - soft-mask activation/filtering functions</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--hidden-channels</span></code></dt><dd><p><strong>int</strong> - number of initial hidden channels</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--dropout-p</span></code></dt><dd><p><strong>float</strong> - dropout layer probability</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--leak-factor</span></code></dt><dd><p><strong>float</strong> - leak factor if using leaky_relu mask activation</p>
+</dd>
+</dl>
 </section>
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">#</a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">--targets</span></code></dt><dd><p><strong>List[str]</strong> - target sources to estimate</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--max-num-tracks</span></code></dt><dd><p><strong>int</strong> - max size of pool of tracks to resample from</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--max-num-samples</span></code></dt><dd><p><strong>str</strong> - max number of audio chunks to create</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--num-channels</span></code></dt><dd><p><strong>int</strong> - 1 if mono or 2 if stereo</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--sample-length</span></code></dt><dd><p><strong>int</strong> - length of audio chunks in seconds</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--sample-rate</span></code></dt><dd><p><strong>int</strong> - sample rate of audio tracks</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--num-fft</span></code></dt><dd><p><strong>int</strong> - number of FFT bins (aka filterbanks)</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--window-size</span></code></dt><dd><p><strong>int</strong> - length of STFT window</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--hop-length</span></code></dt><dd><p><strong>int</strong> - hop length</p>
+</dd>
+</dl>
 </section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">#</a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-<section id="api-documentation">
-<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">#</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Basic Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="params.html">Parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="params.html#model">Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="params.html#dataset">Dataset</a></li>
-<li class="toctree-l3"><a class="reference internal" href="params.html#training">Training</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#model-configuration">Model Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#config"><code class="docutils literal notranslate"><span class="pre">config</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#setting-parameters">Setting Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#modifying-within-a-text-editor-recommended">Modifying within a Text Editor (recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#modifying-from-the-command-line">Modifying from the Command Line</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.trainer.html">auralflow.trainer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.utils.html">auralflow.utils</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
-</ul>
-</li>
-</ul>
-</div>
+<section id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">--max-epochs</span></code></dt><dd><p><strong>int</strong> - max number of epochs to train</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code></dt><dd><p><strong>int</strong> - batch size</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--lr</span></code></dt><dd><p><strong>float</strong> - learning rate</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--stop-patience</span></code></dt><dd><p><strong>int</strong> - number of epochs before reducing lr</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--max-lr-steps</span></code></dt><dd><p><strong>in</strong> - number of lr reductions before stopping early</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--criterion</span></code></dt><dd><p><strong>str</strong> - loss function</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--num-workers</span></code></dt><dd><p><strong>int</strong> - number of worker processes for loading data</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--pin-memory</span></code></dt><dd><p><strong>bool</strong> - speeds up data transfer from CPU to GPU</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--use-mixed-precision</span></code></dt><dd><p><strong>bool</strong> - uses automatic mixed precision</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--silent-checkpoint</span></code></dt><dd><p><strong>bool</strong> - suppresses checkpoint logging message</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--alpha-constant</span></code></dt><dd><p><strong>float</strong> - alpha constant if using component_loss</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">--beta-constant</span></code></dt><dd><p><strong>float</strong> - beta constant if using component_loss</p>
+</dd>
+</dl>
 </section>
 </section>
 
@@ -265,16 +291,26 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="quickstart.html">
+          <a class="next-page" href="api.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Quickstart</div>
+                <div class="title">API Documentation</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          
+          <a class="prev-page" href="usage.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Basic Usage</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -307,12 +343,10 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Auralflow Documentation</a><ul>
-<li><a class="reference internal" href="#installation">Installation</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a><ul>
-<li><a class="reference internal" href="#api-documentation">API Documentation</a></li>
+<li><a class="reference internal" href="#">Parameters</a><ul>
+<li><a class="reference internal" href="#model">Model</a></li>
+<li><a class="reference internal" href="#dataset">Dataset</a></li>
+<li><a class="reference internal" href="#training">Training</a></li>
 </ul>
 </li>
 </ul>
