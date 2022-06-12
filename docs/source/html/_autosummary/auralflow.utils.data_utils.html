@@ -236,31 +236,31 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fast_fourier</span></code>(transform, audio)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.fast_fourier" title="auralflow.utils.data_utils.fast_fourier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fast_fourier</span></code></a>(transform, audio)</p></td>
 <td><p>Transforms raw audio to complex-valued STFT audio.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_conv_pad</span></code>(h_in, w_in, h_out, w_out, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.get_conv_pad" title="auralflow.utils.data_utils.get_conv_pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_conv_pad</span></code></a>(h_in, w_in, h_out, w_out, ...)</p></td>
 <td><p>Computes the required conv padding.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_conv_shape</span></code>(h_in, w_in, stride, kernel_size)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.get_conv_shape" title="auralflow.utils.data_utils.get_conv_shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_conv_shape</span></code></a>(h_in, w_in, stride, kernel_size)</p></td>
 <td><p>Computes the non-zero padded output of a conv layer.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_deconv_pad</span></code>(h_in, w_in, h_out, w_out, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.get_deconv_pad" title="auralflow.utils.data_utils.get_deconv_pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_deconv_pad</span></code></a>(h_in, w_in, h_out, w_out, ...)</p></td>
 <td><p>Computes the required transpose conv padding for a target shape.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_num_stft_frames</span></code>(sample_len, sr, ...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.get_num_stft_frames" title="auralflow.utils.data_utils.get_num_stft_frames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_num_stft_frames</span></code></a>(sample_len, sr, ...[, ...])</p></td>
 <td><p>Calculates number of STFT frames.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stft</span></code>(num_fft, hop_length, window_size[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.get_stft" title="auralflow.utils.data_utils.get_stft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stft</span></code></a>(num_fft, hop_length, window_size[, ...])</p></td>
 <td><p>Returns a specified stft or inverse stft transform.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">inverse_fast_fourier</span></code>(transform, complex_stft)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.inverse_fast_fourier" title="auralflow.utils.data_utils.inverse_fast_fourier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inverse_fast_fourier</span></code></a>(transform, complex_stft)</p></td>
 <td><p>Transforms complex-valued STFT audio to temporal audio domain.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_hann_window</span></code>(window_length[, trainable, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.make_hann_window" title="auralflow.utils.data_utils.make_hann_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_hann_window</span></code></a>(window_length[, trainable, ...])</p></td>
 <td><p>Creates a <cite>Hann</cite> window for use with STFT/ISTFT transformations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim_audio</span></code>(audio_tensors)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.trim_audio" title="auralflow.utils.data_utils.trim_audio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim_audio</span></code></a>(audio_tensors)</p></td>
 <td><p>Trims audio tensors to have matching number of frames.</p></td>
 </tr>
 </tbody>
@@ -274,7 +274,7 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">AudioTransform</span></code>(num_fft, hop_length, window_size)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.data_utils.AudioTransform" title="auralflow.utils.data_utils.AudioTransform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AudioTransform</span></code></a>(num_fft, hop_length, window_size)</p></td>
 <td><p>Wrapper class that conveniently stores multiple transformation tools.</p></td>
 </tr>
 </tbody>

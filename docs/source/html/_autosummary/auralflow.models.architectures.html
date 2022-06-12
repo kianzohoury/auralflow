@@ -236,34 +236,34 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">CenterScaleNormalization</span></code>(num_fft_bins[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.CenterScaleNormalization" title="auralflow.models.architectures.CenterScaleNormalization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CenterScaleNormalization</span></code></a>(num_fft_bins[, ...])</p></td>
 <td><p>Wrapper class for learning centered/scaled representations of data.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvBlock</span></code>(in_channels, out_channels[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.ConvBlock" title="auralflow.models.architectures.ConvBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvBlock</span></code></a>(in_channels, out_channels[, ...])</p></td>
 <td><p>Conv =&gt; Batch Norm =&gt; ReLU block.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvBlockTriple</span></code>(in_channels, out_channels[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.ConvBlockTriple" title="auralflow.models.architectures.ConvBlockTriple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvBlockTriple</span></code></a>(in_channels, out_channels[, ...])</p></td>
 <td><p>(Conv =&gt; Batch Norm =&gt; ReLU) x 3 block.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DownBlock</span></code>(in_channels, out_channels[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.DownBlock" title="auralflow.models.architectures.DownBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DownBlock</span></code></a>(in_channels, out_channels[, ...])</p></td>
 <td><p>Downsampling convolutional block.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">InputNorm</span></code>(num_fft_bins[, apply_norm, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.InputNorm" title="auralflow.models.architectures.InputNorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InputNorm</span></code></a>(num_fft_bins[, apply_norm, ...])</p></td>
 <td><p>Wrapper class for learning input centering/scaling.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">LayerNorm</span></code>(num_fft_bins, num_channels, num_frames)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.LayerNorm" title="auralflow.models.architectures.LayerNorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LayerNorm</span></code></a>(num_fft_bins, num_channels, num_frames)</p></td>
 <td><p>Wrapper class for layer normalization</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpectrogramNetLSTM</span></code>(*args[, recurrent_depth, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.SpectrogramNetLSTM" title="auralflow.models.architectures.SpectrogramNetLSTM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpectrogramNetLSTM</span></code></a>(*args[, recurrent_depth, ...])</p></td>
 <td><p>Deep mask estimation model using LSTM bottleneck layers.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpectrogramNetSimple</span></code>(num_fft_bins, num_frames)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.SpectrogramNetSimple" title="auralflow.models.architectures.SpectrogramNetSimple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpectrogramNetSimple</span></code></a>(num_fft_bins, num_frames)</p></td>
 <td><p>Vanilla spectrogram-based deep mask estimation model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpectrogramNetVAE</span></code>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.SpectrogramNetVAE" title="auralflow.models.architectures.SpectrogramNetVAE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpectrogramNetVAE</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Spectrogram U-Net model with a VAE and LSTM bottleneck.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpBlock</span></code>(in_channels, out_channels, padding)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.models.html#auralflow.models.architectures.UpBlock" title="auralflow.models.architectures.UpBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpBlock</span></code></a>(in_channels, out_channels, padding)</p></td>
 <td><p>Upsampling convolutional block.</p></td>
 </tr>
 </tbody>
