@@ -8,7 +8,7 @@
    .. rubric:: Functions
 
    .. autosummary::
-   :nosignature:
+   :nosignatures:
 
    
       create_model
@@ -21,7 +21,7 @@
    .. rubric:: Classes
 
    .. autosummary::
-   :nosignature:
+   :nosignatures:
 
    
       SpectrogramNetSimple

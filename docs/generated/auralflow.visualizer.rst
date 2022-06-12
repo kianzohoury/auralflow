@@ -8,7 +8,7 @@
    .. rubric:: Functions
 
    .. autosummary::
-   :nosignature:
+   :nosignatures:
 
    
       config_visualizer
@@ -20,7 +20,7 @@
    .. rubric:: Classes
 
    .. autosummary::
-   :nosignature:
+   :nosignatures:
 
    
       Visualizer
