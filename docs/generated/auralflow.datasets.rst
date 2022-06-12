@@ -8,7 +8,6 @@
    .. rubric:: Functions
 
    .. autosummary::
-   :nosignatures:
 
    
       create_audio_folder
@@ -23,7 +22,6 @@
    .. rubric:: Classes
 
    .. autosummary::
-   :nosignatures:
 
    
       AudioDataset
