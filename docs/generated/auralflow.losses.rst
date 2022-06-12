@@ -1,7 +1,7 @@
-﻿auralflow.models
+﻿auralflow.losses
 ================
 
-.. automodule:: auralflow.models
+.. automodule:: auralflow.losses
 
    
    
@@ -13,8 +13,7 @@
 
    .. autosummary::
    
-      create_model
-      setup_model
+      get_model_criterion
    
    
 

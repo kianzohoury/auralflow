@@ -1,5 +1,8 @@
 auralflow.losses
 ================
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
 
 Module contents
 ---------------

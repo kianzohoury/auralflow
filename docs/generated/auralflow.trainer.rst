@@ -21,12 +21,3 @@
 
 
 
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   auralflow.trainer.callbacks
-   auralflow.trainer.trainer
-

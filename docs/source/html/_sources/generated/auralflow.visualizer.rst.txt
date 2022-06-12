@@ -27,12 +27,3 @@
 
 
 
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   auralflow.visualizer.progress
-   auralflow.visualizer.visualizer
-

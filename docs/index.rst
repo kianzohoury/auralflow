@@ -9,16 +9,6 @@ Auralflow Documentation
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-   :recursive:
-
-   auralflow.datasets
-   auralflow.models
-   auralflow.trainer
-   auralflow.utils
-   auralflow.visualizer
 
 Installation
 ------------
