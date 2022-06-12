@@ -9,6 +9,8 @@
 
    .. autosummary::
 
+   :nosignatures:
+
    
       run_training
       run_validation

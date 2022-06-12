@@ -9,6 +9,8 @@
 
    .. autosummary::
 
+   :nosignatures:
+
    
       component_loss
       kl_div_loss
@@ -23,6 +25,8 @@
    .. rubric:: Classes
 
    .. autosummary::
+
+   :nosignatures:
 
    
       WeightedComponentLoss

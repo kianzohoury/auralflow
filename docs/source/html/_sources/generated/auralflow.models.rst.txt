@@ -9,6 +9,8 @@
 
    .. autosummary::
 
+   :nosignatures:
+
    
       create_model
       setup_model
@@ -20,6 +22,8 @@
    .. rubric:: Classes
 
    .. autosummary::
+
+   :nosignatures:
 
    
       SpectrogramNetSimple

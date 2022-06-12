@@ -8,6 +8,8 @@
 
    .. autosummary::
 
+   :nosignatures:
+
    {% for item in functions %}
       {{ item }}
    {%- endfor %}
@@ -20,6 +22,8 @@
 
    .. autosummary::
 
+   :nosignatures:
+
    {% for item in classes %}
       {{ item }}
    {%- endfor %}
@@ -31,6 +35,8 @@
    .. rubric:: Exceptions
 
    .. autosummary::
+
+   :nosignatures:
 
    {% for item in exceptions %}
       {{ item }}

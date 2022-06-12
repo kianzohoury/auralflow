@@ -9,6 +9,8 @@
 
    .. autosummary::
 
+   :nosignatures:
+
    
       create_audio_folder
       audio_to_disk
@@ -22,6 +24,8 @@
    .. rubric:: Classes
 
    .. autosummary::
+
+   :nosignatures:
 
    
       AudioDataset
