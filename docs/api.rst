@@ -1,12 +1,24 @@
 API
 ===
 
-.. toctree::
-
 .. autosummary::
-   :toctree: _autosummary
+    :toctree: generated
 
-   auralflow
+    auralflow.datasets
+    auralflow.losses
+    auralflow.models
+    auralflow.trainer
+    auralflow.utils
+    auralflow.visualizer
 
-.. automodule:: auralflow
-   :members:
+.. automodule:: auralflow.datasets
+
+.. automodule:: auralflow.losses
+
+.. automodule:: auralflow.models
+
+.. automodule:: auralflow.trainer
+
+.. automodule:: auralflow.utils
+
+.. automodule:: auralflow.visualizer
