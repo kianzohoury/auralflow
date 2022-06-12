@@ -9,7 +9,6 @@
 
    .. autosummary::
    :nosignatures:
-
    
       create_model
       setup_model
@@ -22,7 +21,6 @@
 
    .. autosummary::
    :nosignatures:
-
    
       SpectrogramNetSimple
       SpectrogramNetLSTM
@@ -34,4 +32,4 @@
 
    
    
-   
+

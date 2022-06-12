@@ -8,7 +8,6 @@
    .. rubric:: Functions
 
    .. autosummary::
-   :nosignatures:
 
    
       run_training

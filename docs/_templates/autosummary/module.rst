@@ -7,7 +7,6 @@
    .. rubric:: Functions
 
    .. autosummary::
-   :nosignatures:
 
    {% for item in functions %}
       {{ item }}
@@ -20,7 +19,6 @@
    .. rubric:: Classes
 
    .. autosummary::
-   :nosignatures:
 
    {% for item in classes %}
       {{ item }}
@@ -33,7 +31,6 @@
    .. rubric:: Exceptions
 
    .. autosummary::
-   :nosignatures:
 
    {% for item in exceptions %}
       {{ item }}

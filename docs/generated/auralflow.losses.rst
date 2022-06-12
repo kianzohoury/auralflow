@@ -8,7 +8,6 @@
    .. rubric:: Functions
 
    .. autosummary::
-   :nosignatures:
 
    
       component_loss
@@ -24,7 +23,6 @@
    .. rubric:: Classes
 
    .. autosummary::
-   :nosignatures:
 
    
       WeightedComponentLoss
