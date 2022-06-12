@@ -1,5 +1,6 @@
 auralflow.models
 ================
+.. toctree::
 
 Module contents
 ---------------
