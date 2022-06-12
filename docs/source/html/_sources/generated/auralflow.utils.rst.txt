@@ -14,10 +14,10 @@
    .. autosummary::
    
       load_config
-      load_object
-      pull_config_template
       save_config
+      load_object
       save_object
+      pull_config_template
    
    
 
