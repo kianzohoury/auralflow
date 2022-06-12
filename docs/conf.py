@@ -33,6 +33,7 @@ extensions = [
 ]
 autosummary_generate = True
 autosummary_ignore_module_all = False
+autosummary_imported_members = True
 autodoc_mock_imports = ['asteroid', 'prettytable']
 
 # Add any paths that contain templates here, relative to this directory.

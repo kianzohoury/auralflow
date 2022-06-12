@@ -1,8 +1,5 @@
 auralflow.trainer
 =================
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
 
 Module contents
 ---------------

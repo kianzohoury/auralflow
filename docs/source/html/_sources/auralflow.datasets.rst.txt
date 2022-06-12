@@ -1,8 +1,5 @@
 auralflow.datasets
 ==================
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
 
 Module contents
 ---------------

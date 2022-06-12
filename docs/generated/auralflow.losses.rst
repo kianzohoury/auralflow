@@ -13,11 +13,27 @@
 
    .. autosummary::
    
+      component_loss
+      kl_div_loss
+      si_sdr_loss
       get_model_criterion
+      get_evaluation_metrics
    
    
 
    
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      WeightedComponentLoss
+      KLDivergenceLoss
+      L1Loss
+      L2Loss
+      L2MaskLoss
+      RMSELoss
+      SIDRLoss
    
    
 

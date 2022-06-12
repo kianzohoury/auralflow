@@ -19,6 +19,13 @@
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Visualizer
+      ProgressBar
+   
    
 
    

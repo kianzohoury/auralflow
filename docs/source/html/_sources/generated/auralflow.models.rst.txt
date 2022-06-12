@@ -20,6 +20,16 @@
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SpectrogramNetSimple
+      SpectrogramNetLSTM
+      SpectrogramNetVAE
+      SpectrogramMaskModel
+      SeparationModel
+   
    
 
    

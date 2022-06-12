@@ -9,6 +9,13 @@
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      run_training
+      run_validation
+   
    
 
    

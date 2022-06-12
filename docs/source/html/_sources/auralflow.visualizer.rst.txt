@@ -1,8 +1,5 @@
 auralflow.visualizer
 ====================
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
 
 Module contents
 ---------------

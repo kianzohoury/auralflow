@@ -22,6 +22,13 @@
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AudioDataset
+      AudioFolder
+   
    
 
    
