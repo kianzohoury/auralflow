@@ -67,6 +67,7 @@ html_logo = "./static/soundwave.svg"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_css_files = ['../_static/css/custom.css']
 
 html_theme_options = {
     "light_css_variables": {
@@ -76,8 +77,11 @@ html_theme_options = {
         "color-sidebar-search-background": "#FFFFFF",
         "color-sidebar-search-border": "#FFFFFF",
         "color-sidebar-brand-text": "#212529",
+        "font-weight": 300,
 
     },
     "sidebar_hide_name": True,
     "navigation_with_keys": True,
 }
+
+
