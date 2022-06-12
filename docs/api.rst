@@ -5,7 +5,6 @@ API Documentation
 
 .. autosummary::
    :toctree: generated
-   :template: module.rst
 
    auralflow.datasets
    auralflow.losses
