@@ -12,6 +12,12 @@ Auralflow Documentation
 .. autosummary::
    :toctree: generated
 
+   auralflow.datasets
+   auralflow.models
+   auralflow.trainer
+   auralflow.utils
+   auralflow.visualizer
+
 Installation
 ------------
 
