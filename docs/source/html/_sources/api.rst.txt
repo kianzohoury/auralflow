@@ -8,3 +8,6 @@ API
    :recursive:
 
    auralflow
+
+.. automodule:: auralflow
+   :members:
