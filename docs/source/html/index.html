@@ -19,6 +19,12 @@
   body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
+  --color-brand-primary: #212529;
+  --color-brand-content: #212529;
+  --color-background-secondary: #f3f4f7;
+  --color-sidebar-search-background: #FFFFFF;
+  --color-sidebar-search-border: #FFFFFF;
+  --color-sidebar-brand-text: #212529;
   
   }
   @media not print {
@@ -144,10 +150,12 @@
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
       
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="#">
   
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/soundwave.svg" alt="Logo"/>
+  </div>
   
-  <span class="sidebar-brand-text">auralflow</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">

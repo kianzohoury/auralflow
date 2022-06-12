@@ -62,6 +62,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 #
 html_theme = 'furo'
 html_title = "auralflow"
+html_logo = "./static/soundwave.svg"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -69,8 +70,14 @@ html_static_path = ['_static']
 
 html_theme_options = {
     "light_css_variables": {
-        "color-brand-primary": "#FF4136",
-        "color-brand-content": "#FF4136",
+        "color-brand-primary": "#212529",
+        "color-brand-content": "#212529",
         "color-background-secondary": "#f3f4f7",
+        "color-sidebar-search-background": "#FFFFFF",
+        "color-sidebar-search-border": "#FFFFFF",
+        "color-sidebar-brand-text": "#212529",
+
     },
+    "sidebar_hide_name": True,
+    "navigation_with_keys": True,
 }
