@@ -31,11 +31,3 @@
 
 
 
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   auralflow.utils.data_utils
-

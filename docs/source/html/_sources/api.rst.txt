@@ -4,8 +4,8 @@ API
 .. toctree::
 
 .. autosummary::
-   :recursive:
    :toctree: _autosummary
+
 
     auralflow.datasets
     auralflow.losses

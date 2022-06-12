@@ -28,14 +28,3 @@
 
 
 
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   auralflow.models.architectures
-   auralflow.models.base
-   auralflow.models.generative_model
-   auralflow.models.mask_model
-
