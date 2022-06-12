@@ -9,6 +9,8 @@ Auralflow Documentation
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
+.. autosummary::
+   :toctree: generated
 
 Installation
 ------------
@@ -33,3 +35,4 @@ API Documentation
 .. toctree::
 
    api
+

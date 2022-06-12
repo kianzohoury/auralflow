@@ -1,6 +1,5 @@
 auralflow.models
 ================
-.. autosummary::
 
 Module contents
 ---------------
