@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="auralflow.visualizer.visualizer" href="auralflow.visualizer.visualizer.html" /><link rel="prev" title="auralflow.visualizer" href="auralflow.visualizer.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="auralflow.trainer" href="auralflow.trainer.html" /><link rel="prev" title="auralflow.test" href="auralflow.test.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>auralflow.visualizer.progress - auralflow 0.1.2 documentation</title>
+        <title>auralflow.train - auralflow 0.1.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -174,7 +174,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="auralflow.separate.html">auralflow.separate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auralflow.test.html">auralflow.test</a></li>
-<li class="toctree-l3"><a class="reference internal" href="auralflow.train.html">auralflow.train</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">auralflow.train</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="auralflow.trainer.html">auralflow.trainer</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="auralflow.trainer.callbacks.html">auralflow.trainer.callbacks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="auralflow.trainer.trainer.html">auralflow.trainer.trainer</a></li>
@@ -184,8 +184,8 @@
 <li class="toctree-l4"><a class="reference internal" href="auralflow.utils.data_utils.html">auralflow.utils.data_utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 current has-children"><a class="reference internal" href="auralflow.visualizer.html">auralflow.visualizer</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">auralflow.visualizer.progress</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="auralflow.visualizer.html">auralflow.visualizer</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="auralflow.visualizer.progress.html">auralflow.visualizer.progress</a></li>
 <li class="toctree-l4"><a class="reference internal" href="auralflow.visualizer.visualizer.html">auralflow.visualizer.visualizer</a></li>
 </ul>
 </li>
@@ -226,8 +226,8 @@
           </label>
         </div>
         <article role="main">
-          <section id="module-auralflow.visualizer.progress">
-<span id="auralflow-visualizer-progress"></span><h1>auralflow.visualizer.progress<a class="headerlink" href="#module-auralflow.visualizer.progress" title="Permalink to this headline">#</a></h1>
+          <section id="module-auralflow.train">
+<span id="auralflow-train"></span><h1>auralflow.train<a class="headerlink" href="#module-auralflow.train" title="Permalink to this headline">#</a></h1>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -236,22 +236,8 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_progress_bar</span></code>(iterable, total[, unit, ...])</p></td>
-<td><p>Creates a progress bar.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p class="rubric">Classes</p>
-<div class="table-wrapper autosummary longtable docutils container">
-<table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProgressBar</span></code>(*_, **__)</p></td>
-<td><p>Wraps tqdm progress bar.</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">main</span></code>(config_filepath)</p></td>
+<td><p>Runs training script given a configuration file.</p></td>
 </tr>
 </tbody>
 </table>
@@ -263,23 +249,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="auralflow.visualizer.visualizer.html">
+          <a class="next-page" href="auralflow.trainer.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">auralflow.visualizer.visualizer</div>
+                <div class="title">auralflow.trainer</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="auralflow.visualizer.html">
+          <a class="prev-page" href="auralflow.test.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">auralflow.visualizer</div>
+                <div class="title">auralflow.test</div>
                 
               </div>
             </a>

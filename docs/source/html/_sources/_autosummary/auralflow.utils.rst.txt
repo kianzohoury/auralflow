@@ -1,4 +1,4 @@
-﻿auralflow.utils
+auralflow.utils
 ===============
 
 .. automodule:: auralflow.utils
@@ -30,4 +30,12 @@
    
 
 
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   auralflow.utils.data_utils
 

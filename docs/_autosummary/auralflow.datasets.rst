@@ -1,4 +1,4 @@
-﻿auralflow.datasets
+auralflow.datasets
 ==================
 
 .. automodule:: auralflow.datasets
@@ -29,4 +29,12 @@
    
 
 
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   auralflow.datasets.datasets
 

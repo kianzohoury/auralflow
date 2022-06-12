@@ -1,4 +1,4 @@
-﻿auralflow.losses
+auralflow.losses
 ================
 
 .. automodule:: auralflow.losses
@@ -26,4 +26,12 @@
    
 
 
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   auralflow.losses.losses
 

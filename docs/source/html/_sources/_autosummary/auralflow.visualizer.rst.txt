@@ -1,4 +1,4 @@
-﻿auralflow.visualizer
+auralflow.visualizer
 ====================
 
 .. automodule:: auralflow.visualizer
@@ -26,4 +26,13 @@
    
 
 
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   auralflow.visualizer.progress
+   auralflow.visualizer.visualizer
 

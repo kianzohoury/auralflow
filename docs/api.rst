@@ -5,11 +5,6 @@ API
 
 .. autosummary::
    :toctree: _autosummary
+   :recursive:
 
-
-    auralflow.datasets
-    auralflow.losses
-    auralflow.models
-    auralflow.trainer
-    auralflow.utils
-    auralflow.visualizer
+   auralflow
