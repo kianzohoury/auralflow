@@ -1,38 +1,29 @@
-auralflow.visualizer
-====================
+auralflow.visualizer package
+============================
+
+Submodules
+----------
+
+auralflow.visualizer.progress module
+------------------------------------
+
+.. automodule:: auralflow.visualizer.progress
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+auralflow.visualizer.visualizer module
+--------------------------------------
+
+.. automodule:: auralflow.visualizer.visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
 
 .. automodule:: auralflow.visualizer
-
-   
-   
-   
-
-   
-   
-   .. rubric:: Functions
-
-   .. autosummary::
-   
-      config_visualizer
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   auralflow.visualizer.progress
-   auralflow.visualizer.visualizer
-
+   :members:
+   :undoc-members:
+   :show-inheritance:

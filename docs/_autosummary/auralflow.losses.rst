@@ -1,37 +1,21 @@
-auralflow.losses
-================
+auralflow.losses package
+========================
+
+Submodules
+----------
+
+auralflow.losses.losses module
+------------------------------
+
+.. automodule:: auralflow.losses.losses
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
 
 .. automodule:: auralflow.losses
-
-   
-   
-   
-
-   
-   
-   .. rubric:: Functions
-
-   .. autosummary::
-   
-      get_model_criterion
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   auralflow.losses.losses
-
+   :members:
+   :undoc-members:
+   :show-inheritance:
