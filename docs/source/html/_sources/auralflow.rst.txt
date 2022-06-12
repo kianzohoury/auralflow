@@ -7,17 +7,6 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   auralflow.datasets
-   auralflow.losses
-   auralflow.models
-   auralflow.trainer
-   auralflow.utils
-   auralflow.visualizer
-
 auralflow.separate module
 -------------------------
 

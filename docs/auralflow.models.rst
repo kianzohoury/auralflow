@@ -3,6 +3,7 @@ auralflow.models
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :recursive:
 
 Module contents
 ---------------
