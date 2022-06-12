@@ -11,6 +11,7 @@ Auralflow Documentation
    :caption: Contents:
 .. autosummary::
    :toctree: generated
+   :nosignatures:
 
    auralflow.datasets
    auralflow.models
