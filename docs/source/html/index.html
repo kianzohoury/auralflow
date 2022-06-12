@@ -208,6 +208,24 @@
 </pre></div>
 </div>
 </section>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">#</a></h2>
+<p>Build Customize deep source separation models from the available base architecture classes without needing to write out PyTorch modules.
+.. code-block:: console</p>
+<blockquote>
+<div><p>$ auralflow config my_model SpectrogramNetVAE --num-fft 8192 --window-size 8192 --hop-length 4096 --mask-activation sigmoid --normalize-input</p>
+</div></blockquote>
+<p>Train Train models and visualize training progress.
+.. code-block:: console</p>
+<blockquote>
+<div><p>$ auralflow train my_model ~/musdb18 --max-epochs 100 --lr 0.0008 --batch-size 32 --criterion si_sdr --max-lr steps 5 --num-workers 8 --use-mixed-precision --view-gradient --view-waveform --view-spectrogram</p>
+</div></blockquote>
+<p>Separate Separate audio files.
+.. code-block:: console</p>
+<blockquote>
+<div><p>$ auralflow separate my_model &quot;AI James - Schoolboy Fascination.wav&quot;</p>
+</div></blockquote>
+</section>
 </section>
 <section id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">#</a></h1>
@@ -282,6 +300,7 @@
             <ul>
 <li><a class="reference internal" href="#">Auralflow Documentation</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a><ul>
