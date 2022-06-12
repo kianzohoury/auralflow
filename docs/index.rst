@@ -27,8 +27,8 @@ Indices and tables
 * :ref:`search`
 
 
-Contents
---------
+API Documentation
+-----------------
 
 .. toctree::
 
