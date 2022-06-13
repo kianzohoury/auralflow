@@ -1,16 +1,37 @@
 Basic Usage
 ===========
 
-.. toctree::
+The simplest way to use auralflow is by invoking the four main shell
+commands: ``config``, ``train``, ``test`` and ``separate``, which cover
+the essential features and functionality of the package. Moreover, these
+commands require the presence of certain configuration and training files,
+which will be conveniently organized for you within a single folder when
+you first configure a model from scratch. An example of such folder can be
+seen below.
 
-   params
+.. code-block:: console
 
-The quickest and simplest way to use auralflow is through shell commands.
-Configuring, training and testing a source separation model are all
-demonstrated below.
+    your_model
+      ├── audio/...
+      ├── config.json
+      ├── checkpoint/...
+      ├── evaluation.csv
+      ├── images/...
+      └── runs/...
 
-Model Configuration
--------------------
+**Contents**:
+
+* ``config.json`` - is the main configuration file
+* ``checkpoint`` - is the directory for saving object states
+* ``runs`` - is the directory for tensorboard training logs.
+* ``evaluation.cvs`` - is the csv file containing model evaluation performance.
+* ``audio`` - is the folder that saves separated audio clips for validation
+* ``images``: is the folder that saves spectrogram/waveform plots for validation
+
+
+
+Model Configuration with ``config``
+-----------------------------------
 
 Auralflow uses an extremely simple file structure that encapsulates the
 files necessary for creating, training and loading models inside a single folder.
@@ -93,3 +114,6 @@ See the full list of customizable parameters here.
 
 
 
+.. toctree::
+
+   params

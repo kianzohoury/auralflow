@@ -74,6 +74,7 @@ html_theme_options = {
     "dark_logo": "./assets/soundwave_dark.svg",
 
     "light_css_variables": {
+        "color-foreground-primary": "#212529",
         "color-brand-primary": "#212529",
         "color-brand-content": "#212529",
         "color-background-secondary": "#f3f4f7",
