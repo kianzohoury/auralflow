@@ -90,6 +90,6 @@ html_theme_options = {
 }
 
 html_additional_pages = {
-    "index": "html/landing-page.html"
+    "landing": "html/landing-page.html"
 }
 
