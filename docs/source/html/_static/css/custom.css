@@ -22,3 +22,7 @@ h5 {
     font-weight: 300;
     color: #212529;
 }
+
+.sig.sig-object.py{
+    border-radius: 0px;
+}

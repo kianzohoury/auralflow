@@ -82,10 +82,14 @@ html_theme_options = {
         "color-sidebar-search-border": "#FFFFFF",
         "color-sidebar-brand-text": "#212529",
         "font-weight": 300,
+        "color-problematic": "#FF4136",
 
     },
     "sidebar_hide_name": True,
     "navigation_with_keys": True,
 }
 
+html_additional_pages = {
+    "index": "html/landing-page.html"
+}
 
