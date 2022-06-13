@@ -20,6 +20,7 @@
   body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
+  --color-foreground-primary: #212529;
   --color-brand-primary: #212529;
   --color-brand-content: #212529;
   --color-background-secondary: #f3f4f7;
@@ -220,21 +221,33 @@
         <article role="main">
           <section id="basic-usage">
 <h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">#</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="params.html">Parameters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="params.html#model">Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="params.html#dataset">Dataset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="params.html#training">Training</a></li>
-</ul>
-</li>
-</ul>
+<p>The simplest way to use auralflow is by invoking the four main shell
+commands: <code class="docutils literal notranslate"><span class="pre">config</span></code>, <code class="docutils literal notranslate"><span class="pre">train</span></code>, <code class="docutils literal notranslate"><span class="pre">test</span></code> and <code class="docutils literal notranslate"><span class="pre">separate</span></code>, which cover
+the essential features and functionality of the package. Moreover, these
+commands require the presence of certain configuration and training files,
+which will be conveniently organized for you within a single folder when
+you first configure a model from scratch. An example of such folder can be
+seen below.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">your_model</span>
+<span class="go">  ├── audio/...</span>
+<span class="go">  ├── config.json</span>
+<span class="go">  ├── checkpoint/...</span>
+<span class="go">  ├── evaluation.csv</span>
+<span class="go">  ├── images/...</span>
+<span class="go">  └── runs/...</span>
+</pre></div>
 </div>
-<p>The quickest and simplest way to use auralflow is through shell commands.
-Configuring, training and testing a source separation model are all
-demonstrated below.</p>
-<section id="model-configuration">
-<h2>Model Configuration<a class="headerlink" href="#model-configuration" title="Permalink to this headline">#</a></h2>
+<p><strong>Contents</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">config.json</span></code> - is the main configuration file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">checkpoint</span></code> - is the directory for saving object states</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">runs</span></code> - is the directory for tensorboard training logs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">evaluation.cvs</span></code> - is the csv file containing model evaluation performance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">audio</span></code> - is the folder that saves separated audio clips for validation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">images</span></code>: is the folder that saves spectrogram/waveform plots for validation</p></li>
+</ul>
+<section id="model-configuration-with-config">
+<h2>Model Configuration with <code class="docutils literal notranslate"><span class="pre">config</span></code><a class="headerlink" href="#model-configuration-with-config" title="Permalink to this headline">#</a></h2>
 <p>Auralflow uses an extremely simple file structure that encapsulates the
 files necessary for creating, training and loading models inside a single folder.
 Below is a visual of such folder.</p>
@@ -303,6 +316,16 @@ so:</p>
 </pre></div>
 </div>
 <p>See the full list of customizable parameters here.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="params.html#model">Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="params.html#dataset">Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="params.html#training">Training</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </section>
 </section>
 
@@ -364,7 +387,7 @@ so:</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Basic Usage</a><ul>
-<li><a class="reference internal" href="#model-configuration">Model Configuration</a></li>
+<li><a class="reference internal" href="#model-configuration-with-config">Model Configuration with <code class="docutils literal notranslate"><span class="pre">config</span></code></a></li>
 <li><a class="reference internal" href="#config"><code class="docutils literal notranslate"><span class="pre">config</span></code></a></li>
 <li><a class="reference internal" href="#setting-parameters">Setting Parameters</a></li>
 <li><a class="reference internal" href="#modifying-within-a-text-editor-recommended">Modifying within a Text Editor (recommended)</a></li>
