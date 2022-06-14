@@ -18,10 +18,11 @@
 
     .landing-container {
         display: block;
-        background-image: url("./_static/assets/background_alternate.png");
+        background-image: url("./_static/assets/wave_animation.gif");
         background-size: cover;
         background-position: center;
         height: 100vh;
+        background-color: black;
 
         padding-top: 0px;
     }
@@ -32,7 +33,9 @@
         padding: 0px;
         margin: 0px;
         font-size: 60px;
-        font-weight: 500;
+        font-weight:300;
+<!--        font-family: "Roboto Mono", "SFMono-Regular", Menlo, Consolas, Monaco,-->
+<!--        Liberation Mono, Lucida Console, monospace !important;-->
     }
 
     .description {
@@ -138,6 +141,12 @@
         -moz-text-fill-color: transparent;
     }
 
+    .btn-primary:hover {
+        background-color: white;
+    }
+
+
+
 
 </style>
 <html lang="en-US">
@@ -200,19 +209,26 @@
                         </p>
                     </div>
                     <div style="display: block; margin-top: 100px">
-                        <h3 style="font-weight: 100">
-                            <i class="bi bi-box-seam"></i> <br>
-                            Install via PyPi package manager
-                        </h3>
-                        <code style="display: inline-block; background-color: white; color: black; padding: 20px">
-                            <text style="font-size: 24px">$ pip install auralflow</text>
-                        </code>
+<!--                        <h3 style="font-weight: 100">-->
+<!--                            <i class="bi bi-box-seam"></i> <br>-->
+<!--                            Install via PyPi package manager-->
+<!--                        </h3>-->
+<!--                        <code style="display: inline-block; background-color: white; color: black; padding: 20px">-->
+<!--                            <text style="font-size: 24px">$ pip install auralflow</text>-->
+<!--                        </code>-->
                         <div style="width: 30%; margin-top: 40px;">
+<!--                            <button class="btn btn-outline-primary" onclick="../index.html"-->
+<!--                                    style="display: block; border-radius: 0px; width: 100%;-->
+<!--                            border-color: #f3f4f7; padding: 20px;">-->
+<!--                                <text style="font-size: 24px; color: #f3f4f7; font-weight: 100">-->
+<!--                                    <i class="bi bi-book-half"></i> &nbsp; Read the Documentation-->
+<!--                                </text>-->
+<!--                            </button>-->
                             <button class="btn btn-outline-primary" onclick="../index.html"
-                                    style="display: block; border-radius: 0px; width: 100%;
-                            border-color: #f3f4f7; padding: 20px;">
-                                <text style="font-size: 24px; color: #f3f4f7; font-weight: 100">
-                                    <i class="bi bi-book-half"></i> &nbsp; Read the Documentation
+                                    style="display: block; border-radius: 200px; width: 160px;
+                            border-color: #f3f4f7; padding: 10px;">
+                                <text style="font-size: 24px; color: #f3f4f7; font-weight: 100; padding: 0px">
+                                     Get Started
                                 </text>
                             </button>
                         </div>
