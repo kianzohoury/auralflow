@@ -26,3 +26,41 @@ h5 {
 .sig.sig-object.py{
     border-radius: 0px;
 }
+
+code {
+    border-radius: 0px !important;
+    border: none !important;
+    font-weight: bold;
+    color: gray;
+}
+
+h1, dt:target {
+    background-color: transparent !important;
+}
+
+.row-even {
+    background-color: #f3f4f7 !important;
+}
+
+td, tr {
+    border: none !important;
+    border-color: transparent !important;
+    height: 80px !important;
+}
+
+table.docutils {
+    box-shadow: none !important;
+}
+
+code.xref.py.py-obj.docutils.literal.notranslate {
+    background-color: transparent !important;
+}
+
+a {
+    text-decoration: none !important;
+}
+
+p.rubric {
+    font-weight: 300;
+    font-size: 28px;
+}

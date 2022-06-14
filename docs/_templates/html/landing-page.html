@@ -18,7 +18,7 @@
 
     .landing-container {
         display: block;
-        background-image: url("./_static/assets/background.svg");
+        background-image: url("./_static/assets/background_alternate.png");
         background-size: cover;
         background-position: center;
         height: 100vh;
@@ -32,18 +32,18 @@
         padding: 0px;
         margin: 0px;
         font-size: 60px;
-        font-weight: 100;
-        letter-spacing: 0.4em;
-        text-align: center;
+        font-weight: 500;
     }
 
     .description {
         color: #f3f4f7;
         color: #e8e8e8;
         margin: 0px;
-        font-size: 20px;
-        font-weight: 100;
-<!--        text-align: center;-->
+        font-size: 24px;
+        font-weight: 300;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        width: 50%;
     }
 
     .content {
@@ -76,7 +76,7 @@
     }
 
     nav.navbar {
-        background-color: rgba(0, 0, 0, 0.2) !important;
+        background-color: transparent !important;
         width: 100%;
         margin-bottom: 100px;
         padding-left: 10%;
@@ -111,12 +111,12 @@
     }
 
     .nav-link::hover {
-        color: orange;
+        color: #F0ACF7;
     }
 
     .navbar-nav .nav-item.active .nav-link,
     .navbar-nav .nav-item:hover .nav-link {
-        color: orange;
+        color: #F0ACF7;
     }
 
     .navbarSupportedContent {
@@ -126,6 +126,16 @@
     ul.navbar-nav.mr-auto {
         justify-content: space-around;
         flex: 1;
+    }
+
+    .colorful-title {
+        background-image: linear-gradient(to right, #ACF7F0, #F0ACF7);
+        background-clip: text;
+        text-fill-color: transparent;
+        -webkit-background-clip: text;
+        -moz-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -moz-text-fill-color: transparent;
     }
 
 
@@ -176,14 +186,16 @@
                         </div>
                     </nav>
                 </div>
-                <div class="title-container" style="padding-left: 10%; padding-right: 10%">
-                    <div style="display: table; margin: 0px; padding: 0px; width: 1%">
+                <div class="title-container" style="padding-left: 10%; padding-right: 10%: width: 100%">
+                    <div style="display: table; margin: 0px; padding: 0px">
                         <!--                    <img src="../_static/assets/soundwave_dark.svg">-->
                         <h1 class="title">
-                            AURALFLOW
+                            <text class="colorful-title">Separate Vocals, Bass & Drums. </text><br>
+                            Design Audio Neural Nets.<br>
+                            Train & Evaluate.
                         </h1>
                         <p class="description">
-                            A lightweight deep learning toolkit for designing and training music source
+                            Introducing Auralflow — a lightweight deep learning toolkit for designing and training music source
                             separation models with minimal code.
                         </p>
                     </div>

@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Quickstart" href="quickstart.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>auralflow</title>
+        <title>Auralflow Documentation - auralflow</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
@@ -28,7 +28,7 @@
   --color-sidebar-search-border: #FFFFFF;
   --color-sidebar-brand-text: #212529;
   --font-weight: 300;
-  --color-problematic: #FF4136;
+  --color-problematic: orange;
   
   }
   @media not print {
@@ -134,7 +134,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="#"><div class="brand">auralflow</div></a>
+      <a href="contents.html"><div class="brand">auralflow</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -154,7 +154,7 @@
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
       
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="contents.html">
   
   <div class="sidebar-logo-container">
     <img class="sidebar-logo only-light" src="_static/./assets/soundwave_light.svg" alt="Light Logo"/>
@@ -224,6 +224,15 @@
 <h1>Auralflow Documentation<a class="headerlink" href="#auralflow-documentation" title="Permalink to this headline">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<p>Auralflow is a lightweight deep learning toolkit for designing and training
+music source separation models in PyTorch with minimal code. With highly
+customizable base model architectures and an array of useful tools
+— including audio processors, trainers, evaluators and visualizers — auralflow
+offers a seamless and efficient ML workflow. Moreover, models can be trained
+entirely with features native to the package or ported to custom training
+scripts for more versatility. Lastly, auralflow sports ready-to-go,
+pretrained neural networks that split full music tracks into
+vocals, bass, drums and background instrumental tracks with quality results.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h2>
 <p>Install auralflow via PyPi package manager:</p>
@@ -231,36 +240,10 @@
 </pre></div>
 </div>
 </section>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">#</a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-<section id="api-documentation">
-<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">#</a></h2>
+<section id="python-api">
+<h2>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Basic Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#model-configuration-with-config">Model Configuration with <code class="docutils literal notranslate"><span class="pre">config</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#config"><code class="docutils literal notranslate"><span class="pre">config</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#setting-parameters">Setting Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#modifying-within-a-text-editor-recommended">Modifying within a Text Editor (recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#modifying-from-the-command-line">Modifying from the Command Line</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="params.html">Parameters</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="params.html#model">Model</a></li>
-<li class="toctree-l4"><a class="reference internal" href="params.html#dataset">Dataset</a></li>
-<li class="toctree-l4"><a class="reference internal" href="params.html#training">Training</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
@@ -273,6 +256,12 @@
 </ul>
 </div>
 </section>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+</ul>
+</section>
 </section>
 
         </article>
@@ -280,15 +269,7 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="quickstart.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">Quickstart</div>
-              </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
-            </a>
+          
           
         </div>
         <div class="bottom-of-page">
@@ -324,10 +305,8 @@
             <ul>
 <li><a class="reference internal" href="#">Auralflow Documentation</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a><ul>
-<li><a class="reference internal" href="#api-documentation">API Documentation</a></li>
+<li><a class="reference internal" href="#python-api">Python API</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 </li>
 </ul>
