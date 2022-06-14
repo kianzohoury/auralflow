@@ -64,3 +64,7 @@ p.rubric {
     font-weight: 300;
     font-size: 28px;
 }
+
+.sidebar-drawer {
+    width: 0 !important;
+}
