@@ -1,8 +1,3 @@
-body, html {
-    font-family: "Roboto Mono", "SFMono-Regular", Menlo, Consolas, Monaco,
-    Liberation Mono, Lucida Console, monospace !important;
-}
-
 h1 {
     font-weight: 300;
     color: #212529;
@@ -70,6 +65,28 @@ p.rubric {
     font-size: 28px;
 }
 
+.sidebar-drawer {
+    font-family: "Roboto Mono", "SFMono-Regular", Menlo, Consolas, Monaco,
+    Liberation Mono, Lucida Console, monospace !important;
+}
+
 aside.sidebar-drawer {
     width: 0 !important;
+}
+
+a {
+    &.reference.internal {
+        color: #049EF4 !important;
+    }
+    &.current.reference.internal {
+        color: "#212529" !important;
+    }
+}
+
+a.reference.internal {
+    color: #049EF4 !important;
+}
+
+a.current.reference.internal {
+    color: "#212529" !important;
 }
