@@ -1,3 +1,8 @@
+body, html {
+    font-family: "Roboto Mono", "SFMono-Regular", Menlo, Consolas, Monaco,
+    Liberation Mono, Lucida Console, monospace !important;
+}
+
 h1 {
     font-weight: 300;
     color: #212529;
@@ -65,6 +70,6 @@ p.rubric {
     font-size: 28px;
 }
 
-.sidebar-drawer {
+aside.sidebar-drawer {
     width: 0 !important;
 }
