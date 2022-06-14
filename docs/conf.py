@@ -71,8 +71,8 @@ html_css_files = ['../_static/css/custom.css']
 
 html_theme_options = {
 
-    "light_logo": "./assets/soundwave_light.svg",
-    "dark_logo": "./assets/soundwave_dark.svg",
+    # "light_logo": "./assets/soundwave_light.svg",
+    # "dark_logo": "./assets/soundwave_dark.svg",
 
     "light_css_variables": {
         "color-foreground-primary": "#212529",
@@ -86,7 +86,7 @@ html_theme_options = {
         "color-problematic": "orange",
 
     },
-    "sidebar_hide_name": True,
+    "sidebar_hide_name": False,
     "navigation_with_keys": True,
 }
 
