@@ -89,13 +89,30 @@ def create_audio_dataset(
     dataset_path: str,
     targets: List[str],
     split: str = "train",
-    chunk_size: int = 1,
-    num_chunks: int = int(1e6),
-    max_num_tracks: Optional[int] = None,
+    chunk_size: int = 2,
+    num_chunks: int = 10000,
+    max_num_tracks: int = 100,
     sample_rate: int = 44100,
     mono: bool = True,
 ) -> AudioDataset:
-    """Creates a chunked audio dataset."""
+    """Helper method that creates an AudioDataset.
+
+    Args:
+        dataset_path (str): Path to the directory of audio files belonging to
+            a dataset.
+        targets (List[str]): Labels of the ground-truth source signals.
+        split (str): Subset of the directory to read from. Default: "train".
+        chunk_size (int): Duration of each resampled audio chunk in seconds.
+            Default: 2.
+        num_chunks (int): Number of resampled chunks to create. Default: 10000.
+        max_num_tracks (int): Max number of full audio tracks to resample from.
+            Default: 100.
+        sample_rate (int): Sample rate. Default: 44100.
+        mono (bool): Load tracks as mono. Default: True.
+
+    Returns:
+        AudioDataset: Audio dataset.
+    """
     # Full-length audio tracks.
     full_dataset = audio_to_disk(
         dataset_path=dataset_path,
