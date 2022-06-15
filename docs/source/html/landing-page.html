@@ -22,11 +22,12 @@
 
     .landing-container {
         display: grid;
-        background-image: url("./_static/assets/wave_animation.gif");
+<!--        background-image: url("./_static/assets/wave_animation.gif");-->
         background-size: cover;
         background-position: center;
         height: 100vh;
-        background-color: black;
+        background-color: #049EF4;
+        background-color: white;
         padding-left: 10%;
         padding-right: 10%;
         padding-top: 0px;
@@ -40,40 +41,46 @@
         z-index: 2;
     }
 
-    .landing-overlay {
-        background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1));
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        display: block;
-        z-index: 0;
-    }
+<!--    .landing-overlay {-->
+<!--        background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1));-->
+<!--        position: absolute;-->
+<!--        height: 100%;-->
+<!--        width: 100%;-->
+<!--        display: block;-->
+<!--        z-index: 0;-->
+<!--    }-->
 
     .title {
         color: #f3f4f7;
         color: #e8e8e8;
+        color: black !important;
         padding: 0px;
         margin: 0px;
         font-size: 60px;
-        font-weight:300;
+        font-weight: 200;
 <!--        font-family: "Roboto Mono", "SFMono-Regular", Menlo, Consolas, Monaco,-->
 <!--        Liberation Mono, Lucida Console, monospace !important;-->
     }
 
+<!--    .section-title {-->
+<!--        background-image: linear-gradient(to right, #ACF7F0, #F0ACF7);-->
+<!--        background-clip: text;-->
+<!--        text-fill-color: transparent;-->
+<!--        -webkit-background-clip: text;-->
+<!--        -moz-background-clip: text;-->
+<!--        -webkit-text-fill-color: transparent;-->
+<!--        -moz-text-fill-color: transparent;-->
+<!--        font-weight: 200;-->
+<!--    }-->
+<!--    -->
     .section-title {
-        background-image: linear-gradient(to right, #ACF7F0, #F0ACF7);
-        background-clip: text;
-        text-fill-color: transparent;
-        -webkit-background-clip: text;
-        -moz-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        -moz-text-fill-color: transparent;
-        font-weight: 200;
+        color: #049EF4 !important;
     }
 
     .description {
         color: #f3f4f7;
         color: #e8e8e8;
+        color: black;
         margin: 0px;
         font-size: 18px;
         font-weight: 300;
@@ -86,25 +93,41 @@
         display: flex;
         width: 100%;
         height: 100vh;
-        background-color: black;
+        background-color: white;
         padding-left: 10%;
         padding-right: 10%;
-        padding-top: 5%;
-        padding-bottom: 5%;
+        padding-top: 0%;
+        padding-bottom: 0%;
         flex-direction: column;
     }
 
     code {
-        background-color: #f3f4f7;
         font-size: 20px;
-        text-align: middle;
-        padding: 20px;
-        color: #212529;
+        color: #f3f4f7 !important;
+        padding-top: 0px !important;
+        margin: 0px !important;
+        color: #CBCBCB !important;
+        color: black !important;
+    }
+
+    pre {
+        white-space: -moz-pre-wrap;
+        white-space: -pre-wrap;
+        white-space: -o-pre-wrap;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        padding: 20px !important;
+        margin: 0px !important;
+        white-space: pre-line !important;
+        border: none !important;
     }
 
     h1, h2, h3, h4, h5 {
         color: #f3f4f7;
-        font-weight: 300;
+        color: black;
+        font-weight: 100;
+        font-family: "RobotoMono-Regular", "SFMono-Regular", Menlo, Consolas, Monaco,
+        Liberation Mono, Lucida Console, monospace !important;
     }
 
     span {
@@ -136,6 +159,14 @@
         background-color: transparent !important;
     }
 
+    .nav.nav-tabs {
+        border: none;
+    }
+
+    a {
+        color: #049EF4 !important;
+    }
+
     .sub-container {
         padding: 0px;
         margin: 0px;
@@ -149,11 +180,15 @@
     }
 
     .nav-item {
-        color: #f3f4f7;
+        color: black;
     }
 
     .nav-link {
-        color: #f3f4f7;
+        color: black;
+    }
+
+    a.nav-link {
+        color: black !important;
     }
 
     .nav-link::hover {
@@ -162,7 +197,7 @@
 
     .navbar-nav .nav-item.active .nav-link,
     .navbar-nav .nav-item:hover .nav-link {
-        color: #F0ACF7;
+        color: black;
     }
 
     .navbarSupportedContent {
@@ -176,15 +211,20 @@
         flex: 1;
     }
 
-    .colorful-title {
-        background-image: linear-gradient(to right, #ACF7F0, #F0ACF7);
-        background-clip: text;
-        text-fill-color: transparent;
-        -webkit-background-clip: text;
-        -moz-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        -moz-text-fill-color: transparent;
+    l1 {
+        background-color: red !important;
+        color: red !important;
     }
+
+<!--    .colorful-title {-->
+<!--        background-image: linear-gradient(to right, #ACF7F0, #F0ACF7);-->
+<!--        background-clip: text;-->
+<!--        text-fill-color: transparent;-->
+<!--        -webkit-background-clip: text;-->
+<!--        -moz-background-clip: text;-->
+<!--        -webkit-text-fill-color: transparent;-->
+<!--        -moz-text-fill-color: transparent;-->
+<!--    }-->
 
 <!--    .btn.btn-outline-primary {-->
 <!--      background:-->
@@ -211,6 +251,28 @@
     .buttons {
         display: flex;
         flex-direction: row;
+    }
+
+    hr {
+        height: 1px !important;
+        border: none !important;
+        width: 100%;
+        background: linear-gradient(to right, #ACF7F0, #F0ACF7) !important;
+        opacity: 0.8;
+    }
+
+    .code-block {
+        background-color: #101717;
+        background-color: whitesmoke;
+        padding: 0px;
+<!--        border-radius: 30px;-->
+
+    }
+
+    .code-block-outer {
+        display: flex;
+        flex-direction: column;
+        width: 48.5%;
     }
 
 
@@ -259,17 +321,17 @@
                 </div>
             </nav>
             <div class="landing-container">
-                <div class="landing-overlay"></div>
+<!--                <div class="landing-overlay"></div>-->
 
                 <div class="title-container">
                     <div style="display: table; margin: 0px; padding: 0px">
                         <!--                    <img src="../_static/assets/soundwave_dark.svg">-->
-                        <h1 class="title">
-                            <text class="colorful-title">Separate Vocals, Bass & Drums. </text><br>
-                            Design Audio Neural Nets.<br>
-                            Train & Evaluate.
+                        <h1 class="title" style="font-weight: 100">
+                            <text class="colorful-title">SPLIT BASS, DRUMS & VOCAL TRACKS. </text><br>
+                            DESIGN AUDIO NEURAL NETWORKS.<br>
+                            TRAIN & EVALUATE.
                         </h1>
-                        <p class="description">
+                        <p class="description" style="color: black; font-weight; 300; font-size: 24px">
                             Introducing Auralflow — a lightweight deep learning toolkit for designing and training music source
                             separation models with minimal code.
                         </p>
@@ -292,8 +354,8 @@
 <!--                            </button>-->
                             <div>
                                 <button class="btn btn-outline-primary" onclick="../index.html"
-                                        style="display: block; border-radius: 200px; width: 120px;
-                            border-color: #f3f4f7; padding: 10px; margin-right: 30px">
+                                        style="display: block; border-radius: 0px; width: 120px;
+                            border-color: #f3f4f7; padding: 10px; margin-right: 20px">
                                     <text style="font-size: 18px; color: #f3f4f7; font-weight: 300; padding: 0px">
                                         Get Started
                                     </text>
@@ -301,32 +363,42 @@
                             </div>
                             <div>
                                 <button class="btn btn-outline-primary" onclick="../index.html"
-                                        style="display: block; border-radius: 200px; width: 280px;
+                                        style="display: block; border-radius: 0px; width: 200px;
                             border-color: #f3f4f7; padding: 10px;">
                                     <text style="font-size: 18px; color: #f3f4f7; font-weight: 300; padding: 0px">
-                                        <i class="bi bi-book-half"></i> &nbsp; API Documentation
+                                        <i class="bi bi-book-half"></i> &nbsp; Read the Docs
                                     </text>
                                 </button>
                             </div>
+                        </div>
+                        <div class="code-block" style="background-color: black; padding: 20px; margin: 0px; width: 40%">
+                            <code style="color: white !important">$ pip install auralflow</code>
+
+
                         </div>
                     </div>
                 </div>
             </div>
             <div class="section-container">
+<!--                <hr>-->
                 <div style="display: flex; width: 100%; justify-content: center; margin-top: 0px; margin-bottom: 20px">
                     <span style="font-size: 20px; text-align: middle; font-weight: 200">
                         CORE FEATURES
                     </span>
-
+                </div>
+                <div style="display: block; width: 48.5%; justify-content: center; align-items: center; padding: 0px; align-content: middle">
+<!--                    <img src="./_static/assets/deep_mask.png" style="width: 100%; height: 100%;-->
+<!--                        align-items: center; padding: 0px; align-content: middle; display: block; margin: auto; width: 150px; height: auto; margin-top: -20px">-->
                 </div>
                 <span class="section-title">
                     POWERFUL ML ARCHITECTURES
                 </span>
-                <div style="display: flex; margin: 0px; padding: 0px; width: 100%; flex-direction: row">
-                    <div>
+                <div style="display: flex; margin: 0px;margin-bottom: 60px; padding: 0px; width: 100%; flex-direction: row; justify-content: space-between">
+                    <div style="width: 48.5%">
                         <div style="width: 100%">
                             <h1 style="font-weight: 300">
-                                Harness the Power of Deep Mask Autoencoders.
+                                Harness Versatile Deep Mask Autoencoders.
+                                <i class="bi bi-mask" style="color: black; height: 100px; width: auto"></i>
                             </h1>
                         </div>
                         <p class="description" style="width: 100%">
@@ -334,30 +406,213 @@
                             networks and variational autoencoders — that learn time-frequency
                             masks in the spectrogram domain.
                         </p>
+                        <hr>
+                        <p class="description" style="width: 100%; font-weight: 500; font-size: 14px; color:  #049EF4;">
+                            Read About Models &nbsp; <i class="bi bi-arrow-right" style="color: #049EF4;"></i>
+                        </p>
                     </div>
-                    <div style="display: block; width: 100%; justify-content: center; align-items: center; padding: 0px; align-content: middle">
-                        <img src="./_static/assets/deep_mask.png" style="width: 400px; height: 400px;
-                        align-items: center; padding: 0px; align-content: middle; display: block; margin: auto">
+                    <div style="width: 48.5%">
+
+                        <ul class="nav nav-tabs">
+                            <li><a href="#a" data-toggle="tab">As a Model Wrapper</a></li>
+                            <li><a href="#b" data-toggle="tab">As a PyTorch Module</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="a">
+                                <div class="code-block">
+                                    <pre>
+                                        <code style="width: 100px !important;">from auralflow.utils import load_config
+                                            from auralflow.models import SpectrogramMaskModel
+                                            import torch
+
+
+                                            # unload configuration data
+                                            config_data = load_config("/path/to/my_model/config.json")
+
+                                            # instantiate deep mask estimator
+                                            mask_model = SpectrogramMaskModel(config_data)
+
+                                            # generate 2 sec audio sample
+                                            mix_audio = torch.rand((1, 88200))
+
+                                            # extract vocals
+                                            vocals_estimate = mask_model.separate(mix_audio)</code>
+                                    </pre>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="b">
+
+                                <div class="code-block">
+                                    <pre>
+                                        <code style="width: 100px !important;">from auralflow.models import SpectrogramNetVAE
+                                            # initialize network
+                                            mask_model = SpectrogramNetVAE(
+                                                &nbsp; &nbsp; num_fft_bins=1024,
+                                                &nbsp; &nbsp; num_frames=173,
+                                                &nbsp; &nbsp; hidden_channels=16,
+                                                &nbsp; &nbsp; recurrent_depth=2,
+                                                &nbsp; &nbsp; hidden_size=2048
+                                            )
+
+                                            # generate spectrogram data
+                                            mix_spec = torch.rand((8, 1, 1024, 173))
+
+                                            # estimate source mask
+                                            source_mask = mask_model(mix_spec)</code>
+                                    </pre>
+                                </div>
+
+                            </div>
+
+                        </div>
                     </div>
                 </div>
 
 
-                <div style="display: flex; margin: 0px; padding: 0px; width: 100%; flex-direction: row">
-                    <div>
-                        <div style="width: 100%; display: flex; justify-content: right">
+
+
+
+
+
+                <div style="display: flex; margin: 0px; margin-bottom: 60px; padding: 0px; width: 100%; flex-direction: row; justify-content: space-between">
+
+                    <div style="width: 48.5%">
+
+                        <ul class="nav nav-tabs">
+                            <li><a href="#a" data-toggle="tab">example 1</a></li>
+                            <li><a href="#b" data-toggle="tab">example 2</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="a">
+                                <div class="code-block">
+                                    <pre>
+                                        <code style="width: 100px !important;">from auralflow.utils import load_config
+                                            from auralflow.models import SpectrogramMaskModel
+                                            import torch
+
+
+                                            # unload configuration data
+                                            config_data = load_config("/path/to/my_model/config.json")
+
+                                            # instantiate deep mask estimator
+                                            mask_model = SpectrogramMaskModel(config_data)
+
+                                            # generate 2 sec audio sample
+                                            mix_audio = torch.rand((1, 88200))
+
+                                            # extract vocals
+                                            vocals_estimate = mask_model.separate(mix_audio)</code>
+                                    </pre>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="b">
+
+                                <div class="code-block">
+                                    <pre>
+                                        <code style="width: 100px !important;">from auralflow.models import SpectrogramNetVAE
+                                            # initialize network
+                                            mask_model = SpectrogramNetVAE(
+                                                &nbsp; &nbsp; num_fft_bins=1024,
+                                                &nbsp; &nbsp; num_frames=173,
+                                                &nbsp; &nbsp; hidden_channels=16,
+                                                &nbsp; &nbsp; recurrent_depth=2,
+                                                &nbsp; &nbsp; hidden_size=2048
+                                            )
+
+                                            # generate spectrogram data
+                                            mix_spec = torch.rand((8, 1, 1024, 173))
+
+                                            # estimate source mask
+                                            source_mask = mask_model(mix_spec)</code>
+                                    </pre>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div style="width: 48.5%">
+                        <div style="width: 100%">
+                            <span class="section-title">
+                                SWIFT DATA PROCESSING
+                            </span>
                             <h1 style="font-weight: 300">
-                                Harness the Power of Deep Mask Autoencoders.
+                                Process Audio with a Single Tool
+                                <i class="bi bi-tools" style="color: black; height: 100px; width: auto"></i>
                             </h1>
                         </div>
                         <p class="description" style="width: 100%">
                             Customize the ins and outs of modifiable U-Nets — including LSTM
-                            networks and variational autoencoders — for the time-frequency domain.
+                            networks and variational autoencoders — that learn time-frequency
+                            masks in the spectrogram domain.
+                        </p>
+                        <hr>
+                        <p class="description" style="width: 100%; font-weight: 500; font-size: 14px; color: #049EF4;">
+                            Read About Data Transform &nbsp; <i class="bi bi-arrow-right" style="color: #049EF4;"></i>
                         </p>
                     </div>
-<!--                    <div style="display: flex; width: 100%; justify-content: center; align-items: center; padding: 0px">-->
-<!--                        <img src="./_static/assets/waveform_gradient.png" style="width: 400px; height: 400px">-->
-<!--                    </div>-->
                 </div>
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <div class="section-container">
+                <div style="display: flex; margin: 0px; padding: 0px; flex-direction: row; justify-content: space-between; align-items: center">
+
+
+                </div>
+                <div style="display: flex; flex-direction: row; justify-content: right; margin-top: 0px; margin-bottom: 20px">
+
+                    <div class="code-block-outer">
+                        <div>
+                            <p class="description" style="width: 100%; font-weight: 500">
+                                Using audio transforms.
+                            </p>
+                        </div>
+                        <div class="code-block">
+                            <pre>
+                                <code style="width: 100px !important;">from auralflow.utils.data_utils import AudioTransform
+
+
+                                    # instantiate audio transform
+                                    transform = AudioTransform(
+                                    &nbsp; &nbsp; num_fft=1024,
+                                    &nbsp; &nbsp; hop_length=768,
+                                    &nbsp; &nbsp; window_size=1024,
+                                    &nbsp; &nbsp;  sample_rate=44100
+                                    )
+
+                                    # generate 2 sec audio sample
+                                    mix_audio = torch.rand((16, 1, 88200))
+
+                                    # audio to spectrogram
+                                    mix_spec = transform.to_spectrogram(mix_audio)
+
+                                    # estimate source mask
+                                    source_mask = mask_model(mix_spec)
+
+                                    # extract target source estimate
+                                    target_spec_est = source_mask * mix_spec
+
+                                    # transform spectrogram data back to audio
+                                    target_audio_est = transform.to_audio(target_spec_est)</code>
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
