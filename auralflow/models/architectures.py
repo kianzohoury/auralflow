@@ -5,13 +5,21 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import torch
-import torch.nn as nn
 import torch.backends.cudnn
+import torch.nn as nn
+
 
 from auralflow.losses import kl_div_loss
+from auralflow.utils.data_utils import get_deconv_pad
 from torch import FloatTensor, Tensor
 from typing import Tuple, Optional
-from auralflow.utils.data_utils import get_deconv_pad
+
+
+__all__ = [
+    "SpectrogramNetSimple",
+    "SpectrogramNetLSTM",
+    "SpectrogramNetVAE"
+]
 
 
 # Use CNN GPU optimizations if available.
@@ -421,7 +429,21 @@ class SpectrogramNetSimple(nn.Module):
             self.mask_activation = nn.Sigmoid()
 
     def forward(self, data: FloatTensor) -> FloatTensor:
-        """Forward method."""
+        r"""Forward method that estimates the source mask.
+
+        Args:
+            data (FloatTensor): Input spectrogram.
+
+        Shape:
+            - input: :math:`(N, C, F, T)`
+            - output: :math:`(N, C, F, T)`
+
+            where
+                - :math:`N`: batch size
+                - :math:`C`: number of channels
+                - :math:`F`: number of frequency bins
+                - :math:`T`: number of frames
+        """
         # Normalize input if applicable.
         data = self.input_norm(data)
 

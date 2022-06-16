@@ -20,11 +20,11 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 __all__ = [
+    "SeparationModel",
+    "SpectrogramMaskModel",
     "SpectrogramNetSimple",
     "SpectrogramNetLSTM",
     "SpectrogramNetVAE",
-    "SpectrogramMaskModel",
-    "SeparationModel",
     "create_model",
     "setup_model",
 ]

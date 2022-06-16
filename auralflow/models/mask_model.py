@@ -10,13 +10,17 @@ import torch.nn as nn
 
 
 from .base import SeparationModel
-from torch import Tensor, FloatTensor
+from torch import FloatTensor, Tensor
 from typing import Optional
-from auralflow.utils.data_utils import get_num_stft_frames, AudioTransform
+from auralflow.utils.data_utils import AudioTransform, get_num_stft_frames
 
 
 class SpectrogramMaskModel(SeparationModel):
-    """Spectrogram-domain deep mask estimation model."""
+    """Spectrogram-domain deep mask estimation model.
+
+    Args:
+        configuration (dict): Model configuration.
+    """
 
     mixture: Tensor
     target: Tensor
@@ -24,7 +28,6 @@ class SpectrogramMaskModel(SeparationModel):
     residual: Tensor
     mask: FloatTensor
     mix_phase: FloatTensor
-    target_phase: FloatTensor
     target_audio: FloatTensor
     estimate_audio: FloatTensor
 
@@ -71,24 +74,6 @@ class SpectrogramMaskModel(SeparationModel):
         self.scale = 1
         self.is_best_model = False
         self.metrics = {}
-        # self.f32_weights = self.copy_params(self.model)
-
-    @staticmethod
-    def copy_params(src_module):
-        params_dest = {}
-        for name, param in src_module.named_parameters():
-            params_dest[name] = copy.deepcopy(param.data)
-            param = param.to(dtype=torch.float16)
-        return params_dest
-
-    def update_f32_gradients(self):
-        for name, param in self.model.named_parameters():
-            if param.grad is not None:
-                self.f32_weights[name].grad = param.grad.to(
-                    dtype=torch.float32
-                )
-                self.f32_weights[name].grad /= self.scale
-        self.model._parameters = self.f32_weights
 
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
         """Wrapper method processes and sets data for internal access."""
@@ -110,9 +95,7 @@ class SpectrogramMaskModel(SeparationModel):
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
         self.mask = self.model(self.mixture)
-        self.phase_mask = self.model.phase_mask
         self.estimate = self.mask * (self.mixture.clone().detach())
-        # self.mix_phase = self.phase_mask * (self.mix_phase.clone().detach())
 
         phase_corrected = self.estimate * torch.exp(1j * self.mix_phase)
         target_estimate = self.transform.to_audio(phase_corrected)
@@ -189,3 +172,22 @@ class SpectrogramMaskModel(SeparationModel):
             self.max_lr_steps -= 1 if not self.stop_patience else 0
             self.is_best_model = False
         return not self.max_lr_steps
+
+
+
+    # @staticmethod
+    # def copy_params(src_module):
+    #     params_dest = {}
+    #     for name, param in src_module.named_parameters():
+    #         params_dest[name] = copy.deepcopy(param.data)
+    #         param = param.to(dtype=torch.float16)
+    #     return params_dest
+    #
+    # def update_f32_gradients(self):
+    #     for name, param in self.model.named_parameters():
+    #         if param.grad is not None:
+    #             self.f32_weights[name].grad = param.grad.to(
+    #                 dtype=torch.float32
+    #             )
+    #             self.f32_weights[name].grad /= self.scale
+    #     self.model._parameters = self.f32_weights
