@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>auralflow.datasets.load_audio - auralflow</title>
+        <title>auralflow.datasets.verify_dataset - auralflow</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
@@ -218,32 +218,35 @@
           </label>
         </div>
         <article role="main">
-          <section id="auralflow-datasets-load-audio">
-<h1>auralflow.datasets.load_audio<a class="headerlink" href="#auralflow-datasets-load-audio" title="Permalink to this headline">#</a></h1>
+          <section id="auralflow-datasets-verify-dataset">
+<h1>auralflow.datasets.verify_dataset<a class="headerlink" href="#auralflow-datasets-verify-dataset" title="Permalink to this headline">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <dl class="py function">
-<dt class="sig sig-object py" id="auralflow.datasets.load_audio">
-<span class="sig-prename descclassname"><span class="pre">auralflow.datasets.</span></span><span class="sig-name descname"><span class="pre">load_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'train'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_tracks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mono</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.OrderedDict</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#auralflow.datasets.load_audio" title="Permalink to this definition">#</a></dt>
-<dd><p>Loads audio data directly into memory.</p>
+<dt class="sig sig-object py" id="auralflow.datasets.verify_dataset">
+<span class="sig-prename descclassname"><span class="pre">auralflow.datasets.</span></span><span class="sig-name descname"><span class="pre">verify_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.datasets.verify_dataset" title="Permalink to this definition">#</a></dt>
+<dd><p>Verifies the structure of a subdirectory belonging to the dataset.</p>
+<p>A dataset directory must meet the following rules to be valid:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>path ends with <code class="docutils literal notranslate"><span class="pre">/train</span></code>, <code class="docutils literal notranslate"><span class="pre">/val</span></code> or <code class="docutils literal notranslate"><span class="pre">/test</span></code></p></li>
+<li><p>contains a folder of audio files for every individual track title</p></li>
+<li><p>contains a <code class="docutils literal notranslate"><span class="pre">mixture.wav</span></code> (full track) within each track folder</p></li>
+<li><p>contains a <code class="docutils literal notranslate"><span class="pre">*.wav</span></code> file for each target within each track folder</p></li>
+</ul>
+</div></blockquote>
+<p>The targets include <code class="docutils literal notranslate"><span class="pre">bass.wav</span></code>, <code class="docutils literal notranslate"><span class="pre">drums.wav</span></code>, <code class="docutils literal notranslate"><span class="pre">vocals.wav</span></code> and
+<code class="docutils literal notranslate"><span class="pre">other.wav</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dataset_path</strong> (<em>str</em>) -- Path to the directory of audio files belonging to
-a dataset.</p></li>
-<li><p><strong>targets</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) -- Labels of the ground-truth source signals.</p></li>
-<li><p><strong>split</strong> (<em>str</em>) -- Subset of the directory to read from. Default: &quot;train&quot;.</p></li>
-<li><p><strong>max_num_tracks</strong> (<em>int</em>) -- Max number of full audio tracks to resample from.
-Default: 100.</p></li>
-<li><p><strong>sample_rate</strong> (<em>int</em>) -- Sample rate. Default: 44100.</p></li>
-<li><p><strong>mono</strong> (<em>bool</em>) -- Load tracks as mono. Default: True.</p></li>
+<li><p><strong>subset_path</strong> (<em>str</em>) -- Path to a subset of the dataset ending in <code class="docutils literal notranslate"><span class="pre">/train</span></code>,
+<code class="docutils literal notranslate"><span class="pre">/val</span></code> or <code class="docutils literal notranslate"><span class="pre">/test</span></code>.</p></li>
+<li><p><strong>targets</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) -- Labels of the target sources.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Audio data corresponding to mixture, (1 or more targets), duration.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>List[..., OrderedDict[Mapping[str, np.ndarray], Mapping[str, int]]]</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>IOError</strong> -- Raised if a required file is missing for any track title.</p>
 </dd>
 </dl>
 </dd></dl>

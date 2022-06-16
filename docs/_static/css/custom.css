@@ -27,6 +27,9 @@ code {
 
 .row-even {
     background-color: #f3f4f7 !important;
+    code.literal {
+        background: white !important;
+    }
 }
 
 td, tr {
@@ -76,4 +79,9 @@ a.reference.internal {
 
 a.current.reference.internal {
     color: "#212529" !important;
+}
+
+blockquote {
+    background: none !important;
+    border-left: none !important;
 }

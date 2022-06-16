@@ -13,7 +13,8 @@
    
       create_audio_dataset
       create_audio_folder
-      load_audio
+      load_stems
+      verify_dataset
    
    
 

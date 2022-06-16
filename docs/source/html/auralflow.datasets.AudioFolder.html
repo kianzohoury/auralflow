@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>&lt;no title&gt; - auralflow</title>
+        <title>auralflow.datasets.AudioFolder - auralflow</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
@@ -218,7 +218,72 @@
           </label>
         </div>
         <article role="main">
-          
+          <section id="auralflow-datasets-audiofolder">
+<h1>auralflow.datasets.AudioFolder<a class="headerlink" href="#auralflow-datasets-audiofolder" title="Permalink to this headline">#</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.datasets.AudioFolder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.datasets.</span></span><span class="sig-name descname"><span class="pre">AudioFolder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'train'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'wav'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'soundfile'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.datasets.AudioFolder" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.dataset.IterableDataset</span></code></p>
+<p>An on-the-fly audio sample generator designed to be memory efficient.</p>
+<p>Similar to PyTorch's ImageFolder class, it loads audio from an audio
+folder without storing the audio directly in memory. Instead, chunks of
+audio are randomly sampled (with replacement) by the dataloader.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_path</strong> (<em>str</em>) -- Root directory path.</p></li>
+<li><p><strong>targets</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) -- Target sources. Default: ['vocals'].</p></li>
+<li><p><strong>sample_length</strong> (<em>int</em>) -- The duration of an audio sample.</p></li>
+<li><p><strong>subset</strong> (<em>str</em>) -- Train or test set. Default: 'train'.</p></li>
+<li><p><strong>audio_format</strong> (<em>str</em>) -- Audio format. Default: 'wav'.</p></li>
+<li><p><strong>sample_rate</strong> (<em>int</em>) -- Sample rate. Default: 44100</p></li>
+<li><p><strong>num_channels</strong> (<em>int</em>) -- Number of audio channels. Default: 1.
+Default: True.</p></li>
+<li><p><strong>backend</strong> (<em>str</em>) -- Torchaudio backend. Default: 'soundfile'.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.datasets.AudioFolder.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#auralflow.datasets.AudioFolder.__getitem__" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the name of the track at the index in the folder.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.datasets.AudioFolder.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#auralflow.datasets.AudioFolder.__iter__" title="Permalink to this definition">#</a></dt>
+<dd><p>Yields pairs of audio data iteratively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields</dt>
+<dd class="field-odd"><p><em>Tuple[Tensor, Tensor]</em> -- Mixture and target data, respectively.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.datasets.AudioFolder.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#auralflow.datasets.AudioFolder" title="auralflow.datasets.datasets.AudioFolder"><span class="pre">auralflow.datasets.datasets.AudioFolder</span></a></span></span><a class="headerlink" href="#auralflow.datasets.AudioFolder.split" title="Permalink to this definition">#</a></dt>
+<dd><p>Splits itself into training and validation sets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>val_split</strong> (<em>float</em>) -- Ratio of training files to split off into
+the validation <code class="docutils literal notranslate"><span class="pre">AudioFolder</span></code>. Default 0.2.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The validation <code class="docutils literal notranslate"><span class="pre">AudioFolder</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#auralflow.datasets.AudioFolder" title="auralflow.datasets.AudioFolder">AudioFolder</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
         </article>
       </div>
       <footer>
