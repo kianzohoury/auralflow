@@ -5,11 +5,12 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import librosa
-import numpy as np
+
 
 from auralflow.visualizer import ProgressBar
 from collections import OrderedDict
 from .datasets import AudioDataset, AudioFolder
+from numpy import ndarray
 from pathlib import Path
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
@@ -20,7 +21,8 @@ __all__ = [
     "AudioFolder",
     "create_audio_dataset",
     "create_audio_folder",
-    "load_audio",
+    "load_stems",
+    "verify_dataset"
 ]
 
 
@@ -49,7 +51,7 @@ def create_audio_folder(
         backend (str): Torchaudio backend. Default: 'soundfile'.
 
     Returns:
-        AudioFolder: Audio folder.
+        ``AudioFolder``: Audio folder.
     """
     audio_folder = AudioFolder(
         dataset_path=dataset_path,
@@ -64,15 +66,15 @@ def create_audio_folder(
     return audio_folder
 
 
-def load_audio(
+def load_stems(
     dataset_path: str,
     targets: List[str],
     split: str = "train",
     max_num_tracks: Optional[int] = None,
     sample_rate: int = 44100,
     mono: bool = True,
-) -> List[OrderedDict[..., Mapping[str, np.ndarray], Mapping[str, int]]]:
-    """Loads audio data directly into memory.
+) -> List[OrderedDict[..., Mapping[str, ndarray], Mapping[str, int]]]:
+    """Loads audio data (mixture and stems/targets) directly into memory.
 
     Args:
         dataset_path (str): Path to the directory of audio files belonging to
@@ -85,9 +87,23 @@ def load_audio(
         mono (bool): Load tracks as mono. Default: True.
 
     Returns:
-        List[..., OrderedDict[Mapping[str, np.ndarray], Mapping[str, int]]]:
-            Audio data corresponding to mixture, (1 or more targets), duration.
+        List[..., OrderedDict[Mapping[str, ndarray], Mapping[str, int]]]:
+            A list of ordered mappings (one for each track), where each
+            ordered mapping consists of:
+
+                - mixture (ndarray): Mixture track.
+                - bass (ndarray): Bass track (if in ``targets``).
+                - drums (ndarray): Drums track (if in ``targets``).
+                - vocal (ndarray): Vocals track (if ``targets``).
+                - other (ndarray): Other/background track (if in ``targets``).
+                - duration (int): Duration of the mixture track.
+
+    Raises:
+        IOError: Raised if the dataset cannot be verified.
     """
+    # Verify dataset directory.
+    verify_dataset(subset_path=dataset_path + "/" + split, targets=targets)
+
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
     max_num_tracks = max_num_tracks if max_num_tracks else float("inf")
@@ -120,6 +136,7 @@ def load_audio(
             audio_tracks.append(entry)
             if index == n_tracks:
                 break
+
     return audio_tracks
 
 
@@ -149,10 +166,10 @@ def create_audio_dataset(
         mono (bool): Load tracks as mono. Default: True.
 
     Returns:
-        AudioDataset: Audio dataset.
+        ``AudioDataset``: Audio dataset.
     """
     # Full-length audio tracks.
-    full_dataset = load_audio(
+    full_dataset = load_stems(
         dataset_path=dataset_path,
         targets=targets,
         split=split,
@@ -183,3 +200,34 @@ def load_dataset(dataset: Dataset, training_params: dict) -> DataLoader:
         shuffle=True,
     )
     return dataloader
+
+
+def verify_dataset(subset_path: str, targets: List[str]) -> None:
+    """Verifies the structure of a subdirectory belonging to the dataset.
+
+    A dataset directory must meet the following rules to be valid:
+
+        - path ends with ``/train``, ``/val`` or ``/test``
+        - contains a folder of audio files for every individual track title
+        - contains a ``mixture.wav`` (full track) within each track folder
+        - contains a ``*.wav`` file for each target within each track folder
+
+    The targets include ``bass.wav``, ``drums.wav``, ``vocals.wav`` and
+    ``other.wav``.
+
+    Args:
+        subset_path (str): Path to a subset of the dataset ending in ``/train``,
+            ``/val`` or ``/test``.
+        targets (List[str]): Labels of the target sources.
+
+    Raises:
+        IOError: Raised if a required file is missing for any track title.
+    """
+    dataset_path = Path(subset_path)
+    targets.append("mixture")
+    for track_name in dataset_path.iterdir():
+        track_stems = list(track_name.iterdir())
+        track_stems = [stem.name.removesuffix(".wav") for stem in track_stems]
+        for target in targets:
+            if target not in track_stems:
+                raise IOError(f"Missing {target}.wav from {track_name}.")

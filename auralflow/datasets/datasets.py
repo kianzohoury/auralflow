@@ -13,28 +13,16 @@ import torchaudio
 from auralflow.visualizer import ProgressBar
 from pathlib import Path
 from torch import Tensor
-from torch.utils.data.dataset import IterableDataset, Dataset
+from torch.utils.data.dataset import Dataset, IterableDataset
 from typing import Iterator, List, Optional, Tuple
 
 
 class AudioFolder(IterableDataset):
     """An on-the-fly audio sample generator designed to be memory efficient.
 
-    Similar to PyTorch's ImageFolder class, it loads audio clips from a
-    an audio folder with a specific file structure. Loading audio files
-    especially uncompressed formats (e.g. .wav), tend to increase memory usage
-    and slow down runtime if utilizing GPUs.
-
-    * Instead of chunking each track and loading an entire audio folder's worth
-      of chunks, samples are randomly (with replacement) as needed by the
-      dataloader. Note that when a dataloader has multiple workers and memory
-      is pinned, both the sampling process and audio transfer to GPU are sped
-      up considerably, making on-the-fly audio generation a viable option.
-
-    * If an audio folder consists of just a few tracks, resampling can generate
-      a much larger dataset via chunking. However, resampling will eventually
-      result in overlapping chunks, which may reduce sample variance due to
-      the same effect that bootstrapping creates.
+    Similar to PyTorch's ImageFolder class, it loads audio from an audio
+    folder without storing the audio directly in memory. Instead, chunks of
+    audio are randomly sampled (with replacement) by the dataloader.
 
     Args:
         dataset_path (str): Root directory path.
@@ -88,15 +76,8 @@ class AudioFolder(IterableDataset):
         torchaudio.set_audio_backend(backend)
         np.random.seed(1)
 
-    def _generate_mixture(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Generates audio mixture and their ground-truth target sources.
-
-        Returns:
-            (tuple): A tuple of a training sample and its target sources.
-
-        Raises:
-            ValueError: If the audio backend cannot read an audio format.
-        """
+    def _generate_sample(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Helper method that generates pairs of mixture-target audio data."""
         sampled_track = np.random.choice(self._track_filepaths)
         source_names = ["mixture"] + self.targets
         src_filepaths = []
@@ -138,15 +119,14 @@ class AudioFolder(IterableDataset):
         return mix_data, target_data
 
     def split(self, val_split: float = 0.2) -> "AudioFolder":
-        """Splits the audio folder into training and validation folders.
+        """Splits itself into training and validation sets.
 
         Args:
-            val_split (float): Ratio of samples to allocate for a validation
-                set. Default: 0.
-        Returns:
-            (AudioFolder): The validation set.
+            val_split (float): Ratio of training files to split off into
+                the validation ``AudioFolder``. Default 0.2.
 
-        Example:
+        Returns:
+            AudioFolder: The validation ``AudioFolder``.
         """
         val_split = 0.2 if (val_split > 1 or val_split < 0) else val_split
 
@@ -172,15 +152,31 @@ class AudioFolder(IterableDataset):
         val_dataset._track_filepaths = val_filepaths
         return val_dataset
 
-    def __iter__(self) -> Iterator:
-        """Iter method."""
+    def __iter__(self) -> Tuple[Tensor, Tensor]:
+        """Yields pairs of audio data iteratively.
+
+        Yields:
+            Tuple[Tensor, Tensor]: Mixture and target data, respectively.
+        """
         while True:
-            mix, target = self._generate_mixture()
+            mix, target = self._generate_sample()
             yield mix, target
+
+    def __getitem__(self, idx: int) -> str:
+        """Returns the name of the track at the index in the folder."""
+        return str(self._track_filepaths[idx])
 
 
 class AudioDataset(Dataset):
-    """Audio dataset that loads full audio tracks directly into memory."""
+    """Audio dataset that loads full audio tracks directly into memory.
+
+    Args:
+        dataset (List): Dataset data.
+        targets (List[str]): Labels of the ground-truth source signals.
+        chunk_size (int): Duration of each resampled audio chunk in seconds.
+            Default: 2.
+        num_chunks (int): Number of resampled chunks to create. Default: 10000.
+    """
 
     def __init__(
         self,
@@ -192,7 +188,7 @@ class AudioDataset(Dataset):
     ):
         super(AudioDataset, self).__init__()
         self.targets = targets
-        self.dataset = make_chunks(
+        self.dataset = _make_chunks(
             dataset=dataset,
             chunk_size=chunk_size,
             num_chunks=num_chunks,
@@ -203,11 +199,16 @@ class AudioDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        """Gets the audio data at the corresponding index.
+
+        Returns:
+            Tuple[Tensor, Tensor]: Mixture and target data, respectively.
+        """
         mixture, targets = self.dataset[idx]
         return mixture, targets
 
 
-def make_chunks(
+def _make_chunks(
     dataset: List,
     chunk_size: int,
     num_chunks: int,
@@ -248,7 +249,7 @@ def make_chunks(
             if not discard_entry:
                 target_chunks = torch.stack(target_tensors, dim=-1)
 
-                # Unsqueeze channels dim if audio is mono.
+                # Un-squeeze channels dimension if audio is mono.
                 if mix_chunk.dim() == 1:
                     mix_chunk = mix_chunk.unsqueeze(0)
                     target_chunks = target_chunks.unsqueeze(0)
