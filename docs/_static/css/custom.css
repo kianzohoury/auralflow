@@ -7,9 +7,27 @@ dt: target {
     background-color: transparent !important;
 }
 
+dd > dl > dt {
+    font-weight: 400 !important;
+}
+
+
 .sig.sig-object.py{
     border-radius: 0px;
 
+}
+
+.sig-name.descname {
+    font-weight: 700 !important;
+}
+
+.sig-param {
+    font-weight: 700 !important;
+    color: gray !important;
+}
+
+.sig-return {
+    font-weight: 700 !important;
 }
 
 .sig.sig-object.py: target {
@@ -84,4 +102,8 @@ a.current.reference.internal {
 blockquote {
     background: none !important;
     border-left: none !important;
+}
+
+em {
+    color: #049EF4 !important;
 }

@@ -24,11 +24,11 @@
      :nosignatures:
 
    
+      SeparationModel
+      SpectrogramMaskModel
       SpectrogramNetSimple
       SpectrogramNetLSTM
       SpectrogramNetVAE
-      SpectrogramMaskModel
-      SeparationModel
    
    
 
