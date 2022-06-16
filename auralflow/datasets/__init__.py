@@ -5,7 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import librosa
-
+import numpy as np
 
 from auralflow.visualizer import ProgressBar
 from collections import OrderedDict
@@ -13,45 +13,81 @@ from .datasets import AudioDataset, AudioFolder
 from pathlib import Path
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
-from typing import List, Optional
-
+from typing import List, Mapping, Optional
 
 __all__ = [
     "AudioDataset",
     "AudioFolder",
-    "create_audio_folder",
-    "audio_to_disk",
     "create_audio_dataset",
-    "load_dataset",
+    "create_audio_folder",
+    "load_audio",
 ]
 
 
 def create_audio_folder(
-    dataset_params: dict, subset: str = "train"
-) -> datasets.AudioFolder:
-    """Creates an on-the-fly streamable dataset as an AudioFolder."""
+    dataset_path: str,
+    targets: List[str],
+    split: str = "train",
+    chunk_size: int = 2,
+    sample_rate: int = 44100,
+    mono: bool = True,
+    audio_format: str = "wav",
+    backend: str = "soundfile",
+) -> AudioFolder:
+    """Helper method that creates an ``AudioFolder``.
+
+    Args:
+        dataset_path (str): Path to the directory of audio files belonging to
+            a dataset.
+        targets (List[str]): Labels of the ground-truth source signals.
+        split (str): Subset of the directory to read from. Default: "train".
+        chunk_size (int): Duration of each resampled audio chunk in seconds.
+            Default: 2.
+        sample_rate (int): Sample rate. Default: 44100.
+        mono (bool): Load tracks as mono. Default: True.
+        audio_format (str): Audio format. Default: 'wav'.
+        backend (str): Torchaudio backend. Default: 'soundfile'.
+
+    Returns:
+        AudioFolder: Audio folder.
+    """
     audio_folder = AudioFolder(
-        subset=subset,
-        dataset_path=dataset_params["dataset_path"],
-        targets=dataset_params["target"],
-        sample_length=dataset_params["sample_length"],
-        audio_format=dataset_params["audio_format"],
-        sample_rate=dataset_params["sample_rate"],
-        num_channels=dataset_params["num_channels"],
-        backend=dataset_params["backend"],
+        dataset_path=dataset_path,
+        targets=targets,
+        subset=split,
+        sample_length=chunk_size,
+        sample_rate=sample_rate,
+        num_channels=1 if mono else 2,
+        audio_format=audio_format,
+        backend=backend
     )
     return audio_folder
 
 
-def audio_to_disk(
+def load_audio(
     dataset_path: str,
     targets: List[str],
-    max_num_tracks: Optional[int] = None,
     split: str = "train",
+    max_num_tracks: Optional[int] = None,
     sample_rate: int = 44100,
     mono: bool = True,
-) -> List[OrderedDict]:
-    """Loads chunked audio dataset directly into disk memory."""
+) -> List[OrderedDict[..., Mapping[str, np.ndarray], Mapping[str, int]]]:
+    """Loads audio data directly into memory.
+
+    Args:
+        dataset_path (str): Path to the directory of audio files belonging to
+            a dataset.
+        targets (List[str]): Labels of the ground-truth source signals.
+        split (str): Subset of the directory to read from. Default: "train".
+        max_num_tracks (int): Max number of full audio tracks to resample from.
+            Default: 100.
+        sample_rate (int): Sample rate. Default: 44100.
+        mono (bool): Load tracks as mono. Default: True.
+
+    Returns:
+        List[..., OrderedDict[Mapping[str, np.ndarray], Mapping[str, int]]]:
+            Audio data corresponding to mixture, (1 or more targets), duration.
+    """
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
     max_num_tracks = max_num_tracks if max_num_tracks else float("inf")
@@ -61,6 +97,8 @@ def audio_to_disk(
         subset_dir, total=n_tracks, fmt=False, unit="track"
     ) as pbar:
         for index, track_folder in enumerate(pbar):
+
+            # Create entry.
             entry = OrderedDict()
             track_name = track_folder / "mixture.wav"
             if not track_name.is_file():
@@ -74,11 +112,11 @@ def audio_to_disk(
                 entry[target], sr = librosa.load(target_name, sr=sr, mono=mono)
 
             # Record duration of mixture track.
-            duration = (
-                int(librosa.get_duration(y=mixture_track, sr=44100)) * sr
-            )
-
+            num_seconds = librosa.get_duration(y=mixture_track, sr=44100)
+            duration = int(num_seconds * sr)
             entry["duration"] = duration
+
+            # Store entry.
             audio_tracks.append(entry)
             if index == n_tracks:
                 break
@@ -95,7 +133,7 @@ def create_audio_dataset(
     sample_rate: int = 44100,
     mono: bool = True,
 ) -> AudioDataset:
-    """Helper method that creates an AudioDataset.
+    """Helper method that creates an ``AudioDataset``.
 
     Args:
         dataset_path (str): Path to the directory of audio files belonging to
@@ -114,7 +152,7 @@ def create_audio_dataset(
         AudioDataset: Audio dataset.
     """
     # Full-length audio tracks.
-    full_dataset = audio_to_disk(
+    full_dataset = load_audio(
         dataset_path=dataset_path,
         targets=targets,
         split=split,
@@ -134,7 +172,7 @@ def create_audio_dataset(
 
 
 def load_dataset(dataset: Dataset, training_params: dict) -> DataLoader:
-    """Returns a dataloader for a given dataset."""
+    """Returns a dataloader for the dataset given some training parameters."""
     dataloader = DataLoader(
         dataset=dataset,
         batch_size=training_params["batch_size"],

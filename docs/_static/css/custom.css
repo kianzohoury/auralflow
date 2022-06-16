@@ -1,30 +1,20 @@
-h1 {
+h1, h2, h3, h4, h5 {
     font-weight: 300;
     color: #212529;
 }
 
-h2 {
-    font-weight: 300;
-    color: #212529;
-}
-
-h3 {
-    font-weight: 300;
-    color: #212529;
-}
-
-h4 {
-    font-weight: 300;
-    color: #212529;
-}
-
-h5 {
-    font-weight: 300;
-    color: #212529;
+dt: target {
+    background-color: transparent !important;
 }
 
 .sig.sig-object.py{
     border-radius: 0px;
+
+}
+
+.sig.sig-object.py: target {
+    background-color: transparent !important;
+
 }
 
 code {
@@ -34,9 +24,6 @@ code {
     color: gray;
 }
 
-h1, dt:target {
-    background-color: transparent !important;
-}
 
 .row-even {
     background-color: #f3f4f7 !important;

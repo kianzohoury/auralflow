@@ -28,7 +28,8 @@
   --color-sidebar-search-border: #FFFFFF;
   --color-sidebar-brand-text: #212529;
   --font-weight: 300;
-  --color-problematic: orange;
+  --color-problematic: #FF0080;
+  --color-highlight-on-target: #f3f4f7;
   
   }
   @media not print {
@@ -227,17 +228,14 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.datasets.html#auralflow.datasets.create_audio_folder" title="auralflow.datasets.create_audio_folder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_audio_folder</span></code></a></p></td>
-<td><p>Creates an on-the-fly streamable dataset as an AudioFolder.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.datasets.create_audio_dataset.html#auralflow.datasets.create_audio_dataset" title="auralflow.datasets.create_audio_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_audio_dataset</span></code></a></p></td>
+<td><p>Helper method that creates an <code class="docutils literal notranslate"><span class="pre">AudioDataset</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.datasets.html#auralflow.datasets.audio_to_disk" title="auralflow.datasets.audio_to_disk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">audio_to_disk</span></code></a></p></td>
-<td><p>Loads chunked audio dataset directly into disk memory.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.datasets.create_audio_folder.html#auralflow.datasets.create_audio_folder" title="auralflow.datasets.create_audio_folder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_audio_folder</span></code></a></p></td>
+<td><p>Helper method that creates an <code class="docutils literal notranslate"><span class="pre">AudioFolder</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.datasets.html#auralflow.datasets.create_audio_dataset" title="auralflow.datasets.create_audio_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_audio_dataset</span></code></a></p></td>
-<td><p>Helper method that creates an AudioDataset.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.datasets.html#auralflow.datasets.load_dataset" title="auralflow.datasets.load_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_dataset</span></code></a></p></td>
-<td><p>Returns a dataloader for a given dataset.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.datasets.load_audio.html#auralflow.datasets.load_audio" title="auralflow.datasets.load_audio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_audio</span></code></a></p></td>
+<td><p>Loads audio data directly into memory.</p></td>
 </tr>
 </tbody>
 </table>

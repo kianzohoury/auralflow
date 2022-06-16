@@ -99,6 +99,8 @@
         padding-top: 0%;
         padding-bottom: 0%;
         flex-direction: column;
+        padding-top: 20px;
+        padding-bottom: 20px;
     }
 
     code {
@@ -275,6 +277,10 @@
         width: 48.5%;
     }
 
+    #models-section {
+        background-color: pink !important;
+    }
+
 
 </style>
 <html lang="en-US">
@@ -379,13 +385,13 @@
                     </div>
                 </div>
             </div>
-            <div class="section-container">
+            <div class="section-container" id="models-section">
 <!--                <hr>-->
-                <div style="display: flex; width: 100%; justify-content: center; margin-top: 0px; margin-bottom: 20px">
-                    <span style="font-size: 20px; text-align: middle; font-weight: 200">
-                        CORE FEATURES
-                    </span>
-                </div>
+<!--                <div style="display: flex; width: 100%; justify-content: center; margin-top: 0px; margin-bottom: 20px">-->
+<!--                    <span style="font-size: 20px; text-align: middle; font-weight: 200">-->
+<!--                        CORE FEATURES-->
+<!--                    </span>-->
+<!--                </div>-->
                 <div style="display: block; width: 48.5%; justify-content: center; align-items: center; padding: 0px; align-content: middle">
 <!--                    <img src="./_static/assets/deep_mask.png" style="width: 100%; height: 100%;-->
 <!--                        align-items: center; padding: 0px; align-content: middle; display: block; margin: auto; width: 150px; height: auto; margin-top: -20px">-->
@@ -414,12 +420,12 @@
                     <div style="width: 48.5%">
 
                         <ul class="nav nav-tabs">
-                            <li><a href="#a" data-toggle="tab">As a Model Wrapper</a></li>
-                            <li><a href="#b" data-toggle="tab">As a PyTorch Module</a></li>
+                            <li><a href="#models-code-1" data-toggle="tab">As a Model Wrapper</a></li>
+                            <li><a href="#models-code-2" data-toggle="tab">As a PyTorch Module</a></li>
                         </ul>
 
                         <div class="tab-content">
-                            <div class="tab-pane active" id="a">
+                            <div class="tab-pane active" id="models-code-1">
                                 <div class="code-block">
                                     <pre>
                                         <code style="width: 100px !important;">from auralflow.utils import load_config
@@ -441,7 +447,7 @@
                                     </pre>
                                 </div>
                             </div>
-                            <div class="tab-pane" id="b">
+                            <div class="tab-pane" id="models-code-2">
 
                                 <div class="code-block">
                                     <pre>
@@ -469,45 +475,48 @@
                     </div>
                 </div>
 
-
-
-
-
-
-
                 <div style="display: flex; margin: 0px; margin-bottom: 60px; padding: 0px; width: 100%; flex-direction: row; justify-content: space-between">
 
                     <div style="width: 48.5%">
 
                         <ul class="nav nav-tabs">
-                            <li><a href="#a" data-toggle="tab">example 1</a></li>
-                            <li><a href="#b" data-toggle="tab">example 2</a></li>
+                            <li><a href="#data-transform-code-1" data-toggle="tab">example 1</a></li>
+                            <li><a href="#data-transform-code-2" data-toggle="tab">example 2</a></li>
                         </ul>
 
                         <div class="tab-content">
-                            <div class="tab-pane active" id="a">
+                            <div class="tab-pane active" id="data-transform-code-1">
                                 <div class="code-block">
                                     <pre>
-                                        <code style="width: 100px !important;">from auralflow.utils import load_config
-                                            from auralflow.models import SpectrogramMaskModel
-                                            import torch
+                                        <code style="width: 100px !important;">from auralflow.utils.data_utils import AudioTransform
 
 
-                                            # unload configuration data
-                                            config_data = load_config("/path/to/my_model/config.json")
-
-                                            # instantiate deep mask estimator
-                                            mask_model = SpectrogramMaskModel(config_data)
+                                            # instantiate audio transform
+                                            transform = AudioTransform(
+                                            &nbsp; &nbsp; num_fft=1024,
+                                            &nbsp; &nbsp; hop_length=768,
+                                            &nbsp; &nbsp; window_size=1024,
+                                            &nbsp; &nbsp;  sample_rate=44100
+                                            )
 
                                             # generate 2 sec audio sample
-                                            mix_audio = torch.rand((1, 88200))
+                                            mix_audio = torch.rand((16, 1, 88200))
 
-                                            # extract vocals
-                                            vocals_estimate = mask_model.separate(mix_audio)</code>
+                                            # audio to spectrogram
+                                            mix_spec = transform.to_spectrogram(mix_audio)
+
+                                            # estimate source mask
+                                            source_mask = mask_model(mix_spec)
+
+                                            # extract target source estimate
+                                            target_spec_est = source_mask * mix_spec
+
+                                            # transform spectrogram data back to audio
+                                            target_audio_est = transform.to_audio(target_spec_est)</code>
                                     </pre>
                                 </div>
                             </div>
-                            <div class="tab-pane" id="b">
+                            <div class="tab-pane" id="#data-transform-code-2">
 
                                 <div class="code-block">
                                     <pre>
@@ -568,50 +577,90 @@
 
 
 
-            <div class="section-container">
-                <div style="display: flex; margin: 0px; padding: 0px; flex-direction: row; justify-content: space-between; align-items: center">
 
 
-                </div>
-                <div style="display: flex; flex-direction: row; justify-content: right; margin-top: 0px; margin-bottom: 20px">
 
-                    <div class="code-block-outer">
-                        <div>
-                            <p class="description" style="width: 100%; font-weight: 500">
-                                Using audio transforms.
-                            </p>
+
+            <div class="section-container" id="datasets-section">
+                <div style="display: block; margin: 0px; padding: 0px; width: 100%; padding-left: 25%; padding-right: 25%">
+                    <div>
+                        <span class="section-title">
+                            SWIFT DATA PROCESSING
+                        </span>
+                        <div style="width: 100%">
+                            <h1 style="font-weight: 300">
+                                Harness Versatile Deep Mask Autoencoders.
+                                <i class="bi bi-mask" style="color: black; height: 100px; width: auto"></i>
+                            </h1>
                         </div>
-                        <div class="code-block">
-                            <pre>
-                                <code style="width: 100px !important;">from auralflow.utils.data_utils import AudioTransform
+                        <p class="description" style="width: 100%">
+                            Customize the ins and outs of modifiable U-Nets — including LSTM
+                            networks and variational autoencoders — that learn time-frequency
+                            masks in the spectrogram domain.
+                        </p>
+                        <hr>
+                        <p class="description" style="width: 100%; font-weight: 500; font-size: 14px; color:  #049EF4;">
+                            Read About Models &nbsp; <i class="bi bi-arrow-right" style="color: #049EF4;"></i>
+                        </p>
+                    </div>
+                    <div>
+
+                        <ul class="nav nav-tabs">
+                            <li><a href="#models-code-1" data-toggle="tab">As a Model Wrapper</a></li>
+                            <li><a href="#models-code-2" data-toggle="tab">As a PyTorch Module</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="models-code-1">
+                                <div class="code-block">
+                                    <pre>
+                                        <code style="width: 100px !important;">from auralflow.utils import load_config
+                                            from auralflow.models import SpectrogramMaskModel
+                                            import torch
 
 
-                                    # instantiate audio transform
-                                    transform = AudioTransform(
-                                    &nbsp; &nbsp; num_fft=1024,
-                                    &nbsp; &nbsp; hop_length=768,
-                                    &nbsp; &nbsp; window_size=1024,
-                                    &nbsp; &nbsp;  sample_rate=44100
-                                    )
+                                            # unload configuration data
+                                            config_data = load_config("/path/to/my_model/config.json")
 
-                                    # generate 2 sec audio sample
-                                    mix_audio = torch.rand((16, 1, 88200))
+                                            # instantiate deep mask estimator
+                                            mask_model = SpectrogramMaskModel(config_data)
 
-                                    # audio to spectrogram
-                                    mix_spec = transform.to_spectrogram(mix_audio)
+                                            # generate 2 sec audio sample
+                                            mix_audio = torch.rand((1, 88200))
 
-                                    # estimate source mask
-                                    source_mask = mask_model(mix_spec)
+                                            # extract vocals
+                                            vocals_estimate = mask_model.separate(mix_audio)</code>
+                                    </pre>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="models-code-2">
 
-                                    # extract target source estimate
-                                    target_spec_est = source_mask * mix_spec
+                                <div class="code-block">
+                                    <pre>
+                                        <code style="width: 100px !important;">from auralflow.models import SpectrogramNetVAE
+                                            # initialize network
+                                            mask_model = SpectrogramNetVAE(
+                                                &nbsp; &nbsp; num_fft_bins=1024,
+                                                &nbsp; &nbsp; num_frames=173,
+                                                &nbsp; &nbsp; hidden_channels=16,
+                                                &nbsp; &nbsp; recurrent_depth=2,
+                                                &nbsp; &nbsp; hidden_size=2048
+                                            )
 
-                                    # transform spectrogram data back to audio
-                                    target_audio_est = transform.to_audio(target_spec_est)</code>
-                            </pre>
+                                            # generate spectrogram data
+                                            mix_spec = torch.rand((8, 1, 1024, 173))
+
+                                            # estimate source mask
+                                            source_mask = mask_model(mix_spec)</code>
+                                    </pre>
+                                </div>
+
+                            </div>
+
                         </div>
                     </div>
                 </div>
+
 
             </div>
         </div>

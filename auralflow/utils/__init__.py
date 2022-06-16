@@ -6,6 +6,8 @@
 
 import json
 from pathlib import Path
+from . import data_utils
+from . data_utils import AudioTransform, trim_audio
 
 
 import torch
@@ -13,10 +15,13 @@ import shutil
 
 __all__ = [
     "load_config",
-    "save_config",
     "load_object",
+    "save_config",
     "save_object",
     "pull_config_template",
+    "data_utils",
+    "AudioTransform",
+    "trim_audio"
 ]
 
 config_template_path = Path(__file__).parents[2].joinpath("config.json")

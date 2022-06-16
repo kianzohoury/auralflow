@@ -83,7 +83,8 @@ html_theme_options = {
         "color-sidebar-search-border": "#FFFFFF",
         "color-sidebar-brand-text": "#212529",
         "font-weight": 300,
-        "color-problematic": "orange",
+        "color-problematic": "#FF0080",
+        "color-highlight-on-target": "#f3f4f7"
 
     },
     "sidebar_hide_name": False,

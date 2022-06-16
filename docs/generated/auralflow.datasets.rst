@@ -11,10 +11,9 @@
       :nosignatures:
 
    
-      create_audio_folder
-      audio_to_disk
       create_audio_dataset
-      load_dataset
+      create_audio_folder
+      load_audio
    
    
 
