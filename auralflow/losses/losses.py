@@ -57,6 +57,26 @@ def component_loss(
 
     Returns:
         Tensor: Mean component loss.
+
+    Examples:
+        >>> import torch
+        >>>
+        >>>
+        >>> # generate mask, target and residual spectrogram data
+        >>> mask = torch.rand((16, 512, 173, 1)).float()
+        >>> target = torch.rand((16, 512, 173, 1)).float()
+        >>> residual = torch.rand((16, 512, 173, 1)).float()
+        >>>
+        >>> # calculate the weighted loss
+        >>> loss = component_loss(
+        ...     mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8
+        ... )
+        >>>
+        >>> # scalar value of the batch loss
+        >>> loss_val = loss.item()
+        >>>
+        >>> # backprop
+        >>> loss.backward()
     """
 
     filtered_target = mask * target

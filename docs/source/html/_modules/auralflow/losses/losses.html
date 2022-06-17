@@ -277,6 +277,26 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Tensor: Mean component loss.</span>
+
+<span class="sd">    :Example:</span>
+<span class="sd">        &gt;&gt;&gt; import torch</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # generate mask, target and residual spectrogram data</span>
+<span class="sd">        &gt;&gt;&gt; mask = torch.rand((16, 512, 173, 1)).float()</span>
+<span class="sd">        &gt;&gt;&gt; target = torch.rand((16, 512, 173, 1)).float()</span>
+<span class="sd">        &gt;&gt;&gt; residual = torch.rand((16, 512, 173, 1)).float()</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # calculate the weighted loss</span>
+<span class="sd">        &gt;&gt;&gt; loss = component_loss(</span>
+<span class="sd">        ...     mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # scalar value of the batch loss</span>
+<span class="sd">        &gt;&gt;&gt; loss_val = loss.item()</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # backprop</span>
+<span class="sd">        &gt;&gt;&gt; loss.backward()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">filtered_target</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">*</span> <span class="n">target</span>
