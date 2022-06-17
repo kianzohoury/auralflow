@@ -33,6 +33,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
+    'sphinx.ext.viewcode'
 ]
 autosummary_generate = True
 autosummary_ignore_module_all = False

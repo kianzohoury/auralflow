@@ -35,6 +35,10 @@ dd > dl > dt {
 
 }
 
+.sig.sig-object.py {
+    height: auto !important;
+}
+
 code {
     border-radius: 0px !important;
     border: none !important;
@@ -105,5 +109,5 @@ blockquote {
 }
 
 em {
-    color: #049EF4 !important;
+    color: gray !important;
 }

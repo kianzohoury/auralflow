@@ -25,6 +25,8 @@ __all__ = [
     "verify_dataset"
 ]
 
+__doc__ = """Audio file I/O and dataset objects."""
+
 
 def create_audio_folder(
     dataset_path: str,
@@ -87,16 +89,14 @@ def load_stems(
         mono (bool): Load tracks as mono. Default: True.
 
     Returns:
-        List[..., OrderedDict[Mapping[str, ndarray], Mapping[str, int]]]:
-            A list of ordered mappings (one for each track), where each
-            ordered mapping consists of:
-
-                - mixture (ndarray): Mixture track.
-                - bass (ndarray): Bass track (if in ``targets``).
-                - drums (ndarray): Drums track (if in ``targets``).
-                - vocal (ndarray): Vocals track (if ``targets``).
-                - other (ndarray): Other/background track (if in ``targets``).
-                - duration (int): Duration of the mixture track.
+        List[..., OrderedDict]: A list of ordered mappings
+        (one for each track), where each ordered mapping consists of:
+            - mixture (ndarray): Mixture track.
+            - bass (ndarray): Bass track (if in ``targets``).
+            - drums (ndarray): Drums track (if in ``targets``).
+            - vocal (ndarray): Vocals track (if ``targets``).
+            - other (ndarray): Other/background track (if in ``targets``).
+            - duration (int): Duration of the mixture track.
 
     Raises:
         IOError: Raised if the dataset cannot be verified.
@@ -206,7 +206,6 @@ def verify_dataset(subset_path: str, targets: List[str]) -> None:
     """Verifies the structure of a subdirectory belonging to the dataset.
 
     A dataset directory must meet the following rules to be valid:
-
         - path ends with ``/train``, ``/val`` or ``/test``
         - contains a folder of audio files for every individual track title
         - contains a ``mixture.wav`` (full track) within each track folder

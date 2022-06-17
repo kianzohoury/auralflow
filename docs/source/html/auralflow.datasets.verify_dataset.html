@@ -224,17 +224,17 @@
 </div>
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.datasets.verify_dataset">
-<span class="sig-prename descclassname"><span class="pre">auralflow.datasets.</span></span><span class="sig-name descname"><span class="pre">verify_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#auralflow.datasets.verify_dataset" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">auralflow.datasets.</span></span><span class="sig-name descname"><span class="pre">verify_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/datasets.html#verify_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.datasets.verify_dataset" title="Permalink to this definition">#</a></dt>
 <dd><p>Verifies the structure of a subdirectory belonging to the dataset.</p>
-<p>A dataset directory must meet the following rules to be valid:</p>
-<blockquote>
-<div><ul class="simple">
+<dl class="simple">
+<dt>A dataset directory must meet the following rules to be valid:</dt><dd><ul class="simple">
 <li><p>path ends with <code class="docutils literal notranslate"><span class="pre">/train</span></code>, <code class="docutils literal notranslate"><span class="pre">/val</span></code> or <code class="docutils literal notranslate"><span class="pre">/test</span></code></p></li>
 <li><p>contains a folder of audio files for every individual track title</p></li>
 <li><p>contains a <code class="docutils literal notranslate"><span class="pre">mixture.wav</span></code> (full track) within each track folder</p></li>
 <li><p>contains a <code class="docutils literal notranslate"><span class="pre">*.wav</span></code> file for each target within each track folder</p></li>
 </ul>
-</div></blockquote>
+</dd>
+</dl>
 <p>The targets include <code class="docutils literal notranslate"><span class="pre">bass.wav</span></code>, <code class="docutils literal notranslate"><span class="pre">drums.wav</span></code>, <code class="docutils literal notranslate"><span class="pre">vocals.wav</span></code> and
 <code class="docutils literal notranslate"><span class="pre">other.wav</span></code>.</p>
 <dl class="field-list simple">

@@ -23,11 +23,39 @@ def component_loss(
     alpha: float = 0.2,
     beta: float = 0.8,
 ) -> Tensor:
-    """Weighted L2 loss using 2 or 3 components depending on arguments.
+    r"""Weighted loss that combines different loss components.
 
-    Balances the target source separation quality versus the amount of
-    residual noise attenuation. Optional third component balances the
-    quality of the residual noise against the other two terms.
+    Uses two or three loss components depending on the arguments for ``alpha``
+    and ``beta``. If ``beta=0``, it weighs the quality of target source
+    separation against the amount of residual noise attenuation. If ``beta>0``,
+    the third component balances the quality of the attenuated residual noise
+    against the other two terms. The loss is defined as:
+
+    2-component loss:
+
+    .. math::
+        L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}
+
+    3-component loss:
+
+    .. math::
+        L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2} + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2
+
+    where:
+        - :math:`Y_{f, k} := M_{\theta} \odot |Y_{k}|`, filtered target
+        - :math:`R_{f} := M_{ \theta } \odot (|X| - |Y_{k}|)`, filtered residual
+        - :math:`\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}`, filtered unit-residual
+        - :math:`\hat{R} := \frac{R}{||R||_2}`, unit residual
+    Args:
+        mask (FloatTensor): Estimated soft-mask (output of the network).
+        target (FloatTensor): Ground-truth target source.
+        residual (FloatTensor): The residual or background noise, defined as
+            the difference between the mixture and target sources.
+        alpha (float): Value for the two-term component loss.
+        beta (float): Value for the three-term component loss.
+
+    Returns:
+        Tensor: Mean component loss.
     """
 
     filtered_target = mask * target
@@ -66,35 +94,50 @@ def component_loss(
     return mean_loss
 
 
-def l1_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
-    """L1 loss."""
-    return functional.l1_loss(estimate, target)
-
-
-def l2_loss(estimate: FloatTensor, target: Tensor) -> Tensor:
-    """L2 loss."""
-    return functional.mse_loss(estimate, target)
-
-
-def rmse_loss(
-    estimate: FloatTensor, target: Tensor, eps: float = 1e-6
-) -> Tensor:
-    """RMSE loss."""
-    return torch.sqrt(functional.mse_loss(estimate, target) + eps)
-
-
 def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
-    """Computes KL term using the closed form expression.
+    """Computes the KL Divergence loss term using its closed form expression.
 
-    KL term is defined as := D_KL(P||Q), where P is the modeled distribution,
-    and Q is a standard normal N(0, 1). The term is combined with the
-    reconstruction loss.
+    The KL loss term is defined as :math:`:= D_KL(P||Q)`, where :math:`P` is
+    the modeled distribution, and :math:`Q` is a standard normal
+    :math:`N(0, 1)`. In closed form, the loss can be expressed as:
+
+    .. math::
+        D_{KL}(P||Q) = \\frac{1}{2} \sum_{i=1}^{n}(\mu^2 + \sigma^2 - \ln(\sigma^2) - 1)
+
+    where:
+        -:math:`\mu`: mean of modeled distribution :math:`P`
+
+        -:math:`\sigma`: standard deviation of modeled distribution :math:`P`
+    Args:
+        mu (FloatTensor): Mean of the modeled distribution.
+        sigma (FloatTensor): Standard deviation of the modeled distribution.
+
+    Returns:
+        Tensor: Mean KL loss term.
     """
     return 0.5 * torch.mean(mu**2 + sigma**2 - torch.log(sigma**2) - 1)
 
 
 def si_sdr_loss(estimate: FloatTensor, target: FloatTensor) -> Tensor:
-    """Batch-wise SI-SDR loss."""
+    """Scale-invariant (SI-SDR) signal to distortion loss.
+
+    Typically used as an evaluation metric, but can be optimized for directly.
+    For a single audio track, the loss is defined as:
+
+    .. math::
+        L_{\\text{SI-SDR}}(\hat y, y) = -10\log_{10} \\frac{||\\frac{proj_{y} \hat y}{||y||_2^2}||_2^2}{||\\frac{proj_{y} \hat y}{||y||_2^2} - \hat y||_2^2}
+
+    where:
+        - :math:`y`: true target signal
+        - :math:`\hat y`: estimated target source signal
+
+    Args:
+        estimate (FloatTensor): Target source estimate in the audio domain.
+        target (FloatTensor): Ground-truth target source.
+
+    Returns:
+        Tensor: Mean SI-SDR loss.
+    """
     # Optimal scaling factor alpha.
     alpha = torch.sum(estimate * target, dim=-1, keepdim=True) \
         / torch.sum(target ** 2, dim=-1, keepdim=True)
@@ -111,6 +154,13 @@ def si_sdr_loss(estimate: FloatTensor, target: FloatTensor) -> Tensor:
     # Loss.
     loss = -torch.mean(10 * torch.log10(signal_term / distortion_term), dim=0)
     return loss
+
+
+def rmse_loss(
+        estimate: FloatTensor, target: Tensor, eps: float = 1e-6
+) -> Tensor:
+    """RMSE loss."""
+    return torch.sqrt(functional.mse_loss(estimate, target) + eps)
 
 
 def get_evaluation_metrics(
@@ -218,9 +268,9 @@ class KLDivergenceLoss(nn.Module):
         super(KLDivergenceLoss, self).__init__()
         self.model = model
         if loss_fn == "l1":
-            self.construction_loss = l1_loss
+            self.construction_loss = _l1_loss
         else:
-            self.construction_loss = l2_loss
+            self.construction_loss = _l2_loss
 
     def forward(self) -> None:
         """Construction loss + KL loss."""
@@ -242,7 +292,7 @@ class L1Loss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        self.model.batch_loss = l1_loss(self.model.estimate, self.model.target)
+        self.model.batch_loss = _l1_loss(self.model.estimate, self.model.target)
 
 
 class L2Loss(nn.Module):
@@ -253,8 +303,8 @@ class L2Loss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        self.model.batch_loss = 0.5 * l2_loss(self.model.estimate, self.model.target)\
-                                + 0.5 * l2_loss(self.model.mix_phase, self.model.target_phase)
+        self.model.batch_loss = 0.5 * _l2_loss(self.model.estimate, self.model.target) \
+                                + 0.5 * _l2_loss(self.model.mix_phase, self.model.target_phase)
         # gain_penalty = torch.linalg.norm(self.model.target) / torch.linalg.norm(self.model.estimate)
         # self.model.batch_loss = self.model.batch_loss + gain_penalty
 
@@ -283,7 +333,7 @@ class L2MaskLoss(nn.Module):
         ideal_mask = self.model.target / torch.max(
             self.model.mixture, torch.ones_like(self.model.mixture)
         )
-        self.model.batch_loss = l2_loss(self.model.mask, ideal_mask)
+        self.model.batch_loss = _l2_loss(self.model.mask, ideal_mask)
 
 
 class SIDRLoss(nn.Module):
