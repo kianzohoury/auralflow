@@ -15,7 +15,7 @@ from .losses import (
     RMSELoss,
     SIDRLoss,
     si_sdr_loss,
-    get_evaluation_metrics,
+    get_evaluation_metrics
 )
 from typing import Union, Callable
 
@@ -24,18 +24,18 @@ import torch.nn as nn
 
 
 __all__ = [
-    "WeightedComponentLoss",
     "component_loss",
-    "KLDivergenceLoss",
     "kl_div_loss",
+    "si_sdr_loss",
+    "WeightedComponentLoss",
+    "KLDivergenceLoss",
     "L1Loss",
     "L2Loss",
     "L2MaskLoss",
     "RMSELoss",
     "SIDRLoss",
-    "si_sdr_loss",
     "get_model_criterion",
-    "get_evaluation_metrics",
+    "get_evluation_metrics",
     "RMSELoss"
 ]
 

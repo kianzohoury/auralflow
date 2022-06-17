@@ -228,11 +228,40 @@
 <dt class="sig sig-object py" id="auralflow.losses.KLDivergenceLoss">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">KLDivergenceLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'l1'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#KLDivergenceLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.KLDivergenceLoss" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
-<p>Wrapper class for KL Divergence loss. Only to be used for VAE models.</p>
+<p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">kl_div_loss</span></code>.</p>
+<p>The KL loss term is defined as <span class="math notranslate nohighlight">\(D_KL(P||Q)\)</span>, where <span class="math notranslate nohighlight">\(P\)</span> is
+the modeled distribution, and <span class="math notranslate nohighlight">\(Q\)</span> is a standard normal distribution
+<span class="math notranslate nohighlight">\(N(0, 1)\)</span>. In closed form, the loss can be expressed as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[D_{KL}(P||Q) = \frac{1}{2} \sum_{i=1}^{n}(\mu^2 + \sigma^2 -
+    \ln(\sigma^2) - 1)\]</div>
+</div>
+<dl class="simple">
+<dt>where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\mu\)</span>: mean of the modeled distribution <span class="math notranslate nohighlight">\(P\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\sigma\)</span>: standard deviation of modeled distribution <span class="math notranslate nohighlight">\(P\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(n\)</span>: number of tensor elements</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Sets <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of the model instead of returning the
+loss directly. Can also only be used with <code class="docutils literal notranslate"><span class="pre">SpectrogramNetVAE</span></code>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.SpectrogramMaskModel"><em>SpectrogramMaskModel</em></a>) -- Spectrogram mask model.</p></li>
+<li><p><strong>loss_fn</strong> (<em>str</em>) -- Construction loss criterion. Default: 'l1'.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.losses.KLDivergenceLoss.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#KLDivergenceLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.KLDivergenceLoss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Construction loss + KL loss.</p>
+<dd><p>Calculates construction loss + KL loss and stores it.</p>
 </dd></dl>
 
 </dd></dl>
@@ -242,18 +271,20 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">L1Loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#L1Loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.L1Loss" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
 <p>Wrapper class for l1 loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.SpectrogramMaskModel"><em>SpectrogramMaskModel</em></a>) -- Spectrogram mask model.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Sets <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of the model instead of returning the
+loss directly.</p>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.losses.L1Loss.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#L1Loss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.L1Loss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dd><p>Calculates l1 loss and stores it.</p>
 </dd></dl>
 
 </dd></dl>
@@ -263,18 +294,20 @@ registered hooks while the latter silently ignores them.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">L2Loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#L2Loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.L2Loss" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
 <p>Wrapper class for l2 loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.SpectrogramMaskModel"><em>SpectrogramMaskModel</em></a>) -- Spectrogram mask model.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Sets <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of the model instead of returning the
+loss directly.</p>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.losses.L2Loss.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#L2Loss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.L2Loss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dd><p>Calculates l2 loss and stores it.</p>
 </dd></dl>
 
 </dd></dl>
@@ -325,32 +358,103 @@ registered hooks while the latter silently ignores them.</p>
 <dt class="sig sig-object py" id="auralflow.losses.SIDRLoss">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">SIDRLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#SIDRLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.SIDRLoss" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
-<p>Wrapper class for si_sdr loss.</p>
+<p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">si_sdr_loss</span></code>.</p>
+<p>Typically used as an evaluation metric, but can be optimized for directly.
+For a single audio track, the loss is defined as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[L_{\text{SI-SDR}}(\hat y, y) = -10\log_{10} \frac{||\frac{proj_{y}
+    \hat y}{||y||_2^2}||_2^2}{||\frac{proj_{y} \hat y}{||y||_2^2}
+    - \hat y||_2^2}\]</div>
+</div>
+<dl class="simple">
+<dt>where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(y\)</span>: true target signal</p></li>
+<li><p><span class="math notranslate nohighlight">\(\hat y\)</span>: estimated target source signal</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Sets <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of the model instead of returning the
+loss directly.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.SpectrogramMaskModel"><em>SpectrogramMaskModel</em></a>) -- Spectrogram mask model.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.losses.SIDRLoss.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#SIDRLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.SIDRLoss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dd><p>Calculates si_sdr_loss and stores it.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.losses.WeightedComponentLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">WeightedComponentLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regularizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#WeightedComponentLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.WeightedComponentLoss" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">WeightedComponentLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#WeightedComponentLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.WeightedComponentLoss" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
-<p>Wrapper class for calling weighted component loss.</p>
+<p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">component_loss</span></code>.</p>
+<blockquote>
+<div><p>Uses two or three loss components depending on the arguments for <code class="docutils literal notranslate"><span class="pre">alpha</span></code>
+and <code class="docutils literal notranslate"><span class="pre">beta</span></code>. If <code class="docutils literal notranslate"><span class="pre">beta=0</span></code>, it weighs the quality of target source
+separation against the amount of residual noise attenuation. If <code class="docutils literal notranslate"><span class="pre">beta&gt;0</span></code>,
+the third component balances the quality of the attenuated residual noise
+against the other two terms. The 2-component loss is defined as:</p>
+<dl class="simple">
+<dt>Note:</dt><dd><p>Sets <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of the model instead of returning the
+loss directly.</p>
+</dd>
+</dl>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[L_{2c}(X; Y_{k};        heta; lpha) =\]</div>
+</div>
+</div></blockquote>
+<dl class="simple">
+<dt>rac{1-lpha}{n} ||Y_{f, k}</dt><dd><ul class="simple">
+<li><p><a href="#id1"><span class="problematic" id="id2">|</span></a>Y_{k}|||_2^{2} +</p></li>
+</ul>
+</dd>
+</dl>
+<p>rac{lpha}{n}||R_f||_2^{2}</p>
+<blockquote>
+<div><p>and the 3-component loss is defined as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[L_{3c}(X; Y_{k};        heta; lpha; eta) =\]</div>
+</div>
+</div></blockquote>
+<dl class="simple">
+<dt>rac{1-lpha -eta}{n}</dt><dd><p>||Y_{f, k} - <a href="#id3"><span class="problematic" id="id4">|</span></a>Y_{k}|||_2^{2} +</p>
+</dd>
+<dt>rac{lpha}{n}||R_f||_2^{2}</dt><dd><ul class="simple">
+<li></li>
+</ul>
+</dd>
+</dl>
+<p>rac{eta}{n}|| hat{R_f} - hat{R}||_2^2</p>
+<blockquote>
+<div><dl class="simple">
+<dt>where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(Y_{f, k} := M_{        heta}\odot |Y_{k}|\)</span>, filtered target</p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{f} := M_{   heta }\odot (|X| - |Y_{k}|)\)</span>, filtered residual</p></li>
+<li><p><span class="math notranslate nohighlight">\(\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}\)</span>, filtered unit-residual</p></li>
+<li><p><span class="math notranslate nohighlight">\(\hat{R} := \frac{R}{||R||_2}\)</span>, unit residual</p></li>
+</ul>
+</dd>
+<dt>Args:</dt><dd><p>model (SpectrogramMaskModel): Spectrogram mask model.
+alpha (float): Value for the two-term component loss.
+beta (float): Value for the three-term component loss.</p>
+</dd>
+</dl>
+</div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.losses.WeightedComponentLoss.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#WeightedComponentLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.WeightedComponentLoss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Calculates a weighted component loss.</p>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#WeightedComponentLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.WeightedComponentLoss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculates weighted component loss and stores it.</p>
 </dd></dl>
 
 </dd></dl>
@@ -363,21 +467,23 @@ registered hooks while the latter silently ignores them.</p>
 and <code class="docutils literal notranslate"><span class="pre">beta</span></code>. If <code class="docutils literal notranslate"><span class="pre">beta=0</span></code>, it weighs the quality of target source
 separation against the amount of residual noise attenuation. If <code class="docutils literal notranslate"><span class="pre">beta&gt;0</span></code>,
 the third component balances the quality of the attenuated residual noise
-against the other two terms. The loss is defined as:</p>
-<p>2-component loss:</p>
+against the other two terms. The 2-component loss is defined as:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}\]</div>
+\[L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k}
+    - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}\]</div>
 </div>
-<p>3-component loss:</p>
+<p>and the 3-component loss is defined as:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2} + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2\]</div>
+\[L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n}
+    ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}
+    + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2\]</div>
 </div>
 <dl class="simple">
 <dt>where:</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(Y_{f, k} := M_{\theta} \odot |Y_{k}|\)</span>, filtered target</p></li>
-<li><p><span class="math notranslate nohighlight">\(R_{f} := M_{ \theta } \odot (|X| - |Y_{k}|)\)</span>, filtered residual</p></li>
+<li><p><span class="math notranslate nohighlight">\(Y_{f, k} := M_{\theta}\odot |Y_{k}|\)</span>, filtered target</p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{f} := M_{ \theta }\odot (|X| - |Y_{k}|)\)</span>, filtered residual</p></li>
 <li><p><span class="math notranslate nohighlight">\(\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}\)</span>, filtered unit-residual</p></li>
 <li><p><span class="math notranslate nohighlight">\(\hat{R} := \frac{R}{||R||_2}\)</span>, unit residual</p></li>
 </ul>
@@ -404,12 +510,6 @@ the difference between the mixture and target sources.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="auralflow.losses.get_evaluation_metrics">
-<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">get_evaluation_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#get_evaluation_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.get_evaluation_metrics" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns batch-wise means of standard source separation eval scores.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="auralflow.losses.get_model_criterion">
 <span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">get_model_criterion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.modules.module.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/auralflow/losses.html#get_model_criterion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.get_model_criterion" title="Permalink to this definition">#</a></dt>
 <dd><p>Gets model criterion according to configuration file.</p>
@@ -419,16 +519,20 @@ the difference between the mixture and target sources.</p></li>
 <dt class="sig sig-object py" id="auralflow.losses.kl_div_loss">
 <span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">kl_div_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#kl_div_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.kl_div_loss" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the KL Divergence loss term using its closed form expression.</p>
-<p>The KL loss term is defined as <span class="math notranslate nohighlight">\(:= D_KL(P||Q)\)</span>, where <span class="math notranslate nohighlight">\(P\)</span> is
-the modeled distribution, and <span class="math notranslate nohighlight">\(Q\)</span> is a standard normal
+<p>The KL loss term is defined as <span class="math notranslate nohighlight">\(D_KL(P||Q)\)</span>, where <span class="math notranslate nohighlight">\(P\)</span> is
+the modeled distribution, and <span class="math notranslate nohighlight">\(Q\)</span> is a standard normal distribution
 <span class="math notranslate nohighlight">\(N(0, 1)\)</span>. In closed form, the loss can be expressed as:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[D_{KL}(P||Q) = \frac{1}{2} \sum_{i=1}^{n}(\mu^2 + \sigma^2 - \ln(\sigma^2) - 1)\]</div>
+\[D_{KL}(P||Q) = \frac{1}{2} \sum_{i=1}^{n}(\mu^2 + \sigma^2 -
+    \ln(\sigma^2) - 1)\]</div>
 </div>
-<dl>
-<dt>where:</dt><dd><p>-<span class="math notranslate nohighlight">\(\mu\)</span>: mean of modeled distribution <span class="math notranslate nohighlight">\(P\)</span></p>
-<p>-<span class="math notranslate nohighlight">\(\sigma\)</span>: standard deviation of modeled distribution <span class="math notranslate nohighlight">\(P\)</span></p>
+<dl class="simple">
+<dt>where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\mu\)</span>: mean of the modeled distribution <span class="math notranslate nohighlight">\(P\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\sigma\)</span>: standard deviation of modeled distribution <span class="math notranslate nohighlight">\(P\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(n\)</span>: number of tensor elements</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="field-list simple">
@@ -455,7 +559,9 @@ the modeled distribution, and <span class="math notranslate nohighlight">\(Q\)</
 For a single audio track, the loss is defined as:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[L_{\text{SI-SDR}}(\hat y, y) = -10\log_{10} \frac{||\frac{proj_{y} \hat y}{||y||_2^2}||_2^2}{||\frac{proj_{y} \hat y}{||y||_2^2} - \hat y||_2^2}\]</div>
+\[L_{\text{SI-SDR}}(\hat y, y) = -10\log_{10} \frac{||\frac{proj_{y}
+    \hat y}{||y||_2^2}||_2^2}{||\frac{proj_{y} \hat y}{||y||_2^2}
+    - \hat y||_2^2}\]</div>
 </div>
 <dl class="simple">
 <dt>where:</dt><dd><ul class="simple">

@@ -22,8 +22,8 @@ class SpectrogramMaskModel(SeparationModel):
         configuration (dict): Model configuration.
     """
 
-    mixture: Tensor
-    target: Tensor
+    mixture: FloatTensor
+    target: FloatTensor
     estimate: FloatTensor
     residual: Tensor
     mask: FloatTensor

@@ -890,11 +890,7 @@
 
         <span class="c1"># Generate multiplicative soft-mask.</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_activation</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mask</span></div>
-
-<div class="viewcode-block" id="SpectrogramNetVAE.get_kl_div"><a class="viewcode-back" href="../../../auralflow.models.SpectrogramNetVAE.html#auralflow.models.SpectrogramNetVAE.get_kl_div">[docs]</a>    <span class="k">def</span> <span class="nf">get_kl_div</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes KL term.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">kl_div_loss</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">mask</span></div></div>
 </pre></div>
         </article>
       </div>

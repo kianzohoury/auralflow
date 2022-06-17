@@ -230,21 +230,23 @@
 and <code class="docutils literal notranslate"><span class="pre">beta</span></code>. If <code class="docutils literal notranslate"><span class="pre">beta=0</span></code>, it weighs the quality of target source
 separation against the amount of residual noise attenuation. If <code class="docutils literal notranslate"><span class="pre">beta&gt;0</span></code>,
 the third component balances the quality of the attenuated residual noise
-against the other two terms. The loss is defined as:</p>
-<p>2-component loss:</p>
+against the other two terms. The 2-component loss is defined as:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}\]</div>
+\[L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k}
+    - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}\]</div>
 </div>
-<p>3-component loss:</p>
+<p>and the 3-component loss is defined as:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n} ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2} + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2\]</div>
+\[L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n}
+    ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}
+    + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2\]</div>
 </div>
 <dl class="simple">
 <dt>where:</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(Y_{f, k} := M_{\theta} \odot |Y_{k}|\)</span>, filtered target</p></li>
-<li><p><span class="math notranslate nohighlight">\(R_{f} := M_{ \theta } \odot (|X| - |Y_{k}|)\)</span>, filtered residual</p></li>
+<li><p><span class="math notranslate nohighlight">\(Y_{f, k} := M_{\theta}\odot |Y_{k}|\)</span>, filtered target</p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{f} := M_{ \theta }\odot (|X| - |Y_{k}|)\)</span>, filtered residual</p></li>
 <li><p><span class="math notranslate nohighlight">\(\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}\)</span>, filtered unit-residual</p></li>
 <li><p><span class="math notranslate nohighlight">\(\hat{R} := \frac{R}{||R||_2}\)</span>, unit residual</p></li>
 </ul>

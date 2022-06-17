@@ -671,7 +671,3 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
         return mask
-
-    def get_kl_div(self) -> Tensor:
-        """Computes KL term."""
-        return kl_div_loss(self.mu_data, self.sigma_data)
