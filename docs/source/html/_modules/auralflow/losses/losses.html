@@ -314,7 +314,7 @@
     <span class="k">return</span> <span class="n">mean_loss</span></div>
 
 
-<div class="viewcode-block" id="kl_div_loss"><a class="viewcode-back" href="../../../auralflow.losses.html#auralflow.losses.kl_div_loss">[docs]</a><span class="k">def</span> <span class="nf">kl_div_loss</span><span class="p">(</span><span class="n">mu</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="kl_div_loss"><a class="viewcode-back" href="../../../auralflow.losses.kl_div_loss.html#auralflow.losses.kl_div_loss">[docs]</a><span class="k">def</span> <span class="nf">kl_div_loss</span><span class="p">(</span><span class="n">mu</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Computes the KL Divergence loss term using its closed form expression.</span>
 
 <span class="sd">    The KL loss term is defined as :math:`:= D_KL(P||Q)`, where :math:`P` is</span>
@@ -353,7 +353,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        estimate (FloatTensor): Target source estimate in the audio domain.</span>
-<span class="sd">        target (FloatTensor): Ground-truth target source.</span>
+<span class="sd">        target (FloatTensor): Ground-truth target source in the audio domain.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Tensor: Mean SI-SDR loss.</span>
