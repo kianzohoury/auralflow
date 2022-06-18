@@ -4,32 +4,27 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-import torch
 import math
-import librosa
-
-from typing import Optional, Tuple, Callable, List, Union
-from torchaudio import transforms
-from torch import Tensor
+import torch
 import numpy as np
 
-
-__all__ = [
-    "AudioTransform",
-    "fast_fourier",
-    "inverse_fast_fourier",
-    "get_stft",
-    "get_num_stft_frames",
-    "make_hann_window",
-    "get_deconv_pad",
-    "get_conv_pad",
-    "get_conv_shape",
-    "trim_audio",
-]
+from librosa import amplitude_to_db
+from typing import Optional, Tuple, Callable, List, Union
+from torch import Tensor
+from torchaudio import transforms
+from numpy import ndarray
 
 
 class AudioTransform(object):
-    """Wrapper class that conveniently stores multiple transformation tools."""
+    """Wrapper class that conveniently stores multiple transformation tools.
+
+    Args:
+        num_fft (int): Number of FFT bins.
+        hop_length (int): Hop length.
+        window_size (int): Window size.
+        sample_rate (int): Sample rate. Default; 44100.
+        device (str): Device. Default: 'cpu'.
+    """
 
     def __init__(
         self,
@@ -51,12 +46,14 @@ class AudioTransform(object):
             power=None,
             onesided=True,
         )
+
         self.inv_stft = transforms.InverseSpectrogram(
             n_fft=num_fft,
             win_length=window_size,
             hop_length=hop_length,
             onesided=True,
         )
+
         self.mel_scale = transforms.MelScale(
             n_mels=64,
             f_min=1,
@@ -66,51 +63,103 @@ class AudioTransform(object):
             # norm="slaney",
         )
 
+        # Use librosa implementation due to discrepancy w/ torchaudio.
+        self.amp_to_db_ = amplitude_to_db
+
         # Transfer window functions and filterbanks to GPU if available.
         self.stft.window = self.stft.window.to(device)
         self.inv_stft.window = self.inv_stft.window.to(device)
         self.mel_scale.fb = self.mel_scale.fb.to(device)
 
-    @staticmethod
-    def to_decibel(spectrogram: Tensor) -> Tensor:
-        """Transforms spectrogram to decibel scale.
+    def to_decibel(self, spectrogram: Tensor) -> Tensor:
+        r"""Transforms spectrogram to decibel scale.
 
-        Computes y = 20 * log10(|x| / max(|x|)).
+        Computes the following:
+        .. math::
+            y = 20 \mul \\log_{10} \\frac{|x|}{max(|x|)}
+
+        Args:
+            spectrogram (Tensor): Spectrogram data.
+
+        Returns:
+            spectrogram (Tensor): Log-normalized spectrogram data.
         """
-        # Use implementation from librosa due to discrepancy w/ torchaudio.
         log_normal = torch.from_numpy(
-            librosa.amplitude_to_db(spectrogram.cpu(), ref=np.max)
+            self.amp_to_db_(spectrogram.cpu(), ref=np.max)
         ).to(spectrogram.device)
         return log_normal
 
     def to_spectrogram(
         self, audio: Tensor, use_padding: bool = True
     ) -> Tensor:
-        """Transforms an audio signal to its time-freq representation."""
+        """Transforms an audio signal to its time-frequency representation.
+
+        Args:
+            audio (Tensor): Raw audio signal data.
+            use_padding (bool): If ``True``, zero-pads audio data such that its
+                duration is a multiple of the hop length. Default: True.
+
+        Returns:
+            Tensor: Spectrogram data (complex-valued).
+        """
         if use_padding:
             audio = self.pad_audio(audio)
         return self.stft(audio)
 
     def to_audio(self, complex_spec: Tensor) -> Tensor:
-        """Transforms complex-valued spectrogram to its time-domain signal."""
+        """Transforms complex-valued spectrogram to its time-domain signal.
+
+        Args:
+            complex_spec (Tensor): Complex spectrogram data.
+
+        Returns:
+            Tensor: Audio signal data.
+        """
         return self.inv_stft(complex_spec)
 
     def to_mel_scale(self, spectrogram: Tensor, to_db: bool = True) -> Tensor:
-        """Transforms magnitude or log-normal spectrogram to mel scale."""
+        """Transforms a magnitude spectrogram to a mel spectrogram.
+
+        Args:
+            spectrogram (Tensor): Magnitude spectrogram data.
+            to_db (bool): If ``True``, converts magnitude spectrogram to
+                decibel scale first. Default: True.
+
+        Returns:
+            Tensor: Mel spectrogram data.
+        """
         mel_spectrogram = self.mel_scale(spectrogram)
         if to_db:
             mel_spectrogram = self.to_decibel(mel_spectrogram)
         return mel_spectrogram
 
-    def audio_to_mel(self, audio: Tensor, to_db: bool = True):
-        """Transforms raw audio signal to log-normalized mel spectrogram."""
+    def audio_to_mel(self, audio: Tensor, to_db: bool = True) -> Tensor:
+        """Transforms raw audio signal to a mel spectrogram.
+
+        Uses ``to_spectrogram`` and ``to_mel_scale`` as subroutines.
+
+        Args:
+            audio (Tensor): Raw audio signal data.
+            to_db (bool): If ``True``, converts magnitude spectrogram to
+                decibel scale first. Default: True.
+
+        Returns:
+            Tensor: Mel spectrogram data.
+        """
         spectrogram = self.to_spectrogram(audio)
         amp_spectrogram = torch.abs(spectrogram)
         mel_spectrogram = self.to_mel_scale(amp_spectrogram, to_db=to_db)
         return mel_spectrogram
 
     def pad_audio(self, audio: Tensor):
-        """Applies zero-padding to input audio."""
+        """Zero-pads audio to make its duration divisible by the hop length.
+
+        Args:
+            audio (Tensor): Audio signal data.
+
+        Returns:
+            Tenor: Zero-padded audio signal data.
+        """
         remainder = int(audio.shape[-1] % self.hop_length)
         pad_size = self.hop_length - remainder
         padding = torch.zeros(
@@ -186,12 +235,11 @@ def get_num_stft_frames(
     sample_len: int, sr: int, win_size: int, hop_len: int, center: bool = True
 ) -> int:
     """Calculates number of STFT frames."""
-    # Force number of samples to be divisble by hop length.
+    # Force number of samples to be divisible by the hop length.
     n_samples = sample_len * sr
     remainder = n_samples % hop_len
     n_samples += hop_len - remainder
 
-    pad_size = hop_len - remainder
     win_size = (1 - bool(center)) * win_size
     frames = math.floor((n_samples - win_size) / hop_len + 1)
     return frames
@@ -200,7 +248,7 @@ def get_num_stft_frames(
 def make_hann_window(
     window_length: int, trainable: bool = False, device: Optional[str] = None
 ) -> torch.Tensor:
-    """Creates a `Hann` window for use with STFT/ISTFT transformations.
+    """Creates a ``Hann`` window for use with STFT/ISTFT transformations.
 
     Args:
         window_length (int): Window length.
@@ -250,9 +298,16 @@ def get_conv_shape(
 
 
 def trim_audio(
-    audio_tensors: Union[List[Tensor], List[np.ndarray]]
-) -> Union[List[Tensor], List[np.ndarray]]:
-    """Trims audio tensors to have matching number of frames."""
+    audio_tensors: Union[List[Tensor], List[ndarray]]
+) -> Union[List[Tensor], List[ndarray]]:
+    """Trims duration of all audio data to match that of the shortest one.
+
+    Args:
+        audio_tensors (Union[List[Tensor], List[ndarray]]): List of audio
+            tensors or arrays.
+    Returns:
+        Union[List[Tensor], List[ndarray]]: Trimmed audio tensors or arrays.
+    """
     if len(audio_tensors) and isinstance(audio_tensors[0], np.ndarray):
         assert all(
             [

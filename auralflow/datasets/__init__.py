@@ -90,7 +90,7 @@ def load_stems(
 
     Returns:
         List[..., OrderedDict]: A list of ordered mappings
-        (one for each track), where each ordered mapping consists of:
+            (one for each track), where each ordered mapping consists of:
             - mixture (ndarray): Mixture track.
             - bass (ndarray): Bass track (if in ``targets``).
             - drums (ndarray): Drums track (if in ``targets``).

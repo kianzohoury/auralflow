@@ -34,14 +34,14 @@ Install auralflow via PyPi package manager:
 
 
 Python API
------------------
+----------
 
 .. toctree::
    api
 
 
 Indices and tables
------
+------------------
 
 * :ref:`genindex`
 

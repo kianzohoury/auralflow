@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>auralflow.models - auralflow</title>
+        <title>auralflow.build - auralflow</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -176,10 +176,12 @@
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.build.html">auralflow.build</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.models.html">auralflow.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.transforms.html">auralflow.transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.utils.html">auralflow.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
 </ul>
@@ -217,60 +219,89 @@
           </label>
         </div>
         <article role="main">
-          <h1>Source code for auralflow.models</h1><div class="highlight"><pre>
+          <h1>Source code for auralflow.build</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (c) 2022 Kian Zohoury</span>
 <span class="c1"># Distributed under the terms of the MIT License.</span>
 <span class="c1"># SPDX-License-Identifier: MIT</span>
 <span class="c1"># This code is part of the auralflow project linked below.</span>
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
-
-<span class="kn">from</span> <span class="nn">.architectures</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SpectrogramNetSimple</span><span class="p">,</span>
-    <span class="n">SpectrogramNetLSTM</span><span class="p">,</span>
-    <span class="n">SpectrogramNetVAE</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">auralflow.losses</span> <span class="kn">import</span> <span class="n">get_model_criterion</span>
-<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">SeparationModel</span>
-<span class="kn">from</span> <span class="nn">.mask_model</span> <span class="kn">import</span> <span class="n">SpectrogramMaskModel</span>
+<span class="kn">from</span> <span class="nn">auralflow.losses</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch.cuda.amp</span> <span class="kn">import</span> <span class="n">GradScaler</span>
-<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Adam</span><span class="p">,</span> <span class="n">AdamW</span><span class="p">,</span> <span class="n">SGD</span>
+<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Adam</span>
 <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">ReduceLROnPlateau</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;SeparationModel&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SpectrogramMaskModel&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SpectrogramNetSimple&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SpectrogramNetLSTM&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SpectrogramNetVAE&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;create_model&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;build_model&quot;</span><span class="p">,</span>
     <span class="s2">&quot;setup_model&quot;</span><span class="p">,</span>
 <span class="p">]</span>
-<span class="n">_models</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;SpectrogramNetSimple&quot;</span><span class="p">,</span> <span class="s2">&quot;SpectrogramNetLSTM&quot;</span><span class="p">,</span> <span class="s2">&quot;SpectrogramNetVAE&quot;</span><span class="p">,</span>
-<span class="p">]</span>
 
 
-<div class="viewcode-block" id="create_model"><a class="viewcode-back" href="../../auralflow.models.html#auralflow.models.create_model">[docs]</a><span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeparationModel</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates a new instance of a model with its given configuration.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="build_model"><a class="viewcode-back" href="../../auralflow.build.build_model.html#auralflow.build.build_model">[docs]</a><span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeparationModel</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a new model instance given configuration data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        configuration (dict): Model configuration data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model_type</span> <span class="o">=</span> <span class="n">configuration</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">][</span><span class="s2">&quot;model_type&quot;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">{</span>
-        <span class="s2">&quot;SpectrogramNetSimple&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;SpectrogramNetLSTM&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;SpectrogramNetVAE&quot;</span><span class="p">,</span>
-    <span class="p">}:</span>
-        <span class="n">base_class</span> <span class="o">=</span> <span class="n">SpectrogramMaskModel</span>
+    <span class="k">if</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="n">model_names</span><span class="p">:</span>
+        <span class="c1"># Only allow SpectrogramMaskModel for now.</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">SpectrogramMaskModel</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">base_class</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
-        <span class="k">pass</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">base_class</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="n">model</span></div>
 
 
-<div class="viewcode-block" id="setup_model"><a class="viewcode-back" href="../../auralflow.models.html#auralflow.models.setup_model">[docs]</a><span class="k">def</span> <span class="nf">setup_model</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeparationModel</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Sets up a blank model.&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">get_model_criterion</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Gets model criterion according to its configuration file.&quot;&quot;&quot;</span>
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;criterion&quot;</span><span class="p">]</span>
+    <span class="n">model_type</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">][</span><span class="s2">&quot;model_type&quot;</span><span class="p">]</span>
+    <span class="n">is_vae_model</span> <span class="o">=</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;SpectrogramNetVAE&quot;</span>
+    <span class="k">if</span> <span class="n">loss_fn</span> <span class="o">==</span> <span class="s2">&quot;component_loss&quot;</span><span class="p">:</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">ComponentLoss</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;alpha_constant&quot;</span><span class="p">],</span>
+            <span class="n">beta</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;beta_constant&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">is_vae_model</span> <span class="ow">and</span> <span class="n">loss_fn</span> <span class="o">==</span> <span class="s2">&quot;kl_div_loss&quot;</span><span class="p">:</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">KLDivergenceLoss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="o">=</span><span class="n">loss_fn</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">loss_fn</span> <span class="o">==</span> <span class="s2">&quot;l1&quot;</span><span class="p">:</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">L1Loss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">loss_fn</span> <span class="o">==</span> <span class="s2">&quot;rmse&quot;</span><span class="p">:</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">RMSELoss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">loss_fn</span> <span class="o">==</span> <span class="s2">&quot;l2_mask_loss&quot;</span><span class="p">:</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">L2MaskLoss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">loss_fn</span> <span class="o">==</span> <span class="s2">&quot;si_sdr_loss&quot;</span><span class="p">:</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">SISDRLoss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">criterion</span> <span class="o">=</span> <span class="n">L2Loss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">criterion</span>
+
+
+<div class="viewcode-block" id="setup_model"><a class="viewcode-back" href="../../auralflow.build.setup_model.html#auralflow.build.setup_model">[docs]</a><span class="k">def</span> <span class="nf">setup_model</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeparationModel</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Sets up a separation model according to its internal configuration.</span>
+
+<span class="sd">    If model is in training mode, it creates and loads objects related to</span>
+<span class="sd">    training; otherwise, it loads the best version of the model.</span>
+
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (SeparationModel): Separation model.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        SeparationModel: Separation model.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        OSError: Raised if the model cannot be loaded.</span>
+<span class="sd">        FileNotFoundError: Raised if a checkpoint file cannot be found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">training_mode</span><span class="p">:</span>
         <span class="n">last_epoch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span>
 

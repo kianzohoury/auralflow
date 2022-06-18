@@ -3,25 +3,19 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
+
 import os
+
 from argparse import ArgumentParser
-from pathlib import Path
-from prettytable import PrettyTable
-from typing import List
-
-
-from auralflow import datasets
-from auralflow import losses
-from auralflow import visualizer
 from auralflow import models
-from auralflow import trainer
 from auralflow import utils
 from auralflow import separate
 from auralflow import train
 from auralflow import test
+from pathlib import Path
+from prettytable import PrettyTable
 
 
-__all__ = ["datasets", "losses", "visualizer", "models", "trainer", "utils"]
 _config_optionals = {
     "--normalize-input": bool,
     "--normalize-output": bool,
@@ -67,7 +61,7 @@ if __name__ == "__main__":
         default="my_model",
     )
     config_parser.add_argument(
-        "model_type", type=str, choices=models._models, help="Base model."
+        "model_type", type=str, choices=models.model_names, help="Base model."
     )
     config_parser.add_argument(
         "--save",
@@ -162,7 +156,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.command == "config":
         save_dir = str(Path(args.save + "/" + args.folder_name).absolute())
-        utils.pull_config_template(save_dir=save_dir)
+        utils.copy_config_template(save_dir=save_dir)
         config = utils.load_config(save_dir + "/config.json")
         config["model_params"]["model_type"] = args.model_type
         config["model_params"]["model_name"] = args.folder_name

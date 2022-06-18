@@ -14,7 +14,8 @@
       component_loss
       kl_div_loss
       si_sdr_loss
-      get_model_criterion
+      rmse_loss
+      get_evaluation_metrics
    
    
 
@@ -26,13 +27,13 @@
      :nosignatures:
 
    
-      WeightedComponentLoss
+      ComponentLoss
       KLDivergenceLoss
+      SISDRLoss
       L1Loss
       L2Loss
-      L2MaskLoss
       RMSELoss
-      SIDRLoss
+      L2MaskLoss
    
    
 

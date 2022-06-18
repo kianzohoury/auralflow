@@ -177,10 +177,12 @@
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.build.html">auralflow.build</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.transforms.html">auralflow.transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.utils.html">auralflow.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
 </ul>
@@ -367,18 +369,16 @@ Default: 100.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>A list of ordered mappings
-(one for each track), where each ordered mapping consists of:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>mixture (ndarray): Mixture track.</p></li>
-<li><p>bass (ndarray): Bass track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).</p></li>
-<li><p>drums (ndarray): Drums track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).</p></li>
-<li><p>vocal (ndarray): Vocals track (if <code class="docutils literal notranslate"><span class="pre">targets</span></code>).</p></li>
-<li><p>other (ndarray): Other/background track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).</p></li>
-<li><p>duration (int): Duration of the mixture track.</p></li>
-</ul>
-</div></blockquote>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of ordered mappings</dt><dd><p>(one for each track), where each ordered mapping consists of:
+- mixture (ndarray): Mixture track.
+- bass (ndarray): Bass track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).
+- drums (ndarray): Drums track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).
+- vocal (ndarray): Vocals track (if <code class="docutils literal notranslate"><span class="pre">targets</span></code>).
+- other (ndarray): Other/background track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).
+- duration (int): Duration of the mixture track.</p>
+</dd>
+</dl>
 </p>
 </dd>
 <dt class="field-odd">Return type</dt>

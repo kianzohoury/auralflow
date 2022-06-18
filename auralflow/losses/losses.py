@@ -8,19 +8,36 @@ import asteroid.metrics
 import torch
 import torch.nn as nn
 
-from auralflow.utils.data_utils import trim_audio
+from auralflow.models import SpectrogramMaskModel
+from auralflow.transforms import trim_audio
 from torch import FloatTensor, Tensor
 from torch.nn import functional
 from torchaudio.transforms import Resample
 from typing import Mapping
 
 
+__all__ = [
+    "component_loss",
+    "kl_div_loss",
+    "si_sdr_loss",
+    "rmse_loss",
+    "get_evaluation_metrics",
+    "ComponentLoss",
+    "KLDivergenceLoss",
+    "SISDRLoss",
+    "L1Loss",
+    "L2Loss",
+    "RMSELoss",
+    "L2MaskLoss"
+]
+
+
 def component_loss(
-        mask: FloatTensor,
-        target: FloatTensor,
-        residual: FloatTensor,
-        alpha: float = 0.2,
-        beta: float = 0.8,
+    mask: FloatTensor,
+    target: FloatTensor,
+    residual: FloatTensor,
+    alpha: float = 0.2,
+    beta: float = 0.8,
 ) -> Tensor:
     r"""Weighted loss that combines different loss components.
 
@@ -145,10 +162,10 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
         >>> kl_term = kl_div_loss(mu, sigma)
         >>>
         >>> # calculate reconstruction loss
-        >>> recon_term = nn.functional.l1_loss(estimate_spec, target_spec)
+        >>> l1_term = torch.nn.functional.l1_loss(estimate_spec, target_spec)
         >>>
         >>> # combine loss terms
-        >>> loss = kl_term + recon_term
+        >>> loss = kl_term + l1_term
         >>>
         >>> # get scalar value
         >>> loss_val = loss.item()
@@ -215,7 +232,7 @@ def rmse_loss(
     return torch.sqrt(functional.mse_loss(estimate, target) + eps)
 
 
-class WeightedComponentLoss(nn.Module):
+class ComponentLoss(nn.Module):
     """Wrapper class for ``component_loss``.
 
     Uses two or three loss components depending on the arguments for ``alpha``
@@ -251,8 +268,10 @@ class WeightedComponentLoss(nn.Module):
         beta (float): Value for the three-term component loss.
     """
 
-    def __init__(self, model, alpha: float, beta: float) -> None:
-        super(WeightedComponentLoss, self).__init__()
+    def __init__(
+        self, model: SpectrogramMaskModel, alpha: float, beta: float
+    ) -> None:
+        super(ComponentLoss, self).__init__()
         self.model = model
         self.alpha = alpha
         self.beta = beta
@@ -301,7 +320,9 @@ class KLDivergenceLoss(nn.Module):
         loss_fn (str): Construction loss criterion. Default: 'l1'.
     """
 
-    def __init__(self, model, loss_fn: str = "l1") -> None:
+    def __init__(
+        self, model: SpectrogramMaskModel, loss_fn: str = "l1"
+    ) -> None:
         super(KLDivergenceLoss, self).__init__()
         self.model = model
         if loss_fn == "l1":
@@ -323,6 +344,63 @@ class KLDivergenceLoss(nn.Module):
         self.model.batch_loss = construction_loss + kl_term
 
 
+class SISDRLoss(nn.Module):
+    """Wrapper class for ``si_sdr_loss``.
+
+    Typically used as an evaluation metric, but can be optimized for directly.
+    For a single audio track, the loss is defined as:
+
+    .. math::
+        L_{\\text{SI-SDR}}(\\hat y, y) = -10\\log_{10} \\frac{||\\frac{proj_{y}
+            \\hat y}{||y||_2^2}||_2^2}{||\\frac{proj_{y} \\hat y}{||y||_2^2}
+            - \\hat y||_2^2}
+
+    where:
+        - :math:`y`: true target signal
+        - :math:`\\hat y`: estimated target source signal
+
+    Note:
+        Sets ``batch_loss`` attribute of the model instead of returning the
+        loss directly.
+
+    Args:
+        model (SpectrogramMaskModel): Spectrogram mask model.
+
+    Examples:
+        >>> # get estimate and target audio data
+        >>> estimate = torch.rand((16, 1, 88200))
+        >>> target = torch.rand((16, 1, 88200))
+        >>>
+        >>> model = auralflow.models.SpectrogramMaskModel
+        >>> # calculate SI-SDR loss
+        >>> loss = si_sdr_loss(estimate, target)
+        >>>
+        >>> # get its scalar value
+        >>> loss_val = loss.item()    Examples:
+        >>> # get estimate and target audio data
+        >>> estimate = torch.rand((16, 1, 88200))
+        >>> target = torch.rand((16, 1, 88200))
+        >>>
+        >>> # calculate SI-SDR loss
+        >>> loss = si_sdr_loss(estimate, target)
+        >>>
+        >>> # get its scalar value
+        >>> loss_val = loss.item()
+    """
+
+    def __init__(self, model) -> None:
+        super(SIDRLoss, self).__init__()
+        self.model = model
+
+    def forward(self) -> None:
+        """Calculates si_sdr_loss and stores it."""
+        estimate_audio = self.model.estimate_audio[..., :self.model.target_audio.shape[-1]]
+        target_audio = self.model.target_audio.squeeze(-1).float()
+        self.model.batch_loss = si_sdr_loss(
+            estimate_audio, target_audio
+        )
+
+
 class L1Loss(nn.Module):
     """Wrapper class for l1 loss.
 
@@ -334,7 +412,7 @@ class L1Loss(nn.Module):
         loss directly.
     """
 
-    def __init__(self, model) -> None:
+    def __init__(self, model: SpectrogramMaskModel) -> None:
         super(L1Loss, self).__init__()
         self.model = model
 
@@ -356,7 +434,7 @@ class L2Loss(nn.Module):
         loss directly.
     """
 
-    def __init__(self, model) -> None:
+    def __init__(self, model: SpectrogramMaskModel) -> None:
         super(L2Loss, self).__init__()
         self.model = model
 
@@ -393,42 +471,6 @@ class L2MaskLoss(nn.Module):
         )
         self.model.batch_loss = nn.functional.mse_loss(
             self.model.mask, ideal_mask
-        )
-
-
-class SIDRLoss(nn.Module):
-    """Wrapper class for ``si_sdr_loss``.
-
-    Typically used as an evaluation metric, but can be optimized for directly.
-    For a single audio track, the loss is defined as:
-
-    .. math::
-        L_{\\text{SI-SDR}}(\\hat y, y) = -10\\log_{10} \\frac{||\\frac{proj_{y}
-            \\hat y}{||y||_2^2}||_2^2}{||\\frac{proj_{y} \\hat y}{||y||_2^2}
-            - \\hat y||_2^2}
-
-    where:
-        - :math:`y`: true target signal
-        - :math:`\\hat y`: estimated target source signal
-
-    Note:
-        Sets ``batch_loss`` attribute of the model instead of returning the
-        loss directly.
-
-    Args:
-        model (SpectrogramMaskModel): Spectrogram mask model.
-    """
-
-    def __init__(self, model) -> None:
-        super(SIDRLoss, self).__init__()
-        self.model = model
-
-    def forward(self) -> None:
-        """Calculates si_sdr_loss and stores it."""
-        estimate = self.model.estimate_audio[..., :self.model.target.shape[-1]]
-        target = self.model.target.squeeze(-1).float()
-        self.model.batch_loss = si_sdr_loss(
-            estimate, target
         )
 
 
@@ -491,3 +533,4 @@ def get_evaluation_metrics(
         mean_val = val / mixture.shape[0]
         metrics[metric_name] = mean_val
     return metrics
+

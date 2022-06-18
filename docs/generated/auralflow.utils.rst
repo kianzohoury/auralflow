@@ -12,23 +12,12 @@
 
    
       load_config
-      load_object
       save_config
-      save_object
-      pull_config_template
-      trim_audio
+      copy_config_template
    
    
 
    
-   
-   .. rubric:: Classes
-
-   .. autosummary::
-     :nosignatures:
-
-   
-      AudioTransform
    
    
 

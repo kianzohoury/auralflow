@@ -176,10 +176,12 @@
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.build.html">auralflow.build</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.models.html">auralflow.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.transforms.html">auralflow.transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.utils.html">auralflow.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
 </ul>
@@ -233,7 +235,7 @@
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">auralflow.utils.data_utils</span> <span class="kn">import</span> <span class="n">trim_audio</span>
+<span class="kn">from</span> <span class="nn">auralflow.transforms</span> <span class="kn">import</span> <span class="n">trim_audio</span>
 
 
 <span class="k">def</span> <span class="nf">make_spectrogram_figure</span><span class="p">(</span>

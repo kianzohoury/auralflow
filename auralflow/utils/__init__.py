@@ -6,36 +6,42 @@
 
 import json
 from pathlib import Path
-from . import data_utils
-from . data_utils import AudioTransform, trim_audio
-
 
 import torch
 import shutil
 
 __all__ = [
     "load_config",
-    "load_object",
     "save_config",
-    "save_object",
-    "pull_config_template",
-    "data_utils",
-    "AudioTransform",
-    "trim_audio"
+    "copy_config_template",
 ]
 
 config_template_path = Path(__file__).parents[2].joinpath("config.json")
 
 
-def pull_config_template(save_dir: str):
-    """Copies contents from a template configuration file into a new config."""
+def copy_config_template(save_dir: str) -> None:
+    """Clones default ``config.json`` file to a save directory.
+
+    Args:
+        save_dir (str): Path to copy ``config.json`` to.
+    """
     Path(save_dir).mkdir(exist_ok=True)
     save_filepath = save_dir + "/config.json"
     shutil.copy(src=str(config_template_path), dst=save_filepath)
 
 
-def load_config(config_filepath: str):
-    """Loads a .json configuration file given a filepath."""
+def load_config(config_filepath: str) -> dict:
+    """Loads the contents of a configuration file into a dictionary.
+
+    Args:
+        config_filepath (str): Path to the configuration file.
+
+    Returns:
+        dict: Configuration data.
+
+    Raises:
+        IOError: Raised if the file cannot be read.
+    """
     try:
         with open(config_filepath) as config_file:
             return json.load(config_file)

@@ -177,10 +177,12 @@
 </ul>
 </li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="auralflow.build.html">auralflow.build</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.models.html">auralflow.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auralflow.transforms.html">auralflow.transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.utils.html">auralflow.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.visualizer.html">auralflow.visualizer</a></li>
 </ul>
@@ -237,8 +239,11 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.si_sdr_loss.html#auralflow.losses.si_sdr_loss" title="auralflow.losses.si_sdr_loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">si_sdr_loss</span></code></a></p></td>
 <td><p>Scale-invariant (SI-SDR) signal to distortion loss.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.get_model_criterion" title="auralflow.losses.get_model_criterion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_criterion</span></code></a></p></td>
-<td><p>Gets model criterion according to configuration file.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.rmse_loss" title="auralflow.losses.rmse_loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rmse_loss</span></code></a></p></td>
+<td><p>RMSE loss.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.get_evaluation_metrics" title="auralflow.losses.get_evaluation_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_evaluation_metrics</span></code></a></p></td>
+<td><p>Returns batch-wise means of standard source separation eval scores.</p></td>
 </tr>
 </tbody>
 </table>
@@ -251,26 +256,26 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.WeightedComponentLoss" title="auralflow.losses.WeightedComponentLoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WeightedComponentLoss</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.ComponentLoss.html#auralflow.losses.ComponentLoss" title="auralflow.losses.ComponentLoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ComponentLoss</span></code></a></p></td>
 <td><p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">component_loss</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.KLDivergenceLoss" title="auralflow.losses.KLDivergenceLoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KLDivergenceLoss</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.losses.KLDivergenceLoss.html#auralflow.losses.KLDivergenceLoss" title="auralflow.losses.KLDivergenceLoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KLDivergenceLoss</span></code></a></p></td>
 <td><p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">kl_div_loss</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.L1Loss" title="auralflow.losses.L1Loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L1Loss</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.SISDRLoss.html#auralflow.losses.SISDRLoss" title="auralflow.losses.SISDRLoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SISDRLoss</span></code></a></p></td>
+<td><p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">si_sdr_loss</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.L1Loss" title="auralflow.losses.L1Loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L1Loss</span></code></a></p></td>
 <td><p>Wrapper class for l1 loss.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.L2Loss" title="auralflow.losses.L2Loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L2Loss</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.L2Loss" title="auralflow.losses.L2Loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L2Loss</span></code></a></p></td>
 <td><p>Wrapper class for l2 loss.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.L2MaskLoss" title="auralflow.losses.L2MaskLoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L2MaskLoss</span></code></a></p></td>
-<td><p>Wrapper class for l2 loss directly on masks.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.RMSELoss" title="auralflow.losses.RMSELoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RMSELoss</span></code></a></p></td>
 <td><p>Wrapper class for rmse loss.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.SIDRLoss" title="auralflow.losses.SIDRLoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SIDRLoss</span></code></a></p></td>
-<td><p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">si_sdr_loss</span></code>.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.losses.html#auralflow.losses.L2MaskLoss" title="auralflow.losses.L2MaskLoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L2MaskLoss</span></code></a></p></td>
+<td><p>Wrapper class for l2 loss directly on masks.</p></td>
 </tr>
 </tbody>
 </table>

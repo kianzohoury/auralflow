@@ -4,15 +4,13 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-import copy
 import torch
 import torch.nn as nn
 
-
+from auralflow.transforms.transforms import AudioTransform, get_num_stft_frames
 from .base import SeparationModel
 from torch import FloatTensor, Tensor
 from typing import Optional
-from auralflow.utils.data_utils import AudioTransform, get_num_stft_frames
 
 
 class SpectrogramMaskModel(SeparationModel):

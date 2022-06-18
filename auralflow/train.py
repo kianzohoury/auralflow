@@ -4,15 +4,13 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from argparse import ArgumentParser
+from auralflow.build import build_model, setup_model
 from auralflow.datasets import create_audio_dataset, load_dataset
-from auralflow.models import create_model, setup_model
 from torch.utils.tensorboard import SummaryWriter
 from auralflow.trainer import run_training
 from auralflow.trainer.callbacks import TrainingCallback
 from auralflow.utils import load_config, save_config
 from auralflow.visualizer import config_visualizer
-from auralflow import test
 
 
 def main(config_filepath: str):
@@ -61,7 +59,7 @@ def main(config_filepath: str):
 
     # Load model. Setup restores previous state if resuming training.
     print(f"Loading {model_params['model_name']}...")
-    model = create_model(configuration)
+    model = build_model(configuration)
     model = setup_model(model)
 
     # Initialize summary writer and visualizer.

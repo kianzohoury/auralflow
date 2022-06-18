@@ -177,10 +177,12 @@
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.build.html">auralflow.build</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.transforms.html">auralflow.transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.utils.html">auralflow.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
 </ul>
@@ -224,84 +226,41 @@
 </div>
 <section id="module-auralflow.utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-auralflow.utils" title="Permalink to this headline">#</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="auralflow.utils.AudioTransform">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">AudioTransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_fft</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hop_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/utils/data_utils.html#AudioTransform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.AudioTransform" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Wrapper class that conveniently stores multiple transformation tools.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.utils.AudioTransform.audio_to_mel">
-<span class="sig-name descname"><span class="pre">audio_to_mel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/utils/data_utils.html#AudioTransform.audio_to_mel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.AudioTransform.audio_to_mel" title="Permalink to this definition">#</a></dt>
-<dd><p>Transforms raw audio signal to log-normalized mel spectrogram.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.utils.AudioTransform.pad_audio">
-<span class="sig-name descname"><span class="pre">pad_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/utils/data_utils.html#AudioTransform.pad_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.AudioTransform.pad_audio" title="Permalink to this definition">#</a></dt>
-<dd><p>Applies zero-padding to input audio.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.utils.AudioTransform.to_audio">
-<span class="sig-name descname"><span class="pre">to_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">complex_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/auralflow/utils/data_utils.html#AudioTransform.to_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.AudioTransform.to_audio" title="Permalink to this definition">#</a></dt>
-<dd><p>Transforms complex-valued spectrogram to its time-domain signal.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.utils.AudioTransform.to_decibel">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_decibel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrogram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/auralflow/utils/data_utils.html#AudioTransform.to_decibel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.AudioTransform.to_decibel" title="Permalink to this definition">#</a></dt>
-<dd><p>Transforms spectrogram to decibel scale.</p>
-<p>Computes y = 20 * log10(<a href="#id1"><span class="problematic" id="id2">|x|</span></a> / max(<a href="#id3"><span class="problematic" id="id4">|x|</span></a>)).</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.utils.AudioTransform.to_mel_scale">
-<span class="sig-name descname"><span class="pre">to_mel_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrogram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/auralflow/utils/data_utils.html#AudioTransform.to_mel_scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.AudioTransform.to_mel_scale" title="Permalink to this definition">#</a></dt>
-<dd><p>Transforms magnitude or log-normal spectrogram to mel scale.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.utils.AudioTransform.to_spectrogram">
-<span class="sig-name descname"><span class="pre">to_spectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/auralflow/utils/data_utils.html#AudioTransform.to_spectrogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.AudioTransform.to_spectrogram" title="Permalink to this definition">#</a></dt>
-<dd><p>Transforms an audio signal to its time-freq representation.</p>
-</dd></dl>
-
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.utils.copy_config_template">
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">copy_config_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#copy_config_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.copy_config_template" title="Permalink to this definition">#</a></dt>
+<dd><p>Clones default <code class="docutils literal notranslate"><span class="pre">config.json</span></code> file to a save directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>save_dir</strong> (<em>str</em>) -- Path to copy <code class="docutils literal notranslate"><span class="pre">config.json</span></code> to.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.utils.load_config">
-<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/utils.html#load_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.load_config" title="Permalink to this definition">#</a></dt>
-<dd><p>Loads a .json configuration file given a filepath.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="auralflow.utils.load_object">
-<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">load_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_wrapper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#load_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.load_object" title="Permalink to this definition">#</a></dt>
-<dd><p>Loads object's state and and attaches it to the model.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="auralflow.utils.pull_config_template">
-<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">pull_config_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/utils.html#pull_config_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.pull_config_template" title="Permalink to this definition">#</a></dt>
-<dd><p>Copies contents from a template configuration file into a new config.</p>
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#load_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.load_config" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads the contents of a configuration file into a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config_filepath</strong> (<em>str</em>) -- Path to the configuration file.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Configuration data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>IOError</strong> -- Raised if the file cannot be read.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.utils.save_config">
 <span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">save_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/utils.html#save_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.save_config" title="Permalink to this definition">#</a></dt>
 <dd><p>Saves configuration data to a .json file at a given location.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="auralflow.utils.save_object">
-<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">save_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_wrapper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#save_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.save_object" title="Permalink to this definition">#</a></dt>
-<dd><p>Saves object state as .pth file under the checkpoint directory.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="auralflow.utils.trim_audio">
-<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">trim_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio_tensors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/auralflow/utils/data_utils.html#trim_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.trim_audio" title="Permalink to this definition">#</a></dt>
-<dd><p>Trims audio tensors to have matching number of frames.</p>
 </dd></dl>
 
 </section>

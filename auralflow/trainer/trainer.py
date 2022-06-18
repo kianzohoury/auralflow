@@ -6,13 +6,12 @@
 
 import torch
 
-
-from .callbacks import TrainingCallback
 from auralflow.models import SeparationModel
-from torch.cuda.amp import autocast
-from torch.utils.data import DataLoader
 from auralflow.visualizer import ProgressBar
 from auralflow.utils import save_config
+from .callbacks import TrainingCallback
+from torch.cuda.amp import autocast
+from torch.utils.data import DataLoader
 
 
 def run_training(
@@ -21,7 +20,14 @@ def run_training(
     val_dataloader: DataLoader,
     callback: TrainingCallback,
 ) -> None:
-    """Runs training loop."""
+    """Runs training loop.
+
+    Args:
+        model (SeparationModel): Separation model.
+        train_dataloader (DataLoader): Training set dataloader.
+        val_dataloader (DataLoader): Validation set dataloader.
+        callback (TrainingCallback): Training callbacks object.
+    """
     start_epoch = model.training_params["last_epoch"] + 1
     stop_epoch = start_epoch + model.training_params["max_epochs"]
     global_step = model.training_params["global_step"] + 1
@@ -37,7 +43,7 @@ def run_training(
             train_dataloader, total=max_iters, desc="train"
         ) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
-                with autocast(enabled=model.use_amp or True):
+                with autocast(enabled=model.use_amp):
 
                     # Process data, run forward pass.
                     model.set_data(mixture, target)
@@ -105,7 +111,12 @@ def run_training(
 
 
 def run_validation(model: SeparationModel, val_dataloader: DataLoader) -> None:
-    """Runs validation loop."""
+    """Runs validation loop.
+
+    Args:
+        model (SeparationModel): Separation model.
+        val_dataloader (DataLoader): Validation set dataloader.
+    """
     max_iters = len(val_dataloader)
 
     # Set model to validation mode.

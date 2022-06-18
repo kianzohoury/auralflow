@@ -4,21 +4,25 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+from auralflow import build
 from auralflow import datasets
 from auralflow import losses
 from auralflow import visualizer
 from auralflow import models
 from auralflow import trainer
+from auralflow import transforms
 from auralflow import utils
 from . import separate
 
 
 __all__ = [
+    "build",
     "datasets",
     "losses",
     "visualizer",
     "models",
     "trainer",
+    "transforms",
     "utils",
     "separate",
 ]

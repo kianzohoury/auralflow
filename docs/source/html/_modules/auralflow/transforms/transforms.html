@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>auralflow.utils.data_utils - auralflow</title>
+        <title>auralflow.transforms.transforms - auralflow</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -176,10 +176,12 @@
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.build.html">auralflow.build</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.models.html">auralflow.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.transforms.html">auralflow.transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.utils.html">auralflow.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
 </ul>
@@ -217,39 +219,34 @@
           </label>
         </div>
         <article role="main">
-          <h1>Source code for auralflow.utils.data_utils</h1><div class="highlight"><pre>
+          <h1>Source code for auralflow.transforms.transforms</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (c) 2022 Kian Zohoury</span>
 <span class="c1"># Distributed under the terms of the MIT License.</span>
 <span class="c1"># SPDX-License-Identifier: MIT</span>
 <span class="c1"># This code is part of the auralflow project linked below.</span>
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">librosa</span>
-
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">torchaudio</span> <span class="kn">import</span> <span class="n">transforms</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;AudioTransform&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;fast_fourier&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;inverse_fast_fourier&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_stft&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_num_stft_frames&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;make_hann_window&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_deconv_pad&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_conv_pad&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_conv_shape&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;trim_audio&quot;</span><span class="p">,</span>
-<span class="p">]</span>
+<span class="kn">from</span> <span class="nn">librosa</span> <span class="kn">import</span> <span class="n">amplitude_to_db</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torchaudio</span> <span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">ndarray</span>
 
 
-<div class="viewcode-block" id="AudioTransform"><a class="viewcode-back" href="../../../auralflow.utils.html#auralflow.utils.AudioTransform">[docs]</a><span class="k">class</span> <span class="nc">AudioTransform</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Wrapper class that conveniently stores multiple transformation tools.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AudioTransform"><a class="viewcode-back" href="../../../auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform">[docs]</a><span class="k">class</span> <span class="nc">AudioTransform</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper class that conveniently stores multiple transformation tools.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_fft (int): Number of FFT bins.</span>
+<span class="sd">        hop_length (int): Hop length.</span>
+<span class="sd">        window_size (int): Window size.</span>
+<span class="sd">        sample_rate (int): Sample rate. Default; 44100.</span>
+<span class="sd">        device (str): Device. Default: &#39;cpu&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -271,12 +268,14 @@
             <span class="n">power</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">onesided</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">inv_stft</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">InverseSpectrogram</span><span class="p">(</span>
             <span class="n">n_fft</span><span class="o">=</span><span class="n">num_fft</span><span class="p">,</span>
             <span class="n">win_length</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span>
             <span class="n">hop_length</span><span class="o">=</span><span class="n">hop_length</span><span class="p">,</span>
             <span class="n">onesided</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">mel_scale</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">MelScale</span><span class="p">(</span>
             <span class="n">n_mels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
             <span class="n">f_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -286,51 +285,103 @@
             <span class="c1"># norm=&quot;slaney&quot;,</span>
         <span class="p">)</span>
 
+        <span class="c1"># Use librosa implementation due to discrepancy w/ torchaudio.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amp_to_db_</span> <span class="o">=</span> <span class="n">amplitude_to_db</span>
+
         <span class="c1"># Transfer window functions and filterbanks to GPU if available.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stft</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stft</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inv_stft</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_stft</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mel_scale</span><span class="o">.</span><span class="n">fb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mel_scale</span><span class="o">.</span><span class="n">fb</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AudioTransform.to_decibel"><a class="viewcode-back" href="../../../auralflow.utils.html#auralflow.utils.AudioTransform.to_decibel">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">to_decibel</span><span class="p">(</span><span class="n">spectrogram</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Transforms spectrogram to decibel scale.</span>
+<div class="viewcode-block" id="AudioTransform.to_decibel"><a class="viewcode-back" href="../../../auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform.to_decibel">[docs]</a>    <span class="k">def</span> <span class="nf">to_decibel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrogram</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Transforms spectrogram to decibel scale.</span>
 
-<span class="sd">        Computes y = 20 * log10(|x| / max(|x|)).</span>
+<span class="sd">        Computes the following:</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            y = 20 \mul \\log_{10} \\frac{|x|}{max(|x|)}</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            spectrogram (Tensor): Spectrogram data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            spectrogram (Tensor): Log-normalized spectrogram data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Use implementation from librosa due to discrepancy w/ torchaudio.</span>
         <span class="n">log_normal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span>
-            <span class="n">librosa</span><span class="o">.</span><span class="n">amplitude_to_db</span><span class="p">(</span><span class="n">spectrogram</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">ref</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">amp_to_db_</span><span class="p">(</span><span class="n">spectrogram</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">ref</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">spectrogram</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">log_normal</span></div>
 
-<div class="viewcode-block" id="AudioTransform.to_spectrogram"><a class="viewcode-back" href="../../../auralflow.utils.html#auralflow.utils.AudioTransform.to_spectrogram">[docs]</a>    <span class="k">def</span> <span class="nf">to_spectrogram</span><span class="p">(</span>
+<div class="viewcode-block" id="AudioTransform.to_spectrogram"><a class="viewcode-back" href="../../../auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform.to_spectrogram">[docs]</a>    <span class="k">def</span> <span class="nf">to_spectrogram</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">use_padding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Transforms an audio signal to its time-freq representation.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Transforms an audio signal to its time-frequency representation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            audio (Tensor): Raw audio signal data.</span>
+<span class="sd">            use_padding (bool): If ``True``, zero-pads audio data such that its</span>
+<span class="sd">                duration is a multiple of the hop length. Default: True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: Spectrogram data (complex-valued).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">use_padding</span><span class="p">:</span>
             <span class="n">audio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad_audio</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stft</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AudioTransform.to_audio"><a class="viewcode-back" href="../../../auralflow.utils.html#auralflow.utils.AudioTransform.to_audio">[docs]</a>    <span class="k">def</span> <span class="nf">to_audio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">complex_spec</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Transforms complex-valued spectrogram to its time-domain signal.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AudioTransform.to_audio"><a class="viewcode-back" href="../../../auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform.to_audio">[docs]</a>    <span class="k">def</span> <span class="nf">to_audio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">complex_spec</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Transforms complex-valued spectrogram to its time-domain signal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            complex_spec (Tensor): Complex spectrogram data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: Audio signal data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_stft</span><span class="p">(</span><span class="n">complex_spec</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AudioTransform.to_mel_scale"><a class="viewcode-back" href="../../../auralflow.utils.html#auralflow.utils.AudioTransform.to_mel_scale">[docs]</a>    <span class="k">def</span> <span class="nf">to_mel_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrogram</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">to_db</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Transforms magnitude or log-normal spectrogram to mel scale.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AudioTransform.to_mel_scale"><a class="viewcode-back" href="../../../auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform.to_mel_scale">[docs]</a>    <span class="k">def</span> <span class="nf">to_mel_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectrogram</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">to_db</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Transforms a magnitude spectrogram to a mel spectrogram.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            spectrogram (Tensor): Magnitude spectrogram data.</span>
+<span class="sd">            to_db (bool): If ``True``, converts magnitude spectrogram to</span>
+<span class="sd">                decibel scale first. Default: True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: Mel spectrogram data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mel_spectrogram</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mel_scale</span><span class="p">(</span><span class="n">spectrogram</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">to_db</span><span class="p">:</span>
             <span class="n">mel_spectrogram</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_decibel</span><span class="p">(</span><span class="n">mel_spectrogram</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mel_spectrogram</span></div>
 
-<div class="viewcode-block" id="AudioTransform.audio_to_mel"><a class="viewcode-back" href="../../../auralflow.utils.html#auralflow.utils.AudioTransform.audio_to_mel">[docs]</a>    <span class="k">def</span> <span class="nf">audio_to_mel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">to_db</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Transforms raw audio signal to log-normalized mel spectrogram.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AudioTransform.audio_to_mel"><a class="viewcode-back" href="../../../auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform.audio_to_mel">[docs]</a>    <span class="k">def</span> <span class="nf">audio_to_mel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">to_db</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Transforms raw audio signal to a mel spectrogram.</span>
+
+<span class="sd">        Uses ``to_spectrogram`` and ``to_mel_scale`` as subroutines.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            audio (Tensor): Raw audio signal data.</span>
+<span class="sd">            to_db (bool): If ``True``, converts magnitude spectrogram to</span>
+<span class="sd">                decibel scale first. Default: True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: Mel spectrogram data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spectrogram</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_spectrogram</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span>
         <span class="n">amp_spectrogram</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spectrogram</span><span class="p">)</span>
         <span class="n">mel_spectrogram</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_mel_scale</span><span class="p">(</span><span class="n">amp_spectrogram</span><span class="p">,</span> <span class="n">to_db</span><span class="o">=</span><span class="n">to_db</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mel_spectrogram</span></div>
 
-<div class="viewcode-block" id="AudioTransform.pad_audio"><a class="viewcode-back" href="../../../auralflow.utils.html#auralflow.utils.AudioTransform.pad_audio">[docs]</a>    <span class="k">def</span> <span class="nf">pad_audio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies zero-padding to input audio.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AudioTransform.pad_audio"><a class="viewcode-back" href="../../../auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform.pad_audio">[docs]</a>    <span class="k">def</span> <span class="nf">pad_audio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Zero-pads audio to make its duration divisible by the hop length.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            audio (Tensor): Audio signal data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tenor: Zero-padded audio signal data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">remainder</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">audio</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">hop_length</span><span class="p">)</span>
         <span class="n">pad_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hop_length</span> <span class="o">-</span> <span class="n">remainder</span>
         <span class="n">padding</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
@@ -406,12 +457,11 @@
     <span class="n">sample_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">win_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">hop_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">center</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Calculates number of STFT frames.&quot;&quot;&quot;</span>
-    <span class="c1"># Force number of samples to be divisble by hop length.</span>
+    <span class="c1"># Force number of samples to be divisible by the hop length.</span>
     <span class="n">n_samples</span> <span class="o">=</span> <span class="n">sample_len</span> <span class="o">*</span> <span class="n">sr</span>
     <span class="n">remainder</span> <span class="o">=</span> <span class="n">n_samples</span> <span class="o">%</span> <span class="n">hop_len</span>
     <span class="n">n_samples</span> <span class="o">+=</span> <span class="n">hop_len</span> <span class="o">-</span> <span class="n">remainder</span>
 
-    <span class="n">pad_size</span> <span class="o">=</span> <span class="n">hop_len</span> <span class="o">-</span> <span class="n">remainder</span>
     <span class="n">win_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="nb">bool</span><span class="p">(</span><span class="n">center</span><span class="p">))</span> <span class="o">*</span> <span class="n">win_size</span>
     <span class="n">frames</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">n_samples</span> <span class="o">-</span> <span class="n">win_size</span><span class="p">)</span> <span class="o">/</span> <span class="n">hop_len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">frames</span>
@@ -420,7 +470,7 @@
 <span class="k">def</span> <span class="nf">make_hann_window</span><span class="p">(</span>
     <span class="n">window_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates a `Hann` window for use with STFT/ISTFT transformations.</span>
+    <span class="sd">&quot;&quot;&quot;Creates a ``Hann`` window for use with STFT/ISTFT transformations.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        window_length (int): Window length.</span>
@@ -469,10 +519,17 @@
     <span class="k">return</span> <span class="n">h_out</span><span class="p">,</span> <span class="n">w_out</span>
 
 
-<div class="viewcode-block" id="trim_audio"><a class="viewcode-back" href="../../../auralflow.utils.html#auralflow.utils.trim_audio">[docs]</a><span class="k">def</span> <span class="nf">trim_audio</span><span class="p">(</span>
-    <span class="n">audio_tensors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
-    <span class="sd">&quot;&quot;&quot;Trims audio tensors to have matching number of frames.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="trim_audio"><a class="viewcode-back" href="../../../auralflow.transforms.trim_audio.html#auralflow.transforms.trim_audio">[docs]</a><span class="k">def</span> <span class="nf">trim_audio</span><span class="p">(</span>
+    <span class="n">audio_tensors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">ndarray</span><span class="p">]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">ndarray</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Trims duration of all audio data to match that of the shortest one.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        audio_tensors (Union[List[Tensor], List[ndarray]]): List of audio</span>
+<span class="sd">            tensors or arrays.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Union[List[Tensor], List[ndarray]]: Trimmed audio tensors or arrays.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">audio_tensors</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">audio_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
             <span class="p">[</span>
