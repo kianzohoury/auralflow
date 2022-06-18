@@ -5,15 +5,18 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import json
+import shutil
+import torch
+
+from auralflow.models import SeparationModel
 from pathlib import Path
 
-import torch
-import shutil
-
 __all__ = [
+    "copy_config_template",
     "load_config",
     "save_config",
-    "copy_config_template",
+    "save_object",
+    "load_object",
 ]
 
 config_template_path = Path(__file__).parents[2].joinpath("config.json")
@@ -49,8 +52,16 @@ def load_config(config_filepath: str) -> dict:
         raise error
 
 
-def save_config(config: dict, save_filepath: str):
-    """Saves configuration data to a .json file at a given location."""
+def save_config(config: dict, save_filepath: str) -> None:
+    """Saves configuration data to the given filepath.
+
+    Args:
+        config (dict): Configuration data.
+        save_filepath (str): Path to save.
+
+    Raises:
+        IOError: Raised if the configuration file cannot be saved.
+    """
     try:
         with open(save_filepath, "w") as config_file:
             return json.dump(config, config_file, indent=4)
@@ -71,36 +82,58 @@ def _add_checkpoint_tag(filename: str, obj_name: str, global_step: int) -> str:
     return filename
 
 
-def save_object(model_wrapper, obj_name: str, global_step: int) -> None:
-    """Saves object state as .pth file under the checkpoint directory."""
-    filename = f"{model_wrapper.checkpoint_path}/{model_wrapper.model_name}"
-    if not model_wrapper.training_params["silent_checkpoint"]:
+def save_object(
+    model: SeparationModel, obj_name: str, global_step: int
+) -> None:
+    """Saves object state as .pth file under the checkpoint directory.
+
+    Args:
+        model (SeparationModel): Separation model.
+        obj_name (str): Object to save.
+        global_step (int): Global step.
+
+    Raises:
+        OSError: Raised if object cannot be saved.
+    """
+    filename = f"{model.checkpoint_path}/{model.model_name}"
+    if not model.training_params["silent_checkpoint"]:
         print(f"Saving {obj_name}...")
     # Get object-specific filename.
     filename = _add_checkpoint_tag(
         filename=filename, obj_name=obj_name, global_step=global_step
     )
-    if hasattr(model_wrapper, obj_name):
+    if hasattr(model, obj_name):
         # Retrieve object's state.
         if obj_name == "model":
-            state_dict = getattr(model_wrapper, obj_name).cpu().state_dict()
+            state_dict = getattr(model, obj_name).cpu().state_dict()
             # Transfer model back to GPU if applicable.
-            model_wrapper.model.to(model_wrapper.device)
+            model.model.to(model.device)
         else:
-            state_dict = getattr(model_wrapper, obj_name).state_dict()
+            state_dict = getattr(model, obj_name).state_dict()
         try:
             # Save object's state to filename.
             torch.save(state_dict, f=filename)
-            if not model_wrapper.training_params["silent_checkpoint"]:
+            if not model.training_params["silent_checkpoint"]:
                 print(f"  Successful.")
         except OSError as error:
             print(f"  Failed.")
             raise error
 
 
-def load_object(model_wrapper, obj_name: str, global_step: int) -> None:
-    """Loads object's state and and attaches it to the model."""
-    filename = f"{model_wrapper.checkpoint_path}/{model_wrapper.model_name}"
+def load_object(
+    model: SeparationModel, obj_name: str, global_step: int
+) -> None:
+    """Loads object's state and and attaches it to the model.
+
+    Args:
+        model (SeparationModel): Separation model.
+        obj_name (str): Object to save.
+        global_step (int): Global step.
+
+    Raises:
+        OSError: Raised if object cannot be loaded.
+    """
+    filename = f"{model.checkpoint_path}/{model.model_name}"
     print(f"Loading {obj_name}...")
     # Get object-specific filename.
     filename = _add_checkpoint_tag(
@@ -108,11 +141,11 @@ def load_object(model_wrapper, obj_name: str, global_step: int) -> None:
     )
     try:
         # Try to read object state from the given file.
-        state_dict = torch.load(filename, map_location=model_wrapper.device)
+        state_dict = torch.load(filename, map_location=model.device)
     except (OSError, FileNotFoundError) as error:
         print("  Failed.")
         raise error
-    if hasattr(model_wrapper, obj_name):
+    if hasattr(model, obj_name):
         # Load state into object.
-        getattr(model_wrapper, obj_name).load_state_dict(state_dict)
+        getattr(model, obj_name).load_state_dict(state_dict)
         print(f"  Successful.")

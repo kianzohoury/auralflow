@@ -109,49 +109,49 @@ class SeparationModel(ABC):
     def save_model(self, global_step: int) -> None:
         """Saves the model's current state."""
         save_object(
-            model_wrapper=self, obj_name="model", global_step=global_step
+            model=self, obj_name="model", global_step=global_step
         )
 
     def load_model(self, global_step: int) -> None:
         """Loads a model's previous state."""
         load_object(
-            model_wrapper=self, obj_name="model", global_step=global_step
+            model=self, obj_name="model", global_step=global_step
         )
 
     def save_optim(self, global_step: int) -> None:
         """Saves the optimizer's current state."""
         save_object(
-            model_wrapper=self, obj_name="optimizer", global_step=global_step
+            model=self, obj_name="optimizer", global_step=global_step
         )
 
     def load_optim(self, global_step: int) -> None:
         """Loads an optimizer's previous state."""
         load_object(
-            model_wrapper=self, obj_name="optimizer", global_step=global_step
+            model=self, obj_name="optimizer", global_step=global_step
         )
 
     def save_scheduler(self, global_step: int) -> None:
         """Saves the scheduler's current state."""
         save_object(
-            model_wrapper=self, obj_name="scheduler", global_step=global_step
+            model=self, obj_name="scheduler", global_step=global_step
         )
 
     def load_scheduler(self, global_step: int) -> None:
         """Loads a scheduler's previous state."""
         load_object(
-            model_wrapper=self, obj_name="scheduler", global_step=global_step
+            model=self, obj_name="scheduler", global_step=global_step
         )
 
     def save_grad_scaler(self, global_step: int) -> None:
         """Saves the grad scaler's current state if using mixed precision."""
         save_object(
-            model_wrapper=self, obj_name="grad_scaler", global_step=global_step
+            model=self, obj_name="grad_scaler", global_step=global_step
         )
 
     def load_grad_scaler(self, global_step: int) -> None:
         """Load a grad scaler's previous state if one exists."""
         load_object(
-            model_wrapper=self, obj_name="grad_scaler", global_step=global_step
+            model=self, obj_name="grad_scaler", global_step=global_step
         )
 
     def save(
