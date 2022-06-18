@@ -18,6 +18,8 @@ pytorch-lightning = "1.4.8"
 django-livereload = "^1.7"
 livereload = "^2.6.3"
 sphinx-reload = "^0.2.0"
+matplotlib = "^3.5.2"
+prettytable = "^3.3.0"
 
 [tool.poetry.dev-dependencies]
 

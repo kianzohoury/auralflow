@@ -296,7 +296,7 @@
         <span class="n">torchaudio</span><span class="o">.</span><span class="n">set_audio_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_generate_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<div class="viewcode-block" id="AudioFolder.generate_sample"><a class="viewcode-back" href="../../../auralflow.datasets.AudioFolder.html#auralflow.datasets.AudioFolder.generate_sample">[docs]</a>    <span class="k">def</span> <span class="nf">generate_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Helper method that generates pairs of mixture-target audio data.&quot;&quot;&quot;</span>
         <span class="n">sampled_track</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_track_filepaths</span><span class="p">)</span>
         <span class="n">source_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mixture&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span>
@@ -336,7 +336,7 @@
 
         <span class="c1"># Reshape mixture to match target tensor&#39;s shape.</span>
         <span class="n">mix_data</span> <span class="o">=</span> <span class="n">mix_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mix_data</span><span class="p">,</span> <span class="n">target_data</span>
+        <span class="k">return</span> <span class="n">mix_data</span><span class="p">,</span> <span class="n">target_data</span></div>
 
 <div class="viewcode-block" id="AudioFolder.split"><a class="viewcode-back" href="../../../auralflow.datasets.AudioFolder.html#auralflow.datasets.AudioFolder.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AudioFolder&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Splits itself into training and validation sets.</span>
@@ -372,14 +372,14 @@
         <span class="n">val_dataset</span><span class="o">.</span><span class="n">_track_filepaths</span> <span class="o">=</span> <span class="n">val_filepaths</span>
         <span class="k">return</span> <span class="n">val_dataset</span></div>
 
-<div class="viewcode-block" id="AudioFolder.__iter__"><a class="viewcode-back" href="../../../auralflow.datasets.AudioFolder.html#auralflow.datasets.AudioFolder.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Yields pairs of audio data iteratively.</span>
+<div class="viewcode-block" id="AudioFolder.__iter__"><a class="viewcode-back" href="../../../auralflow.datasets.AudioFolder.html#auralflow.datasets.AudioFolder.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns an generator object for generating pairs of audio samples.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            Tuple[Tensor, Tensor]: Mixture and target data, respectively.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">mix</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_sample</span><span class="p">()</span>
+            <span class="n">mix</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">()</span>
             <span class="k">yield</span> <span class="n">mix</span><span class="p">,</span> <span class="n">target</span></div>
 
 <div class="viewcode-block" id="AudioFolder.__getitem__"><a class="viewcode-back" href="../../../auralflow.datasets.AudioFolder.html#auralflow.datasets.AudioFolder.__getitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>

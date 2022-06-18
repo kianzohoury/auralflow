@@ -16,11 +16,11 @@ from typing import Mapping
 
 
 def component_loss(
-    mask: FloatTensor,
-    target: FloatTensor,
-    residual: FloatTensor,
-    alpha: float = 0.2,
-    beta: float = 0.8,
+        mask: FloatTensor,
+        target: FloatTensor,
+        residual: FloatTensor,
+        alpha: float = 0.2,
+        beta: float = 0.8,
 ) -> Tensor:
     r"""Weighted loss that combines different loss components.
 
@@ -59,24 +59,16 @@ def component_loss(
         Tensor: Mean component loss.
 
     Examples:
-        >>> import torch
-        >>>
-        >>>
-        >>> # generate mask, target and residual spectrogram data
+        >>> # get mask, target and residual spectrogram data
         >>> mask = torch.rand((16, 512, 173, 1)).float()
         >>> target = torch.rand((16, 512, 173, 1)).float()
         >>> residual = torch.rand((16, 512, 173, 1)).float()
         >>>
         >>> # calculate the weighted loss
-        >>> loss = component_loss(
-        ...     mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8
-        ... )
+        >>> loss = component_loss(mask=mask, target=target, residual=residual)
         >>>
-        >>> # scalar value of the batch loss
+        >>> # get its scalar value
         >>> loss_val = loss.item()
-        >>>
-        >>> # backprop
-        >>> loss.backward()
     """
 
     filtered_target = mask * target
@@ -139,6 +131,27 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
 
     Returns:
         Tensor: Mean KL loss term.
+
+    Examples:
+        >>> # get mean and std data
+        >>> mu = torch.zeros((16, 256, 256)).float()
+        >>> sigma = torch.ones((16, 256, 256)).float()
+        >>>
+        >>> # get estimate and target spectrogram data
+        >>> estimate_spec = torch.rand((16, 512, 173, 1))
+        >>> target_spec = torch.rand((16, 512, 173, 1))
+        >>>
+        >>> # calculate kl div loss
+        >>> kl_term = kl_div_loss(mu, sigma)
+        >>>
+        >>> # calculate reconstruction loss
+        >>> recon_term = nn.functional.l1_loss(estimate_spec, target_spec)
+        >>>
+        >>> # combine loss terms
+        >>> loss = kl_term + recon_term
+        >>>
+        >>> # get scalar value
+        >>> loss_val = loss.item()
     """
     return 0.5 * torch.mean(mu ** 2 + sigma ** 2 - torch.log(sigma ** 2) - 1)
 
@@ -164,10 +177,22 @@ def si_sdr_loss(estimate: FloatTensor, target: FloatTensor) -> Tensor:
 
     Returns:
         Tensor: Mean SI-SDR loss.
+
+    Examples:
+        >>> # get estimate and target audio data
+        >>> estimate = torch.rand((16, 1, 88200))
+        >>> target = torch.rand((16, 1, 88200))
+        >>>
+        >>> # calculate SI-SDR loss
+        >>> loss = si_sdr_loss(estimate, target)
+        >>>
+        >>> # get its scalar value
+        >>> loss_val = loss.item()
     """
     # Optimal scaling factor alpha.
-    alpha = torch.sum(estimate * target, dim=-1, keepdim=True) \
-            / torch.sum(target ** 2, dim=-1, keepdim=True)
+    top_term = torch.sum(estimate * target, dim=-1, keepdim=True)
+    bottom_term = torch.sum(target ** 2, dim=-1, keepdim=True)
+    alpha = top_term / bottom_term
 
     # Target signal error term.
     error_target = alpha * target
@@ -405,8 +430,6 @@ class SIDRLoss(nn.Module):
         self.model.batch_loss = si_sdr_loss(
             estimate, target
         )
-
-
 
 
 def get_evaluation_metrics(

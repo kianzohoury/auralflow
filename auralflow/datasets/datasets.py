@@ -76,7 +76,7 @@ class AudioFolder(IterableDataset):
         torchaudio.set_audio_backend(backend)
         np.random.seed(1)
 
-    def _generate_sample(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def generate_sample(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """Helper method that generates pairs of mixture-target audio data."""
         sampled_track = np.random.choice(self._track_filepaths)
         source_names = ["mixture"] + self.targets
@@ -152,14 +152,14 @@ class AudioFolder(IterableDataset):
         val_dataset._track_filepaths = val_filepaths
         return val_dataset
 
-    def __iter__(self) -> Tuple[Tensor, Tensor]:
-        """Yields pairs of audio data iteratively.
+    def __iter__(self) -> Iterator:
+        """Returns an generator object for generating pairs of audio samples.
 
         Yields:
             Tuple[Tensor, Tensor]: Mixture and target data, respectively.
         """
         while True:
-            mix, target = self._generate_sample()
+            mix, target = self.generate_sample()
             yield mix, target
 
     def __getitem__(self, idx: int) -> str:

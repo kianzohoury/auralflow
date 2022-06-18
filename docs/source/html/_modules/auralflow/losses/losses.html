@@ -236,11 +236,11 @@
 
 
 <div class="viewcode-block" id="component_loss"><a class="viewcode-back" href="../../../auralflow.losses.component_loss.html#auralflow.losses.component_loss">[docs]</a><span class="k">def</span> <span class="nf">component_loss</span><span class="p">(</span>
-    <span class="n">mask</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">,</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">,</span>
-    <span class="n">residual</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">,</span>
-    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
-    <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="n">mask</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">,</span>
+        <span class="n">residual</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Weighted loss that combines different loss components.</span>
 
@@ -278,25 +278,17 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        Tensor: Mean component loss.</span>
 
-<span class="sd">    :Example:</span>
-<span class="sd">        &gt;&gt;&gt; import torch</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; # generate mask, target and residual spectrogram data</span>
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; # get mask, target and residual spectrogram data</span>
 <span class="sd">        &gt;&gt;&gt; mask = torch.rand((16, 512, 173, 1)).float()</span>
 <span class="sd">        &gt;&gt;&gt; target = torch.rand((16, 512, 173, 1)).float()</span>
 <span class="sd">        &gt;&gt;&gt; residual = torch.rand((16, 512, 173, 1)).float()</span>
 <span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # calculate the weighted loss</span>
-<span class="sd">        &gt;&gt;&gt; loss = component_loss(</span>
-<span class="sd">        ...     mask=mask, target=target, residual=residual, alpha=0.2, beta=0.8</span>
-<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; loss = component_loss(mask=mask, target=target, residual=residual)</span>
 <span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; # scalar value of the batch loss</span>
+<span class="sd">        &gt;&gt;&gt; # get its scalar value</span>
 <span class="sd">        &gt;&gt;&gt; loss_val = loss.item()</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; # backprop</span>
-<span class="sd">        &gt;&gt;&gt; loss.backward()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">filtered_target</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">*</span> <span class="n">target</span>
@@ -359,6 +351,27 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Tensor: Mean KL loss term.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; # get mean and std data</span>
+<span class="sd">        &gt;&gt;&gt; mu = torch.zeros((16, 256, 256)).float()</span>
+<span class="sd">        &gt;&gt;&gt; sigma = torch.ones((16, 256, 256)).float()</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # get estimate and target spectrogram data</span>
+<span class="sd">        &gt;&gt;&gt; estimate_spec = torch.rand((16, 512, 173, 1))</span>
+<span class="sd">        &gt;&gt;&gt; target_spec = torch.rand((16, 512, 173, 1))</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # calculate kl div loss</span>
+<span class="sd">        &gt;&gt;&gt; kl_term = kl_div_loss(mu, sigma)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # calculate reconstruction loss</span>
+<span class="sd">        &gt;&gt;&gt; recon_term = nn.functional.l1_loss(estimate_spec, target_spec)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # combine loss terms</span>
+<span class="sd">        &gt;&gt;&gt; loss = kl_term + recon_term</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # get scalar value</span>
+<span class="sd">        &gt;&gt;&gt; loss_val = loss.item()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span></div>
 
@@ -384,10 +397,22 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Tensor: Mean SI-SDR loss.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; # get estimate and target audio data</span>
+<span class="sd">        &gt;&gt;&gt; estimate = torch.rand((16, 1, 88200))</span>
+<span class="sd">        &gt;&gt;&gt; target = torch.rand((16, 1, 88200))</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # calculate SI-SDR loss</span>
+<span class="sd">        &gt;&gt;&gt; loss = si_sdr_loss(estimate, target)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # get its scalar value</span>
+<span class="sd">        &gt;&gt;&gt; loss_val = loss.item()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Optimal scaling factor alpha.</span>
-    <span class="n">alpha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">estimate</span> <span class="o">*</span> <span class="n">target</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> \
-            <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">target</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">top_term</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">estimate</span> <span class="o">*</span> <span class="n">target</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">bottom_term</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">target</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">top_term</span> <span class="o">/</span> <span class="n">bottom_term</span>
 
     <span class="c1"># Target signal error term.</span>
     <span class="n">error_target</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">target</span>
@@ -625,8 +650,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">batch_loss</span> <span class="o">=</span> <span class="n">si_sdr_loss</span><span class="p">(</span>
             <span class="n">estimate</span><span class="p">,</span> <span class="n">target</span>
         <span class="p">)</span></div></div>
-
-
 
 
 <span class="k">def</span> <span class="nf">get_evaluation_metrics</span><span class="p">(</span>
