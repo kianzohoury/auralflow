@@ -5,7 +5,7 @@ auralflow.models.SeparationModel
    :maxdepth: 2
 
 .. autoclass:: auralflow.models.SeparationModel
-   :members:
-   :show-inheritance:
-   :special-members:
-   :exclude-members: __init__, __weakref__
+   :members: backward, compute_loss, forward, optimizer_step, scheduler_step,
+             separate, set_data, eval, load_grad_scaler, load_model,
+             load_optim, load_scheduler, save, save_grad_scaler, save_model,
+             save_optim, save_scheduler, test, train

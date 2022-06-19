@@ -9,6 +9,7 @@ import torch
 import torch.backends.cudnn
 import torch.nn as nn
 
+
 from abc import abstractmethod, ABC
 from torch import Tensor, FloatTensor
 from torch.optim import Optimizer
@@ -19,34 +20,79 @@ from auralflow.utils import load_object, save_object
 class SeparationModel(ABC):
     """Interface shared among all source separation models.
 
+    Should not be instantiated directly but rather subclassed. A
+    subclass must implement the following methods: ``set_data``, ``forward``,
+    ``compute_loss``, ``backward``, ``optimizer_step``, ``scheduler_step``
+    and ``separate``.
+
     :ivar model: Underlying PyTorch model.
     :vartype model: nn.Module
+
     :ivar target_labels: Target source labels.
     :vartype target_labels: List[str]
+
     :ivar criterion: Loss function.
     :vartype criterion: Union[nn.Module, Callable]
+
     :ivar optimizer: Optimizer.
     :vartype optimizer: Optimizer
+
     :ivar scheduler: LR scheduler.
     :vartype scheduler: Any
+
     :ivar batch_loss: Current batch loss.
     :vartype batch_loss: FloatTensor
+
     :ivar train_losses: Epoch training loss history.
     :vartype train_losses: List[float]
+
     :ivar val_losses: Epoch validation loss history.
     :vartype val_losses: List[float]
+
     :ivar stop_patience: Waiting time in epochs before reducing LR, if
         validation loss does not improve.
     :vartype stop_patience: int
+
     :ivar max_lr_steps: Max number of LR reductions before stopping early.
     :vartype max_lr_steps: int
+
     :ivar use_amp: If True, uses automatic mixed precision.
     :vartype use_amp: bool
+
     :ivar grad_scaler: Gradient scaler (only if using automatic mixed
         precision).
     :vartype grad_scaler: Any
+
     :ivar is_best: Flag for checkpointing the best model.
     :vartype is_best: bool
+
+    :ivar model_params: Model configuration parameters.
+    :vartype model_params: dict
+
+    :ivar training_params: Training configuration parameters.
+    :vartype training_params: dict
+
+    :ivar dataset_params: Dataset configuration parameters.
+    :vartype dataset_params: dict
+
+    :ivar visualizer_params: Visualizer configuration parameters.
+    :vartype visualizer_params: dict
+
+    :ivar model_name: Model name (folder name).
+    :vartype model_name: dict
+
+    :ivar checkpoint_path: Path to checkpoint folder.
+    :vartype checkpoint_path: dict
+
+    :ivar silent_checkpoint: Silences checkpointing std output.
+    :vartype silent_checkpoint: dict
+
+    :ivar training_mode: If True, model is in training mode; otherwise model
+        is in inference mode.
+    :vartype training_mode: dict
+
+    :ivar device: Device.
+    :vartype device: str
 
     Args:
         config (dict): Model configuration data.
@@ -65,6 +111,17 @@ class SeparationModel(ABC):
     use_amp: bool
     grad_scaler: Any
     is_best_model: int
+
+    config: dict
+    model_params: dict
+    training_params: dict
+    dataset_params: dict
+    visualizer_params: dict
+    model_name: str
+    checkpoint_path: str
+    silent_checkpoint: bool
+    training_mode: bool
+    device: str
 
     def __init__(self, config: dict) -> None:
         super(SeparationModel, self).__init__()
@@ -151,11 +208,11 @@ class SeparationModel(ABC):
         """Sets model to evaluation mode."""
         self.model = self.model.eval()
 
-    def test(self):
+    def test(self) -> None:
         """Calls forward method without gradient tracking."""
         self.eval()
         with torch.no_grad():
-            return self.forward()
+            self.forward()
 
     def save_model(self, global_step: int) -> None:
         """Saves the model's current state."""

@@ -8,4 +8,4 @@ auralflow.models.SpectrogramNetSimple
    :members:
    :show-inheritance:
    :special-members:
-   :exclude-members: __init__
+   :exclude-members: __init__, __weakref__

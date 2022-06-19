@@ -7,15 +7,6 @@
 r"""Separation model base classes, implementations and underlying
 PyTorch ``nn.Module`` classes."""
 
-__all__ = [
-    "SeparationModel",
-    "SpectrogramMaskModel",
-    "SpectrogramNetSimple",
-    "SpectrogramNetLSTM",
-    "SpectrogramNetVAE",
-    "model_names",
-]
-
 from .architectures import (
     SpectrogramNetSimple,
     SpectrogramNetLSTM,
@@ -24,5 +15,12 @@ from .architectures import (
 from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
 
+__all__ = [
+    "SeparationModel",
+    "SpectrogramMaskModel",
+    "SpectrogramNetSimple",
+    "SpectrogramNetLSTM",
+    "SpectrogramNetVAE",
+]
 
 model_names = __all__[2:]

@@ -228,8 +228,11 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SeparationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
-<p>Interface shared among all source separation models.</p>
+<dd><p>Interface shared among all source separation models.</p>
+<p>Should not be instantiated directly but rather subclassed. A
+subclass must implement the following methods: <code class="docutils literal notranslate"><span class="pre">set_data</span></code>, <code class="docutils literal notranslate"><span class="pre">forward</span></code>,
+<code class="docutils literal notranslate"><span class="pre">compute_loss</span></code>, <code class="docutils literal notranslate"><span class="pre">backward</span></code>, <code class="docutils literal notranslate"><span class="pre">optimizer_step</span></code>, <code class="docutils literal notranslate"><span class="pre">scheduler_step</span></code>
+and <code class="docutils literal notranslate"><span class="pre">separate</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables</dt>
 <dd class="field-odd"><ul class="simple">
@@ -248,6 +251,16 @@ validation loss does not improve.</p></li>
 <li><p><strong>grad_scaler</strong> (<em>Any</em>) -- Gradient scaler (only if using automatic mixed
 precision).</p></li>
 <li><p><strong>is_best</strong> (<em>bool</em>) -- Flag for checkpointing the best model.</p></li>
+<li><p><strong>model_params</strong> (<em>dict</em>) -- Model configuration parameters.</p></li>
+<li><p><strong>training_params</strong> (<em>dict</em>) -- Training configuration parameters.</p></li>
+<li><p><strong>dataset_params</strong> (<em>dict</em>) -- Dataset configuration parameters.</p></li>
+<li><p><strong>visualizer_params</strong> (<em>dict</em>) -- Visualizer configuration parameters.</p></li>
+<li><p><strong>model_name</strong> (<em>dict</em>) -- Model name (folder name).</p></li>
+<li><p><strong>checkpoint_path</strong> (<em>dict</em>) -- Path to checkpoint folder.</p></li>
+<li><p><strong>silent_checkpoint</strong> (<em>dict</em>) -- Silences checkpointing std output.</p></li>
+<li><p><strong>training_mode</strong> (<em>dict</em>) -- If True, model is in training mode; otherwise model
+is in inference mode.</p></li>
+<li><p><strong>device</strong> (<em>str</em>) -- Device.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Parameters</dt>
@@ -386,7 +399,7 @@ the input data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.test">
-<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.test" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.test" title="Permalink to this definition">#</a></dt>
 <dd><p>Calls forward method without gradient tracking.</p>
 </dd></dl>
 

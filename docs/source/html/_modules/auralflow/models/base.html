@@ -232,6 +232,7 @@
 <span class="kn">import</span> <span class="nn">torch.backends.cudnn</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
+
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABC</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">FloatTensor</span>
 <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
@@ -242,34 +243,79 @@
 <div class="viewcode-block" id="SeparationModel"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel">[docs]</a><span class="k">class</span> <span class="nc">SeparationModel</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Interface shared among all source separation models.</span>
 
+<span class="sd">    Should not be instantiated directly but rather subclassed. A</span>
+<span class="sd">    subclass must implement the following methods: ``set_data``, ``forward``,</span>
+<span class="sd">    ``compute_loss``, ``backward``, ``optimizer_step``, ``scheduler_step``</span>
+<span class="sd">    and ``separate``.</span>
+
 <span class="sd">    :ivar model: Underlying PyTorch model.</span>
 <span class="sd">    :vartype model: nn.Module</span>
+
 <span class="sd">    :ivar target_labels: Target source labels.</span>
 <span class="sd">    :vartype target_labels: List[str]</span>
+
 <span class="sd">    :ivar criterion: Loss function.</span>
 <span class="sd">    :vartype criterion: Union[nn.Module, Callable]</span>
+
 <span class="sd">    :ivar optimizer: Optimizer.</span>
 <span class="sd">    :vartype optimizer: Optimizer</span>
+
 <span class="sd">    :ivar scheduler: LR scheduler.</span>
 <span class="sd">    :vartype scheduler: Any</span>
+
 <span class="sd">    :ivar batch_loss: Current batch loss.</span>
 <span class="sd">    :vartype batch_loss: FloatTensor</span>
+
 <span class="sd">    :ivar train_losses: Epoch training loss history.</span>
 <span class="sd">    :vartype train_losses: List[float]</span>
+
 <span class="sd">    :ivar val_losses: Epoch validation loss history.</span>
 <span class="sd">    :vartype val_losses: List[float]</span>
+
 <span class="sd">    :ivar stop_patience: Waiting time in epochs before reducing LR, if</span>
 <span class="sd">        validation loss does not improve.</span>
 <span class="sd">    :vartype stop_patience: int</span>
+
 <span class="sd">    :ivar max_lr_steps: Max number of LR reductions before stopping early.</span>
 <span class="sd">    :vartype max_lr_steps: int</span>
+
 <span class="sd">    :ivar use_amp: If True, uses automatic mixed precision.</span>
 <span class="sd">    :vartype use_amp: bool</span>
+
 <span class="sd">    :ivar grad_scaler: Gradient scaler (only if using automatic mixed</span>
 <span class="sd">        precision).</span>
 <span class="sd">    :vartype grad_scaler: Any</span>
+
 <span class="sd">    :ivar is_best: Flag for checkpointing the best model.</span>
 <span class="sd">    :vartype is_best: bool</span>
+
+<span class="sd">    :ivar model_params: Model configuration parameters.</span>
+<span class="sd">    :vartype model_params: dict</span>
+
+<span class="sd">    :ivar training_params: Training configuration parameters.</span>
+<span class="sd">    :vartype training_params: dict</span>
+
+<span class="sd">    :ivar dataset_params: Dataset configuration parameters.</span>
+<span class="sd">    :vartype dataset_params: dict</span>
+
+<span class="sd">    :ivar visualizer_params: Visualizer configuration parameters.</span>
+<span class="sd">    :vartype visualizer_params: dict</span>
+
+<span class="sd">    :ivar model_name: Model name (folder name).</span>
+<span class="sd">    :vartype model_name: dict</span>
+
+<span class="sd">    :ivar checkpoint_path: Path to checkpoint folder.</span>
+<span class="sd">    :vartype checkpoint_path: dict</span>
+
+<span class="sd">    :ivar silent_checkpoint: Silences checkpointing std output.</span>
+<span class="sd">    :vartype silent_checkpoint: dict</span>
+
+<span class="sd">    :ivar training_mode: If True, model is in training mode; otherwise model</span>
+<span class="sd">        is in inference mode.</span>
+<span class="sd">    :vartype training_mode: dict</span>
+
+<span class="sd">    :ivar device: Device.</span>
+<span class="sd">    :vartype device: str</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        config (dict): Model configuration data.</span>
@@ -288,6 +334,17 @@
     <span class="n">use_amp</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">grad_scaler</span><span class="p">:</span> <span class="n">Any</span>
     <span class="n">is_best_model</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">model_params</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">training_params</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">dataset_params</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">visualizer_params</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">silent_checkpoint</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">training_mode</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SeparationModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -374,11 +431,11 @@
         <span class="sd">&quot;&quot;&quot;Sets model to evaluation mode.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="SeparationModel.test"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SeparationModel.test"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Calls forward method without gradient tracking.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
         <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="SeparationModel.save_model"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Saves the model&#39;s current state.&quot;&quot;&quot;</span>

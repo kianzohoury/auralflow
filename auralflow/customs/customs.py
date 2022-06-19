@@ -7,11 +7,9 @@
 from auralflow.losses import *
 from auralflow.models import *
 from pathlib import Path
-from torch import nn
 from torch.cuda.amp import GradScaler
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from typing import Union, Callable
 
 
 def init_model(configuration: dict) -> SeparationModel:
