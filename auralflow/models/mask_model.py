@@ -7,7 +7,7 @@
 import torch
 import torch.nn as nn
 
-from auralflow.transforms.transforms import AudioTransform, get_num_stft_frames
+from auralflow.transforms import AudioTransform, get_num_stft_frames
 from .base import SeparationModel
 from torch import FloatTensor, Tensor
 from typing import Optional

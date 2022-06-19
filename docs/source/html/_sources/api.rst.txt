@@ -6,7 +6,7 @@ API Documentation
 .. autosummary::
    :toctree: generated
 
-   auralflow.build
+   auralflow.customs
    auralflow.datasets
    auralflow.losses
    auralflow.models

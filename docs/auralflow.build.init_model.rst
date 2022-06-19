@@ -1,7 +1,0 @@
-auralflow.build.init_model
-===========================
-
-.. toctree::
-   :maxdepth: 2
-
-.. autofunction:: auralflow.build.init_model

@@ -3,6 +3,11 @@ h1, h2, h3, h4, h5 {
     color: #212529;
 }
 
+:target> h1 :first-of-type {
+    background-color; white !important;
+    border: none !important;
+}
+
 dt: target {
     background-color: transparent !important;
 }

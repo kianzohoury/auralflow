@@ -29,7 +29,7 @@
   --font-weight: 300;
   --color-link: #049EF4;
   --color-problematic: #FF0080;
-  --color-highlight-on-target: #f3f4f7;
+  --color-highlight-on-target: white;
   
   }
   @media not print {
@@ -177,7 +177,7 @@
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.build.html">auralflow.build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -229,7 +229,7 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">csv</span>
 
-<span class="kn">from</span> <span class="nn">auralflow.build</span> <span class="kn">import</span> <span class="n">init_model</span><span class="p">,</span> <span class="n">setup_model</span>
+<span class="kn">from</span> <span class="nn">auralflow.customs</span> <span class="kn">import</span> <span class="n">init_model</span><span class="p">,</span> <span class="n">setup_model</span>
 <span class="kn">from</span> <span class="nn">auralflow.separate</span> <span class="kn">import</span> <span class="n">separate_audio</span>
 <span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">load_config</span>
 <span class="kn">from</span> <span class="nn">torchaudio.transforms</span> <span class="kn">import</span> <span class="n">Resample</span>

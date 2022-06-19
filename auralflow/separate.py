@@ -15,7 +15,7 @@ import librosa
 import torch
 from scipy.io import wavfile
 
-from auralflow.build import init_model, setup_model
+from auralflow.customs import init_model, setup_model
 from auralflow.utils import load_config
 from auralflow.transforms import trim_audio
 from auralflow.visualizer import ProgressBar

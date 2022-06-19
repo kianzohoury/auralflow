@@ -4,7 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from auralflow.build import init_model, setup_model
+from auralflow.customs import init_model, setup_model
 from auralflow.datasets import create_audio_dataset, load_dataset
 from torch.utils.tensorboard import SummaryWriter
 from auralflow.trainer import run_training

@@ -86,7 +86,7 @@ html_theme_options = {
         "font-weight": 300,
         "color-link": "#049EF4",
         "color-problematic": "#FF0080",
-        "color-highlight-on-target": "#f3f4f7"
+        "color-highlight-on-target": "white"
 
     },
     "sidebar_hide_name": False,

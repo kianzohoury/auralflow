@@ -1,5 +1,5 @@
-auralflow.build
-===============
+auralflow.customs
+=================
 
 .. toctree::
    :maxdepth: 2
@@ -7,6 +7,6 @@ auralflow.build
 Module contents
 ---------------
 
-.. automodule:: auralflow.build
+.. automodule:: auralflow.customs
    :members:
    :show-inheritance:

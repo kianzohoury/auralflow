@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import csv
 
-from auralflow.build import init_model, setup_model
+from auralflow.customs import init_model, setup_model
 from auralflow.separate import separate_audio
 from auralflow.utils import load_config
 from torchaudio.transforms import Resample
