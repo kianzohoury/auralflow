@@ -29,7 +29,7 @@
   --font-weight: 300;
   --color-link: #049EF4;
   --color-problematic: #FF0080;
-  --color-highlight-on-target: white;
+  --color-highlight-on-target: #f3f4f7;
   
   }
   @media not print {
@@ -255,11 +255,12 @@
     <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">config_template_path</span><span class="p">),</span> <span class="n">dst</span><span class="o">=</span><span class="n">save_filepath</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="load_config"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.load_config">[docs]</a><span class="k">def</span> <span class="nf">load_config</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="load_config"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.load_config">[docs]</a><span class="k">def</span> <span class="nf">load_config</span><span class="p">(</span><span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Loads the contents of a configuration file into a dictionary.</span>
 
+<span class="sd">    Expects there to be a ``config.json`` within ``save_dir``.</span>
 <span class="sd">    Args:</span>
-<span class="sd">        config_filepath (str): Path to the configuration file.</span>
+<span class="sd">        save_dir (str): Directory where the configuration file is stored.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: Configuration data.</span>
@@ -268,7 +269,7 @@
 <span class="sd">        IOError: Raised if the file cannot be read.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">config_file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;/config.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">config_file</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">error</span></div>

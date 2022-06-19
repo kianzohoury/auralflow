@@ -4,12 +4,7 @@ h1, h2, h3, h4, h5 {
 }
 
 :target> h1 :first-of-type {
-    background-color; white !important;
     border: none !important;
-}
-
-dt: target {
-    background-color: transparent !important;
 }
 
 dd > dl > dt {
@@ -19,8 +14,9 @@ dd > dl > dt {
 
 .sig.sig-object.py{
     border-radius: 0px;
-
 }
+
+
 
 .sig-name.descname {
     font-weight: 700 !important;
@@ -111,6 +107,7 @@ a.current.reference.internal {
 blockquote {
     background: none !important;
     border-left: none !important;
+    padding: 0px !important;
 }
 
 em {

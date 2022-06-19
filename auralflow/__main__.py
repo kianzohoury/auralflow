@@ -157,7 +157,7 @@ if __name__ == "__main__":
     if args.command == "config":
         save_dir = str(Path(args.save + "/" + args.folder_name).absolute())
         utils.copy_config_template(save_dir=save_dir)
-        config = utils.load_config(save_dir + "/config.json")
+        config = utils.load_config(save_dir)
         config["model_params"]["model_type"] = args.model_type
         config["model_params"]["model_name"] = args.folder_name
         config["model_params"]["save_dir"] = save_dir
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         utils.save_config(config, save_filepath=save_dir + "/config.json")
 
     elif args.command == "train":
-        config = utils.load_config(args.folder_name + "/config.json")
+        config = utils.load_config(args.folder_name)
         config["dataset_params"]["dataset_path"] = args.dataset_path
         config["training_params"]["training_mode"] = True
         utils.save_config(
@@ -196,7 +196,7 @@ if __name__ == "__main__":
         )
         train.main(config_filepath=args.folder_name + "/config.json")
     elif args.command == "separate":
-        config = utils.load_config(args.folder_name + "/config.json")
+        config = utils.load_config(args.folder_name)
         config["training_params"]["training_mode"] = False
         utils.save_config(
             config, save_filepath=args.folder_name + "/config.json"
@@ -209,7 +209,7 @@ if __name__ == "__main__":
             duration=args.duration,
         )
     elif args.command == "test":
-        config = utils.load_config(args.folder_name + "/config.json")
+        config = utils.load_config(args.folder_name)
         config["training_params"]["training_mode"] = False
         utils.save_config(
             config, save_filepath=args.folder_name + "/config.json"

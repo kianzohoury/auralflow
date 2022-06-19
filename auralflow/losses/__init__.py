@@ -8,3 +8,8 @@ from .losses import *
 
 
 __all__ = losses.__all__
+
+__doc__ = """
+Functional losses and ``nn.Module`` losses for integration with the
+``SeparationModel`` class.
+"""

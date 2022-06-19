@@ -30,7 +30,7 @@
   --font-weight: 300;
   --color-link: #049EF4;
   --color-problematic: #FF0080;
-  --color-highlight-on-target: white;
+  --color-highlight-on-target: #f3f4f7;
   
   }
   @media not print {
@@ -227,10 +227,21 @@
 </div>
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.customs.setup_model">
-<span class="sig-prename descclassname"><span class="pre">auralflow.customs.</span></span><span class="sig-name descname"><span class="pre">setup_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="reference internal" href="_modules/auralflow/customs/customize.html#setup_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.customs.setup_model" title="Permalink to this definition">#</a></dt>
-<dd><p>Sets up a separation model according to its internal configuration.</p>
-<p>If model is in training mode, it creates and loads objects related to
-training; otherwise, it loads the best version of the model.</p>
+<span class="sig-prename descclassname"><span class="pre">auralflow.customs.</span></span><span class="sig-name descname"><span class="pre">setup_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="reference internal" href="_modules/auralflow/customs/customs.html#setup_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.customs.setup_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Sets up a <code class="docutils literal notranslate"><span class="pre">SeparationModel</span></code> according to its internal configuration.</p>
+<p>If the model is in training mode, it loads the states of (or creates)
+various model attributes, which include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>the model's underlying network (as a <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>)</p></li>
+<li><p>the optimizer</p></li>
+<li><p>the learning rate scheduler</p></li>
+<li><p>the gradient scaler (if applicable)</p></li>
+<li><p>automatic mixed precision (if applicable)</p></li>
+<li><p>misc. model attributes</p></li>
+</ul>
+</div></blockquote>
+<p>Otherwise, it loads the best version of the trained model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Separation model.</p>
@@ -248,6 +259,34 @@ training; otherwise, it loads the best version of the model.</p>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">auralflow.utils</span> <span class="k">as</span> <span class="nn">utils</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># folder directory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/my_model&quot;</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># write a new configuration file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">utils</span><span class="o">.</span><span class="n">copy_config_template</span><span class="p">(</span><span class="n">save_dir</span><span class="o">=</span><span class="n">model_dir</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># load the configuration file as a dictionary</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="n">save_dir</span><span class="o">=</span><span class="n">model_dir</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># instantiate the model</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_model</span> <span class="o">=</span> <span class="n">init_model</span><span class="p">(</span><span class="n">configuration</span><span class="o">=</span><span class="n">config_data</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># set up the model for training</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_model</span> <span class="o">=</span> <span class="n">setup_model</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># check that some model attributes have been filled</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">my_model</span><span class="p">,</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">my_model</span><span class="p">,</span> <span class="s2">&quot;criterion&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">my_model</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

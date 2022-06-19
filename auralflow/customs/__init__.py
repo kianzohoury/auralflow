@@ -4,7 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from .customize import *
+from .customs import init_model, setup_model
 
 
 __all__ = [
@@ -12,5 +12,6 @@ __all__ = [
     "setup_model",
 ]
 
-# __doc__ = """Initialize new SeparationModels and set up existing instances
-# for training, evaluation and testing."""
+__doc__ = """
+Model instantiation and setup for training, evaluation and testing.
+"""

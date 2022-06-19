@@ -19,3 +19,6 @@ __all__ = [
 ]
 
 model_names = __all__[2:]
+
+__doc__ = r"""Separation model base classes, implementations and underlying
+PyTorch ``nn.Module`` classes."""

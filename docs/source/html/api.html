@@ -30,7 +30,7 @@
   --font-weight: 300;
   --color-link: #049EF4;
   --color-problematic: #FF0080;
-  --color-highlight-on-target: white;
+  --color-highlight-on-target: #f3f4f7;
   
   }
   @media not print {
@@ -147,7 +147,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -215,7 +215,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -223,8 +223,6 @@
         <article role="main">
           <section id="api-documentation">
 <h1>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">#</a></h1>
-<div class="toctree-wrapper compound">
-</div>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -233,16 +231,16 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/auralflow.customs.html#module-auralflow.customs" title="auralflow.customs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auralflow.customs</span></code></a></p></td>
-<td><p>Initialize new SeparationModels and set up existing instances for training, evaluation and testing.</p></td>
+<td><p>Model instantiation and setup for training, evaluation and testing.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/auralflow.datasets.html#module-auralflow.datasets" title="auralflow.datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auralflow.datasets</span></code></a></p></td>
 <td><p>Audio file I/O and dataset objects.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/auralflow.losses.html#module-auralflow.losses" title="auralflow.losses"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auralflow.losses</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Functional losses and <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> losses for integration with the <code class="docutils literal notranslate"><span class="pre">SeparationModel</span></code> class.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/auralflow.models.html#module-auralflow.models" title="auralflow.models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auralflow.models</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Separation model base classes, implementations and underlying PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> classes.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/auralflow.trainer.html#module-auralflow.trainer" title="auralflow.trainer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auralflow.trainer</span></code></a></p></td>
 <td><p></p></td>
@@ -306,26 +304,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            Contents
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">API Documentation</a><ul>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>

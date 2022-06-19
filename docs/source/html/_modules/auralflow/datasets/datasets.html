@@ -29,7 +29,7 @@
   --font-weight: 300;
   --color-link: #049EF4;
   --color-problematic: #FF0080;
-  --color-highlight-on-target: white;
+  --color-highlight-on-target: #f3f4f7;
   
   }
   @media not print {
@@ -232,12 +232,23 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torchaudio</span>
 
-
 <span class="kn">from</span> <span class="nn">auralflow.visualizer</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">ndarray</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">IterableDataset</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span><span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;AudioDataset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AudioFolder&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;create_audio_dataset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;create_audio_folder&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;load_stems&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;verify_dataset&quot;</span>
+<span class="p">]</span>
 
 
 <div class="viewcode-block" id="AudioFolder"><a class="viewcode-back" href="../../../auralflow.datasets.AudioFolder.html#auralflow.datasets.AudioFolder">[docs]</a><span class="k">class</span> <span class="nc">AudioFolder</span><span class="p">(</span><span class="n">IterableDataset</span><span class="p">):</span>
@@ -482,6 +493,196 @@
                 <span class="k">break</span>
     <span class="k">del</span> <span class="n">dataset</span>
     <span class="k">return</span> <span class="n">chunked_dataset</span>
+
+
+<div class="viewcode-block" id="create_audio_folder"><a class="viewcode-back" href="../../../auralflow.datasets.create_audio_folder.html#auralflow.datasets.create_audio_folder">[docs]</a><span class="k">def</span> <span class="nf">create_audio_folder</span><span class="p">(</span>
+    <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">44100</span><span class="p">,</span>
+    <span class="n">mono</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">audio_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;wav&quot;</span><span class="p">,</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;soundfile&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AudioFolder</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper method that creates an ``AudioFolder``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset_path (str): Path to the directory of audio files belonging to</span>
+<span class="sd">            a dataset.</span>
+<span class="sd">        targets (List[str]): Labels of the ground-truth source signals.</span>
+<span class="sd">        split (str): Subset of the directory to read from. Default: &quot;train&quot;.</span>
+<span class="sd">        chunk_size (int): Duration of each resampled audio chunk in seconds.</span>
+<span class="sd">            Default: 2.</span>
+<span class="sd">        sample_rate (int): Sample rate. Default: 44100.</span>
+<span class="sd">        mono (bool): Load tracks as mono. Default: True.</span>
+<span class="sd">        audio_format (str): Audio format. Default: &#39;wav&#39;.</span>
+<span class="sd">        backend (str): Torchaudio backend. Default: &#39;soundfile&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``AudioFolder``: Audio folder.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">audio_folder</span> <span class="o">=</span> <span class="n">AudioFolder</span><span class="p">(</span>
+        <span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">,</span>
+        <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+        <span class="n">subset</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
+        <span class="n">sample_length</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
+        <span class="n">sample_rate</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">,</span>
+        <span class="n">num_channels</span><span class="o">=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">mono</span> <span class="k">else</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">audio_format</span><span class="o">=</span><span class="n">audio_format</span><span class="p">,</span>
+        <span class="n">backend</span><span class="o">=</span><span class="n">backend</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">audio_folder</span></div>
+
+
+<div class="viewcode-block" id="verify_dataset"><a class="viewcode-back" href="../../../auralflow.datasets.verify_dataset.html#auralflow.datasets.verify_dataset">[docs]</a><span class="k">def</span> <span class="nf">verify_dataset</span><span class="p">(</span><span class="n">subset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Verifies the structure of a subdirectory belonging to the dataset.</span>
+
+<span class="sd">    A dataset directory must meet the following rules to be valid:</span>
+<span class="sd">        - path ends with ``/train``, ``/val`` or ``/test``</span>
+<span class="sd">        - contains a folder of audio files for every individual track title</span>
+<span class="sd">        - contains a ``mixture.wav`` (full track) within each track folder</span>
+<span class="sd">        - contains a ``*.wav`` file for each target within each track folder</span>
+
+<span class="sd">    The targets include ``bass.wav``, ``drums.wav``, ``vocals.wav`` and</span>
+<span class="sd">    ``other.wav``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        subset_path (str): Path to a subset of the dataset ending in ``/train``</span>
+<span class="sd">            , ``/val`` or ``/test``.</span>
+<span class="sd">        targets (List[str]): Labels of the target sources.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        IOError: Raised if a required file is missing for any track title.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">subset_path</span><span class="p">)</span>
+    <span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;mixture&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">track_name</span> <span class="ow">in</span> <span class="n">dataset_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+        <span class="n">track_stems</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">track_name</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
+        <span class="n">track_stems</span> <span class="o">=</span> <span class="p">[</span><span class="n">stem</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;.wav&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">stem</span> <span class="ow">in</span> <span class="n">track_stems</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">track_stems</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">.wav from </span><span class="si">{</span><span class="n">track_name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_stems"><a class="viewcode-back" href="../../../auralflow.datasets.load_stems.html#auralflow.datasets.load_stems">[docs]</a><span class="k">def</span> <span class="nf">load_stems</span><span class="p">(</span>
+    <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
+    <span class="n">max_num_tracks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">44100</span><span class="p">,</span>
+    <span class="n">mono</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OrderedDict</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">],</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]:</span>
+    <span class="sd">&quot;&quot;&quot;Loads audio data (mixture and stems/targets) directly into memory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset_path (str): Path to the directory of audio files belonging to</span>
+<span class="sd">            a dataset.</span>
+<span class="sd">        targets (List[str]): Labels of the ground-truth source signals.</span>
+<span class="sd">        split (str): Subset of the directory to read from. Default: &quot;train&quot;.</span>
+<span class="sd">        max_num_tracks (int): Max number of full audio tracks to resample from.</span>
+<span class="sd">            Default: 100.</span>
+<span class="sd">        sample_rate (int): Sample rate. Default: 44100.</span>
+<span class="sd">        mono (bool): Load tracks as mono. Default: True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List[..., OrderedDict]: A list of ordered mappings</span>
+<span class="sd">            (one for each track), where each ordered mapping consists of:</span>
+<span class="sd">            - mixture (ndarray): Mixture track.</span>
+<span class="sd">            - bass (ndarray): Bass track (if in ``targets``).</span>
+<span class="sd">            - drums (ndarray): Drums track (if in ``targets``).</span>
+<span class="sd">            - vocal (ndarray): Vocals track (if ``targets``).</span>
+<span class="sd">            - other (ndarray): Other/background track (if in ``targets``).</span>
+<span class="sd">            - duration (int): Duration of the mixture track.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        IOError: Raised if the dataset cannot be verified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Verify dataset directory.</span>
+    <span class="n">verify_dataset</span><span class="p">(</span><span class="n">subset_path</span><span class="o">=</span><span class="n">dataset_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">split</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">)</span>
+
+    <span class="n">audio_tracks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">subset_dir</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
+    <span class="n">max_num_tracks</span> <span class="o">=</span> <span class="n">max_num_tracks</span> <span class="k">if</span> <span class="n">max_num_tracks</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+    <span class="n">n_tracks</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subset_dir</span><span class="p">),</span> <span class="n">max_num_tracks</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="n">subset_dir</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">n_tracks</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;track&quot;</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">track_folder</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pbar</span><span class="p">):</span>
+
+            <span class="c1"># Create entry.</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+            <span class="n">track_name</span> <span class="o">=</span> <span class="n">track_folder</span> <span class="o">/</span> <span class="s2">&quot;mixture.wav&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">track_name</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Load mixture and target tracks.</span>
+            <span class="n">mixture_track</span><span class="p">,</span> <span class="n">sr</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">track_name</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">)</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;mixture&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mixture_track</span>
+            <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">targets</span><span class="p">):</span>
+                <span class="n">target_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">track_folder</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">.wav&quot;</span>
+                <span class="n">entry</span><span class="p">[</span><span class="n">target</span><span class="p">],</span> <span class="n">sr</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">target_name</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="n">sr</span><span class="p">,</span> <span class="n">mono</span><span class="o">=</span><span class="n">mono</span><span class="p">)</span>
+
+            <span class="c1"># Record duration of mixture track.</span>
+            <span class="n">num_seconds</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">mixture_track</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="mi">44100</span><span class="p">)</span>
+            <span class="n">duration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_seconds</span> <span class="o">*</span> <span class="n">sr</span><span class="p">)</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">duration</span>
+
+            <span class="c1"># Store entry.</span>
+            <span class="n">audio_tracks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="n">n_tracks</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">audio_tracks</span></div>
+
+
+<div class="viewcode-block" id="create_audio_dataset"><a class="viewcode-back" href="../../../auralflow.datasets.create_audio_dataset.html#auralflow.datasets.create_audio_dataset">[docs]</a><span class="k">def</span> <span class="nf">create_audio_dataset</span><span class="p">(</span>
+    <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">num_chunks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+    <span class="n">max_num_tracks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">44100</span><span class="p">,</span>
+    <span class="n">mono</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AudioDataset</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper method that creates an ``AudioDataset``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset_path (str): Path to the directory of audio files belonging to</span>
+<span class="sd">            a dataset.</span>
+<span class="sd">        targets (List[str]): Labels of the ground-truth source signals.</span>
+<span class="sd">        split (str): Subset of the directory to read from. Default: &quot;train&quot;.</span>
+<span class="sd">        chunk_size (int): Duration of each resampled audio chunk in seconds.</span>
+<span class="sd">            Default: 2.</span>
+<span class="sd">        num_chunks (int): Number of resampled chunks to create. Default: 10000.</span>
+<span class="sd">        max_num_tracks (int): Max number of full audio tracks to resample from.</span>
+<span class="sd">            Default: 100.</span>
+<span class="sd">        sample_rate (int): Sample rate. Default: 44100.</span>
+<span class="sd">        mono (bool): Load tracks as mono. Default: True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``AudioDataset``: Audio dataset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Full-length audio tracks.</span>
+    <span class="n">full_dataset</span> <span class="o">=</span> <span class="n">load_stems</span><span class="p">(</span>
+        <span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">,</span>
+        <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+        <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
+        <span class="n">max_num_tracks</span><span class="o">=</span><span class="n">max_num_tracks</span><span class="p">,</span>
+        <span class="n">sample_rate</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">,</span>
+        <span class="n">mono</span><span class="o">=</span><span class="n">mono</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Chunked dataset.</span>
+    <span class="n">chunked_dataset</span> <span class="o">=</span> <span class="n">AudioDataset</span><span class="p">(</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="n">full_dataset</span><span class="p">,</span>
+        <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
+        <span class="n">num_chunks</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">num_chunks</span><span class="p">),</span>
+        <span class="n">sample_rate</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">chunked_dataset</span></div>
 </pre></div>
         </article>
       </div>

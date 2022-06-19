@@ -389,7 +389,7 @@ class SISDRLoss(nn.Module):
     """
 
     def __init__(self, model) -> None:
-        super(SIDRLoss, self).__init__()
+        super(SISDRLoss, self).__init__()
         self.model = model
 
     def forward(self) -> None:

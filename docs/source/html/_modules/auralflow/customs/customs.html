@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>auralflow.customs.customize - auralflow</title>
+        <title>auralflow.customs.customs - auralflow</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -29,7 +29,7 @@
   --font-weight: 300;
   --color-link: #049EF4;
   --color-problematic: #FF0080;
-  --color-highlight-on-target: white;
+  --color-highlight-on-target: #f3f4f7;
   
   }
   @media not print {
@@ -220,7 +220,7 @@
           </label>
         </div>
         <article role="main">
-          <h1>Source code for auralflow.customs.customize</h1><div class="highlight"><pre>
+          <h1>Source code for auralflow.customs.customs</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (c) 2022 Kian Zohoury</span>
 <span class="c1"># Distributed under the terms of the MIT License.</span>
 <span class="c1"># SPDX-License-Identifier: MIT</span>
@@ -238,10 +238,33 @@
 
 
 <div class="viewcode-block" id="init_model"><a class="viewcode-back" href="../../../auralflow.customs.init_model.html#auralflow.customs.init_model">[docs]</a><span class="k">def</span> <span class="nf">init_model</span><span class="p">(</span><span class="n">configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeparationModel</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates a new model instance given configuration data.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Creates a new ``SeparationModel`` instance given configuration data.</span>
+
+<span class="sd">    To load the contents of a configuration file into a dictionary, use</span>
+<span class="sd">    ``auralflow.utils.load_config``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        configuration (dict): Model configuration data.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        SeparationModel: New ``SeparationModel`` instance.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import auralflow.utils as utils</span>
+<span class="sd">        &gt;&gt;&gt; import os</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # folder directory</span>
+<span class="sd">        &gt;&gt;&gt; model_dir = os.getcwd() + &quot;/my_model&quot;</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # write a new configuration file</span>
+<span class="sd">        &gt;&gt;&gt; utils.copy_config_template(save_dir=model_dir)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # load the configuration file as a dictionary</span>
+<span class="sd">        &gt;&gt;&gt; config_data = utils.load_config(save_dir=model_dir)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; config_data.keys() # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">        dict_keys([&#39;model_params&#39;, &#39;dataset_params&#39;, &#39;training_params&#39;,</span>
+<span class="sd">        &#39;visualizer_params&#39;])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model_type</span> <span class="o">=</span> <span class="n">configuration</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">][</span><span class="s2">&quot;model_type&quot;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="n">model_names</span><span class="p">:</span>
@@ -252,18 +275,16 @@
     <span class="k">return</span> <span class="n">model</span></div>
 
 
-<span class="k">def</span> <span class="nf">get_model_criterion</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Gets model criterion according to its configuration file.&quot;&quot;&quot;</span>
-    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;criterion&quot;</span><span class="p">]</span>
-    <span class="n">model_type</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">][</span><span class="s2">&quot;model_type&quot;</span><span class="p">]</span>
+<span class="k">def</span> <span class="nf">set_model_criterion</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sets the model criterion according to its configuration file.&quot;&quot;&quot;</span>
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;criterion&quot;</span><span class="p">]</span>
+    <span class="n">model_type</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">][</span><span class="s2">&quot;model_type&quot;</span><span class="p">]</span>
     <span class="n">is_vae_model</span> <span class="o">=</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;SpectrogramNetVAE&quot;</span>
     <span class="k">if</span> <span class="n">loss_fn</span> <span class="o">==</span> <span class="s2">&quot;component_loss&quot;</span><span class="p">:</span>
         <span class="n">criterion</span> <span class="o">=</span> <span class="n">ComponentLoss</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">alpha</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;alpha_constant&quot;</span><span class="p">],</span>
-            <span class="n">beta</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;beta_constant&quot;</span><span class="p">],</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;alpha_constant&quot;</span><span class="p">],</span>
+            <span class="n">beta</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">][</span><span class="s2">&quot;beta_constant&quot;</span><span class="p">],</span>
         <span class="p">)</span>
     <span class="k">elif</span> <span class="n">is_vae_model</span> <span class="ow">and</span> <span class="n">loss_fn</span> <span class="o">==</span> <span class="s2">&quot;kl_div_loss&quot;</span><span class="p">:</span>
         <span class="n">criterion</span> <span class="o">=</span> <span class="n">KLDivergenceLoss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="o">=</span><span class="n">loss_fn</span><span class="p">)</span>
@@ -277,15 +298,23 @@
         <span class="n">criterion</span> <span class="o">=</span> <span class="n">SISDRLoss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">criterion</span> <span class="o">=</span> <span class="n">L2Loss</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">criterion</span>
+    <span class="c1"># Set the criterion.</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
 
 
 <div class="viewcode-block" id="setup_model"><a class="viewcode-back" href="../../../auralflow.customs.setup_model.html#auralflow.customs.setup_model">[docs]</a><span class="k">def</span> <span class="nf">setup_model</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeparationModel</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Sets up a separation model according to its internal configuration.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Sets up a ``SeparationModel`` according to its internal configuration.</span>
 
-<span class="sd">    If model is in training mode, it creates and loads objects related to</span>
-<span class="sd">    training; otherwise, it loads the best version of the model.</span>
+<span class="sd">    If the model is in training mode, it loads the states of (or creates)</span>
+<span class="sd">    various model attributes, which include:</span>
+<span class="sd">        - the model&#39;s underlying network (as a ``nn.Module``)</span>
+<span class="sd">        - the optimizer</span>
+<span class="sd">        - the learning rate scheduler</span>
+<span class="sd">        - the gradient scaler (if applicable)</span>
+<span class="sd">        - automatic mixed precision (if applicable)</span>
+<span class="sd">        - misc. model attributes</span>
 
+<span class="sd">    Otherwise, it loads the best version of the trained model.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (SeparationModel): Separation model.</span>
@@ -296,17 +325,46 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        OSError: Raised if the model cannot be loaded.</span>
 <span class="sd">        FileNotFoundError: Raised if a checkpoint file cannot be found.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import auralflow.utils as utils</span>
+<span class="sd">        &gt;&gt;&gt; import os</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # folder directory</span>
+<span class="sd">        &gt;&gt;&gt; model_dir = os.getcwd() + &quot;/my_model&quot;</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # write a new configuration file</span>
+<span class="sd">        &gt;&gt;&gt; utils.copy_config_template(save_dir=model_dir)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # load the configuration file as a dictionary</span>
+<span class="sd">        &gt;&gt;&gt; config_data = utils.load_config(save_dir=model_dir)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # instantiate the model</span>
+<span class="sd">        &gt;&gt;&gt; my_model = init_model(configuration=config_data)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # set up the model for training</span>
+<span class="sd">        &gt;&gt;&gt; my_model = setup_model(my_model)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # check that some model attributes have been filled</span>
+<span class="sd">        &gt;&gt;&gt; hasattr(my_model, &quot;optimizer&quot;)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; hasattr(my_model, &quot;criterion&quot;)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; hasattr(my_model, &quot;scheduler&quot;)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">training_mode</span><span class="p">:</span>
         <span class="n">last_epoch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span>
 
         <span class="c1"># Define model criterion.</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">get_model_criterion</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">set_model_criterion</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
         <span class="n">model</span><span class="o">.</span><span class="n">train_losses</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">val_losses</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
 
         <span class="c1"># Define optimizer.</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">SpectrogramNetLSTM</span><span class="p">):</span>
             <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">split_lstm_parameters</span><span class="p">()</span>
+
+            <span class="c1"># LSTM layers will start with a much smaller learning rate.</span>
             <span class="n">params</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">param1</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-4</span><span class="p">},</span>
                 <span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">param2</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]},</span>

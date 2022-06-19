@@ -32,11 +32,12 @@ def copy_config_template(save_dir: str) -> None:
     shutil.copy(src=str(config_template_path), dst=save_filepath)
 
 
-def load_config(config_filepath: str) -> dict:
+def load_config(save_dir: str) -> dict:
     """Loads the contents of a configuration file into a dictionary.
 
+    Expects there to be a ``config.json`` within ``save_dir``.
     Args:
-        config_filepath (str): Path to the configuration file.
+        save_dir (str): Directory where the configuration file is stored.
 
     Returns:
         dict: Configuration data.
@@ -45,7 +46,7 @@ def load_config(config_filepath: str) -> dict:
         IOError: Raised if the file cannot be read.
     """
     try:
-        with open(config_filepath) as config_file:
+        with open(save_dir + "/config.json") as config_file:
             return json.load(config_file)
     except IOError as error:
         raise error

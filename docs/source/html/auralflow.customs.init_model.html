@@ -30,7 +30,7 @@
   --font-weight: 300;
   --color-link: #049EF4;
   --color-problematic: #FF0080;
-  --color-highlight-on-target: white;
+  --color-highlight-on-target: #f3f4f7;
   
   }
   @media not print {
@@ -227,13 +227,39 @@
 </div>
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.customs.init_model">
-<span class="sig-prename descclassname"><span class="pre">auralflow.customs.</span></span><span class="sig-name descname"><span class="pre">init_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="reference internal" href="_modules/auralflow/customs/customize.html#init_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.customs.init_model" title="Permalink to this definition">#</a></dt>
-<dd><p>Creates a new model instance given configuration data.</p>
+<span class="sig-prename descclassname"><span class="pre">auralflow.customs.</span></span><span class="sig-name descname"><span class="pre">init_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="reference internal" href="_modules/auralflow/customs/customs.html#init_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.customs.init_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Creates a new <code class="docutils literal notranslate"><span class="pre">SeparationModel</span></code> instance given configuration data.</p>
+<p>To load the contents of a configuration file into a dictionary, use
+<code class="docutils literal notranslate"><span class="pre">auralflow.utils.load_config</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>configuration</strong> (<em>dict</em>) -- Model configuration data.</p>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>New <code class="docutils literal notranslate"><span class="pre">SeparationModel</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel">SeparationModel</a></p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">auralflow.utils</span> <span class="k">as</span> <span class="nn">utils</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># folder directory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/my_model&quot;</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># write a new configuration file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">utils</span><span class="o">.</span><span class="n">copy_config_template</span><span class="p">(</span><span class="n">save_dir</span><span class="o">=</span><span class="n">model_dir</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># load the configuration file as a dictionary</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="n">save_dir</span><span class="o">=</span><span class="n">model_dir</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> 
+<span class="go">dict_keys([&#39;model_params&#39;, &#39;dataset_params&#39;, &#39;training_params&#39;,</span>
+<span class="go">&#39;visualizer_params&#39;])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

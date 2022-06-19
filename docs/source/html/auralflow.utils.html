@@ -30,7 +30,7 @@
   --font-weight: 300;
   --color-link: #049EF4;
   --color-problematic: #FF0080;
-  --color-highlight-on-target: white;
+  --color-highlight-on-target: #f3f4f7;
   
   }
   @media not print {
@@ -240,20 +240,20 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.utils.load_config">
-<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#load_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.load_config" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#load_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.load_config" title="Permalink to this definition">#</a></dt>
 <dd><p>Loads the contents of a configuration file into a dictionary.</p>
+<p>Expects there to be a <code class="docutils literal notranslate"><span class="pre">config.json</span></code> within <code class="docutils literal notranslate"><span class="pre">save_dir</span></code>.
+:param save_dir: Directory where the configuration file is stored.
+:type save_dir: str</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>config_filepath</strong> (<em>str</em>) -- Path to the configuration file.</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Configuration data.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Configuration data.</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>IOError</strong> -- Raised if the file cannot be read.</p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>IOError</strong> -- Raised if the file cannot be read.</p>
 </dd>
 </dl>
 </dd></dl>
