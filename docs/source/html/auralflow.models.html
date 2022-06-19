@@ -234,16 +234,50 @@ PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SeparationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
 <p>Interface shared among all source separation models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) -- Underlying PyTorch model.</p></li>
+<li><p><strong>target_labels</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) -- Target source labels.</p></li>
+<li><p><strong>criterion</strong> (<em>Union</em><em>[</em><em>nn.Module</em><em>, </em><em>Callable</em><em>]</em>) -- Loss function.</p></li>
+<li><p><strong>optimizer</strong> (<em>Optimizer</em>) -- Optimizer.</p></li>
+<li><p><strong>scheduler</strong> (<em>Any</em>) -- LR scheduler.</p></li>
+<li><p><strong>batch_loss</strong> (<em>FloatTensor</em>) -- Current batch loss.</p></li>
+<li><p><strong>train_losses</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) -- Epoch training loss history.</p></li>
+<li><p><strong>val_losses</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) -- Epoch validation loss history.</p></li>
+<li><p><strong>stop_patience</strong> (<em>int</em>) -- Waiting time in epochs before reducing LR, if
+validation loss does not improve.</p></li>
+<li><p><strong>max_lr_steps</strong> (<em>int</em>) -- Max number of LR reductions before stopping early.</p></li>
+<li><p><strong>use_amp</strong> (<em>bool</em>) -- If True, uses automatic mixed precision.</p></li>
+<li><p><strong>grad_scaler</strong> (<em>Any</em>) -- Gradient scaler (only if using automatic mixed
+precision).</p></li>
+<li><p><strong>is_best</strong> (<em>bool</em>) -- Flag for checkpointing the best model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>config</strong> (<em>dict</em>) -- Model configuration data.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.backward">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.backward" title="Permalink to this definition">#</a></dt>
-<dd><p>Computes batch-wise loss between estimate and target sources.</p>
+<dd><p>Runs gradient calculation and backpropagation.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.compute_loss">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_loss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.compute_loss" title="Permalink to this definition">#</a></dt>
-<dd><p>Updates and returns the current batch-wise loss.</p>
+<dd><p>Abstract method for calculating the current batch-wise loss.</p>
+<p>Implementations should sets the <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute and
+returns its scalar value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Batch-wise loss.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -255,7 +289,7 @@ PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.forward">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Forward method.</p>
+<dd><p>Abstract forward method.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -285,7 +319,7 @@ PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.optimizer_step">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.optimizer_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.optimizer_step" title="Permalink to this definition">#</a></dt>
-<dd><p>Performs gradient computation and parameter optimization.</p>
+<dd><p>Optimizes training loss and updates model parameters.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -321,19 +355,37 @@ PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.scheduler_step">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheduler_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.scheduler_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.scheduler_step" title="Permalink to this definition">#</a></dt>
-<dd><p>Decreases learning rate if necessary.</p>
+<dd><p>Decreases the learning rate if required.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.separate">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">separate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.separate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.separate" title="Permalink to this definition">#</a></dt>
-<dd><p>Separates target source from mixture audio.</p>
+<dd><p>Separates target sources from a mixture given its audio data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>audio</strong> (<em>Tensor</em>) -- Mixture audio data.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Estimated target sources.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.set_data">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.set_data" title="Permalink to this definition">#</a></dt>
-<dd><p>Set and process data for internal access.</p>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.set_data" title="Permalink to this definition">#</a></dt>
+<dd><p>Abstract method for setting and processing data internally.</p>
+<p>Implementations should fill the appropriate instance attributes with
+the input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>*data</strong> (<em>Tensor</em>) -- Input and/or target data.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

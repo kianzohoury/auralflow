@@ -227,7 +227,7 @@
 </div>
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.datasets.verify_dataset">
-<span class="sig-prename descclassname"><span class="pre">auralflow.datasets.</span></span><span class="sig-name descname"><span class="pre">verify_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/datasets/datasets.html#verify_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.datasets.verify_dataset" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">auralflow.datasets.</span></span><span class="sig-name descname"><span class="pre">verify_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/datasets/datasets.html#verify_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.datasets.verify_dataset" title="Permalink to this definition">#</a></dt>
 <dd><p>Verifies the structure of a subdirectory belonging to the dataset.</p>
 <dl class="simple">
 <dt>A dataset directory must meet the following rules to be valid:</dt><dd><ul class="simple">
@@ -245,7 +245,8 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>subset_path</strong> (<em>str</em>) -- Path to a subset of the dataset ending in <code class="docutils literal notranslate"><span class="pre">/train</span></code>
 , <code class="docutils literal notranslate"><span class="pre">/val</span></code> or <code class="docutils literal notranslate"><span class="pre">/test</span></code>.</p></li>
-<li><p><strong>targets</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) -- Labels of the target sources.</p></li>
+<li><p><strong>targets</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) -- Labels of the target sources.
+Default: None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>

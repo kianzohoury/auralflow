@@ -9,31 +9,61 @@ import torch
 import torch.backends.cudnn
 import torch.nn as nn
 
-
 from abc import abstractmethod, ABC
 from torch import Tensor, FloatTensor
 from torch.optim import Optimizer
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from typing import List, Union, Callable, Any
 from auralflow.utils import load_object, save_object
 
 
 class SeparationModel(ABC):
-    """Interface shared among all source separation models."""
+    """Interface shared among all source separation models.
+
+    :ivar model: Underlying PyTorch model.
+    :vartype model: nn.Module
+    :ivar target_labels: Target source labels.
+    :vartype target_labels: List[str]
+    :ivar criterion: Loss function.
+    :vartype criterion: Union[nn.Module, Callable]
+    :ivar optimizer: Optimizer.
+    :vartype optimizer: Optimizer
+    :ivar scheduler: LR scheduler.
+    :vartype scheduler: Any
+    :ivar batch_loss: Current batch loss.
+    :vartype batch_loss: FloatTensor
+    :ivar train_losses: Epoch training loss history.
+    :vartype train_losses: List[float]
+    :ivar val_losses: Epoch validation loss history.
+    :vartype val_losses: List[float]
+    :ivar stop_patience: Waiting time in epochs before reducing LR, if
+        validation loss does not improve.
+    :vartype stop_patience: int
+    :ivar max_lr_steps: Max number of LR reductions before stopping early.
+    :vartype max_lr_steps: int
+    :ivar use_amp: If True, uses automatic mixed precision.
+    :vartype use_amp: bool
+    :ivar grad_scaler: Gradient scaler (only if using automatic mixed
+        precision).
+    :vartype grad_scaler: Any
+    :ivar is_best: Flag for checkpointing the best model.
+    :vartype is_best: bool
+
+    Args:
+        config (dict): Model configuration data.
+    """
 
     model: nn.Module
     target_labels: List[str]
     criterion: Union[nn.Module, Callable]
     optimizer: Optimizer
-    scheduler: ReduceLROnPlateau
+    scheduler: Any
     batch_loss: FloatTensor
     train_losses: List[float]
     val_losses: List[float]
-    metrics: dict
     stop_patience: int
     max_lr_steps: int
-    grad_scaler: Any
     use_amp: bool
+    grad_scaler: Any
     is_best_model: int
 
     def __init__(self, config: dict) -> None:
@@ -58,38 +88,59 @@ class SeparationModel(ABC):
         )
 
     @abstractmethod
-    def set_data(self, *data) -> None:
-        """Set and process data for internal access."""
+    def set_data(self, *data: Tensor) -> None:
+        """Abstract method for setting and processing data internally.
+
+        Implementations should fill the appropriate instance attributes with
+        the input data.
+
+        Args:
+            *data (Tensor): Input and/or target data.
+        """
         pass
 
     @abstractmethod
     def forward(self) -> None:
-        """Forward method."""
+        """Abstract forward method."""
         pass
 
     @abstractmethod
     def compute_loss(self) -> float:
-        """Updates and returns the current batch-wise loss."""
+        """Abstract method for calculating the current batch-wise loss.
+
+        Implementations should sets the ``batch_loss`` attribute and
+        returns its scalar value.
+
+        Returns:
+            float: Batch-wise loss.
+        """
         pass
 
     @abstractmethod
     def backward(self) -> None:
-        """Computes batch-wise loss between estimate and target sources."""
+        """Runs gradient calculation and backpropagation."""
         pass
 
     @abstractmethod
     def optimizer_step(self) -> None:
-        """Performs gradient computation and parameter optimization."""
+        """Optimizes training loss and updates model parameters."""
         pass
 
     @abstractmethod
     def scheduler_step(self) -> bool:
-        """Decreases learning rate if necessary."""
+        """Decreases the learning rate if required."""
         pass
 
     @abstractmethod
     def separate(self, audio: Tensor) -> Tensor:
-        """Separates target source from mixture audio."""
+        """Separates target sources from a mixture given its audio data.
+
+        Args:
+            audio (Tensor): Mixture audio data.
+
+        Returns:
+            Tensor: Estimated target sources.
+        """
         pass
 
     def train(self) -> None:

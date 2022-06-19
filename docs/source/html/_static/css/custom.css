@@ -123,3 +123,7 @@ p.rubric {
 ul > .search > li > a {
     color #049EF4 !important;
 }
+
+.property {
+    font-weight: 700 !important;
+}

@@ -13,13 +13,6 @@ from torch import FloatTensor
 from typing import Tuple, Optional
 
 
-__all__ = [
-    "SpectrogramNetSimple",
-    "SpectrogramNetLSTM",
-    "SpectrogramNetVAE"
-]
-
-
 # Use CNN GPU optimizations if available.
 if torch.backends.cudnn.is_available():
     torch.backends.cudnn.benchmark = True

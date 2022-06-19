@@ -241,16 +241,6 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span><span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;AudioDataset&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;AudioFolder&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;create_audio_dataset&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;create_audio_folder&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;load_stems&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;verify_dataset&quot;</span>
-<span class="p">]</span>
-
-
 <div class="viewcode-block" id="AudioFolder"><a class="viewcode-back" href="../../../auralflow.datasets.AudioFolder.html#auralflow.datasets.AudioFolder">[docs]</a><span class="k">class</span> <span class="nc">AudioFolder</span><span class="p">(</span><span class="n">IterableDataset</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;An on-the-fly audio sample generator designed to be memory efficient.</span>
 
@@ -387,7 +377,7 @@
         <span class="k">return</span> <span class="n">val_dataset</span></div>
 
 <div class="viewcode-block" id="AudioFolder.__iter__"><a class="viewcode-back" href="../../../auralflow.datasets.AudioFolder.html#auralflow.datasets.AudioFolder.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Returns an generator object for generating pairs of audio samples.</span>
+        <span class="sd">&quot;&quot;&quot;Returns a generator object for generating pairs of audio samples.</span>
 
 <span class="sd">        Yields:</span>
 <span class="sd">            Tuple[Tensor, Tensor]: Mixture and target data, respectively.</span>
@@ -421,7 +411,7 @@
         <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">44100</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">AudioDataset</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span> <span class="ow">or</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">_make_chunks</span><span class="p">(</span>
             <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
             <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
@@ -481,7 +471,10 @@
                     <span class="n">target_tensors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_chunk</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">discard_entry</span><span class="p">:</span>
-                <span class="n">target_chunks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">target_tensors</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_tensors</span><span class="p">):</span>
+                    <span class="n">target_chunks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">target_tensors</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">target_chunks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">mix_chunk</span><span class="p">)</span>
 
                 <span class="c1"># Un-squeeze channels dimension if audio is mono.</span>
                 <span class="k">if</span> <span class="n">mix_chunk</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -495,47 +488,9 @@
     <span class="k">return</span> <span class="n">chunked_dataset</span>
 
 
-<div class="viewcode-block" id="create_audio_folder"><a class="viewcode-back" href="../../../auralflow.datasets.create_audio_folder.html#auralflow.datasets.create_audio_folder">[docs]</a><span class="k">def</span> <span class="nf">create_audio_folder</span><span class="p">(</span>
-    <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
-    <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">44100</span><span class="p">,</span>
-    <span class="n">mono</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">audio_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;wav&quot;</span><span class="p">,</span>
-    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;soundfile&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AudioFolder</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Helper method that creates an ``AudioFolder``.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        dataset_path (str): Path to the directory of audio files belonging to</span>
-<span class="sd">            a dataset.</span>
-<span class="sd">        targets (List[str]): Labels of the ground-truth source signals.</span>
-<span class="sd">        split (str): Subset of the directory to read from. Default: &quot;train&quot;.</span>
-<span class="sd">        chunk_size (int): Duration of each resampled audio chunk in seconds.</span>
-<span class="sd">            Default: 2.</span>
-<span class="sd">        sample_rate (int): Sample rate. Default: 44100.</span>
-<span class="sd">        mono (bool): Load tracks as mono. Default: True.</span>
-<span class="sd">        audio_format (str): Audio format. Default: &#39;wav&#39;.</span>
-<span class="sd">        backend (str): Torchaudio backend. Default: &#39;soundfile&#39;.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        ``AudioFolder``: Audio folder.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">audio_folder</span> <span class="o">=</span> <span class="n">AudioFolder</span><span class="p">(</span>
-        <span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">,</span>
-        <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
-        <span class="n">subset</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
-        <span class="n">sample_length</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
-        <span class="n">sample_rate</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">,</span>
-        <span class="n">num_channels</span><span class="o">=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">mono</span> <span class="k">else</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="n">audio_format</span><span class="o">=</span><span class="n">audio_format</span><span class="p">,</span>
-        <span class="n">backend</span><span class="o">=</span><span class="n">backend</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">audio_folder</span></div>
-
-
-<div class="viewcode-block" id="verify_dataset"><a class="viewcode-back" href="../../../auralflow.datasets.verify_dataset.html#auralflow.datasets.verify_dataset">[docs]</a><span class="k">def</span> <span class="nf">verify_dataset</span><span class="p">(</span><span class="n">subset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="verify_dataset"><a class="viewcode-back" href="../../../auralflow.datasets.verify_dataset.html#auralflow.datasets.verify_dataset">[docs]</a><span class="k">def</span> <span class="nf">verify_dataset</span><span class="p">(</span>
+    <span class="n">subset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Verifies the structure of a subdirectory belonging to the dataset.</span>
 
 <span class="sd">    A dataset directory must meet the following rules to be valid:</span>
@@ -550,19 +505,88 @@
 <span class="sd">    Args:</span>
 <span class="sd">        subset_path (str): Path to a subset of the dataset ending in ``/train``</span>
 <span class="sd">            , ``/val`` or ``/test``.</span>
-<span class="sd">        targets (List[str]): Labels of the target sources.</span>
+<span class="sd">        targets (Optional[List[str]]): Labels of the target sources.</span>
+<span class="sd">            Default: None.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        IOError: Raised if a required file is missing for any track title.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">subset_path</span><span class="p">)</span>
-    <span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;mixture&quot;</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="n">targets</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;mixture&quot;</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">track_name</span> <span class="ow">in</span> <span class="n">dataset_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
         <span class="n">track_stems</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">track_name</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
         <span class="n">track_stems</span> <span class="o">=</span> <span class="p">[</span><span class="n">stem</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;.wav&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">stem</span> <span class="ow">in</span> <span class="n">track_stems</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">track_stems</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">.wav from </span><span class="si">{</span><span class="n">track_name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_audio_folder"><a class="viewcode-back" href="../../../auralflow.datasets.create_audio_folder.html#auralflow.datasets.create_audio_folder">[docs]</a><span class="k">def</span> <span class="nf">create_audio_folder</span><span class="p">(</span>
+    <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">44100</span><span class="p">,</span>
+    <span class="n">mono</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">audio_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;wav&quot;</span><span class="p">,</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;soundfile&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AudioFolder</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper method that creates an ``AudioFolder``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset_path (str): Path to the directory of audio files belonging to</span>
+<span class="sd">            a dataset.</span>
+<span class="sd">        targets (Optional[List[str]]): Labels of the ground-truth source</span>
+<span class="sd">            signals. Default: None.</span>
+<span class="sd">        split (str): Subset of the directory to read from. Default: &quot;train&quot;.</span>
+<span class="sd">        chunk_size (int): Duration of each resampled audio chunk in seconds.</span>
+<span class="sd">            Default: 2.</span>
+<span class="sd">        sample_rate (int): Sample rate. Default: 44100.</span>
+<span class="sd">        mono (bool): Load tracks as mono. Default: True.</span>
+<span class="sd">        audio_format (str): Audio format. Default: &#39;wav&#39;.</span>
+<span class="sd">        backend (str): Torchaudio backend. Default: &#39;soundfile&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``AudioFolder``: Audio folder.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        IOError: Raised if the dataset cannot be verified.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import os</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # path to a dataset</span>
+<span class="sd">        &gt;&gt;&gt; data_path = os.getcwd() + &quot;/toy_dataset&quot;</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # create audio folder</span>
+<span class="sd">        &gt;&gt;&gt; test_dataset = create_audio_folder(</span>
+<span class="sd">        ...     dataset_path=data_path,</span>
+<span class="sd">        ...     split=&quot;test&quot;,</span>
+<span class="sd">        ...     chunk_size=2,</span>
+<span class="sd">        ...     sample_rate=22050,</span>
+<span class="sd">        ...     audio_format=&quot;wav&quot;,</span>
+<span class="sd">        ...     mono=True</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; type(test_dataset)</span>
+<span class="sd">        &lt;class &#39;datasets.AudioFolder&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Verify dataset directory.</span>
+    <span class="n">verify_dataset</span><span class="p">(</span><span class="n">subset_path</span><span class="o">=</span><span class="n">dataset_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">split</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">)</span>
+
+    <span class="n">audio_folder</span> <span class="o">=</span> <span class="n">AudioFolder</span><span class="p">(</span>
+        <span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">,</span>
+        <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+        <span class="n">subset</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
+        <span class="n">sample_length</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
+        <span class="n">sample_rate</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">,</span>
+        <span class="n">num_channels</span><span class="o">=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">mono</span> <span class="k">else</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">audio_format</span><span class="o">=</span><span class="n">audio_format</span><span class="p">,</span>
+        <span class="n">backend</span><span class="o">=</span><span class="n">backend</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">audio_folder</span></div>
 
 
 <div class="viewcode-block" id="load_stems"><a class="viewcode-back" href="../../../auralflow.datasets.load_stems.html#auralflow.datasets.load_stems">[docs]</a><span class="k">def</span> <span class="nf">load_stems</span><span class="p">(</span>
@@ -578,7 +602,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        dataset_path (str): Path to the directory of audio files belonging to</span>
 <span class="sd">            a dataset.</span>
-<span class="sd">        targets (List[str]): Labels of the ground-truth source signals.</span>
+<span class="sd">        targets (Optional[List[str]]): Labels of the ground-truth source</span>
+<span class="sd">            signals. Default: None.</span>
 <span class="sd">        split (str): Subset of the directory to read from. Default: &quot;train&quot;.</span>
 <span class="sd">        max_num_tracks (int): Max number of full audio tracks to resample from.</span>
 <span class="sd">            Default: 100.</span>
@@ -601,6 +626,7 @@
     <span class="c1"># Verify dataset directory.</span>
     <span class="n">verify_dataset</span><span class="p">(</span><span class="n">subset_path</span><span class="o">=</span><span class="n">dataset_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">split</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">)</span>
 
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span> <span class="ow">or</span> <span class="p">[]</span>
     <span class="n">audio_tracks</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">subset_dir</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
     <span class="n">max_num_tracks</span> <span class="o">=</span> <span class="n">max_num_tracks</span> <span class="k">if</span> <span class="n">max_num_tracks</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
@@ -639,7 +665,7 @@
 
 <div class="viewcode-block" id="create_audio_dataset"><a class="viewcode-back" href="../../../auralflow.datasets.create_audio_dataset.html#auralflow.datasets.create_audio_dataset">[docs]</a><span class="k">def</span> <span class="nf">create_audio_dataset</span><span class="p">(</span>
     <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
     <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">num_chunks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
@@ -652,7 +678,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        dataset_path (str): Path to the directory of audio files belonging to</span>
 <span class="sd">            a dataset.</span>
-<span class="sd">        targets (List[str]): Labels of the ground-truth source signals.</span>
+<span class="sd">        targets (Optional[List[str]]): Labels of the ground-truth source</span>
+<span class="sd">            signals. Default: None.</span>
 <span class="sd">        split (str): Subset of the directory to read from. Default: &quot;train&quot;.</span>
 <span class="sd">        chunk_size (int): Duration of each resampled audio chunk in seconds.</span>
 <span class="sd">            Default: 2.</span>
@@ -664,6 +691,26 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ``AudioDataset``: Audio dataset.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import os</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # path to a dataset</span>
+<span class="sd">        &gt;&gt;&gt; data_path = os.getcwd() + &quot;/toy_dataset&quot;</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # create dataset</span>
+<span class="sd">        &gt;&gt;&gt; test_dataset = create_audio_dataset(</span>
+<span class="sd">        ...     dataset_path=data_path,</span>
+<span class="sd">        ...     split=&quot;test&quot;,</span>
+<span class="sd">        ...     chunk_size=1,</span>
+<span class="sd">        ...     num_chunks=1000,</span>
+<span class="sd">        ...     sample_rate=22050,</span>
+<span class="sd">        ...     mono=True</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; type(test_dataset)</span>
+<span class="sd">        &lt;class &#39;datasets.AudioDataset&#39;&gt;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Full-length audio tracks.</span>
     <span class="n">full_dataset</span> <span class="o">=</span> <span class="n">load_stems</span><span class="p">(</span>

@@ -16,22 +16,6 @@ from torchaudio.transforms import Resample
 from typing import Mapping
 
 
-__all__ = [
-    "component_loss",
-    "kl_div_loss",
-    "si_sdr_loss",
-    "rmse_loss",
-    "get_evaluation_metrics",
-    "ComponentLoss",
-    "KLDivergenceLoss",
-    "SISDRLoss",
-    "L1Loss",
-    "L2Loss",
-    "RMSELoss",
-    "L2MaskLoss"
-]
-
-
 def component_loss(
     mask: FloatTensor,
     target: FloatTensor,
@@ -83,9 +67,13 @@ def component_loss(
         >>>
         >>> # calculate the weighted loss
         >>> loss = component_loss(mask=mask, target=target, residual=residual)
+        >>> type(loss)
+        <class 'torch.Tensor'>
         >>>
         >>> # get its scalar value
         >>> loss_val = loss.item()
+        >>> type(loss_val)
+        <class 'float'>
     """
 
     filtered_target = mask * target
@@ -127,9 +115,10 @@ def component_loss(
 def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
     """Computes the KL Divergence loss term using its closed form expression.
 
-    The KL loss term is defined as :math:`D_KL(P||Q)`, where :math:`P` is
-    the modeled distribution, and :math:`Q` is a standard normal distribution
-    :math:`N(0, 1)`. In closed form, the loss can be expressed as:
+    Only for ``SpectrogramNetVAE`` models. The KL loss term is defined
+    as :math:`D_KL(P||Q)`, where :math:`P` is the modeled distribution,
+    and :math:`Q` is a standard normal distribution :math:`N(0, 1)`.
+    In closed form, the loss can be expressed as:
 
     .. math::
         D_{KL}(P||Q) = \\frac{1}{2} \\sum_{i=1}^{n}(\\mu^2 + \\sigma^2 -
@@ -166,9 +155,13 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
         >>>
         >>> # combine loss terms
         >>> loss = kl_term + l1_term
+        >>> type(loss)
+        <class 'torch.Tensor'>
         >>>
         >>> # get scalar value
         >>> loss_val = loss.item()
+        >>> type(loss_val)
+        <class 'float'>
     """
     return 0.5 * torch.mean(mu ** 2 + sigma ** 2 - torch.log(sigma ** 2) - 1)
 
@@ -202,9 +195,13 @@ def si_sdr_loss(estimate: FloatTensor, target: FloatTensor) -> Tensor:
         >>>
         >>> # calculate SI-SDR loss
         >>> loss = si_sdr_loss(estimate, target)
+        >>> type(loss)
+        <class 'torch.Tensor'>
         >>>
         >>> # get its scalar value
         >>> loss_val = loss.item()
+        >>> type(loss_val)
+        <class 'float'>
     """
     # Optimal scaling factor alpha.
     top_term = torch.sum(estimate * target, dim=-1, keepdim=True)
@@ -365,27 +362,6 @@ class SISDRLoss(nn.Module):
 
     Args:
         model (SpectrogramMaskModel): Spectrogram mask model.
-
-    Examples:
-        >>> # get estimate and target audio data
-        >>> estimate = torch.rand((16, 1, 88200))
-        >>> target = torch.rand((16, 1, 88200))
-        >>>
-        >>> model = auralflow.models.SpectrogramMaskModel
-        >>> # calculate SI-SDR loss
-        >>> loss = si_sdr_loss(estimate, target)
-        >>>
-        >>> # get its scalar value
-        >>> loss_val = loss.item()    Examples:
-        >>> # get estimate and target audio data
-        >>> estimate = torch.rand((16, 1, 88200))
-        >>> target = torch.rand((16, 1, 88200))
-        >>>
-        >>> # calculate SI-SDR loss
-        >>> loss = si_sdr_loss(estimate, target)
-        >>>
-        >>> # get its scalar value
-        >>> loss_val = loss.item()
     """
 
     def __init__(self, model) -> None:

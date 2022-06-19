@@ -18,16 +18,6 @@ from torch.utils.data.dataset import Dataset, IterableDataset
 from typing import Iterator, List, Mapping,Optional, Tuple
 
 
-__all__ = [
-    "AudioDataset",
-    "AudioFolder",
-    "create_audio_dataset",
-    "create_audio_folder",
-    "load_stems",
-    "verify_dataset"
-]
-
-
 class AudioFolder(IterableDataset):
     """An on-the-fly audio sample generator designed to be memory efficient.
 
@@ -164,7 +154,7 @@ class AudioFolder(IterableDataset):
         return val_dataset
 
     def __iter__(self) -> Iterator:
-        """Returns an generator object for generating pairs of audio samples.
+        """Returns a generator object for generating pairs of audio samples.
 
         Yields:
             Tuple[Tensor, Tensor]: Mixture and target data, respectively.
@@ -198,7 +188,7 @@ class AudioDataset(Dataset):
         sample_rate: int = 44100,
     ):
         super(AudioDataset, self).__init__()
-        self.targets = targets
+        self.targets = targets or []
         self.dataset = _make_chunks(
             dataset=dataset,
             chunk_size=chunk_size,
@@ -258,7 +248,10 @@ def _make_chunks(
                     target_tensors.append(target_chunk)
 
             if not discard_entry:
-                target_chunks = torch.stack(target_tensors, dim=-1)
+                if len(target_tensors):
+                    target_chunks = torch.stack(target_tensors, dim=-1)
+                else:
+                    target_chunks = torch.empty_like(mix_chunk)
 
                 # Un-squeeze channels dimension if audio is mono.
                 if mix_chunk.dim() == 1:
@@ -272,47 +265,9 @@ def _make_chunks(
     return chunked_dataset
 
 
-def create_audio_folder(
-    dataset_path: str,
-    targets: List[str],
-    split: str = "train",
-    chunk_size: int = 2,
-    sample_rate: int = 44100,
-    mono: bool = True,
-    audio_format: str = "wav",
-    backend: str = "soundfile",
-) -> AudioFolder:
-    """Helper method that creates an ``AudioFolder``.
-
-    Args:
-        dataset_path (str): Path to the directory of audio files belonging to
-            a dataset.
-        targets (List[str]): Labels of the ground-truth source signals.
-        split (str): Subset of the directory to read from. Default: "train".
-        chunk_size (int): Duration of each resampled audio chunk in seconds.
-            Default: 2.
-        sample_rate (int): Sample rate. Default: 44100.
-        mono (bool): Load tracks as mono. Default: True.
-        audio_format (str): Audio format. Default: 'wav'.
-        backend (str): Torchaudio backend. Default: 'soundfile'.
-
-    Returns:
-        ``AudioFolder``: Audio folder.
-    """
-    audio_folder = AudioFolder(
-        dataset_path=dataset_path,
-        targets=targets,
-        subset=split,
-        sample_length=chunk_size,
-        sample_rate=sample_rate,
-        num_channels=1 if mono else 2,
-        audio_format=audio_format,
-        backend=backend
-    )
-    return audio_folder
-
-
-def verify_dataset(subset_path: str, targets: List[str]) -> None:
+def verify_dataset(
+    subset_path: str, targets: Optional[List[str]] = None
+) -> None:
     """Verifies the structure of a subdirectory belonging to the dataset.
 
     A dataset directory must meet the following rules to be valid:
@@ -327,19 +282,88 @@ def verify_dataset(subset_path: str, targets: List[str]) -> None:
     Args:
         subset_path (str): Path to a subset of the dataset ending in ``/train``
             , ``/val`` or ``/test``.
-        targets (List[str]): Labels of the target sources.
+        targets (Optional[List[str]]): Labels of the target sources.
+            Default: None.
 
     Raises:
         IOError: Raised if a required file is missing for any track title.
     """
     dataset_path = Path(subset_path)
-    targets.append("mixture")
+    targets = targets or []
+    targets += ["mixture"]
     for track_name in dataset_path.iterdir():
         track_stems = list(track_name.iterdir())
         track_stems = [stem.name.removesuffix(".wav") for stem in track_stems]
         for target in targets:
             if target not in track_stems:
                 raise IOError(f"Missing {target}.wav from {track_name}.")
+
+
+def create_audio_folder(
+    dataset_path: str,
+    targets: Optional[List[str]] = None,
+    split: str = "train",
+    chunk_size: int = 2,
+    sample_rate: int = 44100,
+    mono: bool = True,
+    audio_format: str = "wav",
+    backend: str = "soundfile",
+) -> AudioFolder:
+    """Helper method that creates an ``AudioFolder``.
+
+    Args:
+        dataset_path (str): Path to the directory of audio files belonging to
+            a dataset.
+        targets (Optional[List[str]]): Labels of the ground-truth source
+            signals. Default: None.
+        split (str): Subset of the directory to read from. Default: "train".
+        chunk_size (int): Duration of each resampled audio chunk in seconds.
+            Default: 2.
+        sample_rate (int): Sample rate. Default: 44100.
+        mono (bool): Load tracks as mono. Default: True.
+        audio_format (str): Audio format. Default: 'wav'.
+        backend (str): Torchaudio backend. Default: 'soundfile'.
+
+    Returns:
+        ``AudioFolder``: Audio folder.
+
+    Raises:
+        IOError: Raised if the dataset cannot be verified.
+
+    Examples:
+        >>> import os
+        >>>
+        >>>
+        >>> # path to a dataset
+        >>> data_path = os.getcwd() + "/toy_dataset"
+        >>>
+        >>> # create audio folder
+        >>> test_dataset = create_audio_folder(
+        ...     dataset_path=data_path,
+        ...     split="test",
+        ...     chunk_size=2,
+        ...     sample_rate=22050,
+        ...     audio_format="wav",
+        ...     mono=True
+        ... )
+        >>>
+        >>> type(test_dataset)
+        <class 'datasets.AudioFolder'>
+    """
+    # Verify dataset directory.
+    verify_dataset(subset_path=dataset_path + "/" + split, targets=targets)
+
+    audio_folder = AudioFolder(
+        dataset_path=dataset_path,
+        targets=targets,
+        subset=split,
+        sample_length=chunk_size,
+        sample_rate=sample_rate,
+        num_channels=1 if mono else 2,
+        audio_format=audio_format,
+        backend=backend
+    )
+    return audio_folder
 
 
 def load_stems(
@@ -355,7 +379,8 @@ def load_stems(
     Args:
         dataset_path (str): Path to the directory of audio files belonging to
             a dataset.
-        targets (List[str]): Labels of the ground-truth source signals.
+        targets (Optional[List[str]]): Labels of the ground-truth source
+            signals. Default: None.
         split (str): Subset of the directory to read from. Default: "train".
         max_num_tracks (int): Max number of full audio tracks to resample from.
             Default: 100.
@@ -378,6 +403,7 @@ def load_stems(
     # Verify dataset directory.
     verify_dataset(subset_path=dataset_path + "/" + split, targets=targets)
 
+    targets = targets or []
     audio_tracks = []
     subset_dir = list(Path(dataset_path, split).iterdir())
     max_num_tracks = max_num_tracks if max_num_tracks else float("inf")
@@ -416,7 +442,7 @@ def load_stems(
 
 def create_audio_dataset(
     dataset_path: str,
-    targets: List[str],
+    targets: Optional[List[str]] = None,
     split: str = "train",
     chunk_size: int = 2,
     num_chunks: int = 10000,
@@ -429,7 +455,8 @@ def create_audio_dataset(
     Args:
         dataset_path (str): Path to the directory of audio files belonging to
             a dataset.
-        targets (List[str]): Labels of the ground-truth source signals.
+        targets (Optional[List[str]]): Labels of the ground-truth source
+            signals. Default: None.
         split (str): Subset of the directory to read from. Default: "train".
         chunk_size (int): Duration of each resampled audio chunk in seconds.
             Default: 2.
@@ -441,6 +468,26 @@ def create_audio_dataset(
 
     Returns:
         ``AudioDataset``: Audio dataset.
+
+    Examples:
+        >>> import os
+        >>>
+        >>>
+        >>> # path to a dataset
+        >>> data_path = os.getcwd() + "/toy_dataset"
+        >>>
+        >>> # create dataset
+        >>> test_dataset = create_audio_dataset(
+        ...     dataset_path=data_path,
+        ...     split="test",
+        ...     chunk_size=1,
+        ...     num_chunks=1000,
+        ...     sample_rate=22050,
+        ...     mono=True
+        ... )
+        >>>
+        >>> type(test_dataset)
+        <class 'datasets.AudioDataset'>
     """
     # Full-length audio tracks.
     full_dataset = load_stems(
