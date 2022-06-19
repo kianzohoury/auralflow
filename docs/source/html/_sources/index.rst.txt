@@ -24,18 +24,6 @@ scripts for more versatility. Lastly, auralflow sports ready-to-go,
 pretrained neural networks that split full music tracks into
 vocals, bass, drums and background instrumental tracks with quality results.
 
-Installation
-------------
-
-Install auralflow via PyPi package manager:
-
-.. code-block:: console
-
-   $ pip install auralflow
-
-
-
-
 Python API
 ----------
 
