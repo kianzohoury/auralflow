@@ -11,7 +11,7 @@
       :nosignatures:
 
    
-      build_model
+      init_model
       setup_model
    
    

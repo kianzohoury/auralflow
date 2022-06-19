@@ -28,6 +28,7 @@
   --color-sidebar-search-border: #FFFFFF;
   --color-sidebar-brand-text: #212529;
   --font-weight: 300;
+  --color-link: #049EF4;
   --color-problematic: #FF0080;
   --color-highlight-on-target: #f3f4f7;
   
@@ -230,14 +231,20 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.load_config" title="auralflow.utils.load_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_config</span></code></a></p></td>
-<td><p>Loads the contents of a configuration file into a dictionary.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.save_config" title="auralflow.utils.save_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_config</span></code></a></p></td>
-<td><p>Saves configuration data to a .json file at a given location.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.copy_config_template" title="auralflow.utils.copy_config_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy_config_template</span></code></a></p></td>
 <td><p>Clones default <code class="docutils literal notranslate"><span class="pre">config.json</span></code> file to a save directory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.load_config" title="auralflow.utils.load_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_config</span></code></a></p></td>
+<td><p>Loads the contents of a configuration file into a dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.save_config" title="auralflow.utils.save_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_config</span></code></a></p></td>
+<td><p>Saves configuration data to the given filepath.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.save_object" title="auralflow.utils.save_object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_object</span></code></a></p></td>
+<td><p>Saves object state as .pth file under the checkpoint directory.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.utils.html#auralflow.utils.load_object" title="auralflow.utils.load_object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_object</span></code></a></p></td>
+<td><p>Loads object's state and and attaches it to the model.</p></td>
 </tr>
 </tbody>
 </table>

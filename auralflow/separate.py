@@ -15,7 +15,7 @@ import librosa
 import torch
 from scipy.io import wavfile
 
-from auralflow.build import build_model, setup_model
+from auralflow.build import init_model, setup_model
 from auralflow.utils import load_config
 from auralflow.transforms import trim_audio
 from auralflow.visualizer import ProgressBar
@@ -123,7 +123,7 @@ def main(
 
     # Load model. Setup restores previous state if resuming training.
     print("Loading model...")
-    model = build_model(configuration)
+    model = init_model(configuration)
     model = setup_model(model)
     print("  Successful.")
 

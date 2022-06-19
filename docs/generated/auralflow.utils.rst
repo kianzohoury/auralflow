@@ -11,9 +11,11 @@
       :nosignatures:
 
    
+      copy_config_template
       load_config
       save_config
-      copy_config_template
+      save_object
+      load_object
    
    
 

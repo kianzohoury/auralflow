@@ -27,6 +27,7 @@
   --color-sidebar-search-border: #FFFFFF;
   --color-sidebar-brand-text: #212529;
   --font-weight: 300;
+  --color-link: #049EF4;
   --color-problematic: #FF0080;
   --color-highlight-on-target: #f3f4f7;
   
@@ -226,7 +227,7 @@
 <span class="c1"># This code is part of the auralflow project linked below.</span>
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
-<span class="kn">from</span> <span class="nn">auralflow.build</span> <span class="kn">import</span> <span class="n">build_model</span><span class="p">,</span> <span class="n">setup_model</span>
+<span class="kn">from</span> <span class="nn">auralflow.build</span> <span class="kn">import</span> <span class="n">init_model</span><span class="p">,</span> <span class="n">setup_model</span>
 <span class="kn">from</span> <span class="nn">auralflow.datasets</span> <span class="kn">import</span> <span class="n">create_audio_dataset</span><span class="p">,</span> <span class="n">load_dataset</span>
 <span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
 <span class="kn">from</span> <span class="nn">auralflow.trainer</span> <span class="kn">import</span> <span class="n">run_training</span>
@@ -281,7 +282,7 @@
 
     <span class="c1"># Load model. Setup restores previous state if resuming training.</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;model_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">init_model</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">setup_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="c1"># Initialize summary writer and visualizer.</span>

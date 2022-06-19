@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>auralflow.build.build_model - auralflow</title>
+        <title>auralflow.build - auralflow</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
@@ -28,6 +28,7 @@
   --color-sidebar-search-border: #FFFFFF;
   --color-sidebar-brand-text: #212529;
   --font-weight: 300;
+  --color-link: #049EF4;
   --color-problematic: #FF0080;
   --color-highlight-on-target: #f3f4f7;
   
@@ -146,7 +147,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -214,19 +215,21 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="auralflow-build-build-model">
-<h1>auralflow.build.build_model<a class="headerlink" href="#auralflow-build-build-model" title="Permalink to this headline">#</a></h1>
+          <section id="auralflow-build">
+<h1>auralflow.build<a class="headerlink" href="#auralflow-build" title="Permalink to this headline">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<section id="module-auralflow.build">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-auralflow.build" title="Permalink to this headline">#</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="auralflow.build.build_model">
-<span class="sig-prename descclassname"><span class="pre">auralflow.build.</span></span><span class="sig-name descname"><span class="pre">build_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="reference internal" href="_modules/auralflow/build.html#build_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.build.build_model" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="auralflow.build.init_model">
+<span class="sig-prename descclassname"><span class="pre">auralflow.build.</span></span><span class="sig-name descname"><span class="pre">init_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="reference internal" href="_modules/auralflow/build/build.html#init_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.build.init_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Creates a new model instance given configuration data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -235,6 +238,32 @@
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.build.setup_model">
+<span class="sig-prename descclassname"><span class="pre">auralflow.build.</span></span><span class="sig-name descname"><span class="pre">setup_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">auralflow.models.base.SeparationModel</span></a></span></span><a class="reference internal" href="_modules/auralflow/build/build.html#setup_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.build.setup_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Sets up a separation model according to its internal configuration.</p>
+<p>If model is in training mode, it creates and loads objects related to
+training; otherwise, it loads the best version of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Separation model.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Separation model.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel">SeparationModel</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>OSError</strong> -- Raised if the model cannot be loaded.</p></li>
+<li><p><strong>FileNotFoundError</strong> -- Raised if a checkpoint file cannot be found.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 
         </article>
@@ -264,8 +293,27 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">auralflow.build</a><ul>
+<li><a class="reference internal" href="#module-auralflow.build">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

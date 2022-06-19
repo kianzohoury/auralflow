@@ -28,6 +28,7 @@
   --color-sidebar-search-border: #FFFFFF;
   --color-sidebar-brand-text: #212529;
   --font-weight: 300;
+  --color-link: #049EF4;
   --color-problematic: #FF0080;
   --color-highlight-on-target: #f3f4f7;
   
@@ -258,9 +259,56 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="auralflow.utils.load_object">
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">load_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#load_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.load_object" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads object's state and and attaches it to the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Separation model.</p></li>
+<li><p><strong>obj_name</strong> (<em>str</em>) -- Object to save.</p></li>
+<li><p><strong>global_step</strong> (<em>int</em>) -- Global step.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>OSError</strong> -- Raised if object cannot be loaded.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="auralflow.utils.save_config">
-<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">save_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/utils.html#save_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.save_config" title="Permalink to this definition">#</a></dt>
-<dd><p>Saves configuration data to a .json file at a given location.</p>
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">save_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#save_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.save_config" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves configuration data to the given filepath.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) -- Configuration data.</p></li>
+<li><p><strong>save_filepath</strong> (<em>str</em>) -- Path to save.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>IOError</strong> -- Raised if the configuration file cannot be saved.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.utils.save_object">
+<span class="sig-prename descclassname"><span class="pre">auralflow.utils.</span></span><span class="sig-name descname"><span class="pre">save_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/utils.html#save_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.utils.save_object" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves object state as .pth file under the checkpoint directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Separation model.</p></li>
+<li><p><strong>obj_name</strong> (<em>str</em>) -- Object to save.</p></li>
+<li><p><strong>global_step</strong> (<em>int</em>) -- Global step.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>OSError</strong> -- Raised if object cannot be saved.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

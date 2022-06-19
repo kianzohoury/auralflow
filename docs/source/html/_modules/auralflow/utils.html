@@ -27,6 +27,7 @@
   --color-sidebar-search-border: #FFFFFF;
   --color-sidebar-brand-text: #212529;
   --font-weight: 300;
+  --color-link: #049EF4;
   --color-problematic: #FF0080;
   --color-highlight-on-target: #f3f4f7;
   
@@ -227,15 +228,17 @@
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;copy_config_template&quot;</span><span class="p">,</span>
     <span class="s2">&quot;load_config&quot;</span><span class="p">,</span>
     <span class="s2">&quot;save_config&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;copy_config_template&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;save_object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;load_object&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">config_template_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
@@ -271,8 +274,16 @@
         <span class="k">raise</span> <span class="n">error</span></div>
 
 
-<div class="viewcode-block" id="save_config"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.save_config">[docs]</a><span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">save_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Saves configuration data to a .json file at a given location.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="save_config"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.save_config">[docs]</a><span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">save_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Saves configuration data to the given filepath.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (dict): Configuration data.</span>
+<span class="sd">        save_filepath (str): Path to save.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        IOError: Raised if the configuration file cannot be saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_filepath</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">config_file</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
@@ -293,36 +304,58 @@
     <span class="k">return</span> <span class="n">filename</span>
 
 
-<span class="k">def</span> <span class="nf">save_object</span><span class="p">(</span><span class="n">model_wrapper</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Saves object state as .pth file under the checkpoint directory.&quot;&quot;&quot;</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_wrapper</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">model_wrapper</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">model_wrapper</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;silent_checkpoint&quot;</span><span class="p">]:</span>
+<div class="viewcode-block" id="save_object"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.save_object">[docs]</a><span class="k">def</span> <span class="nf">save_object</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="s1">&#39;SeparationModel&#39;</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Saves object state as .pth file under the checkpoint directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (SeparationModel): Separation model.</span>
+<span class="sd">        obj_name (str): Object to save.</span>
+<span class="sd">        global_step (int): Global step.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        OSError: Raised if object cannot be saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;silent_checkpoint&quot;</span><span class="p">]:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving </span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
     <span class="c1"># Get object-specific filename.</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="n">_add_checkpoint_tag</span><span class="p">(</span>
         <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="n">obj_name</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_wrapper</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">):</span>
         <span class="c1"># Retrieve object&#39;s state.</span>
         <span class="k">if</span> <span class="n">obj_name</span> <span class="o">==</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span>
-            <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model_wrapper</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
             <span class="c1"># Transfer model back to GPU if applicable.</span>
-            <span class="n">model_wrapper</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model_wrapper</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model_wrapper</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Save object&#39;s state to filename.</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">model_wrapper</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;silent_checkpoint&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;silent_checkpoint&quot;</span><span class="p">]:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Failed.&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">error</span>
+            <span class="k">raise</span> <span class="n">error</span></div>
 
 
-<span class="k">def</span> <span class="nf">load_object</span><span class="p">(</span><span class="n">model_wrapper</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Loads object&#39;s state and and attaches it to the model.&quot;&quot;&quot;</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_wrapper</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">model_wrapper</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span>
+<div class="viewcode-block" id="load_object"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.load_object">[docs]</a><span class="k">def</span> <span class="nf">load_object</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="s1">&#39;SeparationModel&#39;</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Loads object&#39;s state and and attaches it to the model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (SeparationModel): Separation model.</span>
+<span class="sd">        obj_name (str): Object to save.</span>
+<span class="sd">        global_step (int): Global step.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        OSError: Raised if object cannot be loaded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
     <span class="c1"># Get object-specific filename.</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="n">_add_checkpoint_tag</span><span class="p">(</span>
@@ -330,14 +363,14 @@
     <span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Try to read object state from the given file.</span>
-        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">model_wrapper</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Failed.&quot;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">error</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_wrapper</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">):</span>
         <span class="c1"># Load state into object.</span>
-        <span class="nb">getattr</span><span class="p">(</span><span class="n">model_wrapper</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span></div>
 </pre></div>
         </article>
       </div>

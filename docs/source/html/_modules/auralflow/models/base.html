@@ -27,6 +27,7 @@
   --color-sidebar-search-border: #FFFFFF;
   --color-sidebar-brand-text: #212529;
   --font-weight: 300;
+  --color-link: #049EF4;
   --color-problematic: #FF0080;
   --color-highlight-on-target: #f3f4f7;
   
@@ -331,49 +332,49 @@
 <div class="viewcode-block" id="SeparationModel.save_model"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Saves the model&#39;s current state.&quot;&quot;&quot;</span>
         <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model_wrapper</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SeparationModel.load_model"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.load_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Loads a model&#39;s previous state.&quot;&quot;&quot;</span>
         <span class="n">load_object</span><span class="p">(</span>
-            <span class="n">model_wrapper</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SeparationModel.save_optim"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_optim">[docs]</a>    <span class="k">def</span> <span class="nf">save_optim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Saves the optimizer&#39;s current state.&quot;&quot;&quot;</span>
         <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model_wrapper</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SeparationModel.load_optim"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.load_optim">[docs]</a>    <span class="k">def</span> <span class="nf">load_optim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Loads an optimizer&#39;s previous state.&quot;&quot;&quot;</span>
         <span class="n">load_object</span><span class="p">(</span>
-            <span class="n">model_wrapper</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SeparationModel.save_scheduler"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_scheduler">[docs]</a>    <span class="k">def</span> <span class="nf">save_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Saves the scheduler&#39;s current state.&quot;&quot;&quot;</span>
         <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model_wrapper</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SeparationModel.load_scheduler"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.load_scheduler">[docs]</a>    <span class="k">def</span> <span class="nf">load_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Loads a scheduler&#39;s previous state.&quot;&quot;&quot;</span>
         <span class="n">load_object</span><span class="p">(</span>
-            <span class="n">model_wrapper</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SeparationModel.save_grad_scaler"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_grad_scaler">[docs]</a>    <span class="k">def</span> <span class="nf">save_grad_scaler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Saves the grad scaler&#39;s current state if using mixed precision.&quot;&quot;&quot;</span>
         <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model_wrapper</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SeparationModel.load_grad_scaler"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.load_grad_scaler">[docs]</a>    <span class="k">def</span> <span class="nf">load_grad_scaler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Load a grad scaler&#39;s previous state if one exists.&quot;&quot;&quot;</span>
         <span class="n">load_object</span><span class="p">(</span>
-            <span class="n">model_wrapper</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SeparationModel.save"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>

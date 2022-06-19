@@ -8,7 +8,6 @@ import json
 import shutil
 import torch
 
-from auralflow.models import SeparationModel
 from pathlib import Path
 
 __all__ = [
@@ -83,7 +82,7 @@ def _add_checkpoint_tag(filename: str, obj_name: str, global_step: int) -> str:
 
 
 def save_object(
-    model: SeparationModel, obj_name: str, global_step: int
+    model: 'SeparationModel', obj_name: str, global_step: int
 ) -> None:
     """Saves object state as .pth file under the checkpoint directory.
 
@@ -121,7 +120,7 @@ def save_object(
 
 
 def load_object(
-    model: SeparationModel, obj_name: str, global_step: int
+    model: 'SeparationModel', obj_name: str, global_step: int
 ) -> None:
     """Loads object's state and and attaches it to the model.
 

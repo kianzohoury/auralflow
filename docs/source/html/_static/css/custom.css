@@ -117,3 +117,7 @@ p.rubric {
     font-size: 14px !important;
     text-transform: uppercase !important;
 }
+
+ul > .search > li > a {
+    color #049EF4 !important;
+}

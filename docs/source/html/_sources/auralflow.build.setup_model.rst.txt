@@ -5,3 +5,4 @@ auralflow.build.setup_model
    :maxdepth: 2
 
 .. autofunction:: auralflow.build.setup_model
+
