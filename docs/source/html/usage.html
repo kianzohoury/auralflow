@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Tutorial" href="tutorial.html" /><link rel="prev" title="Installation" href="installation.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
         <title>Basic Usage - auralflow</title>
@@ -168,8 +168,13 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Quickstart</span></p>
-<ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="quickstart.html">Quickstart</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Basic Usage</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="params.html">Parameters</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -177,9 +182,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="theory.html">A Shallow Dive into Theory</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
@@ -225,111 +230,47 @@
         <article role="main">
           <section id="basic-usage">
 <h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">#</a></h1>
-<p>The simplest way to use auralflow is by invoking the four main shell
-commands: <code class="docutils literal notranslate"><span class="pre">config</span></code>, <code class="docutils literal notranslate"><span class="pre">train</span></code>, <code class="docutils literal notranslate"><span class="pre">test</span></code> and <code class="docutils literal notranslate"><span class="pre">separate</span></code>, which cover
-the essential features and functionality of the package. Moreover, these
-commands require the presence of certain configuration and training files,
-which will be conveniently organized for you within a single folder when
-you first configure a model from scratch. An example of such folder can be
-seen below.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">your_model</span>
-<span class="go">  ├── audio/...</span>
-<span class="go">  ├── config.json</span>
-<span class="go">  ├── checkpoint/...</span>
-<span class="go">  ├── evaluation.csv</span>
-<span class="go">  ├── images/...</span>
-<span class="go">  └── runs/...</span>
+<section id="pretrained-models">
+<h2>Pretrained Models<a class="headerlink" href="#pretrained-models" title="Permalink to this headline">#</a></h2>
+<p>To use a pretrained source separator, use <code class="docutils literal notranslate"><span class="pre">auralflow.pretrained.load</span></code>,
+which downloads a model and its parameters, given its name and target source
+labels.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">spec_net_vae</span> <span class="o">=</span> <span class="n">auralflow</span><span class="o">.</span><span class="n">pretrained</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;SpectrogramNetVAE&quot;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;vocals&quot;</span><span class="p">]</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Contents</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">config.json</span></code> - is the main configuration file</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">checkpoint</span></code> - is the directory for saving object states</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">runs</span></code> - is the directory for tensorboard training logs.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">evaluation.cvs</span></code> - is the csv file containing model evaluation performance.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">audio</span></code> - is the folder that saves separated audio clips for validation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">images</span></code>: is the folder that saves spectrogram/waveform plots for validation</p></li>
-</ul>
-<section id="model-configuration-with-config">
-<h2>Model Configuration with <code class="docutils literal notranslate"><span class="pre">config</span></code><a class="headerlink" href="#model-configuration-with-config" title="Permalink to this headline">#</a></h2>
-<p>Auralflow uses an extremely simple file structure that encapsulates the
-files necessary for creating, training and loading models inside a single folder.
-Below is a visual of such folder.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">your_model</span>
-<span class="go">  ├── audio/...</span>
-<span class="go">  ├── config.json</span>
-<span class="go">  ├── checkpoint/...</span>
-<span class="go">  ├── evaluation.csv</span>
-<span class="go">  ├── images/...</span>
-<span class="go">  └── runs/...</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">config.json</span></code>: The main configuration file.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">checkpoint</span></code>: Directory for saving object states.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">runs</span></code>: Tensorboard training logs.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">evaluation.cvs</span></code>: A csv file containing the model's test performance.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">audio</span></code>: Optional folder that saves separated audio for validation.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">images</span></code>: Optional folder that saves spectrogram/waveform plots for validation.</p></li>
-</ul>
-</section>
-<section id="config">
-<h2><code class="docutils literal notranslate"><span class="pre">config</span></code><a class="headerlink" href="#config" title="Permalink to this headline">#</a></h2>
-<p>To configure a new model, we simply use the <cite>config</cite> command.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow config your_model SpectrogramNetSimple --save to/this/path
-</pre></div>
-</div>
-<p>which initializes a folder called <code class="docutils literal notranslate"><span class="pre">your_model</span></code> to a path specified by
-the <cite>--save</cite> argument (defaults to the current directory). Inside
-<code class="docutils literal notranslate"><span class="pre">your_model</span></code> is a configuration file called <code class="docutils literal notranslate"><span class="pre">config.json</span></code> -- a starting
-template for the <code class="docutils literal notranslate"><span class="pre">SpectrogramNetSimple</span></code> model.</p>
-<p>So far, the folder looks like this:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">your_model</span>
-<span class="go">  └── config.json</span>
+<p>Once the model has been downloaded, use <code class="docutils literal notranslate"><span class="pre">auralflow.separate_audio</span></code>, which
+separates full audio tracks and saves the results.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+
+<span class="n">auralflow</span><span class="o">.</span><span class="n">separate_audio</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">spec_net_vae</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/AI James - Schoolboy Fascination.wav&quot;</span><span class="p">,</span>
+    <span class="n">sr</span><span class="o">=</span><span class="mi">44100</span><span class="p">,</span>
+    <span class="n">duration</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
+    <span class="n">save_filepath</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="setting-parameters">
-<h2>Setting Parameters<a class="headerlink" href="#setting-parameters" title="Permalink to this headline">#</a></h2>
-<p>Next, we will modify some of the default settings related to <code class="docutils literal notranslate"><span class="pre">your_model</span></code> --
-which can be achieved by editing <code class="docutils literal notranslate"><span class="pre">config.json</span></code> via a text editor (recommended),
-or replacing the values from the command line.</p>
-</section>
-<section id="modifying-within-a-text-editor-recommended">
-<h2>Modifying within a Text Editor (recommended)<a class="headerlink" href="#modifying-within-a-text-editor-recommended" title="Permalink to this headline">#</a></h2>
-<p>Using any modern text editor/IDE, we can open <code class="docutils literal notranslate"><span class="pre">config.json</span></code> and edit the
-key-value pairs for any parameter, replacing its default value with the
-desired new value.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">{</span>
-<span class="go">  parameter_group: {</span>
-<span class="go">    ...</span>
-<span class="go">    parameter_name: new_value,</span>
-<span class="go">    ...</span>
-<span class="go">  }</span>
-<span class="go">}</span>
+<section id="custom-models">
+<h2>Custom Models<a class="headerlink" href="#custom-models" title="Permalink to this headline">#</a></h2>
+<p>To train a custom model, first initialize a new model with <code class="docutils literal notranslate"><span class="pre">config</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow config my_model SpectrogramNetVAE
 </pre></div>
 </div>
-</section>
-<section id="modifying-from-the-command-line">
-<h2>Modifying from the Command Line<a class="headerlink" href="#modifying-from-the-command-line" title="Permalink to this headline">#</a></h2>
-<p>We can modify one or more parameters with the <code class="docutils literal notranslate"><span class="pre">confi`g</span></code> command by passing in
-the <code class="docutils literal notranslate"><span class="pre">path/to/your_model</span></code> and values for each parameter keyword argument like
-so:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow config path/to/your_model --mask_activation relu --dropout_p <span class="m">0</span>.4 <span class="se">\</span>
-<span class="go">--display</span>
+<p>Next, train the model with <code class="docutils literal notranslate"><span class="pre">train</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow train my_model ~/musdb18 --max-epochs <span class="m">100</span> --lr <span class="m">0</span>.001 --batch-size <span class="m">32</span>
 </pre></div>
 </div>
-<p>See the full list of customizable parameters here.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="params.html">Parameters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="params.html#model">Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="params.html#dataset">Dataset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="params.html#training">Training</a></li>
-</ul>
-</li>
-</ul>
+<p>Lastly, separate audio with <code class="docutils literal notranslate"><span class="pre">separate</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>auralflow separate my_model <span class="s2">&quot;AI James - Schoolboy Fascination.wav&quot;</span> --save .
+</pre></div>
 </div>
+<p>Note that everything done through the command line can be achieved by invoking
+API methods, but the reverse is not true.</p>
 </section>
 </section>
 
@@ -338,8 +279,26 @@ so:</p>
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="tutorial.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Tutorial</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="installation.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Installation</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -373,11 +332,8 @@ so:</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Basic Usage</a><ul>
-<li><a class="reference internal" href="#model-configuration-with-config">Model Configuration with <code class="docutils literal notranslate"><span class="pre">config</span></code></a></li>
-<li><a class="reference internal" href="#config"><code class="docutils literal notranslate"><span class="pre">config</span></code></a></li>
-<li><a class="reference internal" href="#setting-parameters">Setting Parameters</a></li>
-<li><a class="reference internal" href="#modifying-within-a-text-editor-recommended">Modifying within a Text Editor (recommended)</a></li>
-<li><a class="reference internal" href="#modifying-from-the-command-line">Modifying from the Command Line</a></li>
+<li><a class="reference internal" href="#pretrained-models">Pretrained Models</a></li>
+<li><a class="reference internal" href="#custom-models">Custom Models</a></li>
 </ul>
 </li>
 </ul>

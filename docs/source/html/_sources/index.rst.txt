@@ -6,11 +6,6 @@
 Auralflow Documentation
 =======================
 
-.. toctree::
-   :maxdepth: 3
-   :caption: Contents:
-
-
 *Auralflow* is a lightweight deep learning toolkit for designing and training
 music source separation models in PyTorch with minimal code. With highly
 customizable base model architectures and an array of useful tools
@@ -26,11 +21,13 @@ drums and background instrumental tracks with quality results.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :glob:
    :caption: Quickstart
 
-   quickstart
+   installation
+   usage
+   tutorial
 
 
 .. toctree::
@@ -42,7 +39,7 @@ drums and background instrumental tracks with quality results.
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Documentation
+   :caption: API Reference
 
    api
 

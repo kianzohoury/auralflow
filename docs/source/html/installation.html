@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Basic Usage" href="usage.html" /><link rel="prev" title="Auralflow Documentation" href="index.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
         <title>Installation - auralflow</title>
@@ -168,8 +168,13 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Quickstart</span></p>
-<ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="quickstart.html">Quickstart</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Basic Usage</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="params.html">Parameters</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -177,9 +182,9 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="theory.html">A Shallow Dive into Theory</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
@@ -225,25 +230,27 @@
         <article role="main">
           <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
-<div class="toctree-wrapper compound">
-</div>
 <section id="system-requirements">
 <h2>System Requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">#</a></h2>
-<p>Auralflow currently requires Python version &gt;= 3.7.11, &lt;3.11.</p>
+<p>Auralflow currently requires Python version <code class="docutils literal notranslate"><span class="pre">3.7.11+</span></code>. Support for
+lower versions is to be expected in the near future.</p>
 </section>
-<section id="id1">
-<h2>Installation<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
-<p>Install auralflow via PyPi package manager:</p>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">#</a></h2>
+<p>Install auralflow via the <a class="reference external" href="https://pypi.org">PyPi</a>
+package manager:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip install auralflow
 </pre></div>
 </div>
 </section>
-<section id="updating-auralflow">
-<h2>Updating Auralflow<a class="headerlink" href="#updating-auralflow" title="Permalink to this headline">#</a></h2>
+<section id="update">
+<h2>Update<a class="headerlink" href="#update" title="Permalink to this headline">#</a></h2>
 <p>Update auralflow to the latest version:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip install &lt;package_name&gt; --upgrade
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip install auralflow --upgrade
 </pre></div>
 </div>
+<p>If you encounter any trouble, please create a new issue on Github
+<a class="reference external" href="https://github.com/kianzohoury/auralflow/issues">here</a>.</p>
 </section>
 </section>
 
@@ -252,8 +259,26 @@
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="usage.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Basic Usage</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="index.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Home</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -288,8 +313,8 @@
             <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#system-requirements">System Requirements</a></li>
-<li><a class="reference internal" href="#id1">Installation</a></li>
-<li><a class="reference internal" href="#updating-auralflow">Updating Auralflow</a></li>
+<li><a class="reference internal" href="#install">Install</a></li>
+<li><a class="reference internal" href="#update">Update</a></li>
 </ul>
 </li>
 </ul>
