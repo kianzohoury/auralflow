@@ -1,6 +1,7 @@
 
 .. toctree::
-   installation
+
    quickstart
+   notes
    usage
    api

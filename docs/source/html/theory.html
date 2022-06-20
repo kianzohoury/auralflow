@@ -2,9 +2,12 @@
 <html class="no-js" lang="Python">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="#" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Python API" href="api.html" /><link rel="prev" title="Quickstart" href="quickstart.html" />
 
-    <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/><title>Search - auralflow</title><link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>A Shallow Dive into Theory - auralflow</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -144,7 +147,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -158,7 +161,7 @@
   
   <span class="sidebar-brand-text">auralflow</span>
   
-</a><form class="sidebar-search-container" method="get" action="#" role="search">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
@@ -171,8 +174,8 @@
 </li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="theory.html">A Shallow Dive into Theory</a></li>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">A Shallow Dive into Theory</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
@@ -214,31 +217,123 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          
-<noscript>
-<div class="admonition error">
-  <p class="admonition-title">Error</p>
-  <p>
-    Please activate JavaScript to enable the search functionality.
-  </p>
-</div>
-</noscript>
-
-<div id="search-results"></div>
+          <section id="a-shallow-dive-into-theory">
+<h1>A Shallow Dive into Theory<a class="headerlink" href="#a-shallow-dive-into-theory" title="Permalink to this headline">#</a></h1>
+<section id="short-time-fourier-transform">
+<h2>Short Time Fourier Transform<a class="headerlink" href="#short-time-fourier-transform" title="Permalink to this headline">#</a></h2>
+<p>While the Fourier transform is quite complex, we can simply it for the purposes
+of understanding its involvement in music source separation. Let us begin with
+a few simple definitions.</p>
+<section id="definitions">
+<h3>Definitions<a class="headerlink" href="#definitions" title="Permalink to this headline">#</a></h3>
+<section id="audio-signals">
+<h4><strong>Audio Signals</strong><a class="headerlink" href="#audio-signals" title="Permalink to this headline">#</a></h4>
+<p>Let <span class="math notranslate nohighlight">\(A \in \mathbb{R}^{c \times t}\)</span> be called an <em>audio signal</em>,
+with <span class="math notranslate nohighlight">\(c\)</span> channels and <span class="math notranslate nohighlight">\(t\)</span> samples. By convention, the amplitude
+is often normalized such that <span class="math notranslate nohighlight">\(a_i \in [-1, 1], \forall a_i \in A\)</span>.</p>
+</section>
+<section id="spectrograms">
+<h4><strong>Spectrograms</strong><a class="headerlink" href="#spectrograms" title="Permalink to this headline">#</a></h4>
+<p>Let <span class="math notranslate nohighlight">\(S \in \mathbb{C}^{c \times f \times \tau}\)</span> be called a
+<em>spectrogram</em>, with <span class="math notranslate nohighlight">\(c\)</span> channels, <span class="math notranslate nohighlight">\(f\)</span> filterbanks and
+<span class="math notranslate nohighlight">\(\tau\)</span> samples. <span class="math notranslate nohighlight">\(S\)</span> <span class="math notranslate nohighlight">\(3\)</span>-dimensional, complex-valued time-frequency
+representation of an audio signal.</p>
+<p>Let <span class="math notranslate nohighlight">\(f: A ↦ S\)</span> be a linear transformation that maps an audio signal
+<span class="math notranslate nohighlight">\(A\)</span> in the time domain <span class="math notranslate nohighlight">\(\mathbb{R}^{c \times t}\)</span>, to a
+complex-valued, <span class="math notranslate nohighlight">\(3\)</span>-dimensional time-frequency representation
+<span class="math notranslate nohighlight">\(S\)</span>, belonging to the codomain
+<span class="math notranslate nohighlight">\(\mathbb{R}^{c \times f \times \tau}\)</span>.</p>
+<p>Moreover, let <span class="math notranslate nohighlight">\(f^{-1}: S ↦ A\)</span> be the inverse transformation mapping a
+spectrogram <span class="math notranslate nohighlight">\(S\)</span> back to an audio signal <span class="math notranslate nohighlight">\(A\)</span>.</p>
+<p>mathbb{R}^{c, t}$. As was alluded to in the introduction, the
+existence of noise and uncertainty ensure that $$Huge f^{-1}(f(A)) neq A$$
+However, by carefully choosing a good transformation $f$, we can minimize the
+unknown additive noise factor $Huge E_{noise}$, such that
+$$Huge f^{-1}(f(A)) = A + E_{noise} approx A$$</p>
+<p>Without going into much detail, $Huge f$ is an approximation algorithm to the
+<strong>Discrete Fourier Transform (DFT)</strong> called the
+<strong>Short-Time Fourier Transform (STFT)</strong>, which is a parameterized windowing
+function that applies the DFT
+to small, overlapping segments of $Huge X$. As a disclaimer, $Huge f$ has been trivially
+extended to have a channel dimension, although this is not part of the
+canonical convention.</p>
+<p>### Magnitude and Phase &lt;a name=&quot;magnitude-and-phase&quot;&gt;&lt;/a&gt;
+Given a spectrogram $Huge X$, its magnitude is defined as $Huge <a href="#id1"><span class="problematic" id="id2">|</span></a>X|$, and its phase is
+defined as $Huge P:= ∠_{theta} X$, the element-wise angle of each complex entry.
+We use $Huge <a href="#id3"><span class="problematic" id="id4">|</span></a>X|$ as input to our model, and use $Huge P$ to employ a useful trick that
+I will describe next that makes our task much simpler.</p>
+<p>### Masking and Source Estimation &lt;a name=&quot;masking-and-source-estimation&quot;&gt;&lt;/a&gt;
+To estimate a target signal $Huge k$, we apply the transformation to a mini-batch
+of mixture-target audio pairs $Huge (A, S_{k})$. yielding $Huge (<a href="#id15"><span class="problematic" id="id16">|X|</span></a>, <a href="#id17"><span class="problematic" id="id18">|Y_{k}|</span></a>)$. We feed
+$Huge <a href="#id19"><span class="problematic" id="id20">|X|$ into our network, which estimates a multiplicative soft-mask
+$M_{\theta}$, normalized such that $\Huge m_{i} \in \[0, 1]$. Next, $\Huge M_{\theta}$ is
+*applied* to $\Huge |X|$, such that $$\Huge |\hat{Y_{k}}|</span></a> = M_{theta} odot <a href="#id5"><span class="problematic" id="id6">|</span></a>X|$$
+where $Huge odot$ is the Hadamard product, and $Huge <a href="#id7"><span class="problematic" id="id8">|</span></a>hat{Y}_{k}|$ is the network's
+estimate of $Huge <a href="#id9"><span class="problematic" id="id10">|</span></a>Y_k|$.</p>
+<p>### Optimization &lt;a name=&quot;optimization&quot;&gt;&lt;/a&gt;</p>
+<p>Let $Huge L$ be some loss criterion. The objective is to find an optimal choice of
+model parameters $Huge theta^{*}$ that minimize the loss
+$$ Huge theta^{*} = argmin_{theta} L(<a href="#id21"><span class="problematic" id="id22">|\hat{Y_{k}}|</span></a>, <a href="#id23"><span class="problematic" id="id24">|Y_{k}|</span></a>)$$</p>
+<p>In recent literature, the most common loss criterions employed are
+<em>mean absolute loss</em> and <em>mean squared error</em> (MSE), paired with optimizers
+such as <em>SGD</em> or <em>Adam</em>.</p>
+<p>### Phase Approximation &lt;a name=&quot;phase-approximation&quot;&gt;&lt;/a&gt;
+Without prior knowledge, it may not be clear how to transform the source
+estimate $Huge <a href="#id11"><span class="problematic" id="id12">|</span></a>hat{Y_{k}}|$ to a complex-valued spectrogram. Indeed, this is
+where the second source separation method shines, as it avoids this
+predicament altogether. There are known (but rather complicated) ways of
+phase estimation such as [Griffin-Lim](<a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&amp;rep=rep1&amp;type=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&amp;rep=rep1&amp;type=pdf</a>).
+As I mentioned earlier, there is a quick-and-dirty trick that works pretty
+well. Put simply, we use the phase information of the mixture audio to estimate
+the phase information of the source estimate. Given $Huge <a href="#id13"><span class="problematic" id="id14">|</span></a>hat{Y}_{k}|$ and $P$,
+we define the phase-corrected source estimate as:</p>
+<p>$$Huge bar{Y_{i}} = <a href="#id25"><span class="problematic" id="id26">|\hat{Y_{k}}|</span></a> ⊙ {rm exp}(j cdot P)$$</p>
+<p>where $ Huge j$ is imaginary.</p>
+<p>The last necessary calculation transports data from the time-frequency domain
+back to the audio signal domain. All that is required is to apply the inverse
+STFT to the phase-corrected estimate, which yields the audio signal estimate
+$Huge hat{S}_{k}$:</p>
+<p>$$Huge hat{S}_{k} = f^{-1}(bar{Y}_{k})$$</p>
+<p>If the noise is indeed small, such that $Huge ||hat{S_{k}} - {S}_{k}|| &lt; ϵ$ for
+some small $Huge ϵ$, and our model has not been overfit to the training data,
+then we've objectively solved our task — the separated audio must sound good
+to our ears as well.</p>
+</section>
+</section>
+</section>
+</section>
 
         </article>
       </div>
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="api.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Python API</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="quickstart.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Quickstart</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -259,8 +354,34 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">A Shallow Dive into Theory</a><ul>
+<li><a class="reference internal" href="#short-time-fourier-transform">Short Time Fourier Transform</a><ul>
+<li><a class="reference internal" href="#definitions">Definitions</a><ul>
+<li><a class="reference internal" href="#audio-signals"><strong>Audio Signals</strong></a></li>
+<li><a class="reference internal" href="#spectrograms"><strong>Spectrograms</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -272,8 +393,6 @@
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
-    
-<script src="_static/searchtools.js"></script>
-<script src="_static/language_data.js"></script>
-<script src="searchindex.js"></script></body>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
 </html>

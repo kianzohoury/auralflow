@@ -5,11 +5,13 @@ h1, h2, h3, h4, h5 {
 
 :target> h1 :first-of-type {
     border: none !important;
+    border-radius: 0px;
     background-color: transparent !important;
 }
 
 :target> h2 :first-of-type {
     border: none !important;
+    border-radius: 0px;
     background-color: transparent !important;
 }
 
