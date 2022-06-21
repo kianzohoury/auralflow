@@ -32,6 +32,7 @@ _config_optionals = {
     "--num-fft": int,
     "--window-size": int,
     "--hop-length": int,
+
     "--max-epochs": int,
     "--batch-size": int,
     "--lr": float,
@@ -77,6 +78,7 @@ if __name__ == "__main__":
         required=False,
     )
 
+    # Fill keyword args with defaults.
     for optional_key, optional_type in _config_optionals.items():
         if optional_type is bool:
             config_parser.add_argument(
@@ -93,7 +95,7 @@ if __name__ == "__main__":
         "folder_name", type=str, help="Path to model training folder."
     )
     train_parser.add_argument(
-        "dataset_path", type=str, help="Path to dataset."
+        "dataset_path", type=str, help="Path to a dataset."
     )
 
     # Define separator parser.
@@ -102,7 +104,7 @@ if __name__ == "__main__":
         "folder_name", type=str, help="Path to model training folder."
     )
     separator_parser.add_argument(
-        "audio_filepath", type=str, help="Path to an audio file or folder."
+        "audio_filepath", type=str, help="Path to an audio file/folder."
     )
     separator_parser.add_argument(
         "--save",
@@ -113,7 +115,7 @@ if __name__ == "__main__":
     )
     separator_parser.add_argument(
         "--residual",
-        help="Whether to include residual audio.",
+        help="Whether to include residual audio (if possible).",
         action="store_true",
         required=False,
     )
@@ -121,11 +123,11 @@ if __name__ == "__main__":
         "--duration",
         type=int,
         help="Max duration in seconds.",
-        default=30,
+        default=210,
         required=False,
     )
 
-    # Define training parser.
+    # Define test parser.
     test_parser = subparsers.add_parser(name="test")
     test_parser.add_argument(
         "folder_name", type=str, help="Path to model training folder."
@@ -134,7 +136,7 @@ if __name__ == "__main__":
         "--duration",
         type=int,
         help="Max duration in seconds.",
-        default=30,
+        default=210,
         required=False,
     )
     test_parser.add_argument(
@@ -145,9 +147,9 @@ if __name__ == "__main__":
         required=False,
     )
     test_parser.add_argument(
-        "--resample-rate",
+        "--sr",
         type=int,
-        help="Reduce sample rate.",
+        help="Sample rate.",
         default=44100,
         required=False,
     )
@@ -155,9 +157,14 @@ if __name__ == "__main__":
     # Parse args.
     args = parser.parse_args()
     if args.command == "config":
+
+        # Create a new model folder, copy the template configuration.
         save_dir = str(Path(args.save + "/" + args.folder_name).absolute())
         utils.copy_config_template(save_dir=save_dir)
+
+        # Load template config.
         config = utils.load_config(save_dir)
+
         config["model_params"]["model_type"] = args.model_type
         config["model_params"]["model_name"] = args.folder_name
         config["model_params"]["save_dir"] = save_dir
@@ -173,6 +180,11 @@ if __name__ == "__main__":
                 config["training_params"][optional_key] = val
             elif optional_key in config["visualizer_params"]:
                 config["visualizer_params"][optional_key] = val
+
+        # Save changes to the config file.
+        utils.save_config(config, save_filepath=save_dir)
+
+        # Display tables of config settings.
         if args.display:
             for group_label, group in config.items():
                 param_table = PrettyTable(["Parameter", "Value"])
@@ -185,12 +197,24 @@ if __name__ == "__main__":
                     p_vals.append([param])
                     param_table.add_row([param_label, param])
                 print(param_table)
-        utils.save_config(config, save_filepath=save_dir + "/config.json")
 
     elif args.command == "train":
+
+        # Load template config.
         config = utils.load_config(args.folder_name)
         config["dataset_params"]["dataset_path"] = args.dataset_path
+
+        # Change mode to training.
         config["training_params"]["training_mode"] = True
+
+        for optional_key, val in args.__dict__.items():
+            if val is None:
+                continue
+            elif optional_key in config["training_params"]:
+                config["training_params"][optional_key] = val
+            elif optional_key in config["visualizer_params"]:
+                config["visualizer_params"][optional_key] = val
+
         utils.save_config(
             config, save_filepath=args.folder_name + "/config.json"
         )

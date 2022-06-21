@@ -1,12 +1,8 @@
 auralflow.datasets.AudioDataset
 ===============================
 
-.. toctree::
-   :maxdepth: 2
-
 .. autoclass:: auralflow.datasets.AudioDataset
    :members:
    :show-inheritance:
    :special-members:
    :exclude-members: __init__
-

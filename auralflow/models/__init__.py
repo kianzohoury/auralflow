@@ -4,16 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-r"""Separation model base classes, implementations and underlying
-PyTorch ``nn.Module`` classes."""
-
-from .architectures import (
-    SpectrogramNetSimple,
-    SpectrogramNetLSTM,
-    SpectrogramNetVAE
-)
-from .base import SeparationModel
-from .mask_model import SpectrogramMaskModel
+"""Separation models and PyTorch ``nn.Module`` classes."""
 
 __all__ = [
     "SeparationModel",
@@ -23,4 +14,13 @@ __all__ = [
     "SpectrogramNetVAE",
 ]
 
-model_names = __all__[2:]
+from .architectures import (
+    SpectrogramNetSimple,
+    SpectrogramNetLSTM,
+    SpectrogramNetVAE
+)
+from .base import SeparationModel
+from .mask_model import SpectrogramMaskModel
+
+
+_model_names = __all__[2:]

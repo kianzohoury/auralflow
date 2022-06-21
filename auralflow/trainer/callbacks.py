@@ -11,7 +11,7 @@ from prettytable import PrettyTable
 
 from auralflow.losses import get_evaluation_metrics
 from auralflow.models import SeparationModel
-from auralflow.visualizer import Visualizer
+from auralflow.visualizer import TrainingVisualizer
 
 __all__ = ["TrainingCallback", "WriterCallback"]
 
@@ -45,12 +45,12 @@ class TrainingCallback(Callback):
 
     model: SeparationModel
     writer: SummaryWriter
-    visualizer: Visualizer
+    visualizer: TrainingVisualizer
 
     def __init__(
         self,
         model: SeparationModel,
-        visualizer: Optional[Visualizer] = None,
+        visualizer: Optional[TrainingVisualizer] = None,
         writer: Optional[SummaryWriter] = None,
         call_metrics: bool = False,
     ) -> None:
@@ -89,7 +89,7 @@ class TrainingCallback(Callback):
 class VisualizerCallback(Callback):
     """Callback class for training visualization tools."""
 
-    def __init__(self, model: SeparationModel, visualizer: Visualizer):
+    def __init__(self, model: SeparationModel, visualizer: TrainingVisualizer):
         self.model = model
         self.visualizer = visualizer
 

@@ -45,11 +45,10 @@ class SpectrogramMaskModel(SeparationModel):
         # Note that num bins will be num_fft // 2 + 1 due to symmetry.
         self.n_fft_bins = self.dataset_params["num_fft"] // 2 + 1
         self.num_channels = self.dataset_params["num_channels"]
-        self.target_labels = sorted(self.dataset_params["targets"])
         self.multi_estimator = len(self.target_labels) > 1
 
         # Create the model instance and set to current device.
-        self.model = self.base_model_type(
+        self.model = self._base_model_type(
             num_fft_bins=self.n_fft_bins,
             num_frames=self.num_stft_frames,
             num_channels=self.num_channels,

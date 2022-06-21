@@ -235,28 +235,41 @@
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
 <span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
-<span class="kn">from</span> <span class="nn">.visualizer</span> <span class="kn">import</span> <span class="n">Visualizer</span>
+<span class="kn">from</span> <span class="nn">.visualizer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">spec_show_diff</span><span class="p">,</span>
+    <span class="n">waveform_show_diff</span><span class="p">,</span>
+    <span class="n">TrainingVisualizer</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.progress</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Visualizer&quot;</span><span class="p">,</span> <span class="s2">&quot;config_visualizer&quot;</span><span class="p">,</span> <span class="s2">&quot;ProgressBar&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;spec_show_diff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;waveform_show_diff&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;TrainingVisualizer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;config_visualizer&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
 
-<div class="viewcode-block" id="config_visualizer"><a class="viewcode-back" href="../../auralflow.visualizer.html#auralflow.visualizer.config_visualizer">[docs]</a><span class="k">def</span> <span class="nf">config_visualizer</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">writer</span><span class="p">:</span> <span class="n">SummaryWriter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Visualizer</span><span class="p">:</span>
+
+
+
+<div class="viewcode-block" id="config_visualizer"><a class="viewcode-back" href="../../auralflow.visualizer.html#auralflow.visualizer.config_visualizer">[docs]</a><span class="k">def</span> <span class="nf">config_visualizer</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">writer</span><span class="p">:</span> <span class="n">SummaryWriter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainingVisualizer</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Initializes and returns a visualizer object.&quot;&quot;&quot;</span>
     <span class="n">visualizer_params</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;visualizer_params&quot;</span><span class="p">]</span>
     <span class="n">dataset_params</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;dataset_params&quot;</span><span class="p">]</span>
-    <span class="n">viz</span> <span class="o">=</span> <span class="n">Visualizer</span><span class="p">(</span>
+    <span class="n">viz</span> <span class="o">=</span> <span class="n">TrainingVisualizer</span><span class="p">(</span>
         <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
-        <span class="n">save_dir</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">][</span><span class="s2">&quot;model_name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/images&quot;</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">][</span><span class="s2">&quot;model_name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/images&quot;</span><span class="p">,</span>
         <span class="n">view_spectrogram</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;view_spectrogram&quot;</span><span class="p">],</span>
         <span class="n">view_waveform</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;view_waveform&quot;</span><span class="p">],</span>
         <span class="n">view_gradient</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;view_gradient&quot;</span><span class="p">],</span>
         <span class="n">play_audio</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;play_audio&quot;</span><span class="p">],</span>
         <span class="n">num_images</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;num_images&quot;</span><span class="p">],</span>
-        <span class="n">save_image</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;save_image&quot;</span><span class="p">],</span>
+        <span class="n">save_images</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;save_image&quot;</span><span class="p">],</span>
         <span class="n">save_audio</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;save_audio&quot;</span><span class="p">],</span>
-        <span class="n">save_freq</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;save_frequency&quot;</span><span class="p">],</span>
+        <span class="n">interval</span><span class="o">=</span><span class="n">visualizer_params</span><span class="p">[</span><span class="s2">&quot;save_frequency&quot;</span><span class="p">],</span>
         <span class="n">sample_rate</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;sample_rate&quot;</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">viz</span></div>

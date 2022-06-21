@@ -5,28 +5,41 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from torch.utils.tensorboard import SummaryWriter
-from .visualizer import Visualizer
+from .visualizer import (
+    spec_show_diff,
+    waveform_show_diff,
+    TrainingVisualizer
+)
 from .progress import ProgressBar
 
 
-__all__ = ["Visualizer", "config_visualizer", "ProgressBar"]
+__all__ = [
+    "spec_show_diff",
+    "waveform_show_diff",
+
+    "TrainingVisualizer",
+    "config_visualizer",
+]
 
 
-def config_visualizer(config: dict, writer: SummaryWriter) -> Visualizer:
+
+
+
+def config_visualizer(config: dict, writer: SummaryWriter) -> TrainingVisualizer:
     """Initializes and returns a visualizer object."""
     visualizer_params = config["visualizer_params"]
     dataset_params = config["dataset_params"]
-    viz = Visualizer(
+    viz = TrainingVisualizer(
         writer=writer,
-        save_dir=config["model_params"]["model_name"] + "/images",
+        output_dir=config["model_params"]["model_name"] + "/images",
         view_spectrogram=visualizer_params["view_spectrogram"],
         view_waveform=visualizer_params["view_waveform"],
         view_gradient=visualizer_params["view_gradient"],
         play_audio=visualizer_params["play_audio"],
         num_images=visualizer_params["num_images"],
-        save_image=visualizer_params["save_image"],
+        save_images=visualizer_params["save_image"],
         save_audio=visualizer_params["save_audio"],
-        save_freq=visualizer_params["save_frequency"],
+        interval=visualizer_params["save_frequency"],
         sample_rate=dataset_params["sample_rate"],
     )
     return viz

@@ -243,8 +243,7 @@
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABC</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">FloatTensor</span>
 <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span>
-<span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">load_object</span><span class="p">,</span> <span class="n">save_object</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
 
 
 <div class="viewcode-block" id="SeparationModel"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel">[docs]</a><span class="k">class</span> <span class="nc">SeparationModel</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
@@ -252,8 +251,7 @@
 
 <span class="sd">    Should not be instantiated directly but rather subclassed. A</span>
 <span class="sd">    subclass must implement the following methods: ``set_data``, ``forward``,</span>
-<span class="sd">    ``compute_loss``, ``backward``, ``optimizer_step``, ``scheduler_step``</span>
-<span class="sd">    and ``separate``.</span>
+<span class="sd">    ``compute_loss``, ``backward``, ``optimizer_step`` and ``separate``.</span>
 
 <span class="sd">    :ivar model: Underlying PyTorch model.</span>
 <span class="sd">    :vartype model: nn.Module</span>
@@ -363,13 +361,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset_params</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;dataset_params&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">visualizer_params</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;visualizer_params&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;model_name&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_labels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;targets&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/checkpoint&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">silent_checkpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;silent_checkpoint&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">training_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;training_mode&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
 
         <span class="c1"># Retrieve requested base model architecture name.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">base_model_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_model_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
             <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;auralflow.models&quot;</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;model_type&quot;</span><span class="p">],</span>
         <span class="p">)</span>
@@ -413,11 +412,6 @@
         <span class="sd">&quot;&quot;&quot;Optimizes training loss and updates model parameters.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="SeparationModel.scheduler_step"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.scheduler_step">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">scheduler_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Decreases the learning rate if required.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
 <div class="viewcode-block" id="SeparationModel.separate"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.separate">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">separate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Separates target sources from a mixture given its audio data.</span>
@@ -428,6 +422,10 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Tensor: Estimated target sources.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="SeparationModel.scheduler_step"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.scheduler_step">[docs]</a>    <span class="k">def</span> <span class="nf">scheduler_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Decreases the learning rate if required.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="SeparationModel.train"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -442,73 +440,7 @@
         <span class="sd">&quot;&quot;&quot;Calls forward method without gradient tracking.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
         <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="SeparationModel.save_model"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Saves the model&#39;s current state.&quot;&quot;&quot;</span>
-        <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="SeparationModel.load_model"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.load_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Loads a model&#39;s previous state.&quot;&quot;&quot;</span>
-        <span class="n">load_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="SeparationModel.save_optim"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_optim">[docs]</a>    <span class="k">def</span> <span class="nf">save_optim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Saves the optimizer&#39;s current state.&quot;&quot;&quot;</span>
-        <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="SeparationModel.load_optim"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.load_optim">[docs]</a>    <span class="k">def</span> <span class="nf">load_optim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Loads an optimizer&#39;s previous state.&quot;&quot;&quot;</span>
-        <span class="n">load_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="SeparationModel.save_scheduler"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_scheduler">[docs]</a>    <span class="k">def</span> <span class="nf">save_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Saves the scheduler&#39;s current state.&quot;&quot;&quot;</span>
-        <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="SeparationModel.load_scheduler"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.load_scheduler">[docs]</a>    <span class="k">def</span> <span class="nf">load_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Loads a scheduler&#39;s previous state.&quot;&quot;&quot;</span>
-        <span class="n">load_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="SeparationModel.save_grad_scaler"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save_grad_scaler">[docs]</a>    <span class="k">def</span> <span class="nf">save_grad_scaler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Saves the grad scaler&#39;s current state if using mixed precision.&quot;&quot;&quot;</span>
-        <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="SeparationModel.load_grad_scaler"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.load_grad_scaler">[docs]</a>    <span class="k">def</span> <span class="nf">load_grad_scaler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Load a grad scaler&#39;s previous state if one exists.&quot;&quot;&quot;</span>
-        <span class="n">load_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
-
-<div class="viewcode-block" id="SeparationModel.save"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">optim</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">scheduler</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">grad_scaler</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Saves all training objects in one call.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">model</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">optim</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">save_optim</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">scheduler</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">save_scheduler</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">grad_scaler</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">save_grad_scaler</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span></div></div>
 </pre></div>
         </article>
       </div>

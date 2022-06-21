@@ -116,8 +116,12 @@ blockquote {
     padding: 0px !important;
 }
 
-em {
-    color: gray !important;
+.simple > li > p > em {
+    color: #049EF4 !important;
+}
+
+.field-list .simple > dd > p > em {
+    color: #049EF4 !important;
 }
 
 p.rubric {

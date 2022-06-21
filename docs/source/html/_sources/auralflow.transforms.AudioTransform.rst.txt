@@ -1,9 +1,6 @@
 auralflow.transforms.AudioTransform
 ===================================
 
-.. toctree::
-   :maxdepth: 2
-
 .. autoclass:: auralflow.transforms.AudioTransform
    :members:
    :show-inheritance:

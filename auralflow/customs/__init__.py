@@ -4,14 +4,8 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+"""Model instantiation and setup for training, evaluation and testing."""
+
+__all__ = ["init_model", "setup_model"]
+
 from .customs import init_model, setup_model
-
-
-__all__ = [
-    "init_model",
-    "setup_model",
-]
-
-__doc__ = """
-Model instantiation and setup for training, evaluation and testing.
-"""

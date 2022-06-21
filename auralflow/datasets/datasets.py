@@ -326,7 +326,7 @@ def create_audio_folder(
         backend (str): Torchaudio backend. Default: 'soundfile'.
 
     Returns:
-        ``AudioFolder``: Audio folder.
+        AudioFolder: Audio folder.
 
     Raises:
         IOError: Raised if the dataset cannot be verified.
@@ -468,7 +468,7 @@ def create_audio_dataset(
         mono (bool): Load tracks as mono. Default: True.
 
     Returns:
-        ``AudioDataset``: Audio dataset.
+        AudioDataset: Audio dataset.
 
     Examples:
         >>> import os

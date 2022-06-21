@@ -234,22 +234,67 @@
 <span class="c1"># This code is part of the auralflow project linked below.</span>
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.figure</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
+<span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">SeparationModel</span>
+<span class="kn">from</span> <span class="nn">auralflow.transforms</span> <span class="kn">import</span> <span class="n">trim_audio</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="kn">import</span> <span class="n">Figure</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">auralflow.transforms</span> <span class="kn">import</span> <span class="n">trim_audio</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 
-<span class="k">def</span> <span class="nf">make_spectrogram_figure</span><span class="p">(</span>
+<div class="viewcode-block" id="spec_show_diff"><a class="viewcode-back" href="../../../auralflow.visualizer.spec_show_diff.html#auralflow.visualizer.spec_show_diff">[docs]</a><span class="k">def</span> <span class="nf">spec_show_diff</span><span class="p">(</span>
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">estimate</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Returns a spectrogram image as a matplotlib figure.&quot;&quot;&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a ``pyplot`` figure comparing estimate and target spectrograms.</span>
+
+<span class="sd">    The spectrogram subfigures are stacked vertically, with time as the</span>
+<span class="sd">    horizontal axis, frequency as the vertical axis and amplitude as the</span>
+<span class="sd">    intensity of the color map. Note that the channels are averaged and</span>
+<span class="sd">    collapsed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        label (str): Target label.</span>
+<span class="sd">        estimate (Tensor): Estimated target source spectrogram.</span>
+<span class="sd">        target (Tensor): Ground-truth target source spectrogram.</span>
+<span class="sd">        resolution (int): DPI.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Figure: Spectrogram figure.</span>
+
+<span class="sd">    :shape:</span>
+<span class="sd">        - spectrogram: :math:`(C, F, T)`, non-batched</span>
+
+<span class="sd">        where</span>
+<span class="sd">            - :math:`C`: number of channels</span>
+<span class="sd">            - :math:`F`: number of frequency bins</span>
+<span class="sd">            - :math:`T`: number of time frames</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # get estimate and target spectrograms</span>
+<span class="sd">        &gt;&gt;&gt; estimate_spec = torch.rand((1, 512, 173))</span>
+<span class="sd">        &gt;&gt;&gt; target_spec = torch.rand((1, 512, 173))</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # generate figure</span>
+<span class="sd">        &gt;&gt;&gt; fig = spec_show_diff(</span>
+<span class="sd">        ...     label=&quot;vocals&quot;,</span>
+<span class="sd">        ...     estimate=estimate_spec,</span>
+<span class="sd">        ...     target=target_spec,</span>
+<span class="sd">        ...     resolution=120</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # display figure</span>
+<span class="sd">        &gt;&gt;&gt; plt.show(fig)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # save figure</span>
+<span class="sd">        &gt;&gt;&gt; plt.savefig(fname=&quot;spec_comparison.png&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">resolution</span><span class="p">)</span>
     <span class="n">cmap</span> <span class="o">=</span> <span class="s2">&quot;inferno&quot;</span>
 
@@ -262,7 +307,7 @@
     <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">frame_on</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">frame_on</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="n">_format_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">_remove_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Frames&quot;</span><span class="p">)</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">supylabel</span><span class="p">(</span><span class="s2">&quot;Frequency bins&quot;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -270,13 +315,55 @@
     <span class="c1"># Decibel color map.</span>
     <span class="n">cbar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
     <span class="n">cbar</span><span class="o">.</span><span class="n">outline</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">fig</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
 
 
-<span class="k">def</span> <span class="nf">make_waveform_figure</span><span class="p">(</span>
+<div class="viewcode-block" id="waveform_show_diff"><a class="viewcode-back" href="../../../auralflow.visualizer.waveform_show_diff.html#auralflow.visualizer.waveform_show_diff">[docs]</a><span class="k">def</span> <span class="nf">waveform_show_diff</span><span class="p">(</span>
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">estimate</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Returns a waveform image as a matplotlib figure.&quot;&quot;&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a ``pyplot`` figure comparing estimate and target waveforms.</span>
+
+<span class="sd">    The waveforms are overlayed together, with time as the horizontal axis</span>
+<span class="sd">    and amplitude as the vertical axis. Like ``spec_show_diff``, the channels</span>
+<span class="sd">    are averaged and collapsed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        label (str): Target label.</span>
+<span class="sd">        estimate (Tensor): Estimated target source audio signal.</span>
+<span class="sd">        target (Tensor): Ground-truth target source audio signal.</span>
+<span class="sd">        resolution (int): DPI.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Figure: Waveform figure.</span>
+
+<span class="sd">    :shape:</span>
+<span class="sd">        - waveform: :math:`(C, T)`, non-batched</span>
+
+<span class="sd">        where</span>
+<span class="sd">            - :math:`C`: number of channels</span>
+<span class="sd">            - :math:`T`: number of samples</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # get estimate and target audio signals</span>
+<span class="sd">        &gt;&gt;&gt; estimate_audio = torch.rand((1, 88200))</span>
+<span class="sd">        &gt;&gt;&gt; target_audio = torch.rand((1, 88200))</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # generate figure</span>
+<span class="sd">        &gt;&gt;&gt; fig = spec_show_diff(</span>
+<span class="sd">        ...     label=&quot;vocals&quot;,</span>
+<span class="sd">        ...     estimate=estimate_audio,</span>
+<span class="sd">        ...     target=target_audio,</span>
+<span class="sd">        ...     resolution=120</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # display figure</span>
+<span class="sd">        &gt;&gt;&gt; plt.show(fig)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # save figure</span>
+<span class="sd">        &gt;&gt;&gt; plt.savefig(fname=&quot;waveform_comparison.png&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">resolution</span><span class="p">)</span>
     <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="s2">&quot;yellowgreen&quot;</span><span class="p">,</span> <span class="s2">&quot;darkorange&quot;</span>
     <span class="n">est_label</span><span class="p">,</span> <span class="n">target_label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> estimate&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> target&quot;</span>
@@ -296,9 +383,9 @@
     <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">estimate</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">estimate</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-    <span class="n">_format_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">_remove_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Frames&quot;</span><span class="p">)</span>
-    <span class="c1"># fig.supylabel(&quot;Amplitude&quot;)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">supylabel</span><span class="p">(</span><span class="s2">&quot;Amplitude&quot;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
     <span class="c1"># Set the legend.</span>
@@ -307,58 +394,73 @@
         <span class="n">legend</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">figure_legend</span><span class="o">.</span><span class="n">get_texts</span><span class="p">():</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">fig</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
 
 
-<span class="k">def</span> <span class="nf">_format_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_remove_ticks</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper method that formats axes by removing x/y-ticks.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">(),</span> <span class="n">visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">axis</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Visualizer"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.Visualizer">[docs]</a><span class="k">class</span> <span class="nc">Visualizer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Wrapper class for visualizing/listening to results during training.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="TrainingVisualizer"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.TrainingVisualizer">[docs]</a><span class="k">class</span> <span class="nc">TrainingVisualizer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Visualizer that monitors training through images and audio playback.</span>
+
+<span class="sd">    Especially useful for writing images and audio to a Tensorboard</span>
+<span class="sd">    ``SummaryWriter``. Stores images under ``outer_dir/images`` and</span>
+<span class="sd">    audio under ``output_dir/audio``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        output_dir (str): Outer directory to save output files.</span>
+<span class="sd">        writer (Optional[SummaryWriter]): Tensorboard writer.</span>
+<span class="sd">        view_spectrogram (bool): If True, calls ``show_spec_diff`` and writes</span>
+<span class="sd">            the figure to tensorboard.</span>
+<span class="sd">        view_waveform (bool): If True, calls ``show_waveform_diff`` and writes</span>
+<span class="sd">            the figure to tensorboard.</span>
+<span class="sd">        view_gradient (bool): If True, writes</span>
+<span class="sd">            the figure to tensorboard.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">spectrogram</span><span class="p">:</span> <span class="nb">dict</span>
     <span class="n">audio</span><span class="p">:</span> <span class="nb">dict</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">writer</span><span class="p">:</span> <span class="n">SummaryWriter</span><span class="p">,</span>
-        <span class="n">save_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">writer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SummaryWriter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">view_spectrogram</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">view_waveform</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">view_gradient</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">play_audio</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">num_images</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">save_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">save_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">save_audio</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">save_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
         <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">44100</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Visualizer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TrainingVisualizer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="n">writer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">view_spectrogram</span> <span class="o">=</span> <span class="n">view_spectrogram</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">view_waveform</span> <span class="o">=</span> <span class="n">view_waveform</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">view_gradient</span> <span class="o">=</span> <span class="n">view_gradient</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">play_audio</span> <span class="o">=</span> <span class="n">play_audio</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_images</span> <span class="o">=</span> <span class="n">num_images</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">save_image</span> <span class="o">=</span> <span class="n">save_image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_images</span> <span class="o">=</span> <span class="n">save_images</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_audio</span> <span class="o">=</span> <span class="n">save_audio</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">save_freq</span> <span class="o">=</span> <span class="n">save_freq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sample_rate</span> <span class="o">=</span> <span class="n">sample_rate</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">save_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_count</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c1"># Create image folder.</span>
-        <span class="k">if</span> <span class="n">save_image</span><span class="p">:</span>
-            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<div class="viewcode-block" id="Visualizer.test_model"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.Visualizer.test_model">[docs]</a>    <span class="k">def</span> <span class="nf">test_model</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">mixture_audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target_audio</span><span class="p">:</span> <span class="n">Tensor</span>
+    <span class="k">def</span> <span class="nf">_test_model</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span>
+        <span class="n">mixture_audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">target_audio</span><span class="p">:</span> <span class="n">Tensor</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Runs model in inference mode and stores resulting audio tensors.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Runs inference given a model, mixture and target audio data.&quot;&quot;&quot;</span>
         <span class="c1"># Separate target source(s).</span>
         <span class="n">estimate_audio</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">separate</span><span class="p">(</span><span class="n">mixture_audio</span><span class="p">)</span>
 
@@ -399,16 +501,13 @@
             <span class="s2">&quot;target_residual&quot;</span><span class="p">:</span> <span class="n">target_res_audio</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span>
             <span class="s2">&quot;estimate_mono&quot;</span><span class="p">:</span> <span class="n">estimate_wav</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span>
             <span class="s2">&quot;target_mono&quot;</span><span class="p">:</span> <span class="n">target_wav</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span>
-        <span class="p">}</span></div>
+        <span class="p">}</span>
 
-<div class="viewcode-block" id="Visualizer.save_figure"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.Visualizer.save_figure">[docs]</a>    <span class="k">def</span> <span class="nf">save_figure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figure</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Saves a matplotlib figure as an image.&quot;&quot;&quot;</span>
-        <span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Visualizer.visualize_spectrogram"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.Visualizer.visualize_spectrogram">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_spectrogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="TrainingVisualizer.visualize_spectrogram"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.TrainingVisualizer.visualize_spectrogram">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_spectrogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Logs spectrogram images to tensorboard.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_images</span><span class="p">):</span>
-            <span class="n">spec_fig</span> <span class="o">=</span> <span class="n">make_spectrogram_figure</span><span class="p">(</span>
+            <span class="n">spec_fig</span> <span class="o">=</span> <span class="n">spec_show_diff</span><span class="p">(</span>
                 <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
                 <span class="n">estimate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spectrogram</span><span class="p">[</span><span class="s2">&quot;estimate_mono&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
                 <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spectrogram</span><span class="p">[</span><span class="s2">&quot;target_mono&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
@@ -422,16 +521,16 @@
             <span class="p">)</span>
 
             <span class="c1"># Save image locally.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_image</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_freq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_images</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_save_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">save_figure</span><span class="p">(</span>
                     <span class="n">figure</span><span class="o">=</span><span class="n">spec_fig</span><span class="p">,</span>
                     <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">_spectrogram.png&quot;</span><span class="p">,</span>
                 <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Visualizer.visualize_waveform"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.Visualizer.visualize_waveform">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_waveform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="TrainingVisualizer.visualize_waveform"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.TrainingVisualizer.visualize_waveform">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_waveform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Logs waveform images to tensorboard.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_images</span><span class="p">):</span>
-            <span class="n">wav_fig</span> <span class="o">=</span> <span class="n">make_waveform_figure</span><span class="p">(</span>
+            <span class="n">wav_fig</span> <span class="o">=</span> <span class="n">waveform_show_diff</span><span class="p">(</span>
                 <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
                 <span class="n">estimate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">audio</span><span class="p">[</span><span class="s2">&quot;estimate_mono&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
                 <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">audio</span><span class="p">[</span><span class="s2">&quot;target_mono&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
@@ -443,13 +542,13 @@
             <span class="p">)</span>
 
             <span class="c1"># Save image locally.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_image</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_freq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_images</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_save_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">save_figure</span><span class="p">(</span>
                     <span class="n">figure</span><span class="o">=</span><span class="n">wav_fig</span><span class="p">,</span>
                     <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">_waveform.png&quot;</span><span class="p">,</span>
                 <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Visualizer.embed_audio"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.Visualizer.embed_audio">[docs]</a>    <span class="k">def</span> <span class="nf">embed_audio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="TrainingVisualizer.embed_audio"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.TrainingVisualizer.embed_audio">[docs]</a>    <span class="k">def</span> <span class="nf">embed_audio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Logs audio to tensorboard.&quot;&quot;&quot;</span>
         <span class="c1"># Embed source estimate.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">add_audio</span><span class="p">(</span>
@@ -480,7 +579,7 @@
             <span class="n">sample_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Visualizer.visualize_gradient"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.Visualizer.visualize_gradient">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="TrainingVisualizer.visualize_gradient"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.TrainingVisualizer.visualize_gradient">[docs]</a>    <span class="k">def</span> <span class="nf">visualize_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sends model weights and gradients to tensorboard.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">view_gradient</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
@@ -508,14 +607,14 @@
                             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_grad_norm&quot;</span><span class="p">,</span> <span class="n">grad_norm</span><span class="p">,</span> <span class="n">global_step</span>
                         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Visualizer.visualize"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.Visualizer.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span>
+<div class="viewcode-block" id="TrainingVisualizer.visualize"><a class="viewcode-back" href="../../../auralflow.visualizer.html#auralflow.visualizer.TrainingVisualizer.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">mixture</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Runs visualizer.&quot;&quot;&quot;</span>
         <span class="n">mixture</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">mixture</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">target_labels</span><span class="p">):</span>
             <span class="c1"># Run model.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_test_model</span><span class="p">(</span>
                 <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
                 <span class="n">mixture_audio</span><span class="o">=</span><span class="n">mixture</span><span class="p">,</span>
                 <span class="n">target_audio</span><span class="o">=</span><span class="n">target</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span>
@@ -533,7 +632,12 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">play_audio</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">embed_audio</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
         <span class="c1"># Increment save counter.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">save_count</span> <span class="o">+=</span> <span class="mi">1</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+        <span class="c1"># Create image folder.</span>
+        <span class="k">if</span> <span class="n">save_image</span><span class="p">:</span>
+            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>

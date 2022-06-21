@@ -230,8 +230,6 @@
         <article role="main">
           <section id="auralflow-losses-sisdrloss">
 <h1>auralflow.losses.SISDRLoss<a class="headerlink" href="#auralflow-losses-sisdrloss" title="Permalink to this headline">#</a></h1>
-<div class="toctree-wrapper compound">
-</div>
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.losses.SISDRLoss">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">SISDRLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#SISDRLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.SISDRLoss" title="Permalink to this definition">#</a></dt>
@@ -241,7 +239,7 @@
 For a single audio track, the loss is defined as:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[L_{\text{SI-SDR}}(\hat y, y) = -10\log_{10} \frac{||\frac{proj_{y}
+\[L_{\text{SI-SDR}}(\hat y, y) = -10\cdot\log_{10}\frac{||\frac{proj_{y}
     \hat y}{||y||_2^2}||_2^2}{||\frac{proj_{y} \hat y}{||y||_2^2}
     - \hat y||_2^2}\]</div>
 </div>
@@ -252,11 +250,6 @@ For a single audio track, the loss is defined as:</p>
 </ul>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Sets <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of the model instead of returning the
-loss directly.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.SpectrogramMaskModel"><em>SpectrogramMaskModel</em></a>) -- Spectrogram mask model.</p>
@@ -265,7 +258,8 @@ loss directly.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.losses.SISDRLoss.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#SISDRLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.SISDRLoss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Calculates si_sdr_loss and stores it.</p>
+<dd><p>Calculates signal-to-distortion ratio loss and stores it.</p>
+<p>Sets the <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of <code class="docutils literal notranslate"><span class="pre">model</span></code>.</p>
 </dd></dl>
 
 </dd></dl>

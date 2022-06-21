@@ -4,10 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from .datasets import AudioDataset, AudioFolder, create_audio_dataset
-from .datasets import create_audio_folder, load_stems, verify_dataset
-from torch.utils.data import Dataset
-from torch.utils.data.dataloader import DataLoader
+"""Audio file I/O and dataset objects."""
 
 __all__ = [
     "AudioDataset",
@@ -15,10 +12,13 @@ __all__ = [
     "create_audio_dataset",
     "create_audio_folder",
     "load_stems",
-    "verify_dataset"
+    "verify_dataset",
 ]
 
-__doc__ = """Audio file I/O and dataset objects."""
+from .datasets import AudioDataset, AudioFolder, create_audio_dataset
+from .datasets import create_audio_folder, load_stems, verify_dataset
+from torch.utils.data import Dataset
+from torch.utils.data.dataloader import DataLoader
 
 
 def load_dataset(dataset: Dataset, training_params: dict) -> DataLoader:
@@ -30,6 +30,6 @@ def load_dataset(dataset: Dataset, training_params: dict) -> DataLoader:
         pin_memory=training_params["pin_memory"],
         persistent_workers=training_params["persistent_workers"],
         prefetch_factor=training_params["pre_fetch"],
-        shuffle=True,
+        shuffle=True
     )
     return dataloader

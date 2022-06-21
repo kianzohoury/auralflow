@@ -238,7 +238,7 @@
 
 <span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">SeparationModel</span>
 <span class="kn">from</span> <span class="nn">auralflow.visualizer</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">save_config</span>
+<span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">save_all</span><span class="p">,</span> <span class="n">save_config</span>
 <span class="kn">from</span> <span class="nn">.callbacks</span> <span class="kn">import</span> <span class="n">TrainingCallback</span>
 <span class="kn">from</span> <span class="nn">torch.cuda.amp</span> <span class="kn">import</span> <span class="n">autocast</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
@@ -256,7 +256,7 @@
 <span class="sd">        model (SeparationModel): Separation model.</span>
 <span class="sd">        train_dataloader (DataLoader): Training set dataloader.</span>
 <span class="sd">        val_dataloader (DataLoader): Validation set dataloader.</span>
-<span class="sd">        callback (TrainingCallback): Training callbacks object.</span>
+<span class="sd">        callback (TrainingCallback): Training callbacks.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">start_epoch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">stop_epoch</span> <span class="o">=</span> <span class="n">start_epoch</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;max_epochs&quot;</span><span class="p">]</span>
@@ -319,12 +319,13 @@
         <span class="c1"># Only save model if validation loss decreases.</span>
         <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">is_best_model</span><span class="p">:</span>
             <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;best_epoch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">epoch</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">save_all</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
                 <span class="n">global_step</span><span class="o">=</span><span class="n">epoch</span><span class="p">,</span>
-                <span class="n">model</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">optim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">scheduler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">grad_scaler</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">use_amp</span><span class="p">,</span>
+                <span class="n">save_model</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">save_optim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">save_scheduler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">save_grad_scaler</span><span class="o">=</span><span class="kc">True</span>
             <span class="p">)</span>
 
         <span class="c1"># Decrease lr if necessary.</span>
@@ -336,7 +337,7 @@
         <span class="c1"># Save updated config file.</span>
         <span class="n">save_config</span><span class="p">(</span>
             <span class="n">config</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
-            <span class="n">save_filepath</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/config.json&quot;</span>
+            <span class="n">save_filepath</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">]</span>
         <span class="p">)</span></div>
 
 

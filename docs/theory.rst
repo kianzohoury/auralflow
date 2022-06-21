@@ -1,37 +1,51 @@
 A Shallow Dive into Theory
 ==========================
 
-Short Time Fourier Transform
-----------------------------
-While the Fourier transform is quite complex, we can simply it for the purposes
-of understanding its involvement in music source separation. Let us begin with
-a few simple definitions.
-
 Definitions
-^^^^^^^^^^^
+----------------------------
+This section aims to simplify complex topics -- i.e. Fourier analysis --
+to gain a better intuition on music source separation, and is by no means a
+rigorous treatment on the topic. Please refer to better sources for proper
+definitions and proofs.
 
-**Audio Signals**
-~~~~~~~~~~~~~~~~~
+Audio Representations
+^^^^^^^^^^^^^^^^^^^^^
+There are two forms of audio that are used in music source separation: audio
+signals (aka time-domain) and spectrograms (aka time-frequency).
+
+Audio Signals
+~~~~~~~~~~~~~
 
 Let :math:`A \in \mathbb{R}^{c \times t}` be called an *audio signal*,
-with :math:`c` channels and :math:`t` samples. By convention, the amplitude
-is often normalized such that :math:`a_i \in [-1, 1], \forall a_i \in A`.
+with :math:`c` channels and :math:`t` samples. Music tracks, recordings and
+all other audio are almost universally represented in this form. Note that
+by convention, the amplitude of audio signals is often normalized such that
+:math:`a_i \in [-1, 1], \forall a_i \in A`.
 
-**Spectrograms**
-~~~~~~~~~~~~~~~~~
+Spectrograms
+~~~~~~~~~~~~
 
 Let :math:`S \in \mathbb{C}^{c \times f \times \tau}` be called a
 *spectrogram*, with :math:`c` channels, :math:`f` filterbanks and
-:math:`\tau` samples. :math:`S` :math:`3`-dimensional, complex-valued time-frequency
-representation of an audio signal.
+:math:`\tau` samples. A spectrogram can be thought of as the *image* of an
+audio signal, as it is a kind of projection of the original signal onto a
+higher dimensional space that introduces frequency information. Also note that
+:math:`S` is complex.
 
 
+Short Time Fourier Transform
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let :math:`f: A ↦ S` be a linear transformation that maps an audio signal
-:math:`A` in the time domain :math:`\mathbb{R}^{c \times t}`, to a
-complex-valued, :math:`3`-dimensional time-frequency representation
-:math:`S`, belonging to the codomain
-:math:`\mathbb{R}^{c \times f \times \tau}`.
+Given an audio signal :math:`A` as input, we can apply the :math:`STFT`
+function (which we will treat as a blackbox) to generate a complex-valued,
+time-frequency representation called :math:`S`.
+
+.. math::
+   STFT(A) = S
+
+
+Let :math:`STFT` be a linear transformation that maps in the domain :math:`\mathbb{R}^{c \times t}`, to its spectrogram
+image in the codomain :math:`\mathbb{R}^{c \times f \times \tau}`.
 
 Moreover, let :math:`f^{-1}: S ↦ A` be the inverse transformation mapping a
 spectrogram :math:`S` back to an audio signal :math:`A`.

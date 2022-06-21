@@ -234,8 +234,7 @@
 </div>
 <section id="module-auralflow.models">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-auralflow.models" title="Permalink to this headline">#</a></h2>
-<p>Separation model base classes, implementations and underlying
-PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> classes.</p>
+<p>Separation models and PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> classes.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SeparationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel" title="Permalink to this definition">#</a></dt>
@@ -243,8 +242,7 @@ PyTorch <code class="docutils literal notranslate"><span class="pre">nn.Module</
 <p>Interface shared among all source separation models.</p>
 <p>Should not be instantiated directly but rather subclassed. A
 subclass must implement the following methods: <code class="docutils literal notranslate"><span class="pre">set_data</span></code>, <code class="docutils literal notranslate"><span class="pre">forward</span></code>,
-<code class="docutils literal notranslate"><span class="pre">compute_loss</span></code>, <code class="docutils literal notranslate"><span class="pre">backward</span></code>, <code class="docutils literal notranslate"><span class="pre">optimizer_step</span></code>, <code class="docutils literal notranslate"><span class="pre">scheduler_step</span></code>
-and <code class="docutils literal notranslate"><span class="pre">separate</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">compute_loss</span></code>, <code class="docutils literal notranslate"><span class="pre">backward</span></code>, <code class="docutils literal notranslate"><span class="pre">optimizer_step</span></code> and <code class="docutils literal notranslate"><span class="pre">separate</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables</dt>
 <dd class="field-odd"><ul class="simple">
@@ -314,68 +312,14 @@ returns its scalar value.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.load_grad_scaler">
-<span class="sig-name descname"><span class="pre">load_grad_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.load_grad_scaler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.load_grad_scaler" title="Permalink to this definition">#</a></dt>
-<dd><p>Load a grad scaler's previous state if one exists.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.load_model">
-<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.load_model" title="Permalink to this definition">#</a></dt>
-<dd><p>Loads a model's previous state.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.load_optim">
-<span class="sig-name descname"><span class="pre">load_optim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.load_optim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.load_optim" title="Permalink to this definition">#</a></dt>
-<dd><p>Loads an optimizer's previous state.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.load_scheduler">
-<span class="sig-name descname"><span class="pre">load_scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.load_scheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.load_scheduler" title="Permalink to this definition">#</a></dt>
-<dd><p>Loads a scheduler's previous state.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.optimizer_step">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.optimizer_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.optimizer_step" title="Permalink to this definition">#</a></dt>
 <dd><p>Optimizes training loss and updates model parameters.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_scaler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.save" title="Permalink to this definition">#</a></dt>
-<dd><p>Saves all training objects in one call.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save_grad_scaler">
-<span class="sig-name descname"><span class="pre">save_grad_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.save_grad_scaler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.save_grad_scaler" title="Permalink to this definition">#</a></dt>
-<dd><p>Saves the grad scaler's current state if using mixed precision.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save_model">
-<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.save_model" title="Permalink to this definition">#</a></dt>
-<dd><p>Saves the model's current state.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save_optim">
-<span class="sig-name descname"><span class="pre">save_optim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.save_optim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.save_optim" title="Permalink to this definition">#</a></dt>
-<dd><p>Saves the optimizer's current state.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.save_scheduler">
-<span class="sig-name descname"><span class="pre">save_scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.save_scheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.save_scheduler" title="Permalink to this definition">#</a></dt>
-<dd><p>Saves the scheduler's current state.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.scheduler_step">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheduler_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.scheduler_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.scheduler_step" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">scheduler_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.scheduler_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.scheduler_step" title="Permalink to this definition">#</a></dt>
 <dd><p>Decreases the learning rate if required.</p>
 </dd></dl>
 

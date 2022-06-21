@@ -11,6 +11,8 @@
       :nosignatures:
 
    
+      spec_show_diff
+      waveform_show_diff
       config_visualizer
    
    
@@ -23,8 +25,7 @@
      :nosignatures:
 
    
-      Visualizer
-      ProgressBar
+      TrainingVisualizer
    
    
 

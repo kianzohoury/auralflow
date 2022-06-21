@@ -231,7 +231,7 @@ def rmse_loss(
 
 
 class ComponentLoss(nn.Module):
-    """Wrapper class for ``component_loss``.
+    r"""Wrapper class for ``component_loss``.
 
     Uses two or three loss components depending on the arguments for ``alpha``
     and ``beta``. If ``beta=0``, it weighs the quality of target source
@@ -239,26 +239,24 @@ class ComponentLoss(nn.Module):
     the third component balances the quality of the attenuated residual noise
     against the other two terms. The 2-component loss is defined as:
 
-    Note:
-        Sets ``batch_loss`` attribute of the model instead of returning the
-        loss directly.
-
     .. math::
+
         L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k}
             - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}
 
     and the 3-component loss is defined as:
 
     .. math::
+
         L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n}
             ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}
-            + \frac{\beta}{n}|| \\hat{R_f} - \\hat{R}||_2^2
+            + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2
 
     where:
-        - :math:`Y_{f, k} := M_{\theta}\\odot |Y_{k}|`, filtered target
-        - :math:`R_{f} := M_{ \theta }\\odot (|X| - |Y_{k}|)`, filtered residual
-        - :math:`\\hat{R_{f}} := \\frac{R_{f}}{||R_{f}||_2}`, filtered unit-residual
-        - :math:`\\hat{R} := \\frac{R}{||R||_2}`, unit residual
+        - :math:`Y_{f, k} := M_{\theta}\odot |Y_{k}|`, filtered target
+        - :math:`R_{f} := M_{ \theta }\odot (|X| - |Y_{k}|)`, filtered residual
+        - :math:`\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}`, filtered unit-residual
+        - :math:`\hat{R} := \frac{R}{||R||_2}`, unit residual
 
     Args:
         model (SpectrogramMaskModel): Spectrogram mask model.
@@ -275,7 +273,10 @@ class ComponentLoss(nn.Module):
         self.beta = beta
 
     def forward(self) -> None:
-        """Calculates weighted component loss and stores it."""
+        """Calculates weighted component loss and stores it.
+
+        Sets the ``batch_loss`` attribute of ``model``.
+        """
         # Compute weighted loss.
         self.model.batch_loss = component_loss(
             mask=self.model.mask,
@@ -292,26 +293,24 @@ class ComponentLoss(nn.Module):
 
 
 class KLDivergenceLoss(nn.Module):
-    """Wrapper class for ``kl_div_loss``.
+    r"""Wrapper class for ``kl_div_loss``.
 
-    The KL loss term is defined as :math:`D_KL(P||Q)`, where :math:`P` is
-    the modeled distribution, and :math:`Q` is a standard normal distribution
-    :math:`N(0, 1)`. In closed form, the loss can be expressed as:
+    Should be used with ``SpectrogramNetVAE``. The KL loss term is defined as
+    :math:`D_KL(P||Q)`, where :math:`P` is the modeled distribution, and
+    :math:`Q` is a standard normal distribution :math:`N(0, 1)`. In closed
+    form, the loss can be expressed as:
 
     .. math::
-        D_{KL}(P||Q) = \\frac{1}{2} \\sum_{i=1}^{n}(\\mu^2 + \\sigma^2 -
-            \\ln(\\sigma^2) - 1)
+
+        D_{KL}(P||Q) = \frac{1}{2} \sum_{i=1}^{n}(\mu^2 + \sigma^2 -
+            \ln(\sigma^2) - 1)
 
     where:
-        - :math:`\\mu`: mean of the modeled distribution :math:`P`
+        - :math:`\mu`: mean of the modeled distribution :math:`P`
 
-        - :math:`\\sigma`: standard deviation of modeled distribution :math:`P`
+        - :math:`\sigma`: standard deviation of modeled distribution :math:`P`
 
         - :math:`n`: number of tensor elements
-
-    Note:
-        Sets ``batch_loss`` attribute of the model instead of returning the
-        loss directly. Can also only be used with ``SpectrogramNetVAE``.
 
     Args:
         model (SpectrogramMaskModel): Spectrogram mask model.
@@ -329,7 +328,10 @@ class KLDivergenceLoss(nn.Module):
             self.construction_loss = nn.functional.mse_loss
 
     def forward(self) -> None:
-        """Calculates construction loss + KL loss and stores it."""
+        """Calculates construction loss + KL loss and stores it.
+
+        Sets the ``batch_loss`` attribute of ``model``.
+        """
         if hasattr(self.model, "get_kl_div"):
             kl_term = kl_div_loss(
                 mu=self.model.model.mu_data, sigma=self.model.model.sigma_data
@@ -343,23 +345,20 @@ class KLDivergenceLoss(nn.Module):
 
 
 class SISDRLoss(nn.Module):
-    """Wrapper class for ``si_sdr_loss``.
+    r"""Wrapper class for ``si_sdr_loss``.
 
     Typically used as an evaluation metric, but can be optimized for directly.
     For a single audio track, the loss is defined as:
 
     .. math::
-        L_{\\text{SI-SDR}}(\\hat y, y) = -10\\log_{10} \\frac{||\\frac{proj_{y}
-            \\hat y}{||y||_2^2}||_2^2}{||\\frac{proj_{y} \\hat y}{||y||_2^2}
-            - \\hat y||_2^2}
+
+        L_{\text{SI-SDR}}(\hat y, y) = -10\cdot\log_{10}\frac{||\frac{proj_{y}
+            \hat y}{||y||_2^2}||_2^2}{||\frac{proj_{y} \hat y}{||y||_2^2}
+            - \hat y||_2^2}
 
     where:
         - :math:`y`: true target signal
-        - :math:`\\hat y`: estimated target source signal
-
-    Note:
-        Sets ``batch_loss`` attribute of the model instead of returning the
-        loss directly.
+        - :math:`\hat y`: estimated target source signal
 
     Args:
         model (SpectrogramMaskModel): Spectrogram mask model.
@@ -370,7 +369,10 @@ class SISDRLoss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        """Calculates si_sdr_loss and stores it."""
+        """Calculates signal-to-distortion ratio loss and stores it.
+
+        Sets the ``batch_loss`` attribute of ``model``.
+        """
         estimate_audio = self.model.estimate_audio[..., :self.model.target_audio.shape[-1]]
         target_audio = self.model.target_audio.squeeze(-1).float()
         self.model.batch_loss = si_sdr_loss(

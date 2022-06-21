@@ -6,6 +6,7 @@
 
 from auralflow.losses import *
 from auralflow.models import *
+from auralflow.utils import load_object
 from pathlib import Path
 from torch.cuda.amp import GradScaler
 from torch.optim import Adam
@@ -42,7 +43,7 @@ def init_model(configuration: dict) -> SeparationModel:
         'visualizer_params'])
     """
     model_type = configuration["model_params"]["model_type"]
-    if model_type in model_names:
+    if model_type in architectures:
         # Only allow SpectrogramMaskModel for now.
         model = SpectrogramMaskModel(configuration)
     else:
@@ -171,18 +172,24 @@ def setup_model(model: SeparationModel) -> SeparationModel:
 
         if model.training_params["last_epoch"] >= 0:
             # Load model, optim, scheduler and scaler states.
-            model.load_model(global_step=last_epoch)
-            model.load_optim(global_step=last_epoch)
-            model.load_scheduler(global_step=last_epoch)
+            load_object(model=model, obj_name="model", global_step=last_epoch)
+            load_object(
+                model=model, obj_name="optimizer", global_step=last_epoch
+            )
+            load_object(
+                model=model, obj_name="scheduler", global_step=last_epoch
+            )
             if model.training_params["use_mixed_precision"]:
-                model.load_grad_scaler(global_step=last_epoch)
+                load_object(
+                    model=model, obj_name="grad_scaler", global_step=last_epoch
+                )
         else:
             # Create checkpoint folder.
             Path(model.checkpoint_path).mkdir(exist_ok=True)
     else:
         try:
             best_epoch = model.training_params["best_epoch"]
-            model.load_model(global_step=best_epoch)
+            load_object(model=model, obj_name="model", global_step=best_epoch)
             model.training_mode = False
         except (OSError, FileNotFoundError) as error:
             print(f"Failed to load model {model.model_name}.")

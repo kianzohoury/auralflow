@@ -1,9 +1,6 @@
 auralflow.models.SpectrogramNetSimple
 =====================================
 
-.. toctree::
-   :maxdepth: 2
-
 .. autoclass:: auralflow.models.SpectrogramNetSimple
    :members:
    :show-inheritance:

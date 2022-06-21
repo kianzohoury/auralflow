@@ -13,9 +13,10 @@
    
       copy_config_template
       load_config
+      load_object
       save_config
       save_object
-      load_object
+      save_all
    
    
 

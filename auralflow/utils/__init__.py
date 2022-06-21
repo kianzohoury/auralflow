@@ -4,19 +4,23 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+__all__ = [
+    "copy_config_template",
+    "load_config",
+    "load_object",
+    "save_config",
+    "save_object",
+    "save_all"
+]
+
 import json
 import shutil
 import torch
 
+
+from auralflow.models import SeparationModel
 from pathlib import Path
 
-__all__ = [
-    "copy_config_template",
-    "load_config",
-    "save_config",
-    "save_object",
-    "load_object",
-]
 
 config_template_path = Path(__file__).parents[2].joinpath("config.json")
 
@@ -83,7 +87,7 @@ def _add_checkpoint_tag(filename: str, obj_name: str, global_step: int) -> str:
 
 
 def save_object(
-    model: 'SeparationModel', obj_name: str, global_step: int
+    model: SeparationModel, obj_name: str, global_step: int
 ) -> None:
     """Saves object state as .pth file under the checkpoint directory.
 
@@ -121,7 +125,7 @@ def save_object(
 
 
 def load_object(
-    model: 'SeparationModel', obj_name: str, global_step: int
+    model: SeparationModel, obj_name: str, global_step: int
 ) -> None:
     """Loads object's state and and attaches it to the model.
 
@@ -149,3 +153,45 @@ def load_object(
         # Load state into object.
         getattr(model, obj_name).load_state_dict(state_dict)
         print(f"  Successful.")
+
+
+def save_all(
+    model: SeparationModel,
+    global_step: int,
+    save_model: bool = True,
+    save_optim: bool = True,
+    save_scheduler: bool = True,
+    save_grad_scaler: bool = True,
+) -> None:
+    """Saves the model and training objects.
+
+    If an object does not exist (e.g. scheduler, gradient_scaler), saving
+    is ignored.
+
+    Args:
+        global_step (int): Global step.
+        model (SeparationModel): Separation model.
+        save_model (bool): Whether to save the model state. Default: ``True``.
+        save_optim (bool): Whether to save the optimizer state.
+            Default: ``True``.
+        save_scheduler (bool): Whether to save the scheduler state.
+            Default: ``True``.
+        save_grad_scaler (bool): Whether to save the gradient scaler state.
+            Default: ``True``.
+    """
+    if save_model:
+        save_object(
+            model=model, obj_name="model", global_step=global_step
+        )
+    if save_optim:
+        save_object(
+            model=model, obj_name="optimizer", global_step=global_step
+        )
+    if save_scheduler:
+        save_object(
+            model=model, obj_name="scheduler", global_step=global_step
+        )
+    if save_grad_scaler:
+        save_object(
+            model=model, obj_name="grad_scaler", global_step=global_step
+        )

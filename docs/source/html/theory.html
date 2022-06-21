@@ -230,30 +230,45 @@
         <article role="main">
           <section id="a-shallow-dive-into-theory">
 <h1>A Shallow Dive into Theory<a class="headerlink" href="#a-shallow-dive-into-theory" title="Permalink to this headline">#</a></h1>
-<section id="short-time-fourier-transform">
-<h2>Short Time Fourier Transform<a class="headerlink" href="#short-time-fourier-transform" title="Permalink to this headline">#</a></h2>
-<p>While the Fourier transform is quite complex, we can simply it for the purposes
-of understanding its involvement in music source separation. Let us begin with
-a few simple definitions.</p>
 <section id="definitions">
-<h3>Definitions<a class="headerlink" href="#definitions" title="Permalink to this headline">#</a></h3>
+<h2>Definitions<a class="headerlink" href="#definitions" title="Permalink to this headline">#</a></h2>
+<p>This section aims to simplify complex topics -- i.e. Fourier analysis --
+to gain a better intuition on music source separation, and is by no means a
+rigorous treatment on the topic. Please refer to better sources for proper
+definitions and proofs.</p>
+<section id="audio-representations">
+<h3>Audio Representations<a class="headerlink" href="#audio-representations" title="Permalink to this headline">#</a></h3>
+<p>There are two forms of audio that are used in music source separation: audio
+signals (aka time-domain) and spectrograms (aka time-frequency).</p>
 <section id="audio-signals">
-<h4><strong>Audio Signals</strong><a class="headerlink" href="#audio-signals" title="Permalink to this headline">#</a></h4>
+<h4>Audio Signals<a class="headerlink" href="#audio-signals" title="Permalink to this headline">#</a></h4>
 <p>Let <span class="math notranslate nohighlight">\(A \in \mathbb{R}^{c \times t}\)</span> be called an <em>audio signal</em>,
-with <span class="math notranslate nohighlight">\(c\)</span> channels and <span class="math notranslate nohighlight">\(t\)</span> samples. By convention, the amplitude
-is often normalized such that <span class="math notranslate nohighlight">\(a_i \in [-1, 1], \forall a_i \in A\)</span>.</p>
+with <span class="math notranslate nohighlight">\(c\)</span> channels and <span class="math notranslate nohighlight">\(t\)</span> samples. Music tracks, recordings and
+all other audio are almost universally represented in this form. Note that
+by convention, the amplitude of audio signals is often normalized such that
+<span class="math notranslate nohighlight">\(a_i \in [-1, 1], \forall a_i \in A\)</span>.</p>
 </section>
 <section id="spectrograms">
-<h4><strong>Spectrograms</strong><a class="headerlink" href="#spectrograms" title="Permalink to this headline">#</a></h4>
+<h4>Spectrograms<a class="headerlink" href="#spectrograms" title="Permalink to this headline">#</a></h4>
 <p>Let <span class="math notranslate nohighlight">\(S \in \mathbb{C}^{c \times f \times \tau}\)</span> be called a
 <em>spectrogram</em>, with <span class="math notranslate nohighlight">\(c\)</span> channels, <span class="math notranslate nohighlight">\(f\)</span> filterbanks and
-<span class="math notranslate nohighlight">\(\tau\)</span> samples. <span class="math notranslate nohighlight">\(S\)</span> <span class="math notranslate nohighlight">\(3\)</span>-dimensional, complex-valued time-frequency
-representation of an audio signal.</p>
-<p>Let <span class="math notranslate nohighlight">\(f: A ↦ S\)</span> be a linear transformation that maps an audio signal
-<span class="math notranslate nohighlight">\(A\)</span> in the time domain <span class="math notranslate nohighlight">\(\mathbb{R}^{c \times t}\)</span>, to a
-complex-valued, <span class="math notranslate nohighlight">\(3\)</span>-dimensional time-frequency representation
-<span class="math notranslate nohighlight">\(S\)</span>, belonging to the codomain
-<span class="math notranslate nohighlight">\(\mathbb{R}^{c \times f \times \tau}\)</span>.</p>
+<span class="math notranslate nohighlight">\(\tau\)</span> samples. A spectrogram can be thought of as the <em>image</em> of an
+audio signal, as it is a kind of projection of the original signal onto a
+higher dimensional space that introduces frequency information. Also note that
+<span class="math notranslate nohighlight">\(S\)</span> is complex.</p>
+</section>
+</section>
+<section id="short-time-fourier-transform">
+<h3>Short Time Fourier Transform<a class="headerlink" href="#short-time-fourier-transform" title="Permalink to this headline">#</a></h3>
+<p>Given an audio signal <span class="math notranslate nohighlight">\(A\)</span> as input, we can apply the <span class="math notranslate nohighlight">\(STFT\)</span>
+function (which we will treat as a blackbox) to generate a complex-valued,
+time-frequency representation called <span class="math notranslate nohighlight">\(S\)</span>.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[STFT(A) = S\]</div>
+</div>
+<p>Let <span class="math notranslate nohighlight">\(STFT\)</span> be a linear transformation that maps in the domain <span class="math notranslate nohighlight">\(\mathbb{R}^{c \times t}\)</span>, to its spectrogram
+image in the codomain <span class="math notranslate nohighlight">\(\mathbb{R}^{c \times f \times \tau}\)</span>.</p>
 <p>Moreover, let <span class="math notranslate nohighlight">\(f^{-1}: S ↦ A\)</span> be the inverse transformation mapping a
 spectrogram <span class="math notranslate nohighlight">\(S\)</span> back to an audio signal <span class="math notranslate nohighlight">\(A\)</span>.</p>
 <p>mathbb{R}^{c, t}$. As was alluded to in the introduction, the
@@ -309,7 +324,6 @@ $Huge hat{S}_{k}$:</p>
 some small $Huge ϵ$, and our model has not been overfit to the training data,
 then we've objectively solved our task — the separated audio must sound good
 to our ears as well.</p>
-</section>
 </section>
 </section>
 </section>
@@ -372,12 +386,13 @@ to our ears as well.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">A Shallow Dive into Theory</a><ul>
-<li><a class="reference internal" href="#short-time-fourier-transform">Short Time Fourier Transform</a><ul>
 <li><a class="reference internal" href="#definitions">Definitions</a><ul>
-<li><a class="reference internal" href="#audio-signals"><strong>Audio Signals</strong></a></li>
-<li><a class="reference internal" href="#spectrograms"><strong>Spectrograms</strong></a></li>
+<li><a class="reference internal" href="#audio-representations">Audio Representations</a><ul>
+<li><a class="reference internal" href="#audio-signals">Audio Signals</a></li>
+<li><a class="reference internal" href="#spectrograms">Spectrograms</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#short-time-fourier-transform">Short Time Fourier Transform</a></li>
 </ul>
 </li>
 </ul>

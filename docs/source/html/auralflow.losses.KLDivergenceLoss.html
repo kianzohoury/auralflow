@@ -230,16 +230,15 @@
         <article role="main">
           <section id="auralflow-losses-kldivergenceloss">
 <h1>auralflow.losses.KLDivergenceLoss<a class="headerlink" href="#auralflow-losses-kldivergenceloss" title="Permalink to this headline">#</a></h1>
-<div class="toctree-wrapper compound">
-</div>
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.losses.KLDivergenceLoss">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">KLDivergenceLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.mask_model.SpectrogramMaskModel"><span class="pre">auralflow.models.mask_model.SpectrogramMaskModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'l1'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#KLDivergenceLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.KLDivergenceLoss" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
 <p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">kl_div_loss</span></code>.</p>
-<p>The KL loss term is defined as <span class="math notranslate nohighlight">\(D_KL(P||Q)\)</span>, where <span class="math notranslate nohighlight">\(P\)</span> is
-the modeled distribution, and <span class="math notranslate nohighlight">\(Q\)</span> is a standard normal distribution
-<span class="math notranslate nohighlight">\(N(0, 1)\)</span>. In closed form, the loss can be expressed as:</p>
+<p>Should be used with <code class="docutils literal notranslate"><span class="pre">SpectrogramNetVAE</span></code>. The KL loss term is defined as
+<span class="math notranslate nohighlight">\(D_KL(P||Q)\)</span>, where <span class="math notranslate nohighlight">\(P\)</span> is the modeled distribution, and
+<span class="math notranslate nohighlight">\(Q\)</span> is a standard normal distribution <span class="math notranslate nohighlight">\(N(0, 1)\)</span>. In closed
+form, the loss can be expressed as:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[D_{KL}(P||Q) = \frac{1}{2} \sum_{i=1}^{n}(\mu^2 + \sigma^2 -
@@ -253,11 +252,6 @@ the modeled distribution, and <span class="math notranslate nohighlight">\(Q\)</
 </ul>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Sets <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of the model instead of returning the
-loss directly. Can also only be used with <code class="docutils literal notranslate"><span class="pre">SpectrogramNetVAE</span></code>.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -270,6 +264,7 @@ loss directly. Can also only be used with <code class="docutils literal notransl
 <dt class="sig sig-object py" id="auralflow.losses.KLDivergenceLoss.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#KLDivergenceLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.KLDivergenceLoss.forward" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculates construction loss + KL loss and stores it.</p>
+<p>Sets the <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute of <code class="docutils literal notranslate"><span class="pre">model</span></code>.</p>
 </dd></dl>
 
 </dd></dl>

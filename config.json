@@ -2,16 +2,16 @@
     "model_params": {
         "model_type": "SpectrogramNetSimple",
         "model_name": "template",
-        "save_dir": ".",
+        "save_dir": "",
+        "targets": ["vocals"],
         "normalize_input": true,
         "normalize_output": true,
-        "mask_activation": "relu",
+        "mask_activation": "sigmoid",
         "hidden_channels": 16,
         "dropout_p": 0.4,
         "leak_factor": 0
     },
     "dataset_params": {
-        "targets": ["vocals"],
         "max_num_tracks": 10,
         "max_num_samples": 1e3,
         "num_channels": 1,
@@ -19,8 +19,7 @@
         "sample_rate": 44100,
         "num_fft": 1024,
         "window_size": 1024,
-        "hop_length": 512,
-        "learn_filterbanks": false
+        "hop_length": 512
     },
     "training_params": {
         "training_mode": true,
@@ -29,11 +28,11 @@
         "global_step": -1,
         "batch_size": 32,
         "lr": 0.008,
-        "criterion": "l2",
+        "criterion": "si_sdr_loss",
         "use_mixed_precision": true,
-        "mixed_precision_scale": 2e0,
-        "alpha_constant": 0.5,
-        "beta_constant": 0,
+        "mixed_precision_scale": 1.0,
+        "alpha": 0.5,
+        "beta": 0,
         "num_workers": 8,
         "pin_memory": true,
         "persistent_workers": true,
@@ -43,10 +42,11 @@
         "silent_checkpoint": true
     },
     "visualizer_params": {
+        "tensorboard": false,
         "view_spectrogram": false,
-        "view_waveform": true,
-        "view_gradient": true,
-        "play_audio": true,
+        "view_waveform": false,
+        "view_gradient": false,
+        "play_audio": false,
         "save_image": false,
         "save_audio": false,
         "save_frequency": 5,

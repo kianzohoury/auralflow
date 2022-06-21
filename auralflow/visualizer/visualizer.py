@@ -4,22 +4,67 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-import matplotlib.figure
 import matplotlib.pyplot as plt
 import torch
 
 
+from auralflow.models import SeparationModel
+from auralflow.transforms import trim_audio
+from matplotlib.figure import Figure
 from pathlib import Path
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
-from typing import Union
-from auralflow.transforms import trim_audio
+from typing import Optional, Union
 
 
-def make_spectrogram_figure(
+def spec_show_diff(
     label: str, estimate: Tensor, target: Tensor, resolution: int = 120
-) -> matplotlib.figure:
-    """Returns a spectrogram image as a matplotlib figure."""
+) -> Figure:
+    """Creates a ``pyplot`` figure comparing estimate and target spectrograms.
+
+    The spectrogram subfigures are stacked vertically, with time as the
+    horizontal axis, frequency as the vertical axis and amplitude as the
+    intensity of the color map. Note that the channels are averaged and
+    collapsed.
+
+    Args:
+        label (str): Target label.
+        estimate (Tensor): Estimated target source spectrogram.
+        target (Tensor): Ground-truth target source spectrogram.
+        resolution (int): DPI.
+
+    Returns:
+        Figure: Spectrogram figure.
+
+    :shape:
+        - spectrogram: :math:`(C, F, T)`, non-batched
+
+        where
+            - :math:`C`: number of channels
+            - :math:`F`: number of frequency bins
+            - :math:`T`: number of time frames
+
+    Examples:
+        >>> import matplotlib.pyplot as plt
+        >>>
+        >>> # get estimate and target spectrograms
+        >>> estimate_spec = torch.rand((1, 512, 173))
+        >>> target_spec = torch.rand((1, 512, 173))
+        >>>
+        >>> # generate figure
+        >>> fig = spec_show_diff(
+        ...     label="vocals",
+        ...     estimate=estimate_spec,
+        ...     target=target_spec,
+        ...     resolution=120
+        ... )
+        >>>
+        >>> # display figure
+        >>> plt.show(fig)
+        >>>
+        >>> # save figure
+        >>> plt.savefig(fname="spec_comparison.png")
+    """
     fig, ax = plt.subplots(nrows=2, figsize=(16, 8), dpi=resolution)
     cmap = "inferno"
 
@@ -32,7 +77,7 @@ def make_spectrogram_figure(
     ax[0].set(frame_on=False)
     ax[1].set(frame_on=False)
 
-    _format_axes(ax)
+    _remove_ticks(ax)
     plt.xlabel("Frames")
     fig.supylabel("Frequency bins")
     plt.tight_layout()
@@ -43,10 +88,52 @@ def make_spectrogram_figure(
     return fig
 
 
-def make_waveform_figure(
+def waveform_show_diff(
     label: str, estimate: Tensor, target: Tensor, resolution: int = 120
-) -> matplotlib.figure:
-    """Returns a waveform image as a matplotlib figure."""
+) -> Figure:
+    """Creates a ``pyplot`` figure comparing estimate and target waveforms.
+
+    The waveforms are overlayed together, with time as the horizontal axis
+    and amplitude as the vertical axis. Like ``spec_show_diff``, the channels
+    are averaged and collapsed.
+
+    Args:
+        label (str): Target label.
+        estimate (Tensor): Estimated target source audio signal.
+        target (Tensor): Ground-truth target source audio signal.
+        resolution (int): DPI.
+
+    Returns:
+        Figure: Waveform figure.
+
+    :shape:
+        - waveform: :math:`(C, T)`, non-batched
+
+        where
+            - :math:`C`: number of channels
+            - :math:`T`: number of samples
+
+    Examples:
+        >>> import matplotlib.pyplot as plt
+        >>>
+        >>> # get estimate and target audio signals
+        >>> estimate_audio = torch.rand((1, 88200))
+        >>> target_audio = torch.rand((1, 88200))
+        >>>
+        >>> # generate figure
+        >>> fig = spec_show_diff(
+        ...     label="vocals",
+        ...     estimate=estimate_audio,
+        ...     target=target_audio,
+        ...     resolution=120
+        ... )
+        >>>
+        >>> # display figure
+        >>> plt.show(fig)
+        >>>
+        >>> # save figure
+        >>> plt.savefig(fname="waveform_comparison.png")
+    """
     fig, ax = plt.subplots(nrows=3, figsize=(12, 8), dpi=resolution)
     c1, c2 = "yellowgreen", "darkorange"
     est_label, target_label = f"{label} estimate", f"{label} target"
@@ -66,9 +153,9 @@ def make_waveform_figure(
     ax[1].set_xlim(xmin=0, xmax=estimate.shape[0])
     ax[2].set_xlim(xmin=0, xmax=estimate.shape[0])
 
-    _format_axes(ax)
+    _remove_ticks(ax)
     plt.xlabel("Frames")
-    # fig.supylabel("Amplitude")
+    fig.supylabel("Amplitude")
     plt.tight_layout()
 
     # Set the legend.
@@ -80,55 +167,70 @@ def make_waveform_figure(
     return fig
 
 
-def _format_axes(axes):
+def _remove_ticks(axes):
+    """Helper method that formats axes by removing x/y-ticks."""
     for axis in axes:
         plt.setp(axis.get_xticklabels(), visible=False)
         plt.setp(axis.get_yticklabels(), visible=False)
         axis.tick_params(axis="both", which="both", length=0)
 
 
-class Visualizer(object):
-    """Wrapper class for visualizing/listening to results during training."""
+class TrainingVisualizer(object):
+    """Visualizer that monitors training through images and audio playback.
+
+    Especially useful for writing images and audio to a Tensorboard
+    ``SummaryWriter``. Stores images under ``outer_dir/images`` and
+    audio under ``output_dir/audio``.
+
+    Args:
+        output_dir (str): Outer directory to save output files.
+        writer (Optional[SummaryWriter]): Tensorboard writer.
+        view_spectrogram (bool): If True, calls ``show_spec_diff`` and writes
+            the figure to tensorboard.
+        view_waveform (bool): If True, calls ``show_waveform_diff`` and writes
+            the figure to tensorboard.
+        view_gradient (bool): If True, writes
+            the figure to tensorboard.
+    """
 
     spectrogram: dict
     audio: dict
 
     def __init__(
         self,
-        writer: SummaryWriter,
-        save_dir: Union[str, Path],
+        output_dir: str,
+        writer: Optional[SummaryWriter] = None,
         view_spectrogram: bool = True,
         view_waveform: bool = True,
         view_gradient: bool = True,
         play_audio: bool = True,
         num_images: int = 1,
-        save_image: bool = False,
+        save_images: bool = False,
         save_audio: bool = False,
-        save_freq: int = 10,
+        interval: int = 10,
         sample_rate: int = 44100,
     ):
-        super(Visualizer, self).__init__()
+        super(TrainingVisualizer, self).__init__()
         self.writer = writer
-        self.save_dir = save_dir
+        self.output_dir = output_dir
         self.view_spectrogram = view_spectrogram
         self.view_waveform = view_waveform
         self.view_gradient = view_gradient
         self.play_audio = play_audio
         self.num_images = num_images
-        self.save_image = save_image
+        self.save_images = save_images
         self.save_audio = save_audio
-        self.save_freq = save_freq
+        self.interval = interval
         self.sample_rate = sample_rate
-        self.save_count = 0
+        self._save_count = 0
 
-        # Create image folder.
-        if save_image:
-            Path(self.save_dir).mkdir(exist_ok=True)
-
-    def test_model(
-        self, model, mixture_audio: Tensor, target_audio: Tensor
+    def _test_model(
+        self,
+        model: SeparationModel,
+        mixture_audio: Tensor,
+        target_audio: Tensor
     ) -> None:
-        """Runs model in inference mode and stores resulting audio tensors."""
+        """Runs inference given a model, mixture and target audio data."""
         # Separate target source(s).
         estimate_audio = model.separate(mixture_audio)
 
@@ -171,14 +273,11 @@ class Visualizer(object):
             "target_mono": target_wav.cpu(),
         }
 
-    def save_figure(self, figure: matplotlib.figure, filename: str) -> None:
-        """Saves a matplotlib figure as an image."""
-        figure.savefig(self.save_dir + "/" + filename, dpi=600)
 
     def visualize_spectrogram(self, label: str, global_step: int) -> None:
         """Logs spectrogram images to tensorboard."""
         for i in range(self.num_images):
-            spec_fig = make_spectrogram_figure(
+            spec_fig = spec_show_diff(
                 label=label,
                 estimate=self.spectrogram["estimate_mono"][i],
                 target=self.spectrogram["target_mono"][i],
@@ -192,7 +291,7 @@ class Visualizer(object):
             )
 
             # Save image locally.
-            if self.save_image and (self.save_count + 1) % self.save_freq == 0:
+            if self.save_images and (self._save_count + 1) % self.interval == 0:
                 self.save_figure(
                     figure=spec_fig,
                     filename=f"{label}_{global_step}_spectrogram.png",
@@ -201,7 +300,7 @@ class Visualizer(object):
     def visualize_waveform(self, label: str, global_step: int) -> None:
         """Logs waveform images to tensorboard."""
         for i in range(self.num_images):
-            wav_fig = make_waveform_figure(
+            wav_fig = waveform_show_diff(
                 label=label,
                 estimate=self.audio["estimate_mono"][i],
                 target=self.audio["target_mono"][i],
@@ -213,7 +312,7 @@ class Visualizer(object):
             )
 
             # Save image locally.
-            if self.save_image and (self.save_count + 1) % self.save_freq == 0:
+            if self.save_images and (self._save_count + 1) % self.interval == 0:
                 self.save_figure(
                     figure=wav_fig,
                     filename=f"{label}_{global_step}_waveform.png",
@@ -285,7 +384,7 @@ class Visualizer(object):
         mixture, target = mixture.to(model.device), target.to(model.device)
         for i, label in enumerate(model.target_labels):
             # Run model.
-            self.test_model(
+            self._test_model(
                 model=model,
                 mixture_audio=mixture,
                 target_audio=target[..., i],
@@ -303,4 +402,9 @@ class Visualizer(object):
             if self.play_audio:
                 self.embed_audio(label=label, global_step=global_step)
         # Increment save counter.
-        self.save_count += 1
+        self._save_count += 1
+
+
+        # Create image folder.
+        if save_image:
+            Path(self.output_dir).mkdir(exist_ok=True)

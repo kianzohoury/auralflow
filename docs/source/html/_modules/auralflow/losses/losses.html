@@ -461,7 +461,7 @@
 
 
 <div class="viewcode-block" id="ComponentLoss"><a class="viewcode-back" href="../../../auralflow.losses.ComponentLoss.html#auralflow.losses.ComponentLoss">[docs]</a><span class="k">class</span> <span class="nc">ComponentLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Wrapper class for ``component_loss``.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Wrapper class for ``component_loss``.</span>
 
 <span class="sd">    Uses two or three loss components depending on the arguments for ``alpha``</span>
 <span class="sd">    and ``beta``. If ``beta=0``, it weighs the quality of target source</span>
@@ -469,26 +469,24 @@
 <span class="sd">    the third component balances the quality of the attenuated residual noise</span>
 <span class="sd">    against the other two terms. The 2-component loss is defined as:</span>
 
-<span class="sd">    Note:</span>
-<span class="sd">        Sets ``batch_loss`` attribute of the model instead of returning the</span>
-<span class="sd">        loss directly.</span>
-
 <span class="sd">    .. math::</span>
+
 <span class="sd">        L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k}</span>
 <span class="sd">            - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}</span>
 
 <span class="sd">    and the 3-component loss is defined as:</span>
 
 <span class="sd">    .. math::</span>
+
 <span class="sd">        L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n}</span>
 <span class="sd">            ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}</span>
-<span class="sd">            + \frac{\beta}{n}|| \\hat{R_f} - \\hat{R}||_2^2</span>
+<span class="sd">            + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2</span>
 
 <span class="sd">    where:</span>
-<span class="sd">        - :math:`Y_{f, k} := M_{\theta}\\odot |Y_{k}|`, filtered target</span>
-<span class="sd">        - :math:`R_{f} := M_{ \theta }\\odot (|X| - |Y_{k}|)`, filtered residual</span>
-<span class="sd">        - :math:`\\hat{R_{f}} := \\frac{R_{f}}{||R_{f}||_2}`, filtered unit-residual</span>
-<span class="sd">        - :math:`\\hat{R} := \\frac{R}{||R||_2}`, unit residual</span>
+<span class="sd">        - :math:`Y_{f, k} := M_{\theta}\odot |Y_{k}|`, filtered target</span>
+<span class="sd">        - :math:`R_{f} := M_{ \theta }\odot (|X| - |Y_{k}|)`, filtered residual</span>
+<span class="sd">        - :math:`\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}`, filtered unit-residual</span>
+<span class="sd">        - :math:`\hat{R} := \frac{R}{||R||_2}`, unit residual</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (SpectrogramMaskModel): Spectrogram mask model.</span>
@@ -505,7 +503,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
 
 <div class="viewcode-block" id="ComponentLoss.forward"><a class="viewcode-back" href="../../../auralflow.losses.ComponentLoss.html#auralflow.losses.ComponentLoss.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates weighted component loss and stores it.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Calculates weighted component loss and stores it.</span>
+
+<span class="sd">        Sets the ``batch_loss`` attribute of ``model``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Compute weighted loss.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">batch_loss</span> <span class="o">=</span> <span class="n">component_loss</span><span class="p">(</span>
             <span class="n">mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span>
@@ -522,26 +523,24 @@
 
 
 <div class="viewcode-block" id="KLDivergenceLoss"><a class="viewcode-back" href="../../../auralflow.losses.KLDivergenceLoss.html#auralflow.losses.KLDivergenceLoss">[docs]</a><span class="k">class</span> <span class="nc">KLDivergenceLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Wrapper class for ``kl_div_loss``.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Wrapper class for ``kl_div_loss``.</span>
 
-<span class="sd">    The KL loss term is defined as :math:`D_KL(P||Q)`, where :math:`P` is</span>
-<span class="sd">    the modeled distribution, and :math:`Q` is a standard normal distribution</span>
-<span class="sd">    :math:`N(0, 1)`. In closed form, the loss can be expressed as:</span>
+<span class="sd">    Should be used with ``SpectrogramNetVAE``. The KL loss term is defined as</span>
+<span class="sd">    :math:`D_KL(P||Q)`, where :math:`P` is the modeled distribution, and</span>
+<span class="sd">    :math:`Q` is a standard normal distribution :math:`N(0, 1)`. In closed</span>
+<span class="sd">    form, the loss can be expressed as:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        D_{KL}(P||Q) = \\frac{1}{2} \\sum_{i=1}^{n}(\\mu^2 + \\sigma^2 -</span>
-<span class="sd">            \\ln(\\sigma^2) - 1)</span>
+
+<span class="sd">        D_{KL}(P||Q) = \frac{1}{2} \sum_{i=1}^{n}(\mu^2 + \sigma^2 -</span>
+<span class="sd">            \ln(\sigma^2) - 1)</span>
 
 <span class="sd">    where:</span>
-<span class="sd">        - :math:`\\mu`: mean of the modeled distribution :math:`P`</span>
+<span class="sd">        - :math:`\mu`: mean of the modeled distribution :math:`P`</span>
 
-<span class="sd">        - :math:`\\sigma`: standard deviation of modeled distribution :math:`P`</span>
+<span class="sd">        - :math:`\sigma`: standard deviation of modeled distribution :math:`P`</span>
 
 <span class="sd">        - :math:`n`: number of tensor elements</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        Sets ``batch_loss`` attribute of the model instead of returning the</span>
-<span class="sd">        loss directly. Can also only be used with ``SpectrogramNetVAE``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (SpectrogramMaskModel): Spectrogram mask model.</span>
@@ -559,7 +558,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">construction_loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">mse_loss</span>
 
 <div class="viewcode-block" id="KLDivergenceLoss.forward"><a class="viewcode-back" href="../../../auralflow.losses.KLDivergenceLoss.html#auralflow.losses.KLDivergenceLoss.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates construction loss + KL loss and stores it.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Calculates construction loss + KL loss and stores it.</span>
+
+<span class="sd">        Sets the ``batch_loss`` attribute of ``model``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;get_kl_div&quot;</span><span class="p">):</span>
             <span class="n">kl_term</span> <span class="o">=</span> <span class="n">kl_div_loss</span><span class="p">(</span>
                 <span class="n">mu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mu_data</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data</span>
@@ -573,23 +575,20 @@
 
 
 <div class="viewcode-block" id="SISDRLoss"><a class="viewcode-back" href="../../../auralflow.losses.SISDRLoss.html#auralflow.losses.SISDRLoss">[docs]</a><span class="k">class</span> <span class="nc">SISDRLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Wrapper class for ``si_sdr_loss``.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Wrapper class for ``si_sdr_loss``.</span>
 
 <span class="sd">    Typically used as an evaluation metric, but can be optimized for directly.</span>
 <span class="sd">    For a single audio track, the loss is defined as:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        L_{\\text{SI-SDR}}(\\hat y, y) = -10\\log_{10} \\frac{||\\frac{proj_{y}</span>
-<span class="sd">            \\hat y}{||y||_2^2}||_2^2}{||\\frac{proj_{y} \\hat y}{||y||_2^2}</span>
-<span class="sd">            - \\hat y||_2^2}</span>
+
+<span class="sd">        L_{\text{SI-SDR}}(\hat y, y) = -10\cdot\log_{10}\frac{||\frac{proj_{y}</span>
+<span class="sd">            \hat y}{||y||_2^2}||_2^2}{||\frac{proj_{y} \hat y}{||y||_2^2}</span>
+<span class="sd">            - \hat y||_2^2}</span>
 
 <span class="sd">    where:</span>
 <span class="sd">        - :math:`y`: true target signal</span>
-<span class="sd">        - :math:`\\hat y`: estimated target source signal</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        Sets ``batch_loss`` attribute of the model instead of returning the</span>
-<span class="sd">        loss directly.</span>
+<span class="sd">        - :math:`\hat y`: estimated target source signal</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (SpectrogramMaskModel): Spectrogram mask model.</span>
@@ -600,7 +599,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
 
 <div class="viewcode-block" id="SISDRLoss.forward"><a class="viewcode-back" href="../../../auralflow.losses.SISDRLoss.html#auralflow.losses.SISDRLoss.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates si_sdr_loss and stores it.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Calculates signal-to-distortion ratio loss and stores it.</span>
+
+<span class="sd">        Sets the ``batch_loss`` attribute of ``model``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">estimate_audio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">estimate_audio</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">target_audio</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
         <span class="n">target_audio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">target_audio</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">batch_loss</span> <span class="o">=</span> <span class="n">si_sdr_loss</span><span class="p">(</span>

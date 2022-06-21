@@ -13,8 +13,7 @@ import torch.nn as nn
 from abc import abstractmethod, ABC
 from torch import Tensor, FloatTensor
 from torch.optim import Optimizer
-from typing import List, Union, Callable, Any
-from auralflow.utils import load_object, save_object
+from typing import Any, Callable, List, Union
 
 
 class SeparationModel(ABC):
@@ -22,8 +21,7 @@ class SeparationModel(ABC):
 
     Should not be instantiated directly but rather subclassed. A
     subclass must implement the following methods: ``set_data``, ``forward``,
-    ``compute_loss``, ``backward``, ``optimizer_step``, ``scheduler_step``
-    and ``separate``.
+    ``compute_loss``, ``backward``, ``optimizer_step`` and ``separate``.
 
     :ivar model: Underlying PyTorch model.
     :vartype model: nn.Module
@@ -133,13 +131,14 @@ class SeparationModel(ABC):
         self.dataset_params = config["dataset_params"]
         self.visualizer_params = config["visualizer_params"]
         self.model_name = self.model_params["model_name"]
+        self.target_labels = sorted(self.dataset_params["targets"])
         self.checkpoint_path = self.model_params["save_dir"] + "/checkpoint"
         self.silent_checkpoint = self.training_params["silent_checkpoint"]
         self.training_mode = self.training_params["training_mode"]
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Retrieve requested base model architecture name.
-        self.base_model_type = getattr(
+        self._base_model_type = getattr(
             importlib.import_module("auralflow.models"),
             self.model_params["model_type"],
         )
@@ -184,11 +183,6 @@ class SeparationModel(ABC):
         pass
 
     @abstractmethod
-    def scheduler_step(self) -> bool:
-        """Decreases the learning rate if required."""
-        pass
-
-    @abstractmethod
     def separate(self, audio: Tensor) -> Tensor:
         """Separates target sources from a mixture given its audio data.
 
@@ -198,6 +192,10 @@ class SeparationModel(ABC):
         Returns:
             Tensor: Estimated target sources.
         """
+        pass
+
+    def scheduler_step(self) -> bool:
+        """Decreases the learning rate if required."""
         pass
 
     def train(self) -> None:
@@ -213,69 +211,3 @@ class SeparationModel(ABC):
         self.eval()
         with torch.no_grad():
             self.forward()
-
-    def save_model(self, global_step: int) -> None:
-        """Saves the model's current state."""
-        save_object(
-            model=self, obj_name="model", global_step=global_step
-        )
-
-    def load_model(self, global_step: int) -> None:
-        """Loads a model's previous state."""
-        load_object(
-            model=self, obj_name="model", global_step=global_step
-        )
-
-    def save_optim(self, global_step: int) -> None:
-        """Saves the optimizer's current state."""
-        save_object(
-            model=self, obj_name="optimizer", global_step=global_step
-        )
-
-    def load_optim(self, global_step: int) -> None:
-        """Loads an optimizer's previous state."""
-        load_object(
-            model=self, obj_name="optimizer", global_step=global_step
-        )
-
-    def save_scheduler(self, global_step: int) -> None:
-        """Saves the scheduler's current state."""
-        save_object(
-            model=self, obj_name="scheduler", global_step=global_step
-        )
-
-    def load_scheduler(self, global_step: int) -> None:
-        """Loads a scheduler's previous state."""
-        load_object(
-            model=self, obj_name="scheduler", global_step=global_step
-        )
-
-    def save_grad_scaler(self, global_step: int) -> None:
-        """Saves the grad scaler's current state if using mixed precision."""
-        save_object(
-            model=self, obj_name="grad_scaler", global_step=global_step
-        )
-
-    def load_grad_scaler(self, global_step: int) -> None:
-        """Load a grad scaler's previous state if one exists."""
-        load_object(
-            model=self, obj_name="grad_scaler", global_step=global_step
-        )
-
-    def save(
-        self,
-        global_step: int,
-        model: bool = True,
-        optim: bool = True,
-        scheduler: bool = True,
-        grad_scaler: bool = True,
-    ) -> None:
-        """Saves all training objects in one call."""
-        if model:
-            self.save_model(global_step=global_step)
-        if optim:
-            self.save_optim(global_step=global_step)
-        if scheduler:
-            self.save_scheduler(global_step=global_step)
-        if grad_scaler:
-            self.save_grad_scaler(global_step=global_step)

@@ -1,9 +1,6 @@
 auralflow.models.SpectrogramMaskModel
 =====================================
 
-.. toctree::
-   :maxdepth: 2
-
 .. autoclass:: auralflow.models.SpectrogramMaskModel
    :members:
    :show-inheritance:

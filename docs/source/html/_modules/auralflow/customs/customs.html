@@ -236,6 +236,7 @@
 
 <span class="kn">from</span> <span class="nn">auralflow.losses</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">load_object</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">torch.cuda.amp</span> <span class="kn">import</span> <span class="n">GradScaler</span>
 <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Adam</span>
@@ -272,7 +273,7 @@
 <span class="sd">        &#39;visualizer_params&#39;])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model_type</span> <span class="o">=</span> <span class="n">configuration</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">][</span><span class="s2">&quot;model_type&quot;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="n">model_names</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="n">architectures</span><span class="p">:</span>
         <span class="c1"># Only allow SpectrogramMaskModel for now.</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">SpectrogramMaskModel</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -401,18 +402,24 @@
 
         <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Load model, optim, scheduler and scaler states.</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">last_epoch</span><span class="p">)</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_optim</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">last_epoch</span><span class="p">)</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_scheduler</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">last_epoch</span><span class="p">)</span>
+            <span class="n">load_object</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">last_epoch</span><span class="p">)</span>
+            <span class="n">load_object</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">last_epoch</span>
+            <span class="p">)</span>
+            <span class="n">load_object</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">last_epoch</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;use_mixed_precision&quot;</span><span class="p">]:</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">load_grad_scaler</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">last_epoch</span><span class="p">)</span>
+                <span class="n">load_object</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">last_epoch</span>
+                <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Create checkpoint folder.</span>
             <span class="n">Path</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">best_epoch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;best_epoch&quot;</span><span class="p">]</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">best_epoch</span><span class="p">)</span>
+            <span class="n">load_object</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">best_epoch</span><span class="p">)</span>
             <span class="n">model</span><span class="o">.</span><span class="n">training_mode</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load model </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
