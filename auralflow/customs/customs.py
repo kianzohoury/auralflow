@@ -4,6 +4,9 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+import torch
+
+
 from auralflow.losses import *
 from auralflow.models import *
 from auralflow.utils import load_object
@@ -12,12 +15,30 @@ from torch.cuda.amp import GradScaler
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+# Only allow SpectrogramMaskModel class for now.
+ALL_MODEL_NAMES = {
+    "SpectrogramNetSimple",
+    "SpectrogramNetLSTM",
+    "SpectrogramNetVAE"
+}
+SPEC_MASK_MODELS = set(ALL_MODEL_NAMES)
+
+
+#
+# # Set other attributes.
+# model._model_name = self.model_params["model_name"]
+#
+# model._checkpoint_path = self.model_params["save_dir"] + "/checkpoint"
+# model._silent_checkpoint = self.training_params["silent_checkpoint"]
+# model._training_mode = self.training_params["training_mode"]
+#
 
 def init_model(configuration: dict) -> SeparationModel:
-    r"""Creates a new ``SeparationModel`` instance given configuration data.
+    r"""Creates a new ``SeparationModel`` instance given a configuration.
 
-    To load the contents of a configuration file into a dictionary, use
-    ``auralflow.utils.load_config``.
+    Reads the given configuration data and builds a new ``SeparationModel``
+    according to the spec, if possible. See ``auralflow.utils.load_config`` for
+    loading configuration files as data.
 
     Args:
         configuration (dict): Model configuration data.
@@ -25,42 +46,76 @@ def init_model(configuration: dict) -> SeparationModel:
     Returns:
         SeparationModel: New ``SeparationModel`` instance.
 
+    Raises:
+        ValueError: Raised if the requested base model does not exist.
+        KeyError: Raised if a parameter is not specified or included in the
+            configuration data.
+
     Examples:
-        >>> import auralflow.utils as utils
-        >>> import os
-        >>>
-        >>> # folder directory
-        >>> model_dir = os.getcwd() + "/my_model"
-        >>>
-        >>> # write a new configuration file
-        >>> utils.copy_config_template(save_dir=model_dir)
-        >>>
-        >>> # load the configuration file as a dictionary
-        >>> config_data = utils.load_config(save_dir=model_dir)
-        >>>
-        >>> config_data.keys() # doctest: +NORMALIZE_WHITESPACE
-        dict_keys(['model_params', 'dataset_params', 'training_params',
-        'visualizer_params'])
+
+        Imports:
+
+            >>> import auralflow.utils
+            >>> import os
+
+        Create model folder with a new configuration file:
+
+            >>> model_dir = os.getcwd() + "/my_model"
+            >>> auralflow.utils.copy_config_template(save_dir=model_dir)
+            >>> config_data = auralflow.utils.load_config(save_dir=model_dir)
+            >>> config_data.keys() # doctest: +NORMALIZE_WHITESPACE
+            dict_keys(['model_params', 'dataset_params', 'training_params',
+            'visualizer_params'])
+
+        Instantiate a new model with the above configuration data:
+
+            >>> separation_model = init_model(configuration=config_data)
+            >>> type(separation_model)
+            <class 'models.SeparationModel'>
     """
-    model_type = configuration["model_params"]["model_type"]
-    if model_type in architectures:
-        # Only allow SpectrogramMaskModel for now.
-        model = SpectrogramMaskModel(configuration)
-    else:
-        model = None
+    try:
+        model_params = configuration["model_params"]
+        dataset_params = configuration["dataset_params"]
+        base_model_type = model_params["model_type"]
+        if base_model_type in ALL_MODEL_NAMES:
+            if base_model_type in SPEC_MASK_MODELS:
+                model = SpectrogramMaskModel(
+                    base_model_type=base_model_type,
+                    target_labels=model_params["targets"],
+                    num_fft=dataset_params["num_fft"],
+                    window_size=dataset_params["window_size"],
+                    hop_length=dataset_params["hop_length"],
+                    sample_length=dataset_params["sample_length"],
+                    sample_rate=dataset_params["sample_rate"],
+                    num_channels=dataset_params["num_channels"],
+                    num_hidden_channels=model_params["hidden_channels"],
+                    mask_act_fn=model_params["mask_activation"],
+                    leak_factor=model_params["leak_factor"],
+                    dropout_p=model_params["dropout_p"],
+                    normalize_input=model_params["normalize_input"],
+                    normalize_output=model_params["normalize_output"],
+                    device="cuda" if torch.cuda.is_available() else "cpu"
+                )
+            else:
+                # TODO: Audio-based models.
+                model = None
+        else:
+            raise ValueError(f"{base_model_type} is not a valid base model.")
+    except KeyError as error:
+        raise error
     return model
 
 
 def set_model_criterion(model: SeparationModel):
     """Sets the model criterion according to its configuration file."""
-    loss_fn = model.config["training_params"]["criterion"]
-    model_type = model.config["model_params"]["model_type"]
+    loss_fn = model.training_params["criterion"]
+    model_type = model.model_params["model_type"]
     is_vae_model = model_type == "SpectrogramNetVAE"
     if loss_fn == "component_loss":
         criterion = ComponentLoss(
             model=model,
-            alpha=model.config["training_params"]["alpha_constant"],
-            beta=model.config["training_params"]["beta_constant"],
+            alpha=model.training_params["alpha"],
+            beta=model.training_params["beta"],
         )
     elif is_vae_model and loss_fn == "kl_div_loss":
         criterion = KLDivergenceLoss(model=model, loss_fn=loss_fn)
@@ -129,7 +184,7 @@ def setup_model(model: SeparationModel) -> SeparationModel:
         >>> hasattr(my_model, "scheduler")
         True
     """
-    if model.training_mode:
+    if model._training_mode:
         last_epoch = model.training_params["last_epoch"]
 
         # Define model criterion.
@@ -151,21 +206,21 @@ def setup_model(model: SeparationModel) -> SeparationModel:
         model.optimizer = Adam(params=params, lr=model.training_params["lr"])
 
         # Define lr scheduler and early stopping params.
-        model.max_lr_steps = model.training_params["max_lr_steps"]
-        model.stop_patience = model.training_params["stop_patience"]
+        model._max_lr_steps = model.training_params["max_lr_steps"]
+        model._stop_patience = model.training_params["stop_patience"]
         model.scheduler = ReduceLROnPlateau(
             optimizer=model.optimizer,
             mode="min",
             verbose=True,
-            patience=model.stop_patience,
+            patience=model._stop_patience,
         )
 
         # Initialize gradient scaler. Will only be invoked if using AMP.
         use_amp = model.training_params["use_mixed_precision"]
-        model.use_amp = use_amp and model.device == "cuda"
-        model.grad_scaler = GradScaler(
+        model._use_amp = use_amp and model.device == "cuda"
+        model._grad_scaler = GradScaler(
             init_scale=model.training_params["mixed_precision_scale"],
-            enabled=model.use_amp,
+            enabled=model._use_amp,
             growth_factor=100,
             growth_interval=20000,
         )
@@ -185,13 +240,15 @@ def setup_model(model: SeparationModel) -> SeparationModel:
                 )
         else:
             # Create checkpoint folder.
-            Path(model.checkpoint_path).mkdir(exist_ok=True)
+            Path(model._checkpoint_path).mkdir(exist_ok=True)
     else:
         try:
             best_epoch = model.training_params["best_epoch"]
             load_object(model=model, obj_name="model", global_step=best_epoch)
-            model.training_mode = False
+            model._training_mode = False
         except (OSError, FileNotFoundError) as error:
-            print(f"Failed to load model {model.model_name}.")
+            print(f"Failed to load model {model._model_name}.")
             raise error
     return model
+
+

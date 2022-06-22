@@ -4,6 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+import importlib
 import torch
 import torch.nn as nn
 
@@ -11,70 +12,120 @@ import torch.nn as nn
 from auralflow.transforms import AudioTransform, get_num_stft_frames
 from .base import SeparationModel
 from torch import FloatTensor, Tensor
-from typing import Optional
+from typing import List, Optional
 
 
 class SpectrogramMaskModel(SeparationModel):
     """Spectrogram-domain deep mask estimation model.
 
     Args:
-        configuration (dict): Model configuration.
+        base_model_type (str): Base model architecture.
+        target_labels (List[str]): Target source labels.
+        num_fft (int): Number of FFT bins. Note that only ``num_fft`` // 2 + 1
+            bins will be used due to symmetry. Default: ``1024``.
+        window_size (int): Window size. Default: ``1024``.
+        hop_length (int): Hop length. Default: ``512``.
+        sample_length (int): Duration of audio samples in seconds.
+            Default: ``3``.
+        sample_rate (int): Sample rate. Default: ``44100``.
+        num_channels (int): Number of input/output channels. Default: ``1``.
+        num_hidden_channels (int): Number of initial hidden channels.
+            Default: ``16``.
+        mask_act_fn (str): Mask activation function. Default: ``'sigmoid'``.
+        leak_factor (float): Leak factor if ``mask_act_fn='leaky_relu'``.
+            Default: ``0``.
+        dropout_p (float): Layer dropout probability. Default: ``0.4``.
+        normalize_input (bool): Whether to learn input scaling/centering
+            parameters. Default: ``True``.
+        normalize_output (bool): Whether to learn output scaling/centering
+            parameters. Default: ``True``.
+        device (str): Device. Default: ``'cpu'``.
     """
 
-    mixture: FloatTensor
-    target: FloatTensor
-    estimate: FloatTensor
-    residual: Tensor
-    mask: FloatTensor
+    estimate_audio: FloatTensor
+    estimate_spec: FloatTensor
+    mix_spec: FloatTensor
     mix_phase: FloatTensor
     target_audio: FloatTensor
-    estimate_audio: FloatTensor
+    target_spec: FloatTensor
+    mask: FloatTensor
 
-    def __init__(self, configuration: dict):
-        super(SpectrogramMaskModel, self).__init__(configuration)
+    def __init__(
+        self,
+        base_model_type: str,
+        target_labels: List[str],
+        num_fft: int = 1024,
+        window_size: int = 1024,
+        hop_length: int = 512,
+        sample_length: int = 3,
+        sample_rate: int = 44100,
+        num_channels: int = 1,
+        num_hidden_channels: int = 16,
+        mask_act_fn: str = "sigmoid",
+        leak_factor: float = 0,
+        dropout_p: float = 0.4,
+        normalize_input: bool = True,
+        normalize_output: bool = True,
+        device: str = 'cpu'
+    ):
+        super(SpectrogramMaskModel, self).__init__()
+
+        self.target_labels = sorted(target_labels)
+        self.device = device
 
         # Calculate number of frames (temporal dimension).
         self.num_stft_frames = get_num_stft_frames(
-            sample_len=self.dataset_params["sample_length"],
-            sr=self.dataset_params["sample_rate"],
-            win_size=self.dataset_params["window_size"],
-            hop_len=self.dataset_params["hop_length"],
+            sample_len=sample_length,
+            sr=sample_rate,
+            win_size=window_size,
+            hop_len=hop_length,
             center=True,
         )
 
-        # Note that num bins will be num_fft // 2 + 1 due to symmetry.
-        self.n_fft_bins = self.dataset_params["num_fft"] // 2 + 1
-        self.num_channels = self.dataset_params["num_channels"]
-        self.multi_estimator = len(self.target_labels) > 1
+        # Note that the num bins will be num_fft // 2 + 1 due to symmetry.
+        self.n_fft_bins = num_fft // 2 + 1
+        self.num_out_channels = num_channels
+        self._multi_estimator = len(self.target_labels) > 1
+        self._is_best_model = False
+
+        # Retrieve requested base model architecture class.
+        base_class = getattr(
+            importlib.import_module("auralflow.models"),
+            base_model_type
+        )
 
         # Create the model instance and set to current device.
-        self.model = self._base_model_type(
+        self.model = base_class(
             num_fft_bins=self.n_fft_bins,
             num_frames=self.num_stft_frames,
-            num_channels=self.num_channels,
-            hidden_channels=self.model_params["hidden_channels"],
-            mask_act_fn=self.model_params["mask_activation"],
-            leak_factor=self.model_params["leak_factor"],
-            dropout_p=self.model_params["dropout_p"],
-            normalize_input=self.model_params["normalize_input"],
-            normalize_output=self.model_params["normalize_output"],
-            device=self.device,
+            num_channels=self.num_out_channels,
+            hidden_channels=num_hidden_channels,
+            mask_act_fn=mask_act_fn,
+            leak_factor=leak_factor,
+            dropout_p=dropout_p,
+            normalize_input=normalize_input,
+            normalize_output=normalize_output,
+            device=self.device
         ).to(self.device)
 
         # Instantiate data transformer for pre/post audio processing.
         self.transform = AudioTransform(
-            num_fft=self.dataset_params["num_fft"],
-            hop_length=self.dataset_params["hop_length"],
-            window_size=self.dataset_params["window_size"],
-            device=self.device,
+            num_fft=num_fft,
+            hop_length=hop_length,
+            window_size=window_size,
+            device=self.device
         )
 
-        self.scale = 1
-        self.is_best_model = False
-        self.metrics = {}
-
     def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
-        """Wrapper method processes and sets data for internal access."""
+        """Wrapper method processes and sets data for internal access.
+
+        Transforms mixture audio (and optionally target audio) into
+        spectrogram data.
+
+        Args:
+            mix (Tensor): Mixture audio data.
+            target (Optional[Tensor]): Target audio data.
+        """
         # Compute complex-valued STFTs and send tensors to GPU if available.
         mix_complex_stft = self.transform.to_spectrogram(mix.to(self.device))
         if target is not None:
@@ -83,21 +134,19 @@ class SpectrogramMaskModel(SeparationModel):
             # )
             # # Separate target magnitude and phase.
             # self.target = torch.abs(target_complex_stft)
-            self.target = target.squeeze(-1).to(self.device).float()
-            # self.target_phase = torch.angle(target_complex_stft).float()
+            self.target_spec = target.squeeze(-1).to(self.device).float()
 
         # Separate mixture magnitude and phase.
-        self.mixture = torch.abs(mix_complex_stft)
+        self.mix_spec = torch.abs(mix_complex_stft)
         self.mix_phase = torch.angle(mix_complex_stft).float()
 
     def forward(self) -> None:
         """Estimates target by applying the learned mask to the mixture."""
-        self.mask = self.model(self.mixture)
-        self.estimate = self.mask * (self.mixture.clone().detach())
+        self.mask = self.model(self.mix_spec)
+        self.estimate_spec = self.mask * (self.mix_spec.clone().detach())
 
-        phase_corrected = self.estimate * torch.exp(1j * self.mix_phase)
-        target_estimate = self.transform.to_audio(phase_corrected)
-        self.estimate_audio = target_estimate.float()
+        phase_corrected = self.estimate_spec * torch.exp(1j * self.mix_phase)
+        self.estimate_audio = self.transform.to_audio(phase_corrected).float()
 
     def separate(self, audio: Tensor) -> Tensor:
         """Transforms and returns source estimate in the audio domain."""
@@ -106,7 +155,7 @@ class SpectrogramMaskModel(SeparationModel):
         self.test()
 
         # Apply phase correction to estimate.
-        phase_corrected = self.estimate * torch.exp(1j * self.mix_phase)
+        phase_corrected = self.estimate_spec * torch.exp(1j * self.mix_phase)
         target_estimate = self.transform.to_audio(phase_corrected)
         return target_estimate
 
@@ -164,12 +213,12 @@ class SpectrogramMaskModel(SeparationModel):
 
         if delta > 0.01:
             self.stop_patience = self.training_params["stop_patience"]
-            self.is_best_model = True
+            self._is_best_model = True
         else:
             self.stop_patience -= 1
-            self.max_lr_steps -= 1 if not self.stop_patience else 0
-            self.is_best_model = False
-        return not self.max_lr_steps
+            self._max_lr_steps -= 1 if not self.stop_patience else 0
+            self._is_best_model = False
+        return not self._max_lr_steps
 
 
 

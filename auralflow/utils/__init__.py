@@ -14,23 +14,29 @@ __all__ = [
 ]
 
 import json
+import os
 import shutil
 import torch
 
 
 from auralflow.models import SeparationModel
 from pathlib import Path
+from typing import Optional
 
 
 config_template_path = Path(__file__).parents[2].joinpath("config.json")
 
 
-def copy_config_template(save_dir: str) -> None:
+def copy_config_template(save_dir: Optional[str] = None) -> None:
     """Clones default ``config.json`` file to a save directory.
 
     Args:
-        save_dir (str): Path to copy ``config.json`` to.
+        save_dir (Optional[str]): Path to copy ``config.json`` to. If ``None``
+            is passed in, defaults to current working directory.
+            Default: ``None``.
     """
+    if save_dir is None:
+        save_dir = os.getcwd()
     Path(save_dir).mkdir(exist_ok=True)
     save_filepath = save_dir + "/config.json"
     shutil.copy(src=str(config_template_path), dst=save_filepath)
@@ -99,7 +105,7 @@ def save_object(
     Raises:
         OSError: Raised if object cannot be saved.
     """
-    filename = f"{model.checkpoint_path}/{model.model_name}"
+    filename = f"{model._checkpoint_path}/{model._model_name}"
     if not model.training_params["silent_checkpoint"]:
         print(f"Saving {obj_name}...")
     # Get object-specific filename.
@@ -137,7 +143,7 @@ def load_object(
     Raises:
         OSError: Raised if object cannot be loaded.
     """
-    filename = f"{model.checkpoint_path}/{model.model_name}"
+    filename = f"{model._checkpoint_path}/{model._model_name}"
     print(f"Loading {obj_name}...")
     # Get object-specific filename.
     filename = _add_checkpoint_tag(

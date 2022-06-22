@@ -31,6 +31,7 @@ dd > dl > dt {
 .sig-param {
     font-weight: 700 !important;
     color: gray !important;
+    font-style: italic !important;
 }
 
 .sig-return {

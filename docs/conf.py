@@ -85,6 +85,7 @@ html_theme_options = {
         "color-sidebar-brand-text": "#212529",
         "font-weight": 300,
         "color-link": "#049EF4",
+        # "color-problematic": "#DD1144",
         "color-problematic": "#FF0080",
         "color-highlight-on-target": "#f3f4f7"
 

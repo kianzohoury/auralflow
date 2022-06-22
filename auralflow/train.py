@@ -9,7 +9,7 @@ from auralflow.datasets import create_audio_dataset, load_dataset
 from torch.utils.tensorboard import SummaryWriter
 from auralflow.trainer import run_training
 from auralflow.trainer.callbacks import TrainingCallback
-from auralflow.utils import load_config, save_config
+from auralflow.utils import load_config, save_config, save_all
 from auralflow.visualizer import config_visualizer
 
 
@@ -29,7 +29,7 @@ def main(config_filepath: str):
     train_dataset = create_audio_dataset(
         dataset_path=dataset_params["dataset_path"],
         split="train",
-        targets=dataset_params["targets"],
+        targets=model_params["targets"],
         chunk_size=dataset_params["sample_length"],
         num_chunks=dataset_params["max_num_samples"],
         max_num_tracks=dataset_params["max_num_tracks"],
@@ -41,7 +41,7 @@ def main(config_filepath: str):
     val_dataset = create_audio_dataset(
         dataset_path=dataset_params["dataset_path"],
         split="val",
-        targets=dataset_params["targets"],
+        targets=model_params["targets"],
         chunk_size=dataset_params["sample_length"],
         num_chunks=dataset_params["max_num_samples"],
         max_num_tracks=dataset_params["max_num_tracks"],
@@ -83,12 +83,13 @@ def main(config_filepath: str):
     )
 
     # Save last checkpoint to resume training later.
-    model.save(
+    save_all(
+        model=model,
         global_step=model.training_params["last_epoch"],
-        model=True,
-        optim=True,
-        scheduler=True,
-        grad_scaler=model.use_amp,
+        save_model=True,
+        save_optim=True,
+        save_scheduler=True,
+        save_grad_scaler=model._use_amp,
     )
 
     writer.close()
@@ -97,5 +98,5 @@ def main(config_filepath: str):
     # Save updated config file.
     save_config(
         config=configuration,
-        save_filepath=model_params["save_dir"] + "/config.json"
+        save_filepath=model_params["save_dir"]
     )

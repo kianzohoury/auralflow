@@ -21,6 +21,3 @@ from .architectures import (
 )
 from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
-
-
-_model_names = __all__[2:]

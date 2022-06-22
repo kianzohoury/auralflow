@@ -4,7 +4,6 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-import importlib
 import torch
 import torch.backends.cudnn
 import torch.nn as nn
@@ -17,14 +16,18 @@ from typing import Any, Callable, List, Union
 
 
 class SeparationModel(ABC):
-    """Interface shared among all source separation models.
+    """Interface shared across all source separation models.
 
     Should not be instantiated directly but rather subclassed. A
     subclass must implement the following methods: ``set_data``, ``forward``,
     ``compute_loss``, ``backward``, ``optimizer_step`` and ``separate``.
 
-    :ivar model: Underlying PyTorch model.
+    :ivar model: Underlying ``nn.Module`` model.
     :vartype model: nn.Module
+
+    :ivar device: Device. Uses ``'cuda'`` if available; otherwise uses
+        ``'cpu'``.
+    :vartype device: str
 
     :ivar target_labels: Target source labels.
     :vartype target_labels: List[str]
@@ -46,57 +49,19 @@ class SeparationModel(ABC):
 
     :ivar val_losses: Epoch validation loss history.
     :vartype val_losses: List[float]
-
-    :ivar stop_patience: Waiting time in epochs before reducing LR, if
-        validation loss does not improve.
-    :vartype stop_patience: int
-
-    :ivar max_lr_steps: Max number of LR reductions before stopping early.
-    :vartype max_lr_steps: int
-
-    :ivar use_amp: If True, uses automatic mixed precision.
-    :vartype use_amp: bool
-
-    :ivar grad_scaler: Gradient scaler (only if using automatic mixed
-        precision).
-    :vartype grad_scaler: Any
-
-    :ivar is_best: Flag for checkpointing the best model.
-    :vartype is_best: bool
-
-    :ivar model_params: Model configuration parameters.
-    :vartype model_params: dict
-
-    :ivar training_params: Training configuration parameters.
-    :vartype training_params: dict
-
-    :ivar dataset_params: Dataset configuration parameters.
-    :vartype dataset_params: dict
-
-    :ivar visualizer_params: Visualizer configuration parameters.
-    :vartype visualizer_params: dict
-
-    :ivar model_name: Model name (folder name).
-    :vartype model_name: dict
-
-    :ivar checkpoint_path: Path to checkpoint folder.
-    :vartype checkpoint_path: dict
-
-    :ivar silent_checkpoint: Silences checkpointing std output.
-    :vartype silent_checkpoint: dict
-
-    :ivar training_mode: If True, model is in training mode; otherwise model
-        is in inference mode.
-    :vartype training_mode: dict
-
-    :ivar device: Device.
-    :vartype device: str
-
-    Args:
-        config (dict): Model configuration data.
     """
+    _model_name: str
+    _checkpoint_path: str
+    _silent_checkpoint: bool
+    _training_mode: bool
+    _stop_patience: int
+    _max_lr_steps: int
+    _use_amp: bool
+    _grad_scaler: Any
+    _is_best_model: int
 
     model: nn.Module
+    device: str
     target_labels: List[str]
     criterion: Union[nn.Module, Callable]
     optimizer: Optimizer
@@ -104,44 +69,9 @@ class SeparationModel(ABC):
     batch_loss: FloatTensor
     train_losses: List[float]
     val_losses: List[float]
-    stop_patience: int
-    max_lr_steps: int
-    use_amp: bool
-    grad_scaler: Any
-    is_best_model: int
 
-    config: dict
-    model_params: dict
-    training_params: dict
-    dataset_params: dict
-    visualizer_params: dict
-    model_name: str
-    checkpoint_path: str
-    silent_checkpoint: bool
-    training_mode: bool
-    device: str
-
-    def __init__(self, config: dict) -> None:
+    def __init__(self) -> None:
         super(SeparationModel, self).__init__()
-
-        # Store configuration settings as attributes.
-        self.config = config
-        self.model_params = config["model_params"]
-        self.training_params = config["training_params"]
-        self.dataset_params = config["dataset_params"]
-        self.visualizer_params = config["visualizer_params"]
-        self.model_name = self.model_params["model_name"]
-        self.target_labels = sorted(self.dataset_params["targets"])
-        self.checkpoint_path = self.model_params["save_dir"] + "/checkpoint"
-        self.silent_checkpoint = self.training_params["silent_checkpoint"]
-        self.training_mode = self.training_params["training_mode"]
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-
-        # Retrieve requested base model architecture name.
-        self._base_model_type = getattr(
-            importlib.import_module("auralflow.models"),
-            self.model_params["model_type"],
-        )
 
     @abstractmethod
     def set_data(self, *data: Tensor) -> None:
@@ -174,12 +104,12 @@ class SeparationModel(ABC):
 
     @abstractmethod
     def backward(self) -> None:
-        """Runs gradient calculation and backpropagation."""
+        """Abstract method computes the gradient and runs backpropagation."""
         pass
 
     @abstractmethod
     def optimizer_step(self) -> None:
-        """Optimizes training loss and updates model parameters."""
+        """Abstract method that optimizes loss and updates model parameters."""
         pass
 
     @abstractmethod

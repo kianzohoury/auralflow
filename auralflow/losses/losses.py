@@ -262,34 +262,42 @@ class ComponentLoss(nn.Module):
         model (SpectrogramMaskModel): Spectrogram mask model.
         alpha (float): Value for the two-term component loss.
         beta (float): Value for the three-term component loss.
+
+    Note:
+        If ``model.model`` is of type ``SpectrogramNetVAE``, the result of
+        ``kl_div_loss`` will be added to the loss.
     """
 
     def __init__(
-        self, model: SpectrogramMaskModel, alpha: float, beta: float
+        self,
+        model: SpectrogramMaskModel,
+        alpha: float = 0.2,
+        beta: float = 0.8
     ) -> None:
         super(ComponentLoss, self).__init__()
         self.model = model
         self.alpha = alpha
         self.beta = beta
 
-    def forward(self) -> None:
-        """Calculates weighted component loss and stores it.
+    def forward(self) -> Tensor:
+        """Calculates weighted component loss.
 
-        Sets the ``batch_loss`` attribute of ``model``.
+        Returns:
+            Tensor: Weighted component loss.
         """
         # Compute weighted loss.
-        self.model.batch_loss = component_loss(
+        loss = component_loss(
             mask=self.model.mask,
-            target=self.model.target,
-            residual=self.model.mixture - self.model.target,
+            target=self.model.target_spec,
+            residual=self.model.mix_spec - self.model.target_spec,
             alpha=self.alpha,
             beta=self.beta,
         )
-
-        # Add kl term if using VAE.
+        # Add kl term if using a VAE model.
         if hasattr(self.model, "get_kl_div"):
             kl_term = self.model.get_kl_div()
-            self.model.batch_loss = self.model.batch_loss + kl_term
+            loss = loss + kl_term
+        return loss
 
 
 class KLDivergenceLoss(nn.Module):
@@ -339,7 +347,7 @@ class KLDivergenceLoss(nn.Module):
         else:
             kl_term = 0
         construction_loss = self.construction_loss(
-            self.model.estimate, self.model.target
+            self.model.estimate_spec, self.model.target_spec
         )
         self.model.batch_loss = construction_loss + kl_term
 
@@ -398,7 +406,7 @@ class L1Loss(nn.Module):
     def forward(self) -> None:
         """Calculates l1 loss and stores it."""
         self.model.batch_loss = nn.functional.l1_loss(
-            self.model.estimate, self.model.target
+            self.model.estimate_spec, self.model.target_spec
         )
 
 
@@ -420,7 +428,7 @@ class L2Loss(nn.Module):
     def forward(self) -> None:
         """Calculates l2 loss and stores it."""
         self.model.batch_loss = nn.functional.mse_loss(
-            self.model.estimate, self.model.target
+            self.model.estimate_spec, self.model.target_spec
         )
 
 
@@ -432,7 +440,7 @@ class RMSELoss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        sep_loss = rmse_loss(self.model.estimate, self.model.target)
+        sep_loss = rmse_loss(self.model.estimate_spec, self.model.target_spec)
         mask_loss = rmse_loss(self.model.mix_phase, self.model.target_phase)
         self.model.batch_loss = 0.5 * sep_loss + 0.5 * mask_loss
 
@@ -445,8 +453,8 @@ class L2MaskLoss(nn.Module):
         self.model = model
 
     def forward(self) -> None:
-        ideal_mask = self.model.target / torch.max(
-            self.model.mixture, torch.ones_like(self.model.mixture)
+        ideal_mask = self.model.target_spec / torch.max(
+            self.model.mix_spec, torch.ones_like(self.model.mix_spec)
         )
         self.model.batch_loss = nn.functional.mse_loss(
             self.model.mask, ideal_mask

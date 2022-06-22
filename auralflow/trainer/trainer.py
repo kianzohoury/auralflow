@@ -43,7 +43,7 @@ def run_training(
             train_dataloader, total=max_iters, desc="train"
         ) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
-                with autocast(enabled=model.use_amp):
+                with autocast(enabled=model._use_amp):
 
                     # Process data, run forward pass.
                     model.set_data(mixture, target)
@@ -87,7 +87,7 @@ def run_training(
         model.training_params["last_epoch"] = epoch
 
         # Only save model if validation loss decreases.
-        if model.is_best_model:
+        if model._is_best_model:
             model.training_params["best_epoch"] = epoch
             save_all(
                 model=model,
@@ -125,7 +125,7 @@ def run_validation(model: SeparationModel, val_dataloader: DataLoader) -> None:
     with ProgressBar(val_dataloader, total=max_iters, desc="valid") as pbar:
         total_loss = mean_loss = 0
         for idx, (mixture, target) in enumerate(pbar):
-            with autocast(enabled=model.use_amp):
+            with autocast(enabled=model._use_amp):
                 with torch.no_grad():
                     # Process data, run forward pass
                     model.set_data(mixture, target)

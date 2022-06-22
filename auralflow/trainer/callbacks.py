@@ -169,7 +169,7 @@ class WriterCallback(Callback):
         main_tag: str = "loss/epoch",
     ) -> None:
         """Writers epoch training loss to tensorboard."""
-        label = f"{model.model_name}_" f"{model.training_params['criterion']}"
+        label = f"{model._model_name}_" f"{model.training_params['criterion']}"
         named_losses = {}
         if log_train:
             train_loss_tag = f"{label}_train"
@@ -214,7 +214,7 @@ class WriterCallback(Callback):
     ) -> None:
         """Writers iteration training loss to tensorboard."""
         label = (
-            f"{model.model_name}_"
+            f"{model._model_name}_"
             f"{model.training_params['criterion']}_train"
         )
         self.update_writer(
