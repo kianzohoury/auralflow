@@ -48,30 +48,39 @@ def component_loss(
         - :math:`R_{f} := M_{ \theta }\odot (|X| - |Y_{k}|)`, filtered residual
         - :math:`\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}`, filtered unit-residual
         - :math:`\hat{R} := \frac{R}{||R||_2}`, unit residual
+        - :math:`n`: number of tensor elements
+        - :math:`\alpha`: 2-term coefficient value
+        - :math:`\alpha`: 3-term coefficient value
+
 
     Args:
         mask (FloatTensor): Estimated soft-mask (output of the network).
         target (FloatTensor): Ground-truth target source.
         residual (FloatTensor): The residual or background noise, defined as
             the difference between the mixture and target sources.
-        alpha (float): Value for the two-term component loss.
-        beta (float): Value for the three-term component loss.
+        alpha (float): Coefficient value for the two-term component loss.
+        beta (float): Coefficient value for the three-term component loss.
 
     Returns:
         Tensor: Mean component loss.
 
     Examples:
-        >>> # get mask, target and residual spectrogram data
+
+        Get mask, target and resiual spectrograms:
+
+        >>> import torch
         >>> mask = torch.rand((16, 512, 173, 1)).float()
         >>> target = torch.rand((16, 512, 173, 1)).float()
         >>> residual = torch.rand((16, 512, 173, 1)).float()
-        >>>
-        >>> # calculate the weighted loss
+
+        Calculate the weighted loss:
+
         >>> loss = component_loss(mask=mask, target=target, residual=residual)
         >>> type(loss)
         <class 'torch.Tensor'>
-        >>>
-        >>> # get its scalar value
+
+        Get the loss as a scalar value:
+
         >>> loss_val = loss.item()
         >>> type(loss_val)
         <class 'float'>

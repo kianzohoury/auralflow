@@ -33,12 +33,20 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
-    'sphinx.ext.viewcode'
+    'sphinx.ext.viewcode',
+    "sphinx_autodoc_typehints"
 ]
 autosummary_generate = True
 autosummary_ignore_module_all = False
 autosummary_imported_members = True
 autodoc_mock_imports = ['asteroid', 'prettytable']
+pygments_style = 'tango'
+
+# autodoc_typehints = 'description'
+# autodoc_typehints_format = 'short'
+# autodoc_typehints_description_target = 'documented_params'
+# typehints_document_rtype = False
+typehints_use_rtype = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -85,8 +93,8 @@ html_theme_options = {
         "color-sidebar-brand-text": "#212529",
         "font-weight": 300,
         "color-link": "#049EF4",
-        # "color-problematic": "#DD1144",
-        "color-problematic": "#FF0080",
+        "color-problematic": "#212529",
+        # "color-problematic": "#FF0080",
         "color-highlight-on-target": "#f3f4f7"
 
     },
