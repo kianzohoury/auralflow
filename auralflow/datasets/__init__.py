@@ -21,15 +21,3 @@ from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
 
-def load_dataset(dataset: Dataset, training_params: dict) -> DataLoader:
-    """Returns a dataloader for the dataset given some training parameters."""
-    dataloader = DataLoader(
-        dataset=dataset,
-        batch_size=training_params["batch_size"],
-        num_workers=training_params["num_workers"],
-        pin_memory=training_params["pin_memory"],
-        persistent_workers=training_params["persistent_workers"],
-        prefetch_factor=training_params["pre_fetch"],
-        shuffle=True
-    )
-    return dataloader

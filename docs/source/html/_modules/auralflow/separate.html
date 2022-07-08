@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -245,7 +244,7 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">wavfile</span>
 
-<span class="kn">from</span> <span class="nn">auralflow.customs</span> <span class="kn">import</span> <span class="n">init_model</span><span class="p">,</span> <span class="n">setup_model</span>
+<span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">_build_model</span>
 <span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">load_config</span>
 <span class="kn">from</span> <span class="nn">auralflow.transforms</span> <span class="kn">import</span> <span class="n">trim_audio</span>
 <span class="kn">from</span> <span class="nn">auralflow.visualizer</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
@@ -353,8 +352,10 @@
 
     <span class="c1"># Load model. Setup restores previous state if resuming training.</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading model...&quot;</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">init_model</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">setup_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">_build_model</span><span class="p">(</span>
+        <span class="o">**</span><span class="n">configuration</span>
+    <span class="p">)</span>
+    <span class="c1"># model = setup_model(model)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span>
 
     <span class="c1"># Folder to store output.</span>

@@ -21,3 +21,12 @@ from .architectures import (
 )
 from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
+
+# Only spectrogram-based models for now.
+SPEC_MODELS = {
+    "SpectrogramNetSimple",
+    "SpectrogramNetLSTM",
+    "SpectrogramNetVAE"
+}
+AUDIO_MODELS = set()
+ALL_MODELS = SPEC_MODELS | AUDIO_MODELS

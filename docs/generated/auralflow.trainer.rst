@@ -5,18 +5,24 @@
 
    
    
-   .. rubric:: Functions
+   
+
+   
+   
+   .. rubric:: Classes
 
    .. autosummary::
-      :nosignatures:
+     :nosignatures:
 
    
-      run_training
-      run_validation
-   
-   
-
-   
+      ModelTrainer
+      CallbackManager
+      TrainingCallback
+      AudioPlayerCallback
+      LayersVisualCallback
+      LossCallback
+      SpectrogramVisualCallback
+      WaveformVisualCallback
    
    
 

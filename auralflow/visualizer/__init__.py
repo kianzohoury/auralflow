@@ -4,25 +4,20 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from torch.utils.tensorboard import SummaryWriter
-from .visualizer import (
-    spec_show_diff,
-    waveform_show_diff,
-    TrainingVisualizer
-)
-from .progress import ProgressBar
-
-
 __all__ = [
     "spec_show_diff",
     "waveform_show_diff",
-
     "TrainingVisualizer",
     "config_visualizer",
 ]
 
-
-
+from .progress import ProgressBar
+from torch.utils.tensorboard import SummaryWriter
+from .visualizer import (
+    spec_show_diff,
+    TrainingVisualizer,
+    waveform_show_diff,
+)
 
 
 def config_visualizer(config: dict, writer: SummaryWriter) -> TrainingVisualizer:

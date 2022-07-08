@@ -14,7 +14,6 @@
       component_loss
       kl_div_loss
       si_sdr_loss
-      rmse_loss
       get_evaluation_metrics
    
    
@@ -32,8 +31,7 @@
       SISDRLoss
       L1Loss
       L2Loss
-      RMSELoss
-      L2MaskLoss
+      MaskLoss
    
    
 

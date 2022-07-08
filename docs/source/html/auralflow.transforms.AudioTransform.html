@@ -185,7 +185,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
@@ -232,79 +231,70 @@
 <h1>auralflow.transforms.AudioTransform<a class="headerlink" href="#auralflow-transforms-audiotransform" title="Permalink to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.transforms.AudioTransform">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.transforms.</span></span><span class="sig-name descname"><span class="pre">AudioTransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_fft</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hop_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.transforms.</span></span><span class="sig-name descname"><span class="pre">AudioTransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_fft</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hop_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Wrapper class that conveniently stores multiple transformation tools.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>num_fft</strong> (<em>int</em>) -- Number of FFT bins.</p></li>
-<li><p><strong>hop_length</strong> (<em>int</em>) -- Hop length.</p></li>
-<li><p><strong>window_size</strong> (<em>int</em>) -- Window size.</p></li>
-<li><p><strong>sample_rate</strong> (<em>int</em>) -- Sample rate. Default; 44100.</p></li>
-<li><p><strong>device</strong> (<em>str</em>) -- Device. Default: 'cpu'.</p></li>
+<li><p><strong>num_fft</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of FFT bins.</p></li>
+<li><p><strong>hop_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Hop length.</p></li>
+<li><p><strong>window_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Window size.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Sample rate. Default; 44100.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Device. Default: 'cpu'.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.transforms.AudioTransform.audio_to_mel">
-<span class="sig-name descname"><span class="pre">audio_to_mel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.audio_to_mel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.audio_to_mel" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">audio_to_mel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.audio_to_mel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.audio_to_mel" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms raw audio signal to a mel spectrogram.</p>
 <p>Uses <code class="docutils literal notranslate"><span class="pre">to_spectrogram</span></code> and <code class="docutils literal notranslate"><span class="pre">to_mel_scale</span></code> as subroutines.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>audio</strong> (<em>Tensor</em>) -- Raw audio signal data.</p></li>
-<li><p><strong>to_db</strong> (<em>bool</em>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, converts magnitude spectrogram to
+<li><p><strong>to_db</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, converts magnitude spectrogram to
 decibel scale first. Default: True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Mel spectrogram data.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tensor</p>
+<dd class="field-even"><p><em>Tensor</em> -- Mel spectrogram data.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.transforms.AudioTransform.pad_audio">
-<span class="sig-name descname"><span class="pre">pad_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.pad_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.pad_audio" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">pad_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.pad_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.pad_audio" title="Permalink to this definition">#</a></dt>
 <dd><p>Zero-pads audio to make its duration divisible by the hop length.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>audio</strong> (<em>Tensor</em>) -- Audio signal data.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Zero-padded audio signal data.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tenor</p>
+<dd class="field-even"><p><em>Tenor</em> -- Zero-padded audio signal data.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.transforms.AudioTransform.to_audio">
-<span class="sig-name descname"><span class="pre">to_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">complex_spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.to_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.to_audio" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">to_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">complex_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.to_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.to_audio" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms complex-valued spectrogram to its time-domain signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>complex_spec</strong> (<em>Tensor</em>) -- Complex spectrogram data.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Audio signal data.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tensor</p>
+<dd class="field-even"><p><em>Tensor</em> -- Audio signal data.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.transforms.AudioTransform.to_decibel">
-<span class="sig-name descname"><span class="pre">to_decibel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrogram</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.to_decibel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.to_decibel" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">to_decibel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrogram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.to_decibel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.to_decibel" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms spectrogram to decibel scale.</p>
 <p>Computes the following:
 .. math:</p>
@@ -316,52 +306,43 @@ decibel scale first. Default: True.</p></li>
 <dd class="field-odd"><p><strong>spectrogram</strong> (<em>Tensor</em>) -- Spectrogram data.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Log-normalized spectrogram data.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>spectrogram (Tensor)</p>
+<dd class="field-even"><p><em>spectrogram (Tensor)</em> -- Log-normalized spectrogram data.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.transforms.AudioTransform.to_mel_scale">
-<span class="sig-name descname"><span class="pre">to_mel_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrogram</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.to_mel_scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.to_mel_scale" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">to_mel_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectrogram</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.to_mel_scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.to_mel_scale" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms a magnitude spectrogram to a mel spectrogram.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spectrogram</strong> (<em>Tensor</em>) -- Magnitude spectrogram data.</p></li>
-<li><p><strong>to_db</strong> (<em>bool</em>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, converts magnitude spectrogram to
+<li><p><strong>to_db</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, converts magnitude spectrogram to
 decibel scale first. Default: True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Mel spectrogram data.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tensor</p>
+<dd class="field-even"><p><em>Tensor</em> -- Mel spectrogram data.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.transforms.AudioTransform.to_spectrogram">
-<span class="sig-name descname"><span class="pre">to_spectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.to_spectrogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.to_spectrogram" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">to_spectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/transforms/transforms.html#AudioTransform.to_spectrogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.transforms.AudioTransform.to_spectrogram" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms an audio signal to its time-frequency representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>audio</strong> (<em>Tensor</em>) -- Raw audio signal data.</p></li>
-<li><p><strong>use_padding</strong> (<em>bool</em>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, zero-pads audio data such that its
+<li><p><strong>use_padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, zero-pads audio data such that its
 duration is a multiple of the hop length. Default: True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Spectrogram data (complex-valued).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tensor</p>
+<dd class="field-even"><p><em>Tensor</em> -- Spectrogram data (complex-valued).</p>
 </dd>
 </dl>
 </dd></dl>

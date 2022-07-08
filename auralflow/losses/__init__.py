@@ -13,28 +13,29 @@ __all__ = [
     "component_loss",
     "kl_div_loss",
     "si_sdr_loss",
-    "rmse_loss",
+    # "rmse_loss",
     "get_evaluation_metrics",
     "ComponentLoss",
     "KLDivergenceLoss",
     "SISDRLoss",
     "L1Loss",
     "L2Loss",
-    "RMSELoss",
-    "L2MaskLoss"
+    # "RMSELoss",
+    "MaskLoss"
 ]
 
 from .losses import (
     component_loss,
     kl_div_loss,
     si_sdr_loss,
-    rmse_loss,
+    # rmse_loss,
     get_evaluation_metrics,
     ComponentLoss,
     KLDivergenceLoss,
     SISDRLoss,
     L1Loss,
     L2Loss,
-    RMSELoss,
-    L2MaskLoss
+    # RMSELoss,
+    MaskLoss,
+    _get_loss_criterion
 )

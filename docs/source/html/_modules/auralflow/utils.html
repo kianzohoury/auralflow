@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -237,7 +236,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;copy_config_template&quot;</span><span class="p">,</span>
     <span class="s2">&quot;load_config&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;load_object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;load_objects&quot;</span><span class="p">,</span>
     <span class="s2">&quot;save_config&quot;</span><span class="p">,</span>
     <span class="s2">&quot;save_object&quot;</span><span class="p">,</span>
     <span class="s2">&quot;save_all&quot;</span>
@@ -251,44 +250,68 @@
 
 <span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">SeparationModel</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
 
-<span class="n">config_template_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+<span class="n">config_template_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;audio_model_template.json&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="copy_config_template"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.copy_config_template">[docs]</a><span class="k">def</span> <span class="nf">copy_config_template</span><span class="p">(</span><span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Clones default ``config.json`` file to a save directory.</span>
+    <span class="sd">&quot;&quot;&quot;Clones default ``audio_model_template.json`` file to a save directory.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        save_dir (Optional[str]): Path to copy ``config.json`` to. If ``None``</span>
+<span class="sd">        save_dir (Optional[str]): Path to copy ``audio_model_template.json`` to. If ``None``</span>
 <span class="sd">            is passed in, defaults to current working directory.</span>
 <span class="sd">            Default: ``None``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">save_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
     <span class="n">Path</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">save_filepath</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;/config.json&quot;</span>
+    <span class="n">save_filepath</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;/audio_model_template.json&quot;</span>
     <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">config_template_path</span><span class="p">),</span> <span class="n">dst</span><span class="o">=</span><span class="n">save_filepath</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="load_config"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.load_config">[docs]</a><span class="k">def</span> <span class="nf">load_config</span><span class="p">(</span><span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Loads the contents of a configuration file into a dictionary.</span>
+<div class="viewcode-block" id="load_config"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.load_config">[docs]</a><span class="k">def</span> <span class="nf">load_config</span><span class="p">(</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">load_model_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">load_training_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">load_dataset_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">load_viz_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Loads the contents of a configuration file into a dictionary.</span>
 
-<span class="sd">    Expects there to be a ``config.json`` within ``save_dir``.</span>
 <span class="sd">    Args:</span>
-<span class="sd">        save_dir (str): Directory where the configuration file is stored.</span>
-
+<span class="sd">        filename (str): Path to the configuration file.</span>
+<span class="sd">        load_model_params (bool): If ``True``, model params will be loaded</span>
+<span class="sd">            into the dictionary. Default: ``True``.</span>
+<span class="sd">        load_training_params (bool): If ``True``, training params will be</span>
+<span class="sd">            loaded into the dictionary. Default: ``True``.</span>
+<span class="sd">        load_dataset_params (bool): If ``True``, dataset params will be loaded</span>
+<span class="sd">            into the dictionary. Default: ``True``.</span>
+<span class="sd">        load_viz_params (bool): If ``True``, visualizer params will be</span>
+<span class="sd">            loaded into the dictionary. Default: ``True``.</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: Configuration data.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        IOError: Raised if the file cannot be read.</span>
+<span class="sd">        FileNotFoundError: Raised if the configuration file does not exist.</span>
+<span class="sd">        IOError: Raised if the configuration file cannot be read.</span>
+<span class="sd">        KeyError: Raised if a key corresponding to a set of parameters cannot</span>
+<span class="sd">        be found.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;/config.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">config_file</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">config_file</span><span class="p">:</span>
+            <span class="n">config_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">load_model_params</span> <span class="ow">and</span> <span class="s2">&quot;model_params&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config_data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;model_params&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">load_training_params</span> <span class="ow">and</span> <span class="s2">&quot;training_params&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config_data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;training_params.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">load_dataset_params</span> <span class="ow">and</span> <span class="s2">&quot;dataset_params&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config_data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;dataset_params.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">load_viz_params</span> <span class="ow">and</span> <span class="s2">&quot;visualizer_params&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config_data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;visualizer_params&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">config_data</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">error</span></div>
 
 
@@ -309,40 +332,53 @@
         <span class="k">raise</span> <span class="n">error</span></div>
 
 
-<span class="k">def</span> <span class="nf">_add_checkpoint_tag</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Attaches a suffix to the checkpoint filename depending on the object.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">obj_name</span> <span class="o">==</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">.pth&quot;</span>
-    <span class="k">elif</span> <span class="n">obj_name</span> <span class="o">==</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;_optimizer_</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">.pth&quot;</span>
-    <span class="k">elif</span> <span class="n">obj_name</span> <span class="o">==</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;_scheduler_</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">.pth&quot;</span>
-    <span class="k">elif</span> <span class="n">obj_name</span> <span class="o">==</span> <span class="s2">&quot;grad_scaler&quot;</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;_autocast_</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">.pth&quot;</span>
-    <span class="k">return</span> <span class="n">filename</span>
-
-
 <div class="viewcode-block" id="save_object"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.save_object">[docs]</a><span class="k">def</span> <span class="nf">save_object</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span>
+    <span class="n">obj_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">silent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Saves object state as .pth file under the checkpoint directory.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Saves an object&#39;s state as a ``.pth`` file under a checkpoint folder.</span>
+
+<span class="sd">    Saving is quietly ignored if the model instance does not have</span>
+<span class="sd">    ``obj_name`` as an attribute.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (SeparationModel): Separation model.</span>
-<span class="sd">        obj_name (str): Object to save.</span>
-<span class="sd">        global_step (int): Global step.</span>
+<span class="sd">        obj_name (str): Object to save: ``&#39;model&#39;`` | ``&#39;optimizer&#39;`` |</span>
+<span class="sd">            ``&#39;scheduler&#39;`` | ``&#39;grad_scaler&#39;``.</span>
+<span class="sd">        global_step (int): Global step (e.g. epoch number).</span>
+<span class="sd">        checkpoint_dir (Optional[str]): Path to a checkpoint directory. If</span>
+<span class="sd">            no path is specified, file is saved in the current directory.</span>
+<span class="sd">            Default: ``None``.</span>
+<span class="sd">        silent (bool): If ``True``, checkpoint dialogue is suppressed.</span>
+<span class="sd">            Default: ``True``.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        OSError: Raised if object cannot be saved.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; import auralflow.utils</span>
+<span class="sd">        &gt;&gt;&gt; my_model = ...</span>
+<span class="sd">        &gt;&gt;&gt; auralflow.utils.save_object(</span>
+<span class="sd">        ...     model=my_model,</span>
+<span class="sd">        ...     obj_name=&quot;model&quot;,</span>
+<span class="sd">        ...     global_step=10,</span>
+<span class="sd">        ...     checkpoint_dir=&quot;path/to/checkpoint_dir&quot;</span>
+<span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">_checkpoint_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">_model_name</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;silent_checkpoint&quot;</span><span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving </span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="c1"># Get object-specific filename.</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="n">_add_checkpoint_tag</span><span class="p">(</span>
-        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="n">obj_name</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-    <span class="p">)</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">checkpoint_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="c1"># Create the object-specific filename.</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">.pth&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving </span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
         <span class="c1"># Retrieve object&#39;s state.</span>
         <span class="k">if</span> <span class="n">obj_name</span> <span class="o">==</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span>
             <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
@@ -353,84 +389,101 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Save object&#39;s state to filename.</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;silent_checkpoint&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Failed.&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">error</span></div>
 
 
-<div class="viewcode-block" id="load_object"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.load_object">[docs]</a><span class="k">def</span> <span class="nf">load_object</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span>
+<div class="viewcode-block" id="load_objects"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.load_objects">[docs]</a><span class="k">def</span> <span class="nf">load_objects</span><span class="p">(</span>
+    <span class="n">named_objects</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">],</span>
+    <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;cpu&#39;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Loads object&#39;s state and and attaches it to the model.</span>
+    <span class="sd">&quot;&quot;&quot;Loads the state of one or more objects corresponding to a given epoch.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model (SeparationModel): Separation model.</span>
-<span class="sd">        obj_name (str): Object to save.</span>
-<span class="sd">        global_step (int): Global step.</span>
+<span class="sd">        named_objects (Dict[str, object]): Labeled objects in the form of a</span>
+<span class="sd">            dictionary, with the possible keys: ``&#39;model&#39;`` | ``&#39;optimizer&#39;`` |</span>
+<span class="sd">            ``&#39;scheduler&#39;`` | ``&#39;grad_scaler&#39;``.</span>
+<span class="sd">        checkpoint_dir (str): Path to a checkpoint directory.</span>
+<span class="sd">        epoch (int): Epoch number.</span>
+<span class="sd">        device (str): Device to load object onto. Default: ``&#39;cpu&#39;``.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        OSError: Raised if object cannot be loaded.</span>
+<span class="sd">        OSError: Raised if an object cannot be loaded.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">_checkpoint_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">_model_name</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="c1"># Get object-specific filename.</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="n">_add_checkpoint_tag</span><span class="p">(</span>
-        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="n">obj_name</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-    <span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># Try to read object state from the given file.</span>
-        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Failed.&quot;</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">error</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">):</span>
-        <span class="c1"># Load state into object.</span>
-        <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span></div>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="nb">object</span> <span class="ow">in</span> <span class="n">named_objects</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Get object-specific filename.</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">.pth&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Try to read object state from the given file.</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Failed.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">error</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">):</span>
+            <span class="c1"># Load state into object.</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="p">)</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="save_all"><a class="viewcode-back" href="../../auralflow.utils.html#auralflow.utils.save_all">[docs]</a><span class="k">def</span> <span class="nf">save_all</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span>
+    <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">save_model</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">save_optim</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">save_optimizer</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">save_scheduler</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">save_grad_scaler</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">silent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Saves the model and training objects.</span>
+    <span class="sd">&quot;&quot;&quot;Saves various objects in one call.</span>
 
-<span class="sd">    If an object does not exist (e.g. scheduler, gradient_scaler), saving</span>
-<span class="sd">    is ignored.</span>
+<span class="sd">    Saving is ignored for objects that</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        global_step (int): Global step.</span>
-<span class="sd">        model (SeparationModel): Separation model.</span>
+<span class="sd">        checkpoint_dir (str): Directory to save the checkpoint files under.</span>
+<span class="sd">            If the directory does not already exist, a new one is created.</span>
 <span class="sd">        save_model (bool): Whether to save the model state. Default: ``True``.</span>
-<span class="sd">        save_optim (bool): Whether to save the optimizer state.</span>
+<span class="sd">        save_optimizer (bool): Whether to save the optimizer state.</span>
 <span class="sd">            Default: ``True``.</span>
 <span class="sd">        save_scheduler (bool): Whether to save the scheduler state.</span>
 <span class="sd">            Default: ``True``.</span>
 <span class="sd">        save_grad_scaler (bool): Whether to save the gradient scaler state.</span>
 <span class="sd">            Default: ``True``.</span>
+<span class="sd">        silent (bool): If ``True``, checkpoint dialogue is suppressed.</span>
+<span class="sd">            Default: ``True``.</span>
+<span class="sd">    Raises:</span>
+<span class="sd">        OSError: Raised if object cannot be saved.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import auralflow.utils</span>
+<span class="sd">        &gt;&gt;&gt; my_model = ...</span>
+<span class="sd">        &gt;&gt;&gt; auralflow.utils.save_all(</span>
+<span class="sd">        ...     model=my_model,</span>
+<span class="sd">        ...     global_step=10,</span>
+<span class="sd">        ...     checkpoint_dir=&quot;path/to/checkpoint_dir&quot;</span>
+<span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">save_model</span><span class="p">:</span>
-        <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">save_optim</span><span class="p">:</span>
-        <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">save_scheduler</span><span class="p">:</span>
-        <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">save_grad_scaler</span><span class="p">:</span>
-        <span class="n">save_object</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
-        <span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">checkpoint_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">save_model</span><span class="p">,</span> <span class="n">save_optimizer</span><span class="p">,</span> <span class="n">save_scheduler</span><span class="p">,</span> <span class="n">save_grad_scaler</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="s2">&quot;grad_scaler&quot;</span>
+    <span class="k">for</span> <span class="n">flag</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">flag</span><span class="p">:</span>
+            <span class="n">save_object</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">obj_name</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">,</span>
+                <span class="n">checkpoint_dir</span><span class="o">=</span><span class="n">checkpoint_dir</span><span class="p">,</span>
+                <span class="n">silent</span><span class="o">=</span><span class="n">silent</span>
+            <span class="p">)</span></div>
 </pre></div>
         </article>
       </div>

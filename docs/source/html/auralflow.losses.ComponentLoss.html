@@ -185,7 +185,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
@@ -232,8 +231,8 @@
 <h1>auralflow.losses.ComponentLoss<a class="headerlink" href="#auralflow-losses-componentloss" title="Permalink to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.losses.ComponentLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">ComponentLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#ComponentLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.ComponentLoss" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">ComponentLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#ComponentLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.ComponentLoss" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
 <p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">component_loss</span></code>.</p>
 <p>Uses two or three loss components depending on the arguments for <code class="docutils literal notranslate"><span class="pre">alpha</span></code>
 and <code class="docutils literal notranslate"><span class="pre">beta</span></code>. If <code class="docutils literal notranslate"><span class="pre">beta=0</span></code>, it weighs the quality of target source
@@ -258,15 +257,18 @@ against the other two terms. The 2-component loss is defined as:</p>
 <li><p><span class="math notranslate nohighlight">\(R_{f} := M_{ \theta }\odot (|X| - |Y_{k}|)\)</span>, filtered residual</p></li>
 <li><p><span class="math notranslate nohighlight">\(\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}\)</span>, filtered unit-residual</p></li>
 <li><p><span class="math notranslate nohighlight">\(\hat{R} := \frac{R}{||R||_2}\)</span>, unit residual</p></li>
+<li><p><span class="math notranslate nohighlight">\(n\)</span>: number of tensor elements</p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha\)</span>: 2-term coefficient value</p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha\)</span>: 3-term coefficient value</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.SpectrogramMaskModel"><em>SpectrogramMaskModel</em></a>) -- Spectrogram mask model.</p></li>
-<li><p><strong>alpha</strong> (<em>float</em>) -- Value for the two-term component loss.</p></li>
-<li><p><strong>beta</strong> (<em>float</em>) -- Value for the three-term component loss.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Value for the two-term component loss. Default: <code class="docutils literal notranslate"><span class="pre">0.2</span></code>.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Value for the three-term component loss.
+Default: <code class="docutils literal notranslate"><span class="pre">0.8</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -277,14 +279,11 @@ against the other two terms. The 2-component loss is defined as:</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.losses.ComponentLoss.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#ComponentLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.ComponentLoss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Calculates weighted component loss.</p>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#ComponentLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.ComponentLoss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculates the weighted component loss.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Weighted component loss.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Tensor</p>
+<dd class="field-odd"><p><em>Tensor</em> -- Weighted component loss.</p>
 </dd>
 </dl>
 </dd></dl>

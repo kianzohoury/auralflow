@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -233,103 +232,200 @@
 <span class="c1"># SPDX-License-Identifier: MIT</span>
 <span class="c1"># This code is part of the auralflow project linked below.</span>
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 
-<span class="kn">from</span> <span class="nn">auralflow.customs</span> <span class="kn">import</span> <span class="n">init_model</span><span class="p">,</span> <span class="n">setup_model</span>
-<span class="kn">from</span> <span class="nn">auralflow.datasets</span> <span class="kn">import</span> <span class="n">create_audio_dataset</span><span class="p">,</span> <span class="n">load_dataset</span>
-<span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
-<span class="kn">from</span> <span class="nn">auralflow.trainer</span> <span class="kn">import</span> <span class="n">run_training</span>
-<span class="kn">from</span> <span class="nn">auralflow.trainer.callbacks</span> <span class="kn">import</span> <span class="n">TrainingCallback</span>
+<span class="kn">from</span> <span class="nn">auralflow.datasets</span> <span class="kn">import</span> <span class="n">create_audio_dataset</span>
+<span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">_build_model</span>
+<span class="kn">from</span> <span class="nn">auralflow.trainer</span> <span class="kn">import</span> <span class="n">_create_callbacks</span><span class="p">,</span> <span class="n">ModelTrainer</span><span class="p">,</span> <span class="n">_DefaultModelTrainer</span>
+<span class="kn">from</span> <span class="nn">auralflow.losses</span> <span class="kn">import</span> <span class="n">_get_loss_criterion</span>
 <span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">load_config</span><span class="p">,</span> <span class="n">save_config</span><span class="p">,</span> <span class="n">save_all</span>
 <span class="kn">from</span> <span class="nn">auralflow.visualizer</span> <span class="kn">import</span> <span class="n">config_visualizer</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
+<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">AdamW</span>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../auralflow.html#auralflow.train.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Runs training script given a configuration file.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../auralflow.html#auralflow.train.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+    <span class="n">model_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">loss_criterion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">max_num_tracks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">max_num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">pin_memory</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">persistent_workers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">pre_fetch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">resume_training</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">use_mixed_precision</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># max_grad_norm: 100,</span>
+
+
+
+
+
+
+
+
+         <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Trains a model given a valid path to a configuration file.</span>
+
+<span class="sd">    The configuration file must have valid keys and values specifying how to</span>
+<span class="sd">    build the model, how to train it, how to construct the dataset and how to</span>
+<span class="sd">    visualize training (e.g. tensorboard, saving files locally).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_filepath (str): Valid path to a configuration file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Load configuration file.</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading configuration file...&quot;</span><span class="p">)</span>
-    <span class="n">configuration</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">)</span>
-    <span class="n">model_params</span> <span class="o">=</span> <span class="n">configuration</span><span class="p">[</span><span class="s2">&quot;model_params&quot;</span><span class="p">]</span>
-    <span class="n">training_params</span> <span class="o">=</span> <span class="n">configuration</span><span class="p">[</span><span class="s2">&quot;training_params&quot;</span><span class="p">]</span>
-    <span class="n">dataset_params</span> <span class="o">=</span> <span class="n">configuration</span><span class="p">[</span><span class="s2">&quot;dataset_params&quot;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span>
+    <span class="c1"># print(&quot;Reading configuration file...&quot;)</span>
+    <span class="c1"># configuration = load_config(filename=config_filepath)</span>
+    <span class="c1">#</span>
+    <span class="c1">#</span>
+    <span class="c1"># print(&quot;  Successful.&quot;)</span>
 
-    <span class="c1"># Load training set into memory.</span>
+    <span class="c1"># Load training set.</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading training data...&quot;</span><span class="p">)</span>
     <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">create_audio_dataset</span><span class="p">(</span>
-        <span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;dataset_path&quot;</span><span class="p">],</span>
+        <span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">,</span>
         <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span>
         <span class="n">targets</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;targets&quot;</span><span class="p">],</span>
-        <span class="n">chunk_size</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;sample_length&quot;</span><span class="p">],</span>
-        <span class="n">num_chunks</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;max_num_samples&quot;</span><span class="p">],</span>
-        <span class="n">max_num_tracks</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;max_num_tracks&quot;</span><span class="p">],</span>
-        <span class="n">sample_rate</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;sample_rate&quot;</span><span class="p">],</span>
-        <span class="n">mono</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;num_channels&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;sample_length&quot;</span><span class="p">],</span>
+        <span class="n">max_num_tracks</span><span class="o">=</span><span class="n">max_num_tracks</span><span class="p">,</span>
+        <span class="n">num_chunks</span><span class="o">=</span><span class="n">max_num_samples</span><span class="p">,</span>
+        <span class="n">sample_rate</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;sample_rate&quot;</span><span class="p">],</span>
+        <span class="n">mono</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;num_channels&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="c1"># Load validation set into memory.</span>
+    <span class="c1"># Load validation set.</span>
     <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">create_audio_dataset</span><span class="p">(</span>
-        <span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;dataset_path&quot;</span><span class="p">],</span>
+        <span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">,</span>
         <span class="n">split</span><span class="o">=</span><span class="s2">&quot;val&quot;</span><span class="p">,</span>
         <span class="n">targets</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;targets&quot;</span><span class="p">],</span>
-        <span class="n">chunk_size</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;sample_length&quot;</span><span class="p">],</span>
-        <span class="n">num_chunks</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;max_num_samples&quot;</span><span class="p">],</span>
-        <span class="n">max_num_tracks</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;max_num_tracks&quot;</span><span class="p">],</span>
-        <span class="n">mono</span><span class="o">=</span><span class="n">dataset_params</span><span class="p">[</span><span class="s2">&quot;num_channels&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;sample_length&quot;</span><span class="p">],</span>
+        <span class="n">max_num_tracks</span><span class="o">=</span><span class="n">max_num_tracks</span><span class="p">,</span>
+        <span class="n">num_chunks</span><span class="o">=</span><span class="n">max_num_samples</span><span class="p">,</span>
+        <span class="n">sample_rate</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;sample_rate&quot;</span><span class="p">],</span>
+        <span class="n">mono</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;num_channels&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># Load data into dataloaders.</span>
-    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">training_params</span><span class="p">)</span>
-    <span class="n">val_dataloader</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">val_dataset</span><span class="p">,</span> <span class="n">training_params</span><span class="p">)</span>
+    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="n">train_dataset</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+        <span class="n">pin_memory</span><span class="o">=</span><span class="n">pin_memory</span><span class="p">,</span>
+        <span class="n">persistent_workers</span><span class="o">=</span><span class="n">persistent_workers</span><span class="p">,</span>
+        <span class="n">prefetch_factor</span><span class="o">=</span><span class="n">pre_fetch</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">val_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="n">val_dataset</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+        <span class="n">pin_memory</span><span class="o">=</span><span class="n">pin_memory</span><span class="p">,</span>
+        <span class="n">persistent_workers</span><span class="o">=</span><span class="n">persistent_workers</span><span class="p">,</span>
+        <span class="n">prefetch_factor</span><span class="o">=</span><span class="n">pre_fetch</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;  Successful.</span><span class="se">\n</span><span class="s2">Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> training and &quot;</span>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">val_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> validation samples of length &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_params</span><span class="p">[</span><span class="s1">&#39;sample_length&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">s.&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;sample_length&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">s.&quot;</span>
     <span class="p">)</span>
 
-    <span class="c1"># Load model. Setup restores previous state if resuming training.</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">model_params</span><span class="p">[</span><span class="s1">&#39;model_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">init_model</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">setup_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-    <span class="c1"># Initialize summary writer and visualizer.</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading visualization tools...&quot;</span><span class="p">)</span>
-    <span class="n">writer</span> <span class="o">=</span> <span class="n">SummaryWriter</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/runs&quot;</span><span class="p">)</span>
-    <span class="n">visualizer</span> <span class="o">=</span> <span class="n">config_visualizer</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span> <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">)</span>
+    <span class="c1"># Load model.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading model...&quot;</span><span class="p">)</span>
+    <span class="c1"># fix this</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">_build_model</span><span class="p">(</span>
+        <span class="n">model_params</span><span class="o">=</span><span class="n">model_params</span><span class="p">,</span>
+        <span class="n">checkpoint_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+    <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Successful.&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Create a callback object.</span>
-    <span class="n">callback</span> <span class="o">=</span> <span class="n">TrainingCallback</span><span class="p">(</span>
-        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span> <span class="n">visualizer</span><span class="o">=</span><span class="n">visualizer</span><span class="p">,</span> <span class="n">call_metrics</span><span class="o">=</span><span class="kc">True</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Run training loop.</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting training...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">79</span><span class="p">)</span>
-    <span class="n">run_training</span><span class="p">(</span>
+    <span class="c1"># Create trainer.</span>
+    <span class="n">criterion</span> <span class="o">=</span> <span class="n">_get_loss_criterion</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-        <span class="n">train_dataloader</span><span class="o">=</span><span class="n">train_dataloader</span><span class="p">,</span>
-        <span class="n">val_dataloader</span><span class="o">=</span><span class="n">val_dataloader</span><span class="p">,</span>
-        <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span>
+        <span class="n">criterion</span><span class="o">=</span><span class="n">loss_criterion</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">grad_scaler</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># # Define optimizer.</span>
+    <span class="c1"># if isinstance(model.model, SpectrogramNetLSTM):</span>
+    <span class="c1">#     param1, param2 = model.model._split_lstm_parameters()</span>
+    <span class="c1">#</span>
+    <span class="c1">#     # LSTM layers will start with a much smaller learning rate.</span>
+    <span class="c1">#     params = [</span>
+    <span class="c1">#         {&quot;params&quot;: param1, &quot;lr&quot;: model.training_params[&quot;lr&quot;] * 1e-4},</span>
+    <span class="c1">#         {&quot;params&quot;: param2, &quot;lr&quot;: model.training_params[&quot;lr&quot;]},</span>
+    <span class="c1">#     ]</span>
+    <span class="c1"># else:</span>
+    <span class="c1">#     param1 = model.model.parameters()</span>
+    <span class="c1">#     params = [{&quot;params&quot;: param1}]</span>
+    <span class="c1"># model.optimizer = AdamW(params=params, lr=model.training_params[&quot;lr&quot;])</span>
+    <span class="c1">#</span>
+    <span class="c1"># trainer = _DefaultModelTrainer(</span>
+    <span class="c1">#     model=model,</span>
+    <span class="c1">#     criterion=criterion,</span>
+    <span class="c1">#     optimizer=optimizer,</span>
+    <span class="c1">#     scheduler=scheduler,</span>
+    <span class="c1">#     use_mixed_precision=use_mixed_precision and device == &quot;cuda&quot;,</span>
+    <span class="c1">#     grad_scaler=grad_scaler,</span>
+    <span class="c1">#     max_grad_norm=max_grad_norm,</span>
+    <span class="c1">#     stop_patience=stop_patience,</span>
+    <span class="c1">#     max_lr_reductions=max_lr_reductions,</span>
+    <span class="c1">#     checkpoint_dir=checkpoint_dir,</span>
+    <span class="c1">#     overwrite_checkpoint=overwrite_checkpoint,</span>
+    <span class="c1">#     silent_checkpoint=silent_checkpoint,</span>
+    <span class="c1">#     use_tensorboard=use_tensorboard,</span>
+    <span class="c1">#     write_iter_loss=write_iter_loss,</span>
+    <span class="c1">#     write_epoch_loss=write_epoch_loss,</span>
+    <span class="c1">#     visualize_weights=visualize_weights,</span>
+    <span class="c1">#     visualize_gradients=visualize_gradients,</span>
+    <span class="c1">#     visualize_norm=visualize_norm,</span>
+    <span class="c1">#     visualize_waveform=visualize_waveform,</span>
+    <span class="c1">#     visualize_spectrogram=visualize_spectrogram</span>
+    <span class="c1">#     play_estimate=play_estimate,</span>
+    <span class="c1">#     play_residual=play_residual,</span>
+    <span class="c1">#     image_save_dir=image_save_dir,</span>
+    <span class="c1">#     image_save_freq=image_save_freq</span>
+    <span class="c1"># )</span>
+
+    <span class="c1"># Run training.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting training...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">79</span><span class="p">)</span></div>
+    <span class="c1"># run_training(</span>
+    <span class="c1">#     model=model,</span>
+    <span class="c1">#     forward_loop=_ForwardLoopDefault,</span>
+    <span class="c1">#     train_dataloader=train_dataloader,</span>
+    <span class="c1">#     val_dataloader=val_dataloader,</span>
+    <span class="c1">#     callback=callback,</span>
+    <span class="c1"># )</span>
 
     <span class="c1"># Save last checkpoint to resume training later.</span>
-    <span class="n">save_all</span><span class="p">(</span>
-        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-        <span class="n">global_step</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">],</span>
-        <span class="n">save_model</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">save_optim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">save_scheduler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">save_grad_scaler</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">_use_amp</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished training.&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Save updated config file.</span>
-    <span class="n">save_config</span><span class="p">(</span>
-        <span class="n">config</span><span class="o">=</span><span class="n">configuration</span><span class="p">,</span>
-        <span class="n">save_filepath</span><span class="o">=</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">]</span>
-    <span class="p">)</span></div>
+    <span class="c1"># save_all(</span>
+    <span class="c1">#     model=model,</span>
+    <span class="c1">#     global_step=model.training_params[&quot;last_epoch&quot;],</span>
+    <span class="c1">#     save_model=True,</span>
+    <span class="c1">#     save_optimizer=True,</span>
+    <span class="c1">#     save_scheduler=True,</span>
+    <span class="c1">#     save_grad_scaler=model._use_amp,</span>
+    <span class="c1"># )</span>
+    <span class="c1">#</span>
+    <span class="c1"># writer.close()</span>
+    <span class="c1"># print(&quot;Finished training.&quot;)</span>
+    <span class="c1">#</span>
+    <span class="c1"># # Save updated config file.</span>
+    <span class="c1"># save_config(</span>
+    <span class="c1">#     config=configuration,</span>
+    <span class="c1">#     save_filepath=model_params[&quot;save_dir&quot;]</span>
+    <span class="c1"># )</span>
 </pre></div>
         </article>
       </div>

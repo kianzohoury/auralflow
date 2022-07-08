@@ -4,7 +4,6 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from auralflow import customs
 from auralflow import datasets
 from auralflow import losses
 from auralflow import visualizer
@@ -16,7 +15,6 @@ from . import separate
 
 
 __all__ = [
-    "customs",
     "datasets",
     "losses",
     "visualizer",

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import torch
 
 
-from auralflow.models import SeparationModel
+from auralflow.models import SeparationModel, SpectrogramMaskModel
 from auralflow.transforms import trim_audio
 from matplotlib.figure import Figure
 from pathlib import Path
@@ -20,7 +20,7 @@ from typing import Optional, Union
 def spec_show_diff(
     label: str, estimate: Tensor, target: Tensor, resolution: int = 120
 ) -> Figure:
-    """Creates a ``pyplot`` figure comparing estimate and target spectrograms.
+    """Creates a figure comparing estimate and target spectrograms.
 
     The spectrogram subfigures are stacked vertically, with time as the
     horizontal axis, frequency as the vertical axis and amplitude as the
@@ -29,28 +29,20 @@ def spec_show_diff(
 
     Args:
         label (str): Target label.
-        estimate (Tensor): Estimated target source spectrogram.
-        target (Tensor): Ground-truth target source spectrogram.
-        resolution (int): DPI.
+        estimate (Tensor): Estimated target source spectrogram of dimension
+            `(channels, freq, frames)`.
+        target (Tensor): Ground-truth target source spectrogram of dimension
+            `(channels, freq, frames)`.
+        resolution (int): DPI. Default: ``120``.
 
     Returns:
         Figure: Spectrogram figure.
 
-    :shape:
-        - spectrogram: :math:`(C, F, T)`, non-batched
-
-        where
-            - :math:`C`: number of channels
-            - :math:`F`: number of frequency bins
-            - :math:`T`: number of time frames
-
     Examples:
         >>> import matplotlib.pyplot as plt
-        >>>
         >>> # get estimate and target spectrograms
         >>> estimate_spec = torch.rand((1, 512, 173))
         >>> target_spec = torch.rand((1, 512, 173))
-        >>>
         >>> # generate figure
         >>> fig = spec_show_diff(
         ...     label="vocals",
@@ -58,10 +50,8 @@ def spec_show_diff(
         ...     target=target_spec,
         ...     resolution=120
         ... )
-        >>>
         >>> # display figure
         >>> plt.show(fig)
-        >>>
         >>> # save figure
         >>> plt.savefig(fname="spec_comparison.png")
     """
@@ -91,7 +81,7 @@ def spec_show_diff(
 def waveform_show_diff(
     label: str, estimate: Tensor, target: Tensor, resolution: int = 120
 ) -> Figure:
-    """Creates a ``pyplot`` figure comparing estimate and target waveforms.
+    """Creates a figure comparing estimate and target waveforms.
 
     The waveforms are overlayed together, with time as the horizontal axis
     and amplitude as the vertical axis. Like ``spec_show_diff``, the channels
@@ -99,27 +89,20 @@ def waveform_show_diff(
 
     Args:
         label (str): Target label.
-        estimate (Tensor): Estimated target source audio signal.
-        target (Tensor): Ground-truth target source audio signal.
-        resolution (int): DPI.
+        estimate (Tensor): Estimated target source audio signal of dimension
+            `(channels, time)`.
+        target (Tensor): Ground-truth target source audio signal of dimension
+            `(channels, time)`.
+        resolution (int): DPI. Default: ``120``.
 
     Returns:
         Figure: Waveform figure.
 
-    :shape:
-        - waveform: :math:`(C, T)`, non-batched
-
-        where
-            - :math:`C`: number of channels
-            - :math:`T`: number of samples
-
     Examples:
         >>> import matplotlib.pyplot as plt
-        >>>
         >>> # get estimate and target audio signals
         >>> estimate_audio = torch.rand((1, 88200))
         >>> target_audio = torch.rand((1, 88200))
-        >>>
         >>> # generate figure
         >>> fig = spec_show_diff(
         ...     label="vocals",
@@ -127,10 +110,8 @@ def waveform_show_diff(
         ...     target=target_audio,
         ...     resolution=120
         ... )
-        >>>
         >>> # display figure
         >>> plt.show(fig)
-        >>>
         >>> # save figure
         >>> plt.savefig(fname="waveform_comparison.png")
     """
@@ -240,8 +221,8 @@ class TrainingVisualizer(object):
         )
 
         # Apply log and mel scaling to estimate and target.
-        estimate_mel = model.transform.to_mel_scale(model.estimate)
-        target_mel = model.transform.audio_to_mel(target_audio)
+        estimate_mel = model.to_spectrogram.to_mel_scale(model.estimate)
+        target_mel = model.to_spectrogram.audio_to_mel(target_audio)
 
         n_frames = estimate_audio.shape[-1]
         n_images = min(self.num_images, mixture_audio.shape[0])
@@ -382,7 +363,7 @@ class TrainingVisualizer(object):
     ) -> None:
         """Runs visualizer."""
         mixture, target = mixture.to(model.device), target.to(model.device)
-        for i, label in enumerate(model.target_labels):
+        for i, label in enumerate(model.targets):
             # Run model.
             self._test_model(
                 model=model,
@@ -405,6 +386,6 @@ class TrainingVisualizer(object):
         self._save_count += 1
 
 
-        # Create image folder.
-        if save_image:
-            Path(self.output_dir).mkdir(exist_ok=True)
+        # # Create image folder.
+        # if save_image:
+        #     Path(self.output_dir).mkdir(exist_ok=True)

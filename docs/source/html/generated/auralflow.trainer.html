@@ -185,7 +185,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">Python API</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auralflow.models.html">auralflow.models</a></li>
@@ -230,15 +229,33 @@
         <article role="main">
           <section id="module-auralflow.trainer">
 <span id="auralflow-trainer"></span><h1>auralflow.trainer<a class="headerlink" href="#module-auralflow.trainer" title="Permalink to this heading">#</a></h1>
-<p class="rubric">Functions</p>
+<p class="rubric">Classes</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.trainer.run_training.html#auralflow.trainer.run_training" title="auralflow.trainer.run_training"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_training</span></code></a></p></td>
-<td><p>Runs training loop.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.trainer.ModelTrainer.html#auralflow.trainer.ModelTrainer" title="auralflow.trainer.ModelTrainer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelTrainer</span></code></a></p></td>
+<td><p>Wrapper class that trains a <code class="docutils literal notranslate"><span class="pre">SeparationModel</span></code> model.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.trainer.run_validation.html#auralflow.trainer.run_validation" title="auralflow.trainer.run_validation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_validation</span></code></a></p></td>
-<td><p>Runs validation loop.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.trainer.CallbackManager.html#auralflow.trainer.CallbackManager" title="auralflow.trainer.CallbackManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CallbackManager</span></code></a></p></td>
+<td><p>Handles a group of training callbacks.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.trainer.TrainingCallback.html#auralflow.trainer.TrainingCallback" title="auralflow.trainer.TrainingCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrainingCallback</span></code></a></p></td>
+<td><p>Abstract base class for all training callbacks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.trainer.AudioPlayerCallback.html#auralflow.trainer.AudioPlayerCallback" title="auralflow.trainer.AudioPlayerCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AudioPlayerCallback</span></code></a></p></td>
+<td><p>Plays back separated audio via tensorboard.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.trainer.LayersVisualCallback.html#auralflow.trainer.LayersVisualCallback" title="auralflow.trainer.LayersVisualCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LayersVisualCallback</span></code></a></p></td>
+<td><p>Visualizes model parameters by layer via tensorboard.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.trainer.html#auralflow.trainer.LossCallback" title="auralflow.trainer.LossCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LossCallback</span></code></a></p></td>
+<td><p>Losses callback.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.trainer.SpectrogramVisualCallback.html#auralflow.trainer.SpectrogramVisualCallback" title="auralflow.trainer.SpectrogramVisualCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpectrogramVisualCallback</span></code></a></p></td>
+<td><p>Visualizes spectrogram images via tensorboard (and locally).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../auralflow.trainer.WaveformVisualCallback.html#auralflow.trainer.WaveformVisualCallback" title="auralflow.trainer.WaveformVisualCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WaveformVisualCallback</span></code></a></p></td>
+<td><p>Visualizes waveform images via tensorboard (and locally).</p></td>
 </tr>
 </tbody>
 </table>

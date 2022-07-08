@@ -34,7 +34,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
     'sphinx.ext.viewcode',
-    "sphinx_autodoc_typehints"
+    # "sphinx_autodoc_typehints"
+    'sphinx.ext.intersphinx'
 ]
 autosummary_generate = True
 autosummary_ignore_module_all = False
@@ -42,11 +43,26 @@ autosummary_imported_members = True
 autodoc_mock_imports = ['asteroid', 'prettytable']
 pygments_style = 'tango'
 
+
+# napoleon settings
+napoleon_google_docstring = True
+napoleon_use_ivar = False
+napoleon_use_rtype = False
+
+# intersphinx settings
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    "numpy": ("http://docs.scipy.org/doc/numpy/", None),
+    "torch": ("https://pytorch.org/docs/master/", None),
+    "matplotlib": ('https://matplotlib.org/stable/', None)
+}
+
+
 # autodoc_typehints = 'description'
-# autodoc_typehints_format = 'short'
+autodoc_typehints_format = 'short'
 # autodoc_typehints_description_target = 'documented_params'
 # typehints_document_rtype = False
-typehints_use_rtype = False
+# typehints_use_rtype = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -75,9 +91,10 @@ html_title = "auralflow"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
+source_encoding = "utf-8-sig"
 html_static_path = ['_static']
 html_css_files = ['../_static/css/custom.css']
-
+html_context = {"--": "—"}
 html_theme_options = {
 
     # "light_logo": "./assets/soundwave_light.svg",

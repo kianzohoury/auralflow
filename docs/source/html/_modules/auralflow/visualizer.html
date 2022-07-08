@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -234,25 +233,20 @@
 <span class="c1"># This code is part of the auralflow project linked below.</span>
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
-<span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
-<span class="kn">from</span> <span class="nn">.visualizer</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">spec_show_diff</span><span class="p">,</span>
-    <span class="n">waveform_show_diff</span><span class="p">,</span>
-    <span class="n">TrainingVisualizer</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.progress</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-
-
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;spec_show_diff&quot;</span><span class="p">,</span>
     <span class="s2">&quot;waveform_show_diff&quot;</span><span class="p">,</span>
-
     <span class="s2">&quot;TrainingVisualizer&quot;</span><span class="p">,</span>
     <span class="s2">&quot;config_visualizer&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
-
-
+<span class="kn">from</span> <span class="nn">.progress</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
+<span class="kn">from</span> <span class="nn">.visualizer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">spec_show_diff</span><span class="p">,</span>
+    <span class="n">TrainingVisualizer</span><span class="p">,</span>
+    <span class="n">waveform_show_diff</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="config_visualizer"><a class="viewcode-back" href="../../auralflow.visualizer.html#auralflow.visualizer.config_visualizer">[docs]</a><span class="k">def</span> <span class="nf">config_visualizer</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">writer</span><span class="p">:</span> <span class="n">SummaryWriter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainingVisualizer</span><span class="p">:</span>

@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -234,117 +233,61 @@
 <span class="c1"># This code is part of the auralflow project linked below.</span>
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.backends.cudnn</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
 
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABC</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">FloatTensor</span>
-<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 
-<div class="viewcode-block" id="SeparationModel"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel">[docs]</a><span class="k">class</span> <span class="nc">SeparationModel</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="SeparationModel"><a class="viewcode-back" href="../../../auralflow.models.SeparationModel.html#auralflow.models.SeparationModel">[docs]</a><span class="k">class</span> <span class="nc">SeparationModel</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Interface shared across all source separation models.</span>
 
-<span class="sd">    Should not be instantiated directly but rather subclassed. A</span>
-<span class="sd">    subclass must implement the following methods: ``set_data``, ``forward``,</span>
-<span class="sd">    ``compute_loss``, ``backward``, ``optimizer_step`` and ``separate``.</span>
+<span class="sd">    Should not be instantiated directly but rather subclassed. All subclasses</span>
+<span class="sd">    must implement the ``forward`` and ``separate`` methods.</span>
 
 <span class="sd">    :ivar model: Underlying ``nn.Module`` model.</span>
 <span class="sd">    :vartype model: nn.Module</span>
 
+<span class="sd">    :ivar targets: Target source labels.</span>
+<span class="sd">    :vartype targets: List[str]</span>
+
 <span class="sd">    :ivar device: Device. Uses ``&#39;cuda&#39;`` if available; otherwise uses</span>
 <span class="sd">        ``&#39;cpu&#39;``.</span>
 <span class="sd">    :vartype device: str</span>
-
-<span class="sd">    :ivar target_labels: Target source labels.</span>
-<span class="sd">    :vartype target_labels: List[str]</span>
-
-<span class="sd">    :ivar criterion: Loss function.</span>
-<span class="sd">    :vartype criterion: Union[nn.Module, Callable]</span>
-
-<span class="sd">    :ivar optimizer: Optimizer.</span>
-<span class="sd">    :vartype optimizer: Optimizer</span>
-
-<span class="sd">    :ivar scheduler: LR scheduler.</span>
-<span class="sd">    :vartype scheduler: Any</span>
-
-<span class="sd">    :ivar batch_loss: Current batch loss.</span>
-<span class="sd">    :vartype batch_loss: FloatTensor</span>
-
-<span class="sd">    :ivar train_losses: Epoch training loss history.</span>
-<span class="sd">    :vartype train_losses: List[float]</span>
-
-<span class="sd">    :ivar val_losses: Epoch validation loss history.</span>
-<span class="sd">    :vartype val_losses: List[float]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_model_name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">_checkpoint_path</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">_silent_checkpoint</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">_training_mode</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">_stop_patience</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">_max_lr_steps</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">_use_amp</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">_grad_scaler</span><span class="p">:</span> <span class="n">Any</span>
-    <span class="n">_is_best_model</span><span class="p">:</span> <span class="nb">int</span>
 
     <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">device</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">target_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">criterion</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span>
-    <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span>
-    <span class="n">scheduler</span><span class="p">:</span> <span class="n">Any</span>
-    <span class="n">batch_loss</span><span class="p">:</span> <span class="n">FloatTensor</span>
-    <span class="n">train_losses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">val_losses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SeparationModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="SeparationModel.set_data"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.set_data">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">data</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Abstract method for setting and processing data internally.</span>
+<div class="viewcode-block" id="SeparationModel.forward"><a class="viewcode-back" href="../../../auralflow.models.SeparationModel.html#auralflow.models.SeparationModel.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">mixture</span><span class="p">:</span> <span class="n">FloatTensor</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FloatTensor</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;Forward method.</span>
 
-<span class="sd">        Implementations should fill the appropriate instance attributes with</span>
-<span class="sd">        the input data.</span>
+<span class="sd">        All subclasses must implement this method.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            *data (Tensor): Input and/or target data.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-<div class="viewcode-block" id="SeparationModel.forward"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Abstract forward method.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-<div class="viewcode-block" id="SeparationModel.compute_loss"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.compute_loss">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">compute_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Abstract method for calculating the current batch-wise loss.</span>
-
-<span class="sd">        Implementations should sets the ``batch_loss`` attribute and</span>
-<span class="sd">        returns its scalar value.</span>
+<span class="sd">            mixture (FloatTensor): Mixture data.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            float: Batch-wise loss.</span>
+<span class="sd">            Union[FloatTensor, Tuple[FloatTensor, Dict[str, FloatTensor]]]:</span>
+<span class="sd">            Target source estimate or a tuple containing the target source</span>
+<span class="sd">            estimate and a dictionary of intermediate output data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="SeparationModel.backward"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.backward">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Abstract method computes the gradient and runs backpropagation.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-<div class="viewcode-block" id="SeparationModel.optimizer_step"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.optimizer_step">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Abstract method that optimizes loss and updates model parameters.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-<div class="viewcode-block" id="SeparationModel.separate"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.separate">[docs]</a>    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="SeparationModel.separate"><a class="viewcode-back" href="../../../auralflow.models.SeparationModel.html#auralflow.models.SeparationModel.separate">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">separate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Separates target sources from a mixture given its audio data.</span>
+
+<span class="sd">        All subclasses must implement this method.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            audio (Tensor): Mixture audio data.</span>
@@ -354,23 +297,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="SeparationModel.scheduler_step"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.scheduler_step">[docs]</a>    <span class="k">def</span> <span class="nf">scheduler_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Decreases the learning rate if required.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-<div class="viewcode-block" id="SeparationModel.train"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="SeparationModel.train"><a class="viewcode-back" href="../../../auralflow.models.SeparationModel.html#auralflow.models.SeparationModel.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sets model to training mode.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="SeparationModel.eval"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="SeparationModel.eval"><a class="viewcode-back" href="../../../auralflow.models.SeparationModel.html#auralflow.models.SeparationModel.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sets model to evaluation mode.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="SeparationModel.test"><a class="viewcode-back" href="../../../auralflow.models.html#auralflow.models.SeparationModel.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calls forward method without gradient tracking.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span></div></div>
 </pre></div>
         </article>
       </div>

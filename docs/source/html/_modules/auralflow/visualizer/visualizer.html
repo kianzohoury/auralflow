@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -238,7 +237,7 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 
 
-<span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">SeparationModel</span>
+<span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">SeparationModel</span><span class="p">,</span> <span class="n">SpectrogramMaskModel</span>
 <span class="kn">from</span> <span class="nn">auralflow.transforms</span> <span class="kn">import</span> <span class="n">trim_audio</span>
 <span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="kn">import</span> <span class="n">Figure</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -250,7 +249,7 @@
 <div class="viewcode-block" id="spec_show_diff"><a class="viewcode-back" href="../../../auralflow.visualizer.spec_show_diff.html#auralflow.visualizer.spec_show_diff">[docs]</a><span class="k">def</span> <span class="nf">spec_show_diff</span><span class="p">(</span>
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">estimate</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates a ``pyplot`` figure comparing estimate and target spectrograms.</span>
+    <span class="sd">&quot;&quot;&quot;Creates a figure comparing estimate and target spectrograms.</span>
 
 <span class="sd">    The spectrogram subfigures are stacked vertically, with time as the</span>
 <span class="sd">    horizontal axis, frequency as the vertical axis and amplitude as the</span>
@@ -259,28 +258,20 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        label (str): Target label.</span>
-<span class="sd">        estimate (Tensor): Estimated target source spectrogram.</span>
-<span class="sd">        target (Tensor): Ground-truth target source spectrogram.</span>
-<span class="sd">        resolution (int): DPI.</span>
+<span class="sd">        estimate (Tensor): Estimated target source spectrogram of dimension</span>
+<span class="sd">            `(channels, freq, frames)`.</span>
+<span class="sd">        target (Tensor): Ground-truth target source spectrogram of dimension</span>
+<span class="sd">            `(channels, freq, frames)`.</span>
+<span class="sd">        resolution (int): DPI. Default: ``120``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Figure: Spectrogram figure.</span>
 
-<span class="sd">    :shape:</span>
-<span class="sd">        - spectrogram: :math:`(C, F, T)`, non-batched</span>
-
-<span class="sd">        where</span>
-<span class="sd">            - :math:`C`: number of channels</span>
-<span class="sd">            - :math:`F`: number of frequency bins</span>
-<span class="sd">            - :math:`T`: number of time frames</span>
-
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # get estimate and target spectrograms</span>
 <span class="sd">        &gt;&gt;&gt; estimate_spec = torch.rand((1, 512, 173))</span>
 <span class="sd">        &gt;&gt;&gt; target_spec = torch.rand((1, 512, 173))</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # generate figure</span>
 <span class="sd">        &gt;&gt;&gt; fig = spec_show_diff(</span>
 <span class="sd">        ...     label=&quot;vocals&quot;,</span>
@@ -288,10 +279,8 @@
 <span class="sd">        ...     target=target_spec,</span>
 <span class="sd">        ...     resolution=120</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # display figure</span>
 <span class="sd">        &gt;&gt;&gt; plt.show(fig)</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # save figure</span>
 <span class="sd">        &gt;&gt;&gt; plt.savefig(fname=&quot;spec_comparison.png&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -321,7 +310,7 @@
 <div class="viewcode-block" id="waveform_show_diff"><a class="viewcode-back" href="../../../auralflow.visualizer.waveform_show_diff.html#auralflow.visualizer.waveform_show_diff">[docs]</a><span class="k">def</span> <span class="nf">waveform_show_diff</span><span class="p">(</span>
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">estimate</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates a ``pyplot`` figure comparing estimate and target waveforms.</span>
+    <span class="sd">&quot;&quot;&quot;Creates a figure comparing estimate and target waveforms.</span>
 
 <span class="sd">    The waveforms are overlayed together, with time as the horizontal axis</span>
 <span class="sd">    and amplitude as the vertical axis. Like ``spec_show_diff``, the channels</span>
@@ -329,27 +318,20 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        label (str): Target label.</span>
-<span class="sd">        estimate (Tensor): Estimated target source audio signal.</span>
-<span class="sd">        target (Tensor): Ground-truth target source audio signal.</span>
-<span class="sd">        resolution (int): DPI.</span>
+<span class="sd">        estimate (Tensor): Estimated target source audio signal of dimension</span>
+<span class="sd">            `(channels, time)`.</span>
+<span class="sd">        target (Tensor): Ground-truth target source audio signal of dimension</span>
+<span class="sd">            `(channels, time)`.</span>
+<span class="sd">        resolution (int): DPI. Default: ``120``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Figure: Waveform figure.</span>
 
-<span class="sd">    :shape:</span>
-<span class="sd">        - waveform: :math:`(C, T)`, non-batched</span>
-
-<span class="sd">        where</span>
-<span class="sd">            - :math:`C`: number of channels</span>
-<span class="sd">            - :math:`T`: number of samples</span>
-
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # get estimate and target audio signals</span>
 <span class="sd">        &gt;&gt;&gt; estimate_audio = torch.rand((1, 88200))</span>
 <span class="sd">        &gt;&gt;&gt; target_audio = torch.rand((1, 88200))</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # generate figure</span>
 <span class="sd">        &gt;&gt;&gt; fig = spec_show_diff(</span>
 <span class="sd">        ...     label=&quot;vocals&quot;,</span>
@@ -357,10 +339,8 @@
 <span class="sd">        ...     target=target_audio,</span>
 <span class="sd">        ...     resolution=120</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # display figure</span>
 <span class="sd">        &gt;&gt;&gt; plt.show(fig)</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # save figure</span>
 <span class="sd">        &gt;&gt;&gt; plt.savefig(fname=&quot;waveform_comparison.png&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -470,8 +450,8 @@
         <span class="p">)</span>
 
         <span class="c1"># Apply log and mel scaling to estimate and target.</span>
-        <span class="n">estimate_mel</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">to_mel_scale</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">estimate</span><span class="p">)</span>
-        <span class="n">target_mel</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">audio_to_mel</span><span class="p">(</span><span class="n">target_audio</span><span class="p">)</span>
+        <span class="n">estimate_mel</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_spectrogram</span><span class="o">.</span><span class="n">to_mel_scale</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">estimate</span><span class="p">)</span>
+        <span class="n">target_mel</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_spectrogram</span><span class="o">.</span><span class="n">audio_to_mel</span><span class="p">(</span><span class="n">target_audio</span><span class="p">)</span>
 
         <span class="n">n_frames</span> <span class="o">=</span> <span class="n">estimate_audio</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">n_images</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_images</span><span class="p">,</span> <span class="n">mixture_audio</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -632,12 +612,12 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">play_audio</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">embed_audio</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
         <span class="c1"># Increment save counter.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_save_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_count</span> <span class="o">+=</span> <span class="mi">1</span></div></div>
 
 
-        <span class="c1"># Create image folder.</span>
-        <span class="k">if</span> <span class="n">save_image</span><span class="p">:</span>
-            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div></div>
+        <span class="c1"># # Create image folder.</span>
+        <span class="c1"># if save_image:</span>
+        <span class="c1">#     Path(self.output_dir).mkdir(exist_ok=True)</span>
 </pre></div>
         </article>
       </div>

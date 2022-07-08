@@ -9,14 +9,28 @@ import torch.backends.cudnn
 import torch.nn as nn
 
 
-from auralflow.transforms.transforms import get_deconv_pad
+from auralflow.transforms.transforms import _get_deconv_pad
+import inspect
 from torch import FloatTensor
-from typing import Tuple, Optional
-
+from typing import Any, Callable, Optional, Tuple
 
 # Use CNN GPU optimizations if available.
 if torch.backends.cudnn.is_available():
     torch.backends.cudnn.benchmark = True
+
+
+def constructor_handler(constructor):
+    """Handles invalid keyword args to a model constructor by removing them."""
+    valid_parameters = inspect.Signature(constructor).parameters
+
+    # Inner function that removes the unknown keywords.
+    def remove_keywords(*args, **kwargs):
+        filtered_args = {}
+        for param_key, param_val in kwargs.items():
+            if param_key in valid_parameters:
+                filtered_args[param_key] = param_val
+        return constructor(*args, **filtered_args)
+    return remove_keywords
 
 
 class ConvBlock(nn.Module):
@@ -240,20 +254,22 @@ class SpectrogramNetSimple(nn.Module):
     Args:
         num_fft_bins (int): Number of FFT bins (aka filterbanks).
         num_frames (int): Number of temporal features (time axis).
-        num_channels (int): 1 for mono, 2 for stereo. Default: 1.
-        hidden_channels (int): Number of initial output channels. Default: 16.
+        num_channels (int): 1 for mono, 2 for stereo. Default: ``1``.
+        hidden_channels (int): Number of initial output channels.
+            Default: ``16``.
         mask_act_fn (str): Final activation layer that creates the
-            multiplicative soft-mask. Default: 'sigmoid'.
+            multiplicative soft-mask. Default: ``'sigmoid'``.
         leak_factor (float): Alpha constant if using Leaky ReLU activation.
-            Default: 0.
-        dropout_p (float): Dropout probability. Default: 0.5.
+            Default: ``0``.
+        dropout_p (float): Dropout probability. Default: ``0.4``.
         normalize_input (bool): Whether to learn input normalization
-            parameters. Default: False.
+            parameters. Default: ``True.``
         normalize_output (bool): Whether to learn output normalization
-            parameters. Default: False.
-        device (optional[str]): Device. Default: None.
+            parameters. Default: ``True``.
+        device (str): Device. Default: ``cpu``.
     """
 
+    @constructor_handler
     def __init__(
         self,
         num_fft_bins: int,
@@ -262,10 +278,10 @@ class SpectrogramNetSimple(nn.Module):
         hidden_channels: int = 16,
         mask_act_fn: str = "sigmoid",
         leak_factor: float = 0,
-        dropout_p: float = 0.5,
-        normalize_input: bool = False,
-        normalize_output: bool = False,
-        device: Optional[str] = None,
+        dropout_p: float = 0.4,
+        normalize_input: bool = True,
+        normalize_output: bool = True,
+        device: str = 'cpu',
     ) -> None:
         super(SpectrogramNetSimple, self).__init__()
 
@@ -333,7 +349,7 @@ class SpectrogramNetSimple(nn.Module):
         padding_sizes = []
         for i in range(len(self.encoding_sizes) - 1):
             padding_sizes.append(
-                get_deconv_pad(
+                _get_deconv_pad(
                     *self.encoding_sizes[-1 - i],
                     *self.encoding_sizes[-2 - i],
                     stride=2,
@@ -384,18 +400,6 @@ class SpectrogramNetSimple(nn.Module):
             ),
             nn.BatchNorm2d(num_channels)
         )
-        
-        self.phase_head = nn.Sequential(
-            nn.Conv2d(
-                in_channels=hidden_channels,
-                out_channels=num_channels,
-                kernel_size=1,
-                stride=1,
-                padding="same",
-            ),
-            nn.BatchNorm2d(num_channels),
-            nn.Tanh()
-        )
 
         # Define output norm layer. Uses identity fn if not activated.
         self.output_norm = CenterScaleNormalization(
@@ -421,20 +425,26 @@ class SpectrogramNetSimple(nn.Module):
             self.mask_activation = nn.Sigmoid()
 
     def forward(self, data: FloatTensor) -> FloatTensor:
-        r"""Forward method that estimates the source mask.
+        r"""Forward method that estimates the target-specific soft-mask.
 
         Args:
-            data (FloatTensor): Input spectrogram.
+            data (FloatTensor): Input spectrogram of shape `(batch, channels,
+                freq, frames)`.
 
-        Shape:
-            - input: :math:`(N, C, F, T)`
-            - output: :math:`(N, C, F, T)`
+        Returns:
+            FloatTensor: Soft-mask of dimension `(batch, channels, freq,
+            frames)`.
 
-            where
-                - :math:`N`: batch size
-                - :math:`C`: number of channels
-                - :math:`F`: number of frequency bins
-                - :math:`T`: number of frames
+        Examples:
+
+            >>> import torch
+            >>> mixture_spec = torch.rand((16, 1,  512, 173)).float()
+            >>> network = SpectrogramNetSimple(
+            ...     num_fft_bins=512,
+            ...     num_frames=173,
+            ...     num_channels=1
+            ... )
+            >>> mask = network(mixture_spec)
         """
         # Normalize input if applicable.
         data = self.input_norm(data)
@@ -472,27 +482,59 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
     """Deep mask estimation model using LSTM bottleneck layers.
 
     Args:
-        recurrent_depth (int): Number of stacked lstm layers. Default: 3.
-        hidden_size (int): Requested number of hidden features. Default: 1024.
+        num_fft_bins (int): Number of FFT bins (aka filterbanks).
+        num_frames (int): Number of temporal features (time axis).
+        num_channels (int): 1 for mono, 2 for stereo. Default: ``1``.
+        hidden_channels (int): Number of initial output channels. Default:
+            ``16``.
+        mask_act_fn (str): Final activation layer that creates the
+            multiplicative soft-mask. Default: ``'sigmoid'``.
+        leak_factor (float): Alpha constant if using Leaky ReLU activation.
+            Default: ``0``.
+        dropout_p (float): Dropout probability. Default: ``0.4``.
+        normalize_input (bool): Whether to learn input normalization
+            parameters. Default: ``True.``
+        normalize_output (bool): Whether to learn output normalization
+            parameters. Default: ``True``.
+        recurrent_depth (int): Number of stacked lstm layers. Default: ``3``.
+        hidden_size (int): Requested number of hidden features. Default:
+            ``1024``.
         input_axis (int): Whether to feed dim 0 (frequency axis) or dim 1
-            (time axis) as features to the lstm. Default: 1.
-
-    Keyword Args:
-        args: Positional arguments for constructor.
-        kwargs: Additional keyword arguments for constructor.
+            (time axis) as features to the lstm. Default: ``1``.
+        device (str): Device. Default: ``cpu``.
     """
 
+    @constructor_handler
     def __init__(
         self,
-        *args,
+        num_fft_bins: int,
+        num_frames: int,
+        num_channels: int = 1,
+        hidden_channels: int = 16,
+        mask_act_fn: str = "sigmoid",
+        leak_factor: float = 0,
+        dropout_p: float = 0.4,
+        normalize_input: bool = True,
+        normalize_output: bool = True,
         recurrent_depth: int = 3,
         hidden_size: int = 1024,
         input_axis: int = 1,
-        **kwargs
+        device: str = 'cpu'
     ) -> None:
-        super(SpectrogramNetLSTM, self).__init__(*args, **kwargs)
-        self.recurrent_depth = recurrent_depth
+        super(SpectrogramNetLSTM, self).__init__(
+            num_fft_bins=num_fft_bins,
+            num_frames=num_frames,
+            num_channels=num_channels,
+            hidden_channels=hidden_channels,
+            mask_act_fn=mask_act_fn,
+            leak_factor=leak_factor,
+            dropout_p=dropout_p,
+            normalize_input=normalize_input,
+            normalize_output=normalize_output,
+            device=device
+        )
 
+        self.recurrent_depth = recurrent_depth
         # Set to min between last channel size to avoid over-parameterization.
         self.hidden_size = min(hidden_size, self.channel_sizes[-1][-1])
         self.input_axis = input_axis
@@ -526,7 +568,28 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         )
 
     def forward(self, data: FloatTensor) -> FloatTensor:
-        """Forward method."""
+        r"""Forward method that estimates the target-specific soft-mask.
+
+        Args:
+            data (FloatTensor): Input spectrogram of shape `(batch, channels,
+                freq, frames)`.
+
+        Returns:
+            FloatTensor: Soft-mask of dimension `(batch, channels, freq,
+            frames)`.
+
+        Examples:
+
+            >>> import torch
+            >>> mixture_spec = torch.rand((16, 1,  512, 173)).float()
+            >>> network = SpectrogramNetLSTM(
+            ...     num_fft_bins=512,
+            ...     num_frames=173,
+            ...     num_channels=1,
+            ...     hidden_size=1024
+            ... )
+            >>> mask = network(mixture_spec)
+        """
         # Normalize input if applicable.
         data = self.input_norm(data)
 
@@ -562,10 +625,6 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 
         # Pass through final 1x1 conv and normalize output if applicable.
         dec_final = self.soft_conv(dec_5)
-        self.phase_mask = torch.clamp(
-            self.phase_head(dec_5), min=-3.14, max=3.14
-        ).float()
-
         output = self.output_norm(dec_final)
 
         # Generate multiplicative soft-mask.
@@ -573,7 +632,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         mask = torch.clamp(mask, min=0, max=1.0).float()
         return mask
 
-    def split_lstm_parameters(self) -> Tuple[list, list]:
+    def _split_params(self) -> Tuple[list, list]:
         """Separates model's LSTM parameters from non-LSTM parameters."""
         lstm_params, other_params = [], []
         for param_name, param_val in self.named_parameters():
@@ -585,23 +644,75 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 
 
 class SpectrogramNetVAE(SpectrogramNetLSTM):
-    """Spectrogram U-Net model with a VAE and LSTM bottleneck.
+    r"""Spectrogram variational autoencoder model with an LSTM bottleneck.
 
-    Encoder => VAE => LSTM x 3 => decoder. Models a Gaussian conditional
-    distribution p(z|x) to sample latent variable z ~ p(z|x), to feed into
-    decoder to generate x' ~ p(x|z).
+    Utilizes a recurrent bottleneck layer similar to ``SpectrogramNetVAE``, but
+    also samples from a modeled probability distribution prior to the recurrent
+    layers in order to accurately represent the latent space. More
+    specifically, a sampled latent variable :math:`z` is generated as:
 
-    Keyword Args:
-        args: Positional arguments for constructor.
-        kwargs: Additional keyword arguments for constructor.
+    .. math::
+
+        z = \epsilon \odot \sigma + \mu
+
+    where :math:`\epsilon \sim N(0, I)`, and :math:`\mu, \sigma` are the mean
+    and standard deviation of the modeled probability distribution.
+
+    Args:
+        num_fft_bins (int): Number of FFT bins (aka filterbanks).
+        num_frames (int): Number of temporal features (time axis).
+        num_channels (int): 1 for mono, 2 for stereo. Default: ``1``.
+        hidden_channels (int): Number of initial output channels. Default:
+            ``16``.
+        mask_act_fn (str): Final activation layer that creates the
+            multiplicative soft-mask. Default: ``'sigmoid'``.
+        leak_factor (float): Alpha constant if using Leaky ReLU activation.
+            Default: ``0``.
+        dropout_p (float): Dropout probability. Default: ``0.4``.
+        normalize_input (bool): Whether to learn input normalization
+            parameters. Default: ``True.``
+        normalize_output (bool): Whether to learn output normalization
+            parameters. Default: ``True``.
+        recurrent_depth (int): Number of stacked lstm layers. Default: ``3``.
+        hidden_size (int): Requested number of hidden features. Default:
+            ``1024``.
+        input_axis (int): Whether to feed dim 0 (frequency axis) or dim 1
+            (time axis) as features to the lstm. Default: ``1``.
+        device (str): Device. Default: ``cpu``.
     """
 
-    latent_data: FloatTensor
-    mu_data: FloatTensor
-    sigma_data: FloatTensor
-
-    def __init__(self, *args, **kwargs) -> None:
-        super(SpectrogramNetVAE, self).__init__(*args, **kwargs)
+    @constructor_handler
+    def __init__(
+        self,
+        num_fft_bins: int,
+        num_frames: int,
+        num_channels: int = 1,
+        hidden_channels: int = 16,
+        mask_act_fn: str = "sigmoid",
+        leak_factor: float = 0,
+        dropout_p: float = 0.4,
+        normalize_input: bool = True,
+        normalize_output: bool = True,
+        recurrent_depth: int = 3,
+        hidden_size: int = 1024,
+        input_axis: int = 1,
+        device: str = 'cpu'
+    ) -> None:
+        super(SpectrogramNetVAE, self).__init__(
+            num_fft_bins=num_fft_bins,
+            num_frames=num_frames,
+            num_channels=num_channels,
+            hidden_channels=hidden_channels,
+            mask_act_fn=mask_act_fn,
+            leak_factor=leak_factor,
+            dropout_p=dropout_p,
+            normalize_input=normalize_input,
+            normalize_output=normalize_output,
+            recurrent_depth=recurrent_depth,
+            hidden_size=hidden_size,
+            input_axis=input_axis,
+            device=device
+        )
 
         # Define normalizing flow layers.
         self.mu = nn.Linear(self.num_features, self.num_features)
@@ -613,8 +724,31 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
             self.eps.loc = self.eps.loc.cuda()
             self.eps.scale = self.eps.scale.cuda()
 
-    def forward(self, data: FloatTensor) -> FloatTensor:
-        """Forward method."""
+    def forward(self, data: FloatTensor) -> Tuple[FloatTensor, ...]:
+        r"""Forward method that estimates the target-specific soft-mask.
+
+        Args:
+            data (FloatTensor): Input spectrogram of shape `(batch, channels,
+                freq, frames)`.
+
+        Returns:
+            Tuple[FloatTensor, ...]: Soft-mask of dimension
+            `(batch, channels, freq, frames)`, followed by :math:`\mu` and
+            :math:`\sigma`, the mean and standard deviation of the modeled
+            probability distribution.
+
+        Examples:
+
+            >>> import torch
+            >>> mixture_spec = torch.rand((16, 1,  512, 173)).float()
+            >>> network = SpectrogramNetVAE(
+            ...     num_fft_bins=512,
+            ...     num_frames=173,
+            ...     num_channels=1,
+            ...     hidden_size=1024
+            ... )
+            >>> mask, mu, sigma = network(mixture_spec)
+        """
         # Normalize input if applicable.
         data = self.input_norm(data)
 
@@ -624,23 +758,23 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
         enc_3, skip_3 = self.down_3(enc_2)
         enc_4, skip_4 = self.down_4(enc_3)
         enc_5, skip_5 = self.down_5(enc_4)
-        enc_6, skip_6 = self.down_6(enc_5)
+        # enc_6, skip_6 = self.down_6(enc_5)
 
         # Reshape encodings to match dimensions of latent space.
-        enc_6 = enc_6.permute(self.input_perm)
-        n_batch, dim1, n_channel, dim2 = enc_6.size()
-        enc_6 = enc_6.reshape((n_batch, dim1, n_channel * dim2))
+        enc_5 = enc_5.permute(self.input_perm)
+        n_batch, dim1, n_channel, dim2 = enc_5.size()
+        enc_5 = enc_5.reshape((n_batch, dim1, n_channel * dim2))
 
         # Normalizing flow.
-        self.mu_data = self.mu(enc_6)
-        self.sigma_data = torch.exp(self.log_sigma(enc_6)).float()
+        mu_data = self.mu(enc_5)
+        sigma_data = torch.exp(self.log_sigma(enc_5)).float()
         eps = self.eps.sample(sample_shape=self.sigma_data.shape)
 
         # Sample z from the modeled distribution.
-        self.latent_data = self.mu_data + self.sigma_data * eps
+        latent_data = self.mu_data + self.sigma_data * eps
 
         # Pass through recurrent stack.
-        lstm_out, _ = self.lstm(self.latent_data)
+        lstm_out, _ = self.lstm(latent_data)
         lstm_out = lstm_out.reshape((n_batch * dim1, -1))
 
         # Pass through affine layers and reshape for decoder.
@@ -649,17 +783,18 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
         dec_0 = dec_0.permute(self.output_perm)
 
         # Pass through decoder.
-        dec_1 = self.up_1(dec_0, skip_6)
-        dec_2 = self.up_2(dec_1, skip_5)
-        dec_3 = self.up_3(dec_2, skip_4)
-        dec_4 = self.up_4(dec_3, skip_3)
-        dec_5 = self.up_5(dec_4, skip_2)
-        dec_6 = self.up_6(dec_5, skip_1)
+        dec_1 = self.up_1(dec_0, skip_5)
+        dec_2 = self.up_2(dec_1, skip_4)
+        dec_3 = self.up_3(dec_2, skip_3)
+        dec_4 = self.up_4(dec_3, skip_2)
+        dec_5 = self.up_5(dec_4, skip_1)
+        # dec_6 = self.up_6(dec_5, skip_1)
 
         # Pass through final 1x1 conv and normalize output if applicable.
-        dec_final = self.soft_conv(dec_6)
+        dec_final = self.soft_conv(dec_5)
         output = self.output_norm(dec_final)
 
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
-        return mask
+        mask = torch.clamp(mask, min=0, max=1.0).float()
+        return mask, mu_data, sigma_data

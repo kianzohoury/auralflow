@@ -147,7 +147,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -185,7 +185,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
@@ -222,7 +221,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -230,11 +229,316 @@
         <article role="main">
           <section id="auralflow-trainer-callbacks">
 <h1>auralflow.trainer.callbacks<a class="headerlink" href="#auralflow-trainer-callbacks" title="Permalink to this heading">#</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="auralflow.trainer.callbacks">
-<span class="sig-prename descclassname"><span class="pre">auralflow.trainer.</span></span><span class="sig-name descname"><span class="pre">callbacks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#auralflow.trainer.callbacks" title="Permalink to this definition">#</a></dt>
+<div class="toctree-wrapper compound">
+</div>
+<section id="module-auralflow.trainer.callbacks">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-auralflow.trainer.callbacks" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.AudioPlayerCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.callbacks.</span></span><span class="sig-name descname"><span class="pre">AudioPlayerCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#AudioPlayerCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.AudioPlayerCallback" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#auralflow.trainer.callbacks.TrainingCallback" title="auralflow.trainer.callbacks.TrainingCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrainingCallback</span></code></a></p>
+<p>Plays back separated audio via tensorboard.</p>
+<p>Note that this callback is only triggered on <code class="docutils literal notranslate"><span class="pre">'on_epoch_end'</span></code> events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensorboard_writer</strong> (<em>SummaryWriter</em>) -- Tensorboard writer.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Model.</p></li>
+<li><p><strong>embed_residual</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Additionally embeds the residual (background)
+track. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Sample rate. Default: <code class="docutils literal notranslate"><span class="pre">44100</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.AudioPlayerCallback.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#AudioPlayerCallback.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.AudioPlayerCallback.__call__" title="Permalink to this definition">#</a></dt>
+<dd><p>Calls the event handler for playing back audio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixture_audio</strong> (<em>Tensor</em>) -- Mixture audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p></li>
+<li><p><strong>target_audio</strong> (<em>Tensor</em>) -- Target audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p></li>
+<li><p><strong>global_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Global step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.AudioPlayerCallback.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#AudioPlayerCallback.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.AudioPlayerCallback.__init__" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.CallbackManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.callbacks.</span></span><span class="sig-name descname"><span class="pre">CallbackManager</span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.CallbackManager" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Handles a group of training callbacks.</p>
+<p>By default, calling a method corresponding to an event will have no effect.
+Each event can be handled by either implementing the corresponding
+handler method manually, or by calling <code class="docutils literal notranslate"><span class="pre">add_callback(...)</span></code>, which bins a
+<code class="docutils literal notranslate"><span class="pre">TrainingCallback</span></code> to its event.</p>
+<p>Note that this class currently has limited functionality and is not stable
+due to the current implementation of <code class="docutils literal notranslate"><span class="pre">trainer.ModelTrainer</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">auralflow.trainer</span> <span class="kn">import</span> <span class="n">CallbackManager</span><span class="p">,</span> <span class="n">LayersVisualCallback</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">callbacks</span> <span class="o">=</span> <span class="n">CallbackManager</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># create a new callback</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">layers_callback</span> <span class="o">=</span> <span class="n">LayersVisualCallback</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># add to callbacks manager</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">callbacks</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">layers_callback</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.CallbackManager.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.CallbackManager.__init__" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.CallbackManager.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#auralflow.trainer.callbacks.CallbackManager.__weakref__" title="Permalink to this definition">#</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.CallbackManager.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.CallbackManager.on_epoch_end" title="Permalink to this definition">#</a></dt>
+<dd><p>Post-epoch callback.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.CallbackManager.on_epoch_start">
+<span class="sig-name descname"><span class="pre">on_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.on_epoch_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.CallbackManager.on_epoch_start" title="Permalink to this definition">#</a></dt>
+<dd><p>Pre-epoch callback.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.CallbackManager.on_iteration_end">
+<span class="sig-name descname"><span class="pre">on_iteration_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.on_iteration_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.CallbackManager.on_iteration_end" title="Permalink to this definition">#</a></dt>
+<dd><p>Post-iteration callback.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.CallbackManager.on_loss_end">
+<span class="sig-name descname"><span class="pre">on_loss_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.on_loss_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.CallbackManager.on_loss_end" title="Permalink to this definition">#</a></dt>
+<dd><p>Post-backward phase callback.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.LayersVisualCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.callbacks.</span></span><span class="sig-name descname"><span class="pre">LayersVisualCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grad</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#LayersVisualCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.LayersVisualCallback" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#auralflow.trainer.callbacks.TrainingCallback" title="auralflow.trainer.callbacks.TrainingCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrainingCallback</span></code></a></p>
+<p>Visualizes model parameters by layer via tensorboard.</p>
+<p>Note that this callback is only triggered on <code class="docutils literal notranslate"><span class="pre">on_loss_end</span></code> events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensorboard_writer</strong> (<em>SummaryWriter</em>) -- Tensorboard writer.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Model.</p></li>
+<li><p><strong>show_grad</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, additionally logs the gradients with
+respect to each layer. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>use_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, logs the 2-norms of the weights and
+gradients. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.LayersVisualCallback.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#LayersVisualCallback.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.LayersVisualCallback.__call__" title="Permalink to this definition">#</a></dt>
+<dd><p>Calls the event handler for visualizing model layers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>global_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Global step.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.LayersVisualCallback.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grad</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#LayersVisualCallback.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.LayersVisualCallback.__init__" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.LossCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.callbacks.</span></span><span class="sig-name descname"><span class="pre">LossCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'loss/epoch'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#LossCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.LossCallback" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#auralflow.trainer.callbacks.TrainingCallback" title="auralflow.trainer.callbacks.TrainingCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrainingCallback</span></code></a></p>
+<p>Losses callback.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.LossCallback.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">named_losses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#LossCallback.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.LossCallback.__call__" title="Permalink to this definition">#</a></dt>
+<dd><p>All subclasses must implement this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> -- Keyword arguments.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.LossCallback.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'loss/epoch'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#LossCallback.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.LossCallback.__init__" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.SpectrogramVisualCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.callbacks.</span></span><span class="sig-name descname"><span class="pre">SpectrogramVisualCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.mask_model.SpectrogramMaskModel"><span class="pre">SpectrogramMaskModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#SpectrogramVisualCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.SpectrogramVisualCallback" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#auralflow.trainer.callbacks.TrainingCallback" title="auralflow.trainer.callbacks.TrainingCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrainingCallback</span></code></a></p>
+<p>Visualizes spectrogram images via tensorboard (and locally).</p>
+<p>See <a class="reference internal" href="auralflow.visualizer.spec_show_diff.html#auralflow.visualizer.spec_show_diff" title="auralflow.visualizer.spec_show_diff"><code class="xref py py-func docutils literal notranslate"><span class="pre">spec_show_diff()</span></code></a> for more info. Note that
+this callback is only triggered on <code class="docutils literal notranslate"><span class="pre">'on_epoch_end'</span></code> events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensorboard_writer</strong> (<em>SummaryWriter</em>) -- Tensorboard writer.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Model.</p></li>
+<li><p><strong>save_dir</strong> (<em>optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) -- Directory to save the image under. If
+no path is specified, the image is not saved. If no directory with
+that name exists, a new one is created. Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>save_freq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Frequency (in epochs) at which images are saved.
+Default: <code class="docutils literal notranslate"><span class="pre">5</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.SpectrogramVisualCallback.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#SpectrogramVisualCallback.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.SpectrogramVisualCallback.__call__" title="Permalink to this definition">#</a></dt>
+<dd><p>Calls the event handler for visualizing spectrogram images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixture_audio</strong> (<em>Tensor</em>) -- Mixture audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p></li>
+<li><p><strong>target_audio</strong> (<em>Tensor</em>) -- Target audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p></li>
+<li><p><strong>global_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Global step.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raised:</dt><dd><p>OSError: Raised if the image cannot be saved under
+<code class="docutils literal notranslate"><span class="pre">self.save_dir</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.SpectrogramVisualCallback.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SpectrogramMaskModel.html#auralflow.models.SpectrogramMaskModel" title="auralflow.models.mask_model.SpectrogramMaskModel"><span class="pre">SpectrogramMaskModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#SpectrogramVisualCallback.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.SpectrogramVisualCallback.__init__" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.TrainingCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.callbacks.</span></span><span class="sig-name descname"><span class="pre">TrainingCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#TrainingCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.TrainingCallback" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<p>Abstract base class for all training callbacks.</p>
+<p>This class should not be instantiated, but rather subclassed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Event that triggers the callback: <code class="docutils literal notranslate"><span class="pre">'on_iteration_end'</span></code> |
+<code class="docutils literal notranslate"><span class="pre">'on_loss_end'</span></code> | <code class="docutils literal notranslate"><span class="pre">'on_epoch_start'</span></code> | <code class="docutils literal notranslate"><span class="pre">'on_epoch_end'</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">auralflow.trainer</span> <span class="kn">import</span> <span class="n">TrainingCallback</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyCustomCallback</span><span class="p">(</span><span class="n">TrainingCallback</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">super</span><span class="p">(</span><span class="n">MyCustomCallback</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="c1"># handle instance attributes</span>
+<span class="gp">... </span>        <span class="o">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="c1"># define callback here</span>
+<span class="gp">... </span>        <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_callback</span> <span class="o">=</span> <span class="n">MyCustomCallback</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="s2">&quot;on_epoch_end&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_callback</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.TrainingCallback.__call__">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#TrainingCallback.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.TrainingCallback.__call__" title="Permalink to this definition">#</a></dt>
+<dd><p>All subclasses must implement this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> -- Keyword arguments.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.TrainingCallback.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#TrainingCallback.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.TrainingCallback.__init__" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.TrainingCallback.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#auralflow.trainer.callbacks.TrainingCallback.__weakref__" title="Permalink to this definition">#</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.WaveformVisualCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.callbacks.</span></span><span class="sig-name descname"><span class="pre">WaveformVisualCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#WaveformVisualCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.WaveformVisualCallback" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#auralflow.trainer.callbacks.TrainingCallback" title="auralflow.trainer.callbacks.TrainingCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrainingCallback</span></code></a></p>
+<p>Visualizes waveform images via tensorboard (and locally).</p>
+<p>See <a class="reference internal" href="auralflow.visualizer.waveform_show_diff.html#auralflow.visualizer.waveform_show_diff" title="auralflow.visualizer.waveform_show_diff"><code class="xref py py-func docutils literal notranslate"><span class="pre">waveform_show_diff()</span></code></a> for more info. Note
+that this callback is only triggered on <code class="docutils literal notranslate"><span class="pre">'on_epoch_end'</span></code> events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensorboard_writer</strong> (<em>SummaryWriter</em>) -- Tensorboard writer.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Model.</p></li>
+<li><p><strong>save_dir</strong> (<em>optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) -- Directory to save the image under. If
+no path is specified, the image is not saved. If no directory with
+that name exists, a new one is created. Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>save_freq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Frequency (in epochs) at which images are saved.
+Default: <code class="docutils literal notranslate"><span class="pre">5</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.WaveformVisualCallback.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#WaveformVisualCallback.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.WaveformVisualCallback.__call__" title="Permalink to this definition">#</a></dt>
+<dd><p>Calls the event handler for visualizing waveform images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixture_audio</strong> (<em>Tensor</em>) -- Mixture audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p></li>
+<li><p><strong>target_audio</strong> (<em>Tensor</em>) -- Target audio signal of dimension
+<cite>(batch, channels, times)</cite>.</p></li>
+<li><p><strong>global_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Global step.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raised:</dt><dd><p>OSError: Raised if the image cannot be saved under
+<code class="docutils literal notranslate"><span class="pre">self.save_dir</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.callbacks.WaveformVisualCallback.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#WaveformVisualCallback.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.callbacks.WaveformVisualCallback.__init__" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
         </article>
@@ -264,8 +568,27 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">auralflow.trainer.callbacks</a><ul>
+<li><a class="reference internal" href="#module-auralflow.trainer.callbacks">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

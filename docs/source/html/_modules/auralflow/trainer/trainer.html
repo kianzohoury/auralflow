@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -234,148 +233,444 @@
 <span class="c1"># This code is part of the auralflow project linked below.</span>
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
-<span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">SeparationModel</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
+
+<span class="kn">from</span> <span class="nn">auralflow.models</span> <span class="kn">import</span> <span class="n">SeparationModel</span><span class="p">,</span> <span class="n">SpectrogramMaskModel</span>
 <span class="kn">from</span> <span class="nn">auralflow.visualizer</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">save_all</span><span class="p">,</span> <span class="n">save_config</span>
-<span class="kn">from</span> <span class="nn">.callbacks</span> <span class="kn">import</span> <span class="n">TrainingCallback</span>
-<span class="kn">from</span> <span class="nn">torch.cuda.amp</span> <span class="kn">import</span> <span class="n">autocast</span>
+<span class="kn">from</span> <span class="nn">auralflow.utils</span> <span class="kn">import</span> <span class="n">save_all</span><span class="p">,</span> <span class="n">save_config</span><span class="p">,</span> <span class="n">load_config</span>
+<span class="kn">from</span> <span class="nn">.callbacks</span> <span class="kn">import</span> <span class="n">CallbackManager</span><span class="p">,</span> <span class="n">_create_callbacks</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torch.cuda.amp</span> <span class="kn">import</span> <span class="n">autocast</span><span class="p">,</span> <span class="n">GradScaler</span>
+<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">ReduceLROnPlateau</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 
-<div class="viewcode-block" id="run_training"><a class="viewcode-back" href="../../../auralflow.trainer.run_training.html#auralflow.trainer.run_training">[docs]</a><span class="k">def</span> <span class="nf">run_training</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span>
-    <span class="n">train_dataloader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span>
-    <span class="n">val_dataloader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span>
-    <span class="n">callback</span><span class="p">:</span> <span class="n">TrainingCallback</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Runs training loop.</span>
+<div class="viewcode-block" id="ModelTrainer"><a class="viewcode-back" href="../../../auralflow.trainer.ModelTrainer.html#auralflow.trainer.ModelTrainer">[docs]</a><span class="k">class</span> <span class="nc">ModelTrainer</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Wrapper class that trains a ``SeparationModel`` model.</span>
+
+
+<span class="sd">    All subclasses must implement the ``full_forward`` and ``scheduler_step``</span>
+<span class="sd">    methods.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model (SeparationModel): Separation model.</span>
-<span class="sd">        train_dataloader (DataLoader): Training set dataloader.</span>
-<span class="sd">        val_dataloader (DataLoader): Validation set dataloader.</span>
-<span class="sd">        callback (TrainingCallback): Training callbacks.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">start_epoch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="n">stop_epoch</span> <span class="o">=</span> <span class="n">start_epoch</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;max_epochs&quot;</span><span class="p">]</span>
-    <span class="n">global_step</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;global_step&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="n">max_iters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">)</span>
+<span class="sd">        model (SeparationModel): Model to train.</span>
+<span class="sd">        criterion (Union[nn.Module, Callable[..., Tensor]]): Loss criterion.</span>
+<span class="sd">        optimizer (Optimizer): Optimizer.</span>
+<span class="sd">        scheduler (object): LR scheduler. See</span>
+<span class="sd">            :mod:`torch.optim.lr_scheduler`.</span>
+<span class="sd">        use_mixed_precision (bool): If ``True``, enables automatic mixed</span>
+<span class="sd">            precision. Default: ``True``.</span>
+<span class="sd">        grad_scaler (optional[GradScaler]): Gradient scaler. Default: ``None``.</span>
+<span class="sd">        max_grad_norm (optional[float]): Maximum gradient norm used for</span>
+<span class="sd">            gradient clipping. Gradient clipping is disabled if ``None`` is</span>
+<span class="sd">            passed in. Default: ``100.0``.</span>
+<span class="sd">        stop_patience (int): Number of epochs to train before stopping</span>
+<span class="sd">            if the validation loss does not improve. Default: ``5``.</span>
+<span class="sd">        min_improvement (float): Minimum improvement in the validation loss</span>
+<span class="sd">            required to reset the stop patience counter. Default: ``0.01``.</span>
+<span class="sd">        max_lr_reductions (int): Maximum number of learning rate reductions</span>
+<span class="sd">            if ``self.scheduler`` is an instance of</span>
+<span class="sd">            :class:`~torch.optim.lr_scheduler.ReduceLROnPlateau`. Default:</span>
+<span class="sd">            ``5``.</span>
+<span class="sd">        checkpoint_dir (optional[str]): Directory to save or load object states</span>
+<span class="sd">            from. No checkpoints will be saved if a path is not specified.</span>
+<span class="sd">            Default: ``checkpoints``.</span>
+<span class="sd">        overwrite_checkpoint (bool): If ``True``, overwrites previous</span>
+<span class="sd">            checkpoints. Default: ``True``.</span>
+<span class="sd">        best_checkpoint (bool): If ``True``, saves the best model checkpoint</span>
+<span class="sd">            as ``best.pth``. Default: ``True``.</span>
+<span class="sd">        silent_checkpoint (bool): If ``True``, suppresses checkpoint logging.</span>
+<span class="sd">            Default: ``True``.</span>
+<span class="sd">        resume_training (bool): If ``True``, resumes training from checkpoint</span>
+<span class="sd">            files. Otherwise, training is restarted. Default: ``True``.</span>
 
-    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_epoch</span><span class="p">,</span> <span class="n">stop_epoch</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">stop_epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="sd">        use_tensorboard (bool): If ``True``, enables tensorboard. Default:</span>
+<span class="sd">            ``True``.</span>
+
+<span class="sd">        write_iter_loss (bool): If ``True``, logs iteration training loss if</span>
+<span class="sd">            tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        write_epoch_loss (bool): If ``True``, logs epoch training and</span>
+<span class="sd">            validation loss if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        visualize_weights (bool): If ``True``, logs model weights by layer if</span>
+<span class="sd">            tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        visualize_gradients (bool): If ``True``, logs gradients with respect</span>
+<span class="sd">            to layers if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        visualize_norm (bool): If ``True``, logs the 2-norm of each</span>
+<span class="sd">            weight/gradient if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        visualize_waveform (bool): If ``True``, logs target source estimates</span>
+<span class="sd">            as waveform images if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        visualize_spectrogram (bool): If ``True``, logs target source estimates</span>
+<span class="sd">            as spectrogram images if model is an instance of a</span>
+<span class="sd">            ``SpectrogramMaskModel`` and tensorboard is enabled. Default:</span>
+<span class="sd">            ``True``.</span>
+<span class="sd">        play_estimate (bool): If ``True``, logs listenable target source</span>
+<span class="sd">            estimates if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        play_residual (bool): If ``True``, logs listenable background track</span>
+<span class="sd">            estimates if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        image_save_dir (optional[str]):</span>
+<span class="sd">        image_save_freq (int): Frequency in epochs at which to save images.</span>
+<span class="sd">            Default: ``5``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">train_losses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">val_losses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+
+    <span class="n">_callbacks</span><span class="p">:</span> <span class="n">CallbackManager</span>
+    <span class="n">_trainer_state</span><span class="p">:</span> <span class="n">Dict</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span>
+        <span class="n">criterion</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]],</span>
+        <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span>
+        <span class="n">scheduler</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+        <span class="n">use_mixed_precision</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">grad_scaler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GradScaler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_grad_norm</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span>
+        <span class="n">stop_patience</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">min_improvement</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+        <span class="n">max_lr_reductions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;checkpoints&quot;</span><span class="p">,</span>
+
+        <span class="n">overwrite_checkpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">best_checkpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">silent_checkpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">resume_training</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">use_tensorboard</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">write_iter_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">write_epoch_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">visualize_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">visualize_gradients</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">visualize_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">visualize_waveform</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">visualize_spectrogram</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">play_estimate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">play_residual</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">image_save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">image_save_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">scheduler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_mixed_precision</span> <span class="o">=</span> <span class="n">use_mixed_precision</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span> <span class="o">=</span> <span class="n">grad_scaler</span>
+
+        <span class="c1"># Set max gradient norm for clipping.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">max_grad_norm</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_grad_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_grad_norm</span> <span class="o">=</span> <span class="n">max_grad_norm</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_patience</span> <span class="o">=</span> <span class="n">stop_patience</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_improvement</span> <span class="o">=</span> <span class="n">min_improvement</span>
+
+        <span class="c1"># Only use reductions counter for ReduceLROnPlateau scheduler.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_lr_reductions</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_lr_reductions</span> <span class="o">=</span> <span class="n">max_lr_reductions</span>
+
+        <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">checkpoint_dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">checkpoint_dir</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_silent_checkpoint</span> <span class="o">=</span> <span class="n">silent_checkpoint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_overwrite_checkpoint</span> <span class="o">=</span> <span class="n">overwrite_checkpoint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_checkpoint</span> <span class="o">=</span> <span class="n">best_checkpoint</span>
+
+        <span class="k">if</span> <span class="n">resume_training</span><span class="p">:</span>
+            <span class="c1"># Load previous training state.</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="s2">&quot;model_trainer.pth&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_losses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;train_losses&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">val_losses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;val_losses&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;global_step&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;last_epoch&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;stop_patience_counter&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_patience</span><span class="p">,</span>
+                <span class="s2">&quot;lr_reductions_counter&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_lr_reductions</span><span class="p">,</span>
+                <span class="s2">&quot;train_losses&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;val_losses&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;best_val_loss&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+            <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">use_tensorboard</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">SummaryWriter</span><span class="p">(</span>
+                <span class="n">log_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">image_save_dir</span><span class="p">,</span> <span class="s2">&quot;runs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">())</span>
+            <span class="p">)</span>
+            <span class="c1"># Define callbacks.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span> <span class="o">=</span> <span class="n">_create_callbacks</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">tensorboard_writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
+                <span class="n">save_dir</span><span class="o">=</span><span class="n">image_save_dir</span><span class="p">,</span>
+                <span class="n">save_freq</span><span class="o">=</span><span class="n">image_save_freq</span><span class="p">,</span>
+                <span class="n">write_iter_loss</span><span class="o">=</span><span class="n">write_iter_loss</span><span class="p">,</span>
+                <span class="n">write_epoch_loss</span><span class="o">=</span><span class="n">write_epoch_loss</span><span class="p">,</span>
+                <span class="n">visualize_weights</span><span class="o">=</span><span class="n">visualize_weights</span><span class="p">,</span>
+                <span class="n">visualize_gradients</span><span class="o">=</span><span class="n">visualize_gradients</span><span class="p">,</span>
+                <span class="n">visualize_norm</span><span class="o">=</span><span class="n">visualize_norm</span><span class="p">,</span>
+                <span class="n">visualize_waveform</span><span class="o">=</span><span class="n">visualize_waveform</span><span class="p">,</span>
+                <span class="n">visualize_spectrogram</span><span class="o">=</span><span class="n">visualize_spectrogram</span><span class="p">,</span>
+                <span class="n">play_audio</span><span class="o">=</span><span class="n">play_estimate</span><span class="p">,</span>
+                <span class="n">embed_residual</span><span class="o">=</span><span class="n">play_residual</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span> <span class="o">=</span> <span class="n">CallbackManager</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ModelTrainer.full_forward"><a class="viewcode-back" href="../../../auralflow.trainer.ModelTrainer.html#auralflow.trainer.ModelTrainer.full_forward">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">full_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixture</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Runs the forward pass for the model and calculates the loss.</span>
+
+<span class="sd">        Gets called within the main training loop, via ``run_training(...)``</span>
+<span class="sd">        and ``run_validation(...)``.</span>
+
+<span class="sd">        All subclasses must implement this method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mixture (Tensor): Mixture audio of dimension</span>
+<span class="sd">                `(batch, channels, time)`.</span>
+<span class="sd">            target (Tensor): Target audio of dimension `(batch, channels, time)`</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: The loss.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">        # &gt;&gt;&gt; from auralflow.trainer import ModelTrainer</span>
+<span class="sd">        # &gt;&gt;&gt; # basic implementation for training spectrogram mask models</span>
+<span class="sd">        # &gt;&gt;&gt; class MyCustomTrainer(ModelTrainer):</span>
+<span class="sd">        # ...</span>
+<span class="sd">        # ...     def __init__(self, *args, **kwargs):</span>
+<span class="sd">        # ...         super(MyCustomTrainer, self).__init__(*args, **kwargs)</span>
+<span class="sd">        # ...</span>
+<span class="sd">        # ...     def full_forward(self, mixture, target):</span>
+<span class="sd">        # ...         # data transformations</span>
+<span class="sd">        # ...         mix_spec, mix_phase = self.model.to_spectrogram(mixture)</span>
+<span class="sd">        # ...         target_spec, _ = self.model.to_spectrogram(target)</span>
+<span class="sd">        # ...         # model output</span>
+<span class="sd">        # ...         estimate_spec, data = self.model.forward(mix_spec)</span>
+<span class="sd">        # ...         # calculate loss</span>
+<span class="sd">        # ...         loss = self.model.criterion(estimate_spec, target_spec)</span>
+<span class="sd">        # ...         return loss</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ModelTrainer.train"><a class="viewcode-back" href="../../../auralflow.trainer.ModelTrainer.html#auralflow.trainer.ModelTrainer.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">train_loader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span>
+        <span class="n">val_loader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span>
+        <span class="n">max_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Runs training.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            train_loader (DataLoader): Training set dataloader.</span>
+<span class="sd">            val_loader (DataLoader): Validation set dataloader.</span>
+<span class="sd">            max_epochs (int): Maximum number of epochs to train for.</span>
+<span class="sd">                Default: ``100``.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">last_epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">global_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;global_step&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">stop_epoch</span> <span class="o">=</span> <span class="n">last_epoch</span> <span class="o">+</span> <span class="n">max_epochs</span>
+        <span class="n">max_iters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">last_epoch</span><span class="p">,</span> <span class="n">stop_epoch</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">stop_epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">total_train_loss</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># Set model to training mode.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">ProgressBar</span><span class="p">(</span>
+                <span class="n">train_loader</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">max_iters</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;train&quot;</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pbar</span><span class="p">):</span>
+                    <span class="k">with</span> <span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_use_mixed_precision</span><span class="p">):</span>
+
+                        <span class="c1"># Run forward pass, calculate mini-batch loss.</span>
+                        <span class="n">batch_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_forward</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+                        <span class="n">loss_val</span> <span class="o">=</span> <span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="n">total_train_loss</span> <span class="o">+=</span> <span class="n">loss_val</span>
+                        <span class="n">mean_train_loss</span> <span class="o">=</span> <span class="n">total_train_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">train_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_train_loss</span><span class="p">)</span>
+
+                        <span class="c1"># Display loss via progress bar.</span>
+                        <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
+                            <span class="p">{</span>
+                                <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">loss_val</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;mean_loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_train_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="p">}</span>
+                        <span class="p">)</span>
+
+                    <span class="c1"># Run backprop.</span>
+                    <span class="n">batch_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                    <span class="c1"># Loss-end/post-backward phase callback.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span><span class="o">.</span><span class="n">on_loss_end</span><span class="p">(</span>
+                        <span class="n">named_losses</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s2">&quot;batch_loss_train&quot;</span><span class="p">:</span> <span class="n">loss_val</span><span class="p">,</span>
+                            <span class="s2">&quot;total_loss_train&quot;</span><span class="p">:</span> <span class="n">total_train_loss</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+                    <span class="p">)</span>
+                    <span class="c1"># Update model parameters.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer_step</span><span class="p">()</span>
+                    <span class="c1"># Iteration-end callback.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span><span class="o">.</span><span class="n">on_iteration_end</span><span class="p">(</span>
+                        <span class="n">named_losses</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s2">&quot;batch_loss_train&quot;</span><span class="p">:</span> <span class="n">loss_val</span><span class="p">,</span>
+                            <span class="s2">&quot;total_loss_train&quot;</span><span class="p">:</span> <span class="n">total_train_loss</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span>
+                    <span class="p">)</span>
+                    <span class="c1"># Update global step count.</span>
+                    <span class="n">global_step</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># Run validation loop.</span>
+            <span class="n">mean_val_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">val_loader</span><span class="o">=</span><span class="n">val_loader</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">val_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_val_loss</span><span class="p">)</span>
+
+            <span class="c1"># Epoch-end callback.</span>
+            <span class="n">val_mixture</span><span class="p">,</span> <span class="n">val_target</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">val_loader</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span><span class="o">.</span><span class="n">on_epoch_end</span><span class="p">(</span>
+                <span class="n">named_losses</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;mean_loss_train&quot;</span><span class="p">:</span> <span class="n">mean_train_loss</span><span class="p">,</span>
+                    <span class="s2">&quot;mean_loss_valid&quot;</span><span class="p">:</span> <span class="n">mean_val_loss</span>
+                <span class="p">},</span>
+                <span class="n">mixture_audio</span><span class="o">=</span><span class="n">val_mixture</span><span class="p">,</span>
+                <span class="n">target_audio</span><span class="o">=</span><span class="n">val_target</span><span class="p">,</span>
+                <span class="n">epoch</span><span class="o">=</span><span class="n">epoch</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Check whether model should be saved or training should stop.</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;best_val_loss&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean_val_loss</span>
+            <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_improvement</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;best_val_loss&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_val_loss</span>
+                <span class="c1"># save_all(</span>
+                <span class="c1">#     global_step=epoch,</span>
+                <span class="c1">#     save_model=True,</span>
+                <span class="c1">#     save_optimizer=True,</span>
+                <span class="c1">#     save_scheduler=True,</span>
+                <span class="c1">#     save_grad_scaler=True</span>
+                <span class="c1"># )</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;sp_counter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_patience</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;sp_counter&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;sp_counter&quot;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;lr_reductions_counter&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;sp_counter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_patience</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;lr_reductions_counter&quot;</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No improvement. Stopping training early...&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="c1"># Save trainer state.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">epoch</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">[</span><span class="s2">&quot;global_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_step</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="s2">&quot;model_trainer.pth&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trainer_state</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Optimizes and updates the model&#39;s parameters.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="c1"># Clip gradient.</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">max_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_grad_norm</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TODO: Gradient scaling.</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="c1"># Quicker gradient zeroing.</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ModelTrainer.scheduler_step"><a class="viewcode-back" href="../../../auralflow.trainer.ModelTrainer.html#auralflow.trainer.ModelTrainer.scheduler_step">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">scheduler_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Updates the learning rate according to the scheduler used.</span>
+
+<span class="sd">        All subclasses must implement this method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            args: Positional arguments.</span>
+
+<span class="sd">        Keyword Args:</span>
+<span class="sd">            kwargs: Keyword arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ModelTrainer.validate"><a class="viewcode-back" href="../../../auralflow.trainer.ModelTrainer.html#auralflow.trainer.ModelTrainer.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val_loader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Given a validation set, runs validation and returns the mean loss.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            val_loader (DataLoader): Validation dataloader.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Mean validation loss.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_iters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">val_loader</span><span class="p">)</span>
         <span class="n">total_loss</span> <span class="o">=</span> <span class="n">mean_loss</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c1"># Set model to training mode.</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="c1"># Set model to validation mode.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
         <span class="k">with</span> <span class="n">ProgressBar</span><span class="p">(</span>
-            <span class="n">train_dataloader</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">max_iters</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;train&quot;</span>
+            <span class="n">val_loader</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">max_iters</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;valid&quot;</span>
         <span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pbar</span><span class="p">):</span>
-                <span class="k">with</span> <span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">_use_amp</span><span class="p">):</span>
+                <span class="k">with</span> <span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_use_mixed_precision</span><span class="p">):</span>
+                    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
 
-                    <span class="c1"># Process data, run forward pass.</span>
-                    <span class="n">model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-                    <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span>
+                        <span class="c1"># Run forward pass, calculate mini-batch loss.</span>
+                        <span class="n">batch_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_forward</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+                        <span class="n">loss_val</span> <span class="o">=</span> <span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="n">total_loss</span> <span class="o">+=</span> <span class="n">loss_val</span>
+                        <span class="n">mean_loss</span> <span class="o">=</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
-                    <span class="c1"># Calculate mini-batch loss.</span>
-                    <span class="n">batch_loss</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">compute_loss</span><span class="p">()</span>
-                    <span class="n">total_loss</span> <span class="o">+=</span> <span class="n">batch_loss</span>
-                    <span class="n">mean_loss</span> <span class="o">=</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># Display loss.</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">loss_val</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;mean_loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">mean_loss</span></div></div>
 
-                    <span class="c1"># Display loss.</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
-                        <span class="p">{</span>
-                            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">batch_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;mean_loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                        <span class="p">}</span>
-                    <span class="p">)</span>
 
-                <span class="c1"># Run backprop.</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-                <span class="c1"># Visualize gradients.</span>
-                <span class="n">callback</span><span class="o">.</span><span class="n">on_loss_end</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
-                <span class="c1"># Update model parameters.</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">()</span>
-                <span class="c1"># Write/display iteration loss.</span>
-                <span class="n">callback</span><span class="o">.</span><span class="n">on_iteration_end</span><span class="p">(</span><span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
-                <span class="c1"># Update global step count.</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;global_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_step</span>
-                <span class="n">global_step</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="k">class</span> <span class="nc">_DefaultModelTrainer</span><span class="p">(</span><span class="n">ModelTrainer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Default ``ModelTrainer`` class.&quot;&quot;&quot;</span>
 
-        <span class="c1"># Store epoch-average training loss.</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">train_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_loss</span><span class="p">)</span>
+    <span class="n">scheduler</span><span class="p">:</span> <span class="n">ReduceLROnPlateau</span>
 
-        <span class="c1"># Run validation loop.</span>
-        <span class="n">run_validation</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="o">=</span><span class="n">val_dataloader</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_DefaultModelTrainer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="c1"># Write/display train and val losses.</span>
-        <span class="n">callback</span><span class="o">.</span><span class="n">on_epoch_end</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="n">epoch</span><span class="p">,</span> <span class="o">*</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">val_dataloader</span><span class="p">)))</span>
-
-        <span class="c1"># Update epoch count.</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">epoch</span>
-
-        <span class="c1"># Only save model if validation loss decreases.</span>
-        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_is_best_model</span><span class="p">:</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">training_params</span><span class="p">[</span><span class="s2">&quot;best_epoch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">epoch</span>
-            <span class="n">save_all</span><span class="p">(</span>
-                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-                <span class="n">global_step</span><span class="o">=</span><span class="n">epoch</span><span class="p">,</span>
-                <span class="n">save_model</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">save_optim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">save_scheduler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">save_grad_scaler</span><span class="o">=</span><span class="kc">True</span>
+    <span class="k">def</span> <span class="nf">full_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixture</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">,</span> <span class="s2">&quot;_forward_wrapper&quot;</span><span class="p">):</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">_forward_wrapper</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">mix_audio</span><span class="o">=</span><span class="n">mixture</span><span class="p">,</span> <span class="n">target_audio</span><span class="o">=</span><span class="n">target</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">loss</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s2">&quot;Criterion must define the _forward_wrapper() method.&quot;</span>
             <span class="p">)</span>
 
-        <span class="c1"># Decrease lr if necessary.</span>
-        <span class="n">stop_early</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">scheduler_step</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">stop_early</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No improvement. Stopping training early...&quot;</span><span class="p">)</span>
-            <span class="k">break</span>
-
-        <span class="c1"># Save updated config file.</span>
-        <span class="n">save_config</span><span class="p">(</span>
-            <span class="n">config</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
-            <span class="n">save_filepath</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">model_params</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">]</span>
-        <span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="run_validation"><a class="viewcode-back" href="../../../auralflow.trainer.run_validation.html#auralflow.trainer.run_validation">[docs]</a><span class="k">def</span> <span class="nf">run_validation</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">SeparationModel</span><span class="p">,</span> <span class="n">val_dataloader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Runs validation loop.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model (SeparationModel): Separation model.</span>
-<span class="sd">        val_dataloader (DataLoader): Validation set dataloader.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">max_iters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">val_dataloader</span><span class="p">)</span>
-
-    <span class="c1"># Set model to validation mode.</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="k">with</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="n">val_dataloader</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">max_iters</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;valid&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
-        <span class="n">total_loss</span> <span class="o">=</span> <span class="n">mean_loss</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pbar</span><span class="p">):</span>
-            <span class="k">with</span> <span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">_use_amp</span><span class="p">):</span>
-                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-                    <span class="c1"># Process data, run forward pass</span>
-                    <span class="n">model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-                    <span class="n">model</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>
-
-                <span class="c1"># Compute batch-wise loss.</span>
-                <span class="n">batch_loss</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">compute_loss</span><span class="p">()</span>
-                <span class="n">total_loss</span> <span class="o">+=</span> <span class="n">batch_loss</span>
-                <span class="n">mean_loss</span> <span class="o">=</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-            <span class="c1"># Display loss.</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">batch_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;mean_loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-
-    <span class="c1"># Store epoch-average validation loss.</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">val_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_loss</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">scheduler_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reduces lr if val loss does not improve enough within a window.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)</span>
 </pre></div>
         </article>
       </div>

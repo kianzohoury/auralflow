@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import csv
 
-from auralflow.customs import init_model, setup_model
+from auralflow.models import _build_model
 from auralflow.separate import separate_audio
 from auralflow.utils import load_config
 from torchaudio.transforms import Resample
@@ -29,8 +29,8 @@ def main(
     print("  Successful.")
 
     # Load model. Setup restores previous state if resuming training.
-    model = init_model(configuration)
-    model = setup_model(model)
+    model = _build_model(*configuration)
+    # model = setup_model(model)
 
     # Path to test set.
     test_filepath = model.dataset_params["dataset_path"] + "/test"
@@ -44,7 +44,7 @@ def main(
 
     print("Testing model...")
     for track_name in list(Path(test_filepath).iterdir())[:max_tracks]:
-        label = model.target_labels[0]
+        label = model.targets[0]
 
         # Get stems.
         stems = separate_audio(

@@ -169,7 +169,7 @@ class AudioTransform(object):
         return audio
 
 
-def fast_fourier(transform: Callable, audio: Tensor) -> Tensor:
+def _fast_fourier(transform: Callable, audio: Tensor) -> Tensor:
     """Transforms raw audio to complex-valued STFT audio."""
     audio_stft = []
     n_batch, n_channels, n_frames, n_targets = audio.size()
@@ -186,7 +186,7 @@ def fast_fourier(transform: Callable, audio: Tensor) -> Tensor:
     return data_stft
 
 
-def inverse_fast_fourier(transform: Callable, complex_stft: Tensor):
+def _inverse_fast_fourier(transform: Callable, complex_stft: Tensor):
     """Transforms complex-valued STFT audio to temporal audio domain."""
     source_estimate = []
     n_batch, n_channels, n_frames, n_targets = complex_stft.size()
@@ -198,7 +198,7 @@ def inverse_fast_fourier(transform: Callable, complex_stft: Tensor):
     return source_estimate
 
 
-def get_stft(
+def _get_stft(
     num_fft: int,
     hop_length: int,
     window_size: int,
@@ -210,7 +210,7 @@ def get_stft(
     """Returns a specified stft or inverse stft transform."""
 
     if use_hann:
-        window = make_hann_window(window_size, trainable, device)
+        window = _make_hann_window(window_size, trainable, device)
     else:
         window = None
 
@@ -231,7 +231,7 @@ def get_stft(
     return transform
 
 
-def get_num_stft_frames(
+def _get_num_stft_frames(
     sample_len: int, sr: int, win_size: int, hop_len: int, center: bool = True
 ) -> int:
     """Calculates number of STFT frames."""
@@ -245,7 +245,7 @@ def get_num_stft_frames(
     return frames
 
 
-def make_hann_window(
+def _make_hann_window(
     window_length: int, trainable: bool = False, device: Optional[str] = None
 ) -> torch.Tensor:
     """Creates a ``Hann`` window for use with STFT/ISTFT transformations.
@@ -267,7 +267,7 @@ def make_hann_window(
     return window
 
 
-def get_deconv_pad(
+def _get_deconv_pad(
     h_in: int, w_in: int, h_out: int, w_out: int, stride: int, kernel_size: int
 ) -> Tuple[int, int]:
     """Computes the required transpose conv padding for a target shape."""
@@ -277,7 +277,7 @@ def get_deconv_pad(
     return h_pad, w_pad
 
 
-def get_conv_pad(
+def _get_conv_pad(
     h_in: int, w_in: int, h_out: int, w_out: int, kernel_size: int
 ) -> Tuple[int, int]:
     """Computes the required conv padding."""
@@ -287,7 +287,7 @@ def get_conv_pad(
     return h_pad, w_pad
 
 
-def get_conv_shape(
+def _get_conv_shape(
     h_in: int, w_in: int, stride: int, kernel_size: int
 ) -> Tuple[int, int]:
     """Computes the non-zero padded output of a conv layer."""

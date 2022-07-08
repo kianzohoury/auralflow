@@ -185,7 +185,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
@@ -238,112 +237,60 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SeparationModel</span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
 <p>Interface shared across all source separation models.</p>
-<p>Should not be instantiated directly but rather subclassed. A
-subclass must implement the following methods: <code class="docutils literal notranslate"><span class="pre">set_data</span></code>, <code class="docutils literal notranslate"><span class="pre">forward</span></code>,
-<code class="docutils literal notranslate"><span class="pre">compute_loss</span></code>, <code class="docutils literal notranslate"><span class="pre">backward</span></code>, <code class="docutils literal notranslate"><span class="pre">optimizer_step</span></code> and <code class="docutils literal notranslate"><span class="pre">separate</span></code>.</p>
+<p>Should not be instantiated directly but rather subclassed. All subclasses
+must implement the <code class="docutils literal notranslate"><span class="pre">forward</span></code> and <code class="docutils literal notranslate"><span class="pre">separate</span></code> methods.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (<em>nn.Module</em>) -- Underlying <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> model.</p></li>
-<li><p><strong>device</strong> (<em>str</em>) -- Device. Uses <code class="docutils literal notranslate"><span class="pre">'cuda'</span></code> if available; otherwise uses
+<li><p><strong>targets</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) -- Target source labels.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Device. Uses <code class="docutils literal notranslate"><span class="pre">'cuda'</span></code> if available; otherwise uses
 <code class="docutils literal notranslate"><span class="pre">'cpu'</span></code>.</p></li>
-<li><p><strong>target_labels</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) -- Target source labels.</p></li>
-<li><p><strong>criterion</strong> (<em>Union</em><em>[</em><em>nn.Module</em><em>, </em><em>Callable</em><em>]</em>) -- Loss function.</p></li>
-<li><p><strong>optimizer</strong> (<em>Optimizer</em>) -- Optimizer.</p></li>
-<li><p><strong>scheduler</strong> (<em>Any</em>) -- LR scheduler.</p></li>
-<li><p><strong>batch_loss</strong> (<em>FloatTensor</em>) -- Current batch loss.</p></li>
-<li><p><strong>train_losses</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) -- Epoch training loss history.</p></li>
-<li><p><strong>val_losses</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) -- Epoch validation loss history.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.backward">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.backward" title="Permalink to this definition">#</a></dt>
-<dd><p>Abstract method computes the gradient and runs backpropagation.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.compute_loss">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_loss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.compute_loss" title="Permalink to this definition">#</a></dt>
-<dd><p>Abstract method for calculating the current batch-wise loss.</p>
-<p>Implementations should sets the <code class="docutils literal notranslate"><span class="pre">batch_loss</span></code> attribute and
-returns its scalar value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Batch-wise loss.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.eval">
-<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.eval" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.eval" title="Permalink to this definition">#</a></dt>
 <dd><p>Sets model to evaluation mode.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.forward">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Abstract forward method.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.optimizer_step">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.optimizer_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.optimizer_step" title="Permalink to this definition">#</a></dt>
-<dd><p>Abstract method that optimizes loss and updates model parameters.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.scheduler_step">
-<span class="sig-name descname"><span class="pre">scheduler_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.scheduler_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.scheduler_step" title="Permalink to this definition">#</a></dt>
-<dd><p>Decreases the learning rate if required.</p>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><span class="pre">FloatTensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">FloatTensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FloatTensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward method.</p>
+<p>All subclasses must implement this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mixture</strong> (<em>FloatTensor</em>) -- Mixture data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Union[FloatTensor, Tuple[FloatTensor, Dict[str, FloatTensor]]]</em> -- Target source estimate or a tuple containing the target source
+estimate and a dictionary of intermediate output data.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.separate">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">separate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.separate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.separate" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">separate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.separate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.separate" title="Permalink to this definition">#</a></dt>
 <dd><p>Separates target sources from a mixture given its audio data.</p>
+<p>All subclasses must implement this method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>audio</strong> (<em>Tensor</em>) -- Mixture audio data.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Estimated target sources.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tensor</p>
+<dd class="field-even"><p><em>Tensor</em> -- Estimated target sources.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.set_data">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.set_data" title="Permalink to this definition">#</a></dt>
-<dd><p>Abstract method for setting and processing data internally.</p>
-<p>Implementations should fill the appropriate instance attributes with
-the input data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>*data</strong> (<em>Tensor</em>) -- Input and/or target data.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SeparationModel.test">
-<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.test" title="Permalink to this definition">#</a></dt>
-<dd><p>Calls forward method without gradient tracking.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SeparationModel.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.train" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/models/base.html#SeparationModel.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SeparationModel.train" title="Permalink to this definition">#</a></dt>
 <dd><p>Sets model to training mode.</p>
 </dd></dl>
 
@@ -351,84 +298,146 @@ the input data.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramMaskModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hop_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hidden_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_act_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leak_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationModel</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramMaskModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fft</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hop_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hidden_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_act_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leak_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationModel</span></code></a></p>
 <p>Spectrogram-domain deep mask estimation model.</p>
+<p>Wraps a <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> model.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>base_model_type</strong> (<em>str</em>) -- Base model architecture.</p></li>
-<li><p><strong>target_labels</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) -- Target source labels.</p></li>
-<li><p><strong>num_fft</strong> (<em>int</em>) -- Number of FFT bins. Note that only <code class="docutils literal notranslate"><span class="pre">num_fft</span></code> // 2 + 1
-bins will be used due to symmetry. Default: <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
-<li><p><strong>window_size</strong> (<em>int</em>) -- Window size. Default: <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
-<li><p><strong>hop_length</strong> (<em>int</em>) -- Hop length. Default: <code class="docutils literal notranslate"><span class="pre">512</span></code>.</p></li>
-<li><p><strong>sample_length</strong> (<em>int</em>) -- Duration of audio samples in seconds.
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>audio_transform</strong> (<a class="reference internal" href="auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform" title="auralflow.transforms.AudioTransform"><em>AudioTransform</em></a>) -- Data transformer/processer.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>model_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Base model architecture.</p></li>
+<li><p><strong>targets</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) -- Target source labels.</p></li>
+<li><p><strong>num_fft</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of FFT bins. Note that only
+<code class="docutils literal notranslate"><span class="pre">num_fft</span></code> // 2 + 1 bins will be used due to symmetry.
+Default: <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
+<li><p><strong>window_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Window size. Default: <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
+<li><p><strong>hop_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Hop length. Default: <code class="docutils literal notranslate"><span class="pre">512</span></code>.</p></li>
+<li><p><strong>sample_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Duration of audio samples in seconds.
 Default: <code class="docutils literal notranslate"><span class="pre">3</span></code>.</p></li>
-<li><p><strong>sample_rate</strong> (<em>int</em>) -- Sample rate. Default: <code class="docutils literal notranslate"><span class="pre">44100</span></code>.</p></li>
-<li><p><strong>num_channels</strong> (<em>int</em>) -- Number of input/output channels. Default: <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
-<li><p><strong>num_hidden_channels</strong> (<em>int</em>) -- Number of initial hidden channels.
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Sample rate. Default: <code class="docutils literal notranslate"><span class="pre">44100</span></code>.</p></li>
+<li><p><strong>num_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of input/output channels.
+Default: <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>num_hidden_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of initial hidden channels.
 Default: <code class="docutils literal notranslate"><span class="pre">16</span></code>.</p></li>
-<li><p><strong>mask_act_fn</strong> (<em>str</em>) -- Mask activation function. Default: <code class="docutils literal notranslate"><span class="pre">'sigmoid'</span></code>.</p></li>
-<li><p><strong>leak_factor</strong> (<em>float</em>) -- Leak factor if <code class="docutils literal notranslate"><span class="pre">mask_act_fn='leaky_relu'</span></code>.
-Default: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
-<li><p><strong>dropout_p</strong> (<em>float</em>) -- Layer dropout probability. Default: <code class="docutils literal notranslate"><span class="pre">0.4</span></code>.</p></li>
-<li><p><strong>normalize_input</strong> (<em>bool</em>) -- Whether to learn input scaling/centering
-parameters. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>normalize_output</strong> (<em>bool</em>) -- Whether to learn output scaling/centering
-parameters. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>device</strong> (<em>str</em>) -- Device. Default: <code class="docutils literal notranslate"><span class="pre">'cpu'</span></code>.</p></li>
+<li><p><strong>mask_act_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Mask activation function.
+Default: <code class="docutils literal notranslate"><span class="pre">'sigmoid'</span></code>.</p></li>
+<li><p><strong>leak_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- If <code class="docutils literal notranslate"><span class="pre">leak_factor</span></code> &gt; 0, network will
+have Leaky ReLU activation layers, and SELU activation layers
+otherwise. Default: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+<li><p><strong>dropout_p</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Layer dropout probability.
+Default: <code class="docutils literal notranslate"><span class="pre">0.4</span></code>.</p></li>
+<li><p><strong>normalize_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Whether to learn input
+scaling/centering parameters. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>normalize_output</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Whether to learn output
+scaling/centering parameters. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Device. Default: <code class="docutils literal notranslate"><span class="pre">'cpu'</span></code>.</p></li>
 </ul>
+</dd>
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> -- Additional constructor arguments (depending on the
+<code class="docutils literal notranslate"><span class="pre">base_model_type</span></code>).</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.backward">
-<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.backward" title="Permalink to this definition">#</a></dt>
-<dd><p>Performs gradient computation and backpropagation.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.compute_loss">
-<span class="sig-name descname"><span class="pre">compute_loss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.compute_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.compute_loss" title="Permalink to this definition">#</a></dt>
-<dd><p>Updates and returns the current batch-wise loss.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Estimates target by applying the learned mask to the mixture.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.optimizer_step">
-<span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.optimizer_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.optimizer_step" title="Permalink to this definition">#</a></dt>
-<dd><p>Updates model's parameters.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.scheduler_step">
-<span class="sig-name descname"><span class="pre">scheduler_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.scheduler_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.scheduler_step" title="Permalink to this definition">#</a></dt>
-<dd><p>Reduces lr if val loss does not improve, and signals early stop.</p>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">FloatTensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FloatTensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Estimates the magnitude spectrogram of the target source.</p>
+<p>Applies the learned soft-mask (output of the network) via an
+element-wise product, to the magnitude spectrogram of the mixture,
+extracting an estimate of the target source. Given the magnitude
+spectrogram of a mixture, <span class="math notranslate nohighlight">\(|X|\)</span>, it returns:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\hat Y = M_{\theta} \odot |X|\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(M_{\theta}\)</span> is the learned soft-mask and <span class="math notranslate nohighlight">\(\hat Y\)</span>
+is the target source estimate as a magnitude spectrogram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mixture</strong> (<em>torch.FloatTensor</em>) -- Magnitude spectrogram of the mixture,
+of dimension <cite>(batch, channels, freq, frames)</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Tuple[FloatTensor, Dict[str, FloatTensor]]</em> -- Magnitude spectrogram
+of the estimated target source, of dimension
+<cite>(batch, channels, freq, frames)</cite>, followed by a dictionary mapping
+<code class="docutils literal notranslate"><span class="pre">'mask'</span></code> to the soft-mask estimate, of dimension
+<cite>(batch, channels, freq, frames)</cite>, <code class="docutils literal notranslate"><span class="pre">'mu'</span></code> and <code class="docutils literal notranslate"><span class="pre">'sigma'</span></code>
+to the distribution parameters: <span class="math notranslate nohighlight">\(\mu, \sigma\)</span>, respectively,
+if <code class="docutils literal notranslate"><span class="pre">self.model</span></code> is an instance of <code class="docutils literal notranslate"><span class="pre">SpectrogramNetVAE</span></code>.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.separate">
-<span class="sig-name descname"><span class="pre">separate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.separate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.separate" title="Permalink to this definition">#</a></dt>
-<dd><p>Transforms and returns source estimate in the audio domain.</p>
+<span class="sig-name descname"><span class="pre">separate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.separate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.separate" title="Permalink to this definition">#</a></dt>
+<dd><p>Extracts the target source audio signal given a mixture.</p>
+<p>Runs <code class="docutils literal notranslate"><span class="pre">forward(...)</span></code> in evaluation mode, and handles pre/post audio
+transformations.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\hat S = \text{iSTFT}(\hat Y \odot \text{exp}(j \odot
+    \angle_{\phi} X))\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\text{iSTFT}\)</span> is the inverse short-time Fourier transform,
+<span class="math notranslate nohighlight">\(\hat Y\)</span> is the target source estimate as a magnitude
+spectrogram, <span class="math notranslate nohighlight">\(j\)</span> is imaginary and <span class="math notranslate nohighlight">\(\angle_{\phi} X\)</span> is
+the element-wise angle of the <cite>complex</cite> spectrogram of the mixture.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mixture</strong> (<em>Tensor</em>) -- Mixture audio signal of dimension
+<cite>(batch, channels, time)</cite></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Tensor</em> -- Target source audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.set_data">
-<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.set_data" title="Permalink to this definition">#</a></dt>
-<dd><p>Wrapper method processes and sets data for internal access.</p>
-<p>Transforms mixture audio (and optionally target audio) into
-spectrogram data.</p>
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.to_audio">
+<span class="sig-name descname"><span class="pre">to_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">estimate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FloatTensor</span></span></span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.to_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.to_audio" title="Permalink to this definition">#</a></dt>
+<dd><p>Transforms the target estimate from spectrogram data to audio data.</p>
+<p>Uses the &quot;dirty phase&quot; approximation trick, which utilizes the phase
+content of the mixture spectrogram to reconstruct the audio signal of
+the estimated target spectrogram.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mix</strong> (<em>Tensor</em>) -- Mixture audio data.</p></li>
-<li><p><strong>target</strong> (<em>Optional</em><em>[</em><em>Tensor</em><em>]</em>) -- Target audio data.</p></li>
+<li><p><strong>estimate</strong> (<em>FloatTensor</em>) -- Estimated target source spectrogram
+of dimension <cite>(batch, channels, freq, frames)</cite>.</p></li>
+<li><p><strong>phase</strong> (<em>FloatTensor</em>) -- Phase spectrogram of dimension
+<cite>(batch, channels, freq, frames)</cite>.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>FloatTensor</em> -- Estimated target source audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.models.SpectrogramMaskModel.to_spectrogram">
+<span class="sig-name descname"><span class="pre">to_spectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">FloatTensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FloatTensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/auralflow/models/mask_model.html#SpectrogramMaskModel.to_spectrogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramMaskModel.to_spectrogram" title="Permalink to this definition">#</a></dt>
+<dd><p>Transforms audio signal data to spectrogram data.</p>
+<p>Given a raw audio signal, a complex spectrogram is produced and then
+split into its constituent magnitude and phase content. Transfers
+<code class="docutils literal notranslate"><span class="pre">audio</span></code> to the same device as the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>audio</strong> (<em>Tensor</em>) -- Audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Tuple[FloatTensor, FloatTensor]</em> -- Magnitude and phase
+spectrograms, respectively, both of dimension
+<cite>(batch, channels, freq, frames)</cite>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -437,113 +446,189 @@ spectrogram data.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramNetLSTM">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetLSTM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recurrent_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetLSTM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetLSTM" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetLSTM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_fft_bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_act_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leak_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recurrent_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetLSTM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetLSTM" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="auralflow.models.SpectrogramNetSimple.html#auralflow.models.SpectrogramNetSimple" title="auralflow.models.architectures.SpectrogramNetSimple"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectrogramNetSimple</span></code></a></p>
 <p>Deep mask estimation model using LSTM bottleneck layers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>recurrent_depth</strong> (<em>int</em>) -- Number of stacked lstm layers. Default: 3.</p></li>
-<li><p><strong>hidden_size</strong> (<em>int</em>) -- Requested number of hidden features. Default: 1024.</p></li>
-<li><p><strong>input_axis</strong> (<em>int</em>) -- Whether to feed dim 0 (frequency axis) or dim 1
-(time axis) as features to the lstm. Default: 1.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>args</strong> -- Positional arguments for constructor.</p></li>
-<li><p><strong>kwargs</strong> -- Additional keyword arguments for constructor.</p></li>
+<li><p><strong>num_fft_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of FFT bins (aka filterbanks).</p></li>
+<li><p><strong>num_frames</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of temporal features (time axis).</p></li>
+<li><p><strong>num_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- 1 for mono, 2 for stereo. Default: <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>hidden_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of initial output channels. Default:
+<code class="docutils literal notranslate"><span class="pre">16</span></code>.</p></li>
+<li><p><strong>mask_act_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Final activation layer that creates the
+multiplicative soft-mask. Default: <code class="docutils literal notranslate"><span class="pre">'sigmoid'</span></code>.</p></li>
+<li><p><strong>leak_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Alpha constant if using Leaky ReLU activation.
+Default: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+<li><p><strong>dropout_p</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Dropout probability. Default: <code class="docutils literal notranslate"><span class="pre">0.4</span></code>.</p></li>
+<li><p><strong>normalize_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Whether to learn input normalization
+parameters. Default: <code class="docutils literal notranslate"><span class="pre">True.</span></code></p></li>
+<li><p><strong>normalize_output</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Whether to learn output normalization
+parameters. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>recurrent_depth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of stacked lstm layers. Default: <code class="docutils literal notranslate"><span class="pre">3</span></code>.</p></li>
+<li><p><strong>hidden_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Requested number of hidden features. Default:
+<code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
+<li><p><strong>input_axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Whether to feed dim 0 (frequency axis) or dim 1
+(time axis) as features to the lstm. Default: <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Device. Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramNetLSTM.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetLSTM.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetLSTM.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Forward method.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="auralflow.models.SpectrogramNetLSTM.split_lstm_parameters">
-<span class="sig-name descname"><span class="pre">split_lstm_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetLSTM.split_lstm_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetLSTM.split_lstm_parameters" title="Permalink to this definition">#</a></dt>
-<dd><p>Separates model's LSTM parameters from non-LSTM parameters.</p>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FloatTensor</span></span></span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetLSTM.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetLSTM.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward method that estimates the target-specific soft-mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>FloatTensor</em>) -- Input spectrogram of shape <cite>(batch, channels,
+freq, frames)</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>FloatTensor</em> -- Soft-mask of dimension <cite>(batch, channels, freq,
+frames)</cite>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mixture_spec</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">512</span><span class="p">,</span> <span class="mi">173</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">network</span> <span class="o">=</span> <span class="n">SpectrogramNetLSTM</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">num_fft_bins</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">num_frames</span><span class="o">=</span><span class="mi">173</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">num_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">1024</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">network</span><span class="p">(</span><span class="n">mixture_spec</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramNetSimple">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetSimple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_fft_bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_act_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leak_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetSimple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetSimple" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetSimple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_fft_bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_act_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leak_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetSimple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetSimple" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
 <p>Vanilla spectrogram-based deep mask estimation model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>num_fft_bins</strong> (<em>int</em>) -- Number of FFT bins (aka filterbanks).</p></li>
-<li><p><strong>num_frames</strong> (<em>int</em>) -- Number of temporal features (time axis).</p></li>
-<li><p><strong>num_channels</strong> (<em>int</em>) -- 1 for mono, 2 for stereo. Default: 1.</p></li>
-<li><p><strong>hidden_channels</strong> (<em>int</em>) -- Number of initial output channels. Default: 16.</p></li>
-<li><p><strong>mask_act_fn</strong> (<em>str</em>) -- Final activation layer that creates the
-multiplicative soft-mask. Default: 'sigmoid'.</p></li>
-<li><p><strong>leak_factor</strong> (<em>float</em>) -- Alpha constant if using Leaky ReLU activation.
-Default: 0.</p></li>
-<li><p><strong>dropout_p</strong> (<em>float</em>) -- Dropout probability. Default: 0.5.</p></li>
-<li><p><strong>normalize_input</strong> (<em>bool</em>) -- Whether to learn input normalization
-parameters. Default: False.</p></li>
-<li><p><strong>normalize_output</strong> (<em>bool</em>) -- Whether to learn output normalization
-parameters. Default: False.</p></li>
-<li><p><strong>device</strong> (<em>optional</em><em>[</em><em>str</em><em>]</em>) -- Device. Default: None.</p></li>
+<li><p><strong>num_fft_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of FFT bins (aka filterbanks).</p></li>
+<li><p><strong>num_frames</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of temporal features (time axis).</p></li>
+<li><p><strong>num_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- 1 for mono, 2 for stereo. Default: <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>hidden_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of initial output channels.
+Default: <code class="docutils literal notranslate"><span class="pre">16</span></code>.</p></li>
+<li><p><strong>mask_act_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Final activation layer that creates the
+multiplicative soft-mask. Default: <code class="docutils literal notranslate"><span class="pre">'sigmoid'</span></code>.</p></li>
+<li><p><strong>leak_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Alpha constant if using Leaky ReLU activation.
+Default: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+<li><p><strong>dropout_p</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Dropout probability. Default: <code class="docutils literal notranslate"><span class="pre">0.4</span></code>.</p></li>
+<li><p><strong>normalize_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Whether to learn input normalization
+parameters. Default: <code class="docutils literal notranslate"><span class="pre">True.</span></code></p></li>
+<li><p><strong>normalize_output</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Whether to learn output normalization
+parameters. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Device. Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramNetSimple.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetSimple.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetSimple.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Forward method that estimates the source mask.</p>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FloatTensor</span></span></span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetSimple.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetSimple.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward method that estimates the target-specific soft-mask.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>FloatTensor</em>) -- Input spectrogram.</p>
+<dd class="field-odd"><p><strong>data</strong> (<em>FloatTensor</em>) -- Input spectrogram of shape <cite>(batch, channels,
+freq, frames)</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>FloatTensor</em> -- Soft-mask of dimension <cite>(batch, channels, freq,
+frames)</cite>.</p>
 </dd>
 </dl>
-<dl>
-<dt>Shape:</dt><dd><ul class="simple">
-<li><p>input: <span class="math notranslate nohighlight">\((N, C, F, T)\)</span></p></li>
-<li><p>output: <span class="math notranslate nohighlight">\((N, C, F, T)\)</span></p></li>
-</ul>
-<dl class="simple">
-<dt>where</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(N\)</span>: batch size</p></li>
-<li><p><span class="math notranslate nohighlight">\(C\)</span>: number of channels</p></li>
-<li><p><span class="math notranslate nohighlight">\(F\)</span>: number of frequency bins</p></li>
-<li><p><span class="math notranslate nohighlight">\(T\)</span>: number of frames</p></li>
-</ul>
-</dd>
-</dl>
-</dd>
-</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mixture_spec</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">512</span><span class="p">,</span> <span class="mi">173</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">network</span> <span class="o">=</span> <span class="n">SpectrogramNetSimple</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">num_fft_bins</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">num_frames</span><span class="o">=</span><span class="mi">173</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">num_channels</span><span class="o">=</span><span class="mi">1</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">network</span><span class="p">(</span><span class="n">mixture_spec</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramNetVAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetVAE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetVAE" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.models.</span></span><span class="sig-name descname"><span class="pre">SpectrogramNetVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_fft_bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_act_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leak_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recurrent_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetVAE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetVAE" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="auralflow.models.SpectrogramNetLSTM.html#auralflow.models.SpectrogramNetLSTM" title="auralflow.models.architectures.SpectrogramNetLSTM"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectrogramNetLSTM</span></code></a></p>
-<p>Spectrogram U-Net model with a VAE and LSTM bottleneck.</p>
-<p>Encoder =&gt; VAE =&gt; LSTM x 3 =&gt; decoder. Models a Gaussian conditional
-distribution p(z|x) to sample latent variable z ~ p(z|x), to feed into
-decoder to generate x' ~ p(x|z).</p>
+<p>Spectrogram variational autoencoder model with an LSTM bottleneck.</p>
+<p>Utilizes a recurrent bottleneck layer similar to <code class="docutils literal notranslate"><span class="pre">SpectrogramNetVAE</span></code>, but
+also samples from a modeled probability distribution prior to the recurrent
+layers in order to accurately represent the latent space. More
+specifically, a sampled latent variable <span class="math notranslate nohighlight">\(z\)</span> is generated as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[z = \epsilon \odot \sigma + \mu\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\epsilon \sim N(0, I)\)</span>, and <span class="math notranslate nohighlight">\(\mu, \sigma\)</span> are the mean
+and standard deviation of the modeled probability distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> -- Positional arguments for constructor.</p></li>
-<li><p><strong>kwargs</strong> -- Additional keyword arguments for constructor.</p></li>
+<li><p><strong>num_fft_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of FFT bins (aka filterbanks).</p></li>
+<li><p><strong>num_frames</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of temporal features (time axis).</p></li>
+<li><p><strong>num_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- 1 for mono, 2 for stereo. Default: <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>hidden_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of initial output channels. Default:
+<code class="docutils literal notranslate"><span class="pre">16</span></code>.</p></li>
+<li><p><strong>mask_act_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Final activation layer that creates the
+multiplicative soft-mask. Default: <code class="docutils literal notranslate"><span class="pre">'sigmoid'</span></code>.</p></li>
+<li><p><strong>leak_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Alpha constant if using Leaky ReLU activation.
+Default: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+<li><p><strong>dropout_p</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Dropout probability. Default: <code class="docutils literal notranslate"><span class="pre">0.4</span></code>.</p></li>
+<li><p><strong>normalize_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Whether to learn input normalization
+parameters. Default: <code class="docutils literal notranslate"><span class="pre">True.</span></code></p></li>
+<li><p><strong>normalize_output</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Whether to learn output normalization
+parameters. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>recurrent_depth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Number of stacked lstm layers. Default: <code class="docutils literal notranslate"><span class="pre">3</span></code>.</p></li>
+<li><p><strong>hidden_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Requested number of hidden features. Default:
+<code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
+<li><p><strong>input_axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Whether to feed dim 0 (frequency axis) or dim 1
+(time axis) as features to the lstm. Default: <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Device. Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="auralflow.models.SpectrogramNetVAE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetVAE.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetVAE.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Forward method.</p>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">FloatTensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/auralflow/models/architectures.html#SpectrogramNetVAE.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.models.SpectrogramNetVAE.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward method that estimates the target-specific soft-mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>FloatTensor</em>) -- Input spectrogram of shape <cite>(batch, channels,
+freq, frames)</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Tuple[FloatTensor, ...]</em> -- Soft-mask of dimension
+<cite>(batch, channels, freq, frames)</cite>, followed by <span class="math notranslate nohighlight">\(\mu\)</span> and
+<span class="math notranslate nohighlight">\(\sigma\)</span>, the mean and standard deviation of the modeled
+probability distribution.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mixture_spec</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">512</span><span class="p">,</span> <span class="mi">173</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">network</span> <span class="o">=</span> <span class="n">SpectrogramNetVAE</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">num_fft_bins</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">num_frames</span><span class="o">=</span><span class="mi">173</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">num_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">1024</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">network</span><span class="p">(</span><span class="n">mixture_spec</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>

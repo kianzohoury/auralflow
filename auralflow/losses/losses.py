@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 
 
-from auralflow.models import SpectrogramMaskModel
+from auralflow.models import SpectrogramMaskModel, SpectrogramNetVAE, SeparationModel
 from auralflow.transforms import trim_audio
 from torch import FloatTensor, Tensor
 from torch.nn import functional
@@ -52,14 +52,15 @@ def component_loss(
         - :math:`\alpha`: 2-term coefficient value
         - :math:`\alpha`: 3-term coefficient value
 
-
     Args:
         mask (FloatTensor): Estimated soft-mask (output of the network).
         target (FloatTensor): Ground-truth target source.
         residual (FloatTensor): The residual or background noise, defined as
             the difference between the mixture and target sources.
         alpha (float): Coefficient value for the two-term component loss.
+            Default: ``0.2``.
         beta (float): Coefficient value for the three-term component loss.
+            Default: ``0.8``.
 
     Returns:
         Tensor: Mean component loss.
@@ -79,7 +80,7 @@ def component_loss(
         >>> type(loss)
         <class 'torch.Tensor'>
 
-        Get the loss as a scalar value:
+        Get its scalar value:
 
         >>> loss_val = loss.item()
         >>> type(loss_val)
@@ -149,26 +150,21 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
         Tensor: Mean KL loss term.
 
     Examples:
-        >>> # get mean and std data
+
+        Get mean and standard deviation of the latent distribution:
+
+        >>> import torch
         >>> mu = torch.zeros((16, 256, 256)).float()
         >>> sigma = torch.ones((16, 256, 256)).float()
-        >>>
-        >>> # get estimate and target spectrogram data
-        >>> estimate_spec = torch.rand((16, 512, 173, 1))
-        >>> target_spec = torch.rand((16, 512, 173, 1))
-        >>>
-        >>> # calculate kl div loss
-        >>> kl_term = kl_div_loss(mu, sigma)
-        >>>
-        >>> # calculate reconstruction loss
-        >>> l1_term = torch.nn.functional.l1_loss(estimate_spec, target_spec)
-        >>>
-        >>> # combine loss terms
-        >>> loss = kl_term + l1_term
+
+        Calculate KL loss:
+
+        >>> loss = kl_div_loss(mu, sigma)
         >>> type(loss)
         <class 'torch.Tensor'>
-        >>>
-        >>> # get scalar value
+
+        Get its scalar value:
+
         >>> loss_val = loss.item()
         >>> type(loss_val)
         <class 'float'>
@@ -177,7 +173,7 @@ def kl_div_loss(mu: FloatTensor, sigma: FloatTensor) -> Tensor:
 
 
 def si_sdr_loss(estimate: FloatTensor, target: FloatTensor) -> Tensor:
-    """Scale-invariant (SI-SDR) signal to distortion loss.
+    """Scale-invariant (SI-SDR) signal-to-distortion loss.
 
     Typically used as an evaluation metric, but can be optimized for directly.
     For a single audio track, the loss is defined as:
@@ -188,27 +184,32 @@ def si_sdr_loss(estimate: FloatTensor, target: FloatTensor) -> Tensor:
             - \\hat y||_2^2}
 
     where:
-        - :math:`y`: true target signal
+        - :math:`y`: ground-truth target source signal
         - :math:`\\hat y`: estimated target source signal
 
     Args:
-        estimate (FloatTensor): Target source estimate in the audio domain.
-        target (FloatTensor): Ground-truth target source in the audio domain.
+        estimate (FloatTensor): Source estimate signal data.
+        target (FloatTensor): Ground-truth target source signal data.
 
     Returns:
         Tensor: Mean SI-SDR loss.
 
     Examples:
-        >>> # get estimate and target audio data
+
+        Get estimate and target audio signals:
+
+        >>> import torch
         >>> estimate = torch.rand((16, 1, 88200))
         >>> target = torch.rand((16, 1, 88200))
-        >>>
-        >>> # calculate SI-SDR loss
+
+        Calculate SI-SDR loss:
+
         >>> loss = si_sdr_loss(estimate, target)
         >>> type(loss)
         <class 'torch.Tensor'>
-        >>>
-        >>> # get its scalar value
+
+        Get its scalar value:
+
         >>> loss_val = loss.item()
         >>> type(loss_val)
         <class 'float'>
@@ -232,11 +233,11 @@ def si_sdr_loss(estimate: FloatTensor, target: FloatTensor) -> Tensor:
     return loss
 
 
-def rmse_loss(
-        estimate: FloatTensor, target: Tensor, eps: float = 1e-6
-) -> Tensor:
-    """RMSE loss."""
-    return torch.sqrt(functional.mse_loss(estimate, target) + eps)
+# def rmse_loss(
+#     estimate: FloatTensor, target: Tensor, eps: float = 1e-6
+# ) -> Tensor:
+#     """RMSE loss."""
+#     return torch.sqrt(functional.mse_loss(estimate, target) + eps)
 
 
 class ComponentLoss(nn.Module):
@@ -266,53 +267,79 @@ class ComponentLoss(nn.Module):
         - :math:`R_{f} := M_{ \theta }\odot (|X| - |Y_{k}|)`, filtered residual
         - :math:`\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}`, filtered unit-residual
         - :math:`\hat{R} := \frac{R}{||R||_2}`, unit residual
+        - :math:`n`: number of tensor elements
+        - :math:`\alpha`: 2-term coefficient value
+        - :math:`\alpha`: 3-term coefficient value
 
     Args:
-        model (SpectrogramMaskModel): Spectrogram mask model.
-        alpha (float): Value for the two-term component loss.
+        alpha (float): Value for the two-term component loss. Default: ``0.2``.
         beta (float): Value for the three-term component loss.
+            Default: ``0.8``.
 
     Note:
         If ``model.model`` is of type ``SpectrogramNetVAE``, the result of
         ``kl_div_loss`` will be added to the loss.
     """
 
-    def __init__(
-        self,
-        model: SpectrogramMaskModel,
-        alpha: float = 0.2,
-        beta: float = 0.8
-    ) -> None:
+    def __init__(self, alpha: float = 0.2, beta: float = 0.8) -> None:
         super(ComponentLoss, self).__init__()
-        self.model = model
         self.alpha = alpha
         self.beta = beta
 
-    def forward(self) -> Tensor:
-        """Calculates weighted component loss.
+    def forward(
+        self,
+        mask: FloatTensor,
+        mix_spec: FloatTensor,
+        target_spec: FloatTensor,
+    ) -> Tensor:
+        """Calculates the weighted component loss.
 
         Returns:
             Tensor: Weighted component loss.
         """
         # Compute weighted loss.
         loss = component_loss(
-            mask=self.model.mask,
-            target=self.model.target_spec,
-            residual=self.model.mix_spec - self.model.target_spec,
+            mask=mask,
+            target=target_spec,
+            residual=mix_spec - target_spec,
             alpha=self.alpha,
             beta=self.beta,
         )
-        # Add kl term if using a VAE model.
-        if hasattr(self.model, "get_kl_div"):
-            kl_term = self.model.get_kl_div()
-            loss = loss + kl_term
+        return loss
+
+    def _forward_wrapper(
+        self,
+        model: SpectrogramMaskModel,
+        mix_audio: Tensor,
+        target_audio: Tensor
+    ) -> Tensor:
+        """Wraps a model's full forward pass.
+
+        Calls ``self.forward(...)`` after ``model.forward(...)``.
+        """
+        # Preprocess data.
+        mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
+        target_spec, _ = model.to_spectrogram(audio=target_audio)
+        # Run model's forward pass.
+        estimate_spec, data = model.forward(mixture=mix_spec)
+        # Get loss.
+        loss = self.forward(
+            mask=data["mask"],
+            mix_spec=mix_spec,
+            target_spec=target_spec
+        )
+        # Add KL loss term if applicable.
+        if isinstance(model.model, SpectrogramNetVAE):
+            mu, sigma = data["mu"], data["sigma"]
+            kl_loss = kl_div_loss(mu=mu, sigma=sigma)
+            loss = loss + kl_loss
         return loss
 
 
 class KLDivergenceLoss(nn.Module):
     r"""Wrapper class for ``kl_div_loss``.
 
-    Should be used with ``SpectrogramNetVAE``. The KL loss term is defined as
+    The KL loss term is defined as
     :math:`D_KL(P||Q)`, where :math:`P` is the modeled distribution, and
     :math:`Q` is a standard normal distribution :math:`N(0, 1)`. In closed
     form, the loss can be expressed as:
@@ -330,35 +357,67 @@ class KLDivergenceLoss(nn.Module):
         - :math:`n`: number of tensor elements
 
     Args:
-        model (SpectrogramMaskModel): Spectrogram mask model.
-        loss_fn (str): Construction loss criterion. Default: 'l1'.
+        loss_fn (str): Construction loss criterion. Default: ``'l1'``.
+
+    Note:
+        Can only be used if ``model.model`` is an instance of
+        ``SpectrogramNetVAE``.
     """
 
-    def __init__(
-        self, model: SpectrogramMaskModel, loss_fn: str = "l1"
-    ) -> None:
+    def __init__(self, loss_fn: str = "l1") -> None:
         super(KLDivergenceLoss, self).__init__()
-        self.model = model
         if loss_fn == "l1":
             self.construction_loss = nn.functional.l1_loss
         else:
             self.construction_loss = nn.functional.mse_loss
 
-    def forward(self) -> None:
-        """Calculates construction loss + KL loss and stores it.
+    def forward(
+        self,
+        estimate_spec: FloatTensor,
+        target_spec: FloatTensor,
+        mu: FloatTensor,
+        sigma: FloatTensor
+    ) -> Tensor:
+        """Adds together the reconstruction loss and KL loss.
 
-        Sets the ``batch_loss`` attribute of ``model``.
+        Returns:
+            Tensor: Combined loss.
         """
-        if hasattr(self.model, "get_kl_div"):
-            kl_term = kl_div_loss(
-                mu=self.model.model.mu_data, sigma=self.model.model.sigma_data
+        kl_term = kl_div_loss(mu=mu, sigma=sigma)
+        construction_loss = self.construction_loss(estimate_spec, target_spec)
+        loss = construction_loss + kl_term
+        return loss
+
+    def _forward_wrapper(
+        self,
+        model: SpectrogramMaskModel,
+        mix_audio: Tensor,
+        target_audio: Tensor
+    ) -> Tensor:
+        """Wraps a model's full forward pass.
+
+        Calls self.forward(...) after model.forward(...). Used in
+        ``trainer.run_training(...)`` to fully encapsulate the forward phase.
+        """
+        if not isinstance(model.model, SpectrogramNetVAE):
+            raise ValueError(
+                f"Expected model of type {type(SpectrogramNetVAE)}, but "
+                f"received {type(model.model)}."
             )
-        else:
-            kl_term = 0
-        construction_loss = self.construction_loss(
-            self.model.estimate_spec, self.model.target_spec
+        # Preprocess data.
+        mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
+        target_spec, _ = model.to_spectrogram(audio=target_audio)
+        # Run model's forward pass.
+        estimate_spec, data = model.forward(mixture=mix_spec)
+        # Get loss.
+        mu, sigma = data["mu"], data["sigma"]
+        loss = self.forward(
+            estimate_spec=estimate_spec,
+            target_spec=target_spec,
+            mu=mu,
+            sigma=sigma
         )
-        self.model.batch_loss = construction_loss + kl_term
+        return loss
 
 
 class SISDRLoss(nn.Module):
@@ -374,100 +433,258 @@ class SISDRLoss(nn.Module):
             - \hat y||_2^2}
 
     where:
-        - :math:`y`: true target signal
+        - :math:`y`: ground-truth target source signal
         - :math:`\hat y`: estimated target source signal
-
-    Args:
-        model (SpectrogramMaskModel): Spectrogram mask model.
     """
 
-    def __init__(self, model) -> None:
+    def __init__(self, best_perm: bool = True) -> None:
         super(SISDRLoss, self).__init__()
-        self.model = model
+        self.best_perm = best_perm
 
-    def forward(self) -> None:
-        """Calculates signal-to-distortion ratio loss and stores it.
+    def forward(self, estimate_audio: Tensor, target_audio: Tensor) -> Tensor:
+        """Calculates signal-to-distortion ratio loss.
 
-        Sets the ``batch_loss`` attribute of ``model``.
+        Returns:
+            Tensor: SI-SDR loss.
         """
-        estimate_audio = self.model.estimate_audio[..., :self.model.target_audio.shape[-1]]
-        target_audio = self.model.target_audio.squeeze(-1).float()
-        self.model.batch_loss = si_sdr_loss(
-            estimate_audio, target_audio
+        estimate_audio = estimate_audio[..., :target_audio.shape[-1]]
+        target_audio = target_audio.squeeze(-1)
+        loss = si_sdr_loss(
+            estimate=estimate_audio, target=target_audio
         )
+        if self.best_perm:
+            loss_perm = si_sdr_loss(
+                estimate=target_audio, target=estimate_audio
+            )
+            loss = min(loss, loss_perm, key=lambda x: x.item())
+        return loss
+
+    def _forward_wrapper(
+        self,
+        model: SpectrogramMaskModel,
+        mix_audio: Tensor,
+        target_audio: Tensor
+    ) -> Tensor:
+        """Wraps a model's full forward pass.
+
+        Calls self.forward(...) after model.forward(...). Used in
+        ``trainer.run_training(...)`` to fully encapsulate the forward phase.
+        """
+        # Preprocess data.
+        mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
+        # Run model's forward pass.
+        estimate_spec, data = model.forward(mixture=mix_spec)
+        # Separate.
+        estimate_audio = model.separate(mixture=estimate_spec)
+        target_audio = target_audio.to(model.device)
+        # Get loss.
+        loss = self.forward(
+            estimate_audio=estimate_audio, target_audio=target_audio
+        )
+        # Add KL loss term if applicable.
+        if isinstance(model.model, SpectrogramNetVAE):
+            mu, sigma = data["mu"], data["sigma"]
+            kl_loss = kl_div_loss(mu=mu, sigma=sigma)
+            loss = loss + kl_loss
+        return loss
 
 
 class L1Loss(nn.Module):
     """Wrapper class for l1 loss.
 
     Args:
-        model (SpectrogramMaskModel): Spectrogram mask model.
-
-    Note:
-        Sets ``batch_loss`` attribute of the model instead of returning the
-        loss directly.
+        reduce_mean (bool): If ``True``, returns the batch-wise mean of the
+            loss; otherwise, returns the batch-wise sum of the loss.
     """
 
-    def __init__(self, model: SpectrogramMaskModel) -> None:
+    def __init__(self, reduce_mean: bool = True) -> None:
         super(L1Loss, self).__init__()
-        self.model = model
+        self.reduction = "mean" if reduce_mean else "sum"
 
-    def forward(self) -> None:
-        """Calculates l1 loss and stores it."""
-        self.model.batch_loss = nn.functional.l1_loss(
-            self.model.estimate_spec, self.model.target_spec
+    def forward(
+        self, estimate_spec: FloatTensor, target_spec: FloatTensor
+    ) -> Tensor:
+        """Calculates the l1 loss.
+
+        Returns:
+            Tensor: L1 loss.
+        """
+        loss = nn.functional.l1_loss(
+            estimate_spec, target_spec, reduction=self.reduction)
+        return loss
+
+    def _forward_wrapper(
+        self,
+        model: SpectrogramMaskModel,
+        mix_audio: Tensor,
+        target_audio: Tensor
+    ) -> Tensor:
+        """Wraps a model's full forward pass.
+
+        Calls self.forward(...) after model.forward(...). Used in
+        ``trainer.run_training(...)`` to fully encapsulate the forward phase.
+        """
+        # Preprocess data.
+        mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
+        target_spec, _ = model.to_spectrogram(audio=target_audio)
+        # Run model's forward pass.
+        estimate_spec, _ = model.forward(mixture=mix_spec)
+        # Get loss.
+        loss = self.forward(
+            estimate_spec=estimate_spec, target_spec=target_spec
         )
+        return loss
 
 
 class L2Loss(nn.Module):
     """Wrapper class for l2 loss.
 
     Args:
-        model (SpectrogramMaskModel): Spectrogram mask model.
-
-    Note:
-        Sets ``batch_loss`` attribute of the model instead of returning the
-        loss directly.
+        reduce_mean (bool): If ``True``, returns the batch-wise mean of the
+            loss; otherwise, returns the batch-wise sum of the loss.
     """
 
-    def __init__(self, model: SpectrogramMaskModel) -> None:
+    def __init__(self, reduce_mean: bool = True) -> None:
         super(L2Loss, self).__init__()
-        self.model = model
+        self.reduction = "mean" if reduce_mean else "sum"
 
-    def forward(self) -> None:
-        """Calculates l2 loss and stores it."""
-        self.model.batch_loss = nn.functional.mse_loss(
-            self.model.estimate_spec, self.model.target_spec
+    def forward(
+        self, estimate_spec: FloatTensor, target_spec: FloatTensor
+    ) -> Tensor:
+        """Calculates the l2 loss.
+
+        Returns:
+            Tensor: L2 loss.
+        """
+        loss = nn.functional.mse_loss(
+            estimate_spec, target_spec, reduction=self.reduction)
+        return loss
+
+    def _forward_wrapper(
+        self,
+        model: SpectrogramMaskModel,
+        mix_audio: Tensor,
+        target_audio: Tensor
+    ) -> Tensor:
+        """Wraps a model's full forward pass.
+
+        Calls self.forward(...) after model.forward(...). Used in
+        ``trainer.run_training(...)`` to fully encapsulate the forward phase.
+        """
+        # Preprocess data.
+        mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
+        target_spec, _ = model.to_spectrogram(audio=target_audio)
+        # Run model's forward pass.
+        estimate_spec, _ = model.forward(mixture=mix_spec)
+        # Get loss.
+        loss = self.forward(
+            estimate_spec=estimate_spec, target_spec=target_spec
         )
+        return loss
+
+#
+# class RMSELoss(nn.Module):
+#     """Wrapper class for rmse loss."""
+#
+#     def __init__(self):
+#         super(RMSELoss, self).__init__()
+#         self.model = model
+#
+#     def forward(self) -> None:
+#         sep_loss = rmse_loss(self.model.estimate_spec, self.model.target_spec)
 
 
-class RMSELoss(nn.Module):
-    """Wrapper class for rmse loss."""
+class MaskLoss(nn.Module):
+    r"""Wrapper class for calculating the loss on soft-masks directly.
 
-    def __init__(self, model):
-        super(RMSELoss, self).__init__()
-        self.model = model
+    The loss is defined as:
 
-    def forward(self) -> None:
-        sep_loss = rmse_loss(self.model.estimate_spec, self.model.target_spec)
-        mask_loss = rmse_loss(self.model.mix_phase, self.model.target_phase)
-        self.model.batch_loss = 0.5 * sep_loss + 0.5 * mask_loss
+    .. math::
 
+        L_{mask}(X, Y, M_{\theta}) = l(\frac{|Y|}{max(|X|, \epsilon)}, M_{\theta})
 
-class L2MaskLoss(nn.Module):
-    """Wrapper class for l2 loss directly on masks."""
+    where :math:`l` is the loss function, :math:`|X|` and :math:`|Y|` are
+    the magnitude spectrograms of the mixture and targets respectively,
+    :math:`M_{\theta}` is the estimated soft-mask (output of the network) and
+    :math:`\epsilon` is a small constant added for numerical stability.
 
-    def __init__(self, model):
-        super(L2MaskLoss, self).__init__()
-        self.model = model
+    Args:
+        loss_fn (str): Loss function. Default: ``'l1'``.
+        reduce_mean (bool): If ``True``, returns the batch-wise mean of the
+            loss; otherwise, returns the batch-wise sum of the loss.
+    """
 
-    def forward(self) -> None:
-        ideal_mask = self.model.target_spec / torch.max(
-            self.model.mix_spec, torch.ones_like(self.model.mix_spec)
+    def __init__(self, loss_fn="l1", reduce_mean: bool = True) -> None:
+        super(MaskLoss, self).__init__()
+        if loss_fn == "l1":
+            self.criterion = nn.functional.l1_loss
+        else:
+            self.criterion = nn.functional.mse_loss
+        self.reduction = "mean" if reduce_mean else "sum"
+
+    def forward(
+        self,
+        mask: FloatTensor,
+        mix_spec: FloatTensor,
+        target_spec: FloatTensor,
+        eps: float = 1e-6
+    ) -> Tensor:
+        """Calculates the mask loss.
+
+        Returns:
+            Tensor: Mask loss.
+        """
+        ideal_mask = target_spec / torch.max(
+            mix_spec, torch.full_like(
+                mix_spec, fill_value=eps, device=mix_spec.device
+            )
         )
-        self.model.batch_loss = nn.functional.mse_loss(
-            self.model.mask, ideal_mask
+        loss = self.criterion(mask, ideal_mask, reduction=self.reduction)
+        return loss
+
+    def _forward_wrapper(
+        self,
+        model: SpectrogramMaskModel,
+        mix_audio: Tensor,
+        target_audio: Tensor
+    ) -> Tensor:
+        """Wraps a model's full forward pass.
+
+        Calls self.forward(...) after model.forward(...). Used in
+        ``trainer.run_training(...)`` to fully encapsulate the forward phase.
+        """
+        # Preprocess data.
+        mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
+        target_spec, _ = model.to_spectrogram(audio=target_audio)
+        # Run model's forward pass.
+        estimate_spec, data = model.forward(mixture=mix_spec)
+        # Get loss.
+        loss = self.forward(
+            mask=data["mask"], mix_spec=mix_spec, target_spec=target_spec
         )
+        # Add KL loss term if applicable.
+        if isinstance(model.model, SpectrogramNetVAE):
+            mu, sigma = data["mu"], data["sigma"]
+            kl_loss = kl_div_loss(mu=mu, sigma=sigma)
+            loss = loss + kl_loss
+        return loss
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def get_evaluation_metrics(

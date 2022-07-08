@@ -185,7 +185,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
@@ -232,46 +231,31 @@
 <h1>auralflow.visualizer.waveform_show_diff<a class="headerlink" href="#auralflow-visualizer-waveform-show-diff" title="Permalink to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.visualizer.waveform_show_diff">
-<span class="sig-prename descclassname"><span class="pre">auralflow.visualizer.</span></span><span class="sig-name descname"><span class="pre">waveform_show_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/visualizer/visualizer.html#waveform_show_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.visualizer.waveform_show_diff" title="Permalink to this definition">#</a></dt>
-<dd><p>Creates a <code class="docutils literal notranslate"><span class="pre">pyplot</span></code> figure comparing estimate and target waveforms.</p>
+<span class="sig-prename descclassname"><span class="pre">auralflow.visualizer.</span></span><span class="sig-name descname"><span class="pre">waveform_show_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)"><span class="pre">Figure</span></a></span></span><a class="reference internal" href="_modules/auralflow/visualizer/visualizer.html#waveform_show_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.visualizer.waveform_show_diff" title="Permalink to this definition">#</a></dt>
+<dd><p>Creates a figure comparing estimate and target waveforms.</p>
 <p>The waveforms are overlayed together, with time as the horizontal axis
 and amplitude as the vertical axis. Like <code class="docutils literal notranslate"><span class="pre">spec_show_diff</span></code>, the channels
 are averaged and collapsed.</p>
-<dl class="field-list">
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) -- Target label.</p></li>
-<li><p><strong>estimate</strong> (<em>Tensor</em>) -- Estimated target source audio signal.</p></li>
-<li><p><strong>target</strong> (<em>Tensor</em>) -- Ground-truth target source audio signal.</p></li>
-<li><p><strong>resolution</strong> (<em>int</em>) -- DPI.</p></li>
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Target label.</p></li>
+<li><p><strong>estimate</strong> (<em>Tensor</em>) -- Estimated target source audio signal of dimension
+<cite>(channels, time)</cite>.</p></li>
+<li><p><strong>target</strong> (<em>Tensor</em>) -- Ground-truth target source audio signal of dimension
+<cite>(channels, time)</cite>.</p></li>
+<li><p><strong>resolution</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- DPI. Default: <code class="docutils literal notranslate"><span class="pre">120</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Waveform figure.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Figure</p>
-</dd>
-<dt class="field-even">Shape<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p>waveform: <span class="math notranslate nohighlight">\((C, T)\)</span>, non-batched</p></li>
-</ul>
-<dl class="simple">
-<dt>where</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(C\)</span>: number of channels</p></li>
-<li><p><span class="math notranslate nohighlight">\(T\)</span>: number of samples</p></li>
-</ul>
-</dd>
-</dl>
+<dd class="field-even"><p><em>Figure</em> -- Waveform figure.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># get estimate and target audio signals</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">estimate_audio</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">88200</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target_audio</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">88200</span><span class="p">))</span>
-<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># generate figure</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">spec_show_diff</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;vocals&quot;</span><span class="p">,</span>
@@ -279,10 +263,8 @@ are averaged and collapsed.</p>
 <span class="gp">... </span>    <span class="n">target</span><span class="o">=</span><span class="n">target_audio</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">resolution</span><span class="o">=</span><span class="mi">120</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># display figure</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># save figure</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="s2">&quot;waveform_comparison.png&quot;</span><span class="p">)</span>
 </pre></div>
@@ -332,6 +314,5 @@ are averaged and collapsed.</p>
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

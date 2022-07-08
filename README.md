@@ -357,7 +357,7 @@ import torch
 
 
 # unload configuration data
-config_data = load_config("/path/to/my_model/config.json")
+config_data = load_config("/path/to/my_model/audio_model_template.json")
 
 # generate pretend 2 sec audio sample
 mix_audio = torch.rand((1, 88200))

@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -399,7 +398,7 @@
         <span class="k">return</span> <span class="n">audio</span></div></div>
 
 
-<span class="k">def</span> <span class="nf">fast_fourier</span><span class="p">(</span><span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_fast_fourier</span><span class="p">(</span><span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">audio</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Transforms raw audio to complex-valued STFT audio.&quot;&quot;&quot;</span>
     <span class="n">audio_stft</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">n_batch</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_frames</span><span class="p">,</span> <span class="n">n_targets</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
@@ -416,7 +415,7 @@
     <span class="k">return</span> <span class="n">data_stft</span>
 
 
-<span class="k">def</span> <span class="nf">inverse_fast_fourier</span><span class="p">(</span><span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">complex_stft</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_inverse_fast_fourier</span><span class="p">(</span><span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">complex_stft</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Transforms complex-valued STFT audio to temporal audio domain.&quot;&quot;&quot;</span>
     <span class="n">source_estimate</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">n_batch</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">n_frames</span><span class="p">,</span> <span class="n">n_targets</span> <span class="o">=</span> <span class="n">complex_stft</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
@@ -428,7 +427,7 @@
     <span class="k">return</span> <span class="n">source_estimate</span>
 
 
-<span class="k">def</span> <span class="nf">get_stft</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_get_stft</span><span class="p">(</span>
     <span class="n">num_fft</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">hop_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -440,7 +439,7 @@
     <span class="sd">&quot;&quot;&quot;Returns a specified stft or inverse stft transform.&quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">use_hann</span><span class="p">:</span>
-        <span class="n">window</span> <span class="o">=</span> <span class="n">make_hann_window</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">trainable</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">_make_hann_window</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">trainable</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">window</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -461,7 +460,7 @@
     <span class="k">return</span> <span class="n">transform</span>
 
 
-<span class="k">def</span> <span class="nf">get_num_stft_frames</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_get_num_stft_frames</span><span class="p">(</span>
     <span class="n">sample_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">win_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">hop_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">center</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Calculates number of STFT frames.&quot;&quot;&quot;</span>
@@ -475,7 +474,7 @@
     <span class="k">return</span> <span class="n">frames</span>
 
 
-<span class="k">def</span> <span class="nf">make_hann_window</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_make_hann_window</span><span class="p">(</span>
     <span class="n">window_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Creates a ``Hann`` window for use with STFT/ISTFT transformations.</span>
@@ -497,7 +496,7 @@
     <span class="k">return</span> <span class="n">window</span>
 
 
-<span class="k">def</span> <span class="nf">get_deconv_pad</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_get_deconv_pad</span><span class="p">(</span>
     <span class="n">h_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">w_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">h_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">w_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Computes the required transpose conv padding for a target shape.&quot;&quot;&quot;</span>
@@ -507,7 +506,7 @@
     <span class="k">return</span> <span class="n">h_pad</span><span class="p">,</span> <span class="n">w_pad</span>
 
 
-<span class="k">def</span> <span class="nf">get_conv_pad</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_get_conv_pad</span><span class="p">(</span>
     <span class="n">h_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">w_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">h_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">w_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Computes the required conv padding.&quot;&quot;&quot;</span>
@@ -517,7 +516,7 @@
     <span class="k">return</span> <span class="n">h_pad</span><span class="p">,</span> <span class="n">w_pad</span>
 
 
-<span class="k">def</span> <span class="nf">get_conv_shape</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_get_conv_shape</span><span class="p">(</span>
     <span class="n">h_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">w_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Computes the non-zero padded output of a conv layer.&quot;&quot;&quot;</span>

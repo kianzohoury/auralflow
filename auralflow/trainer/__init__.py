@@ -4,8 +4,40 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from .trainer import run_training, run_validation
-from . import callbacks
+__all__ = [
+    "ModelTrainer",
+    "CallbackManager",
+    "TrainingCallback",
+    "AudioPlayerCallback",
+    "LayersVisualCallback",
+    "LossCallback",
+    # "MetricsCallback",
+    "SpectrogramVisualCallback",
+    "WaveformVisualCallback",
+]
 
+from .callbacks import (
+    AudioPlayerCallback,
+    CallbackManager,
+    _create_callbacks,
+    LayersVisualCallback,
+    LossCallback,
+    # MetricsCallback,
+    SpectrogramVisualCallback,
+    TrainingCallback,
+    WaveformVisualCallback,
+)
+from .trainer import (
+    ModelTrainer,
+    _DefaultModelTrainer
+)
 
-__all__ = ["run_training", "run_validation", "callbacks"]
+from .setup import (
+    _build_from_config,
+    _parse_to_config,
+    _get_loss_criterion,
+    CriterionConfig,
+    AudioModelConfig,
+    SpecModelConfig,
+    TrainingConfig,
+)

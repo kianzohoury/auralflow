@@ -15,7 +15,7 @@ import librosa
 import torch
 from scipy.io import wavfile
 
-from auralflow.customs import init_model, setup_model
+from auralflow.models import _build_model
 from auralflow.utils import load_config
 from auralflow.transforms import trim_audio
 from auralflow.visualizer import ProgressBar
@@ -123,8 +123,10 @@ def main(
 
     # Load model. Setup restores previous state if resuming training.
     print("Loading model...")
-    model = init_model(configuration)
-    model = setup_model(model)
+    model = _build_model(
+        **configuration
+    )
+    # model = setup_model(model)
     print("  Successful.")
 
     # Folder to store output.
@@ -147,7 +149,7 @@ def main(
         track_dir.mkdir(parents=True, exist_ok=True)
 
         # Single target for now.
-        label = model.target_labels[0]
+        label = model.targets[0]
 
         stems = separate_audio(
             model=model,

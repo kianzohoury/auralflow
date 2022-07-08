@@ -6,54 +6,61 @@
 
 import importlib
 import torch
-import torch.nn as nn
 
 
-from auralflow.transforms import AudioTransform, get_num_stft_frames
+from auralflow.transforms import AudioTransform, _get_num_stft_frames
 from .base import SeparationModel
 from torch import FloatTensor, Tensor
-from typing import List, Optional
+from typing import Dict, List, Tuple
 
 
 class SpectrogramMaskModel(SeparationModel):
     """Spectrogram-domain deep mask estimation model.
 
+    Wraps a ``torch.nn.Module`` model.
+
+    :ivar audio_transform: Data transformer/processer.
+    :vartype audio_transform: AudioTransform
+
     Args:
-        base_model_type (str): Base model architecture.
-        target_labels (List[str]): Target source labels.
-        num_fft (int): Number of FFT bins. Note that only ``num_fft`` // 2 + 1
-            bins will be used due to symmetry. Default: ``1024``.
+        model_type (str): Base model architecture.
+        targets (List[str]): Target source labels.
+        num_fft (int): Number of FFT bins. Note that only
+            ``num_fft`` // 2 + 1 bins will be used due to symmetry.
+            Default: ``1024``.
         window_size (int): Window size. Default: ``1024``.
         hop_length (int): Hop length. Default: ``512``.
         sample_length (int): Duration of audio samples in seconds.
             Default: ``3``.
         sample_rate (int): Sample rate. Default: ``44100``.
-        num_channels (int): Number of input/output channels. Default: ``1``.
+        num_channels (int): Number of input/output channels.
+            Default: ``1``.
         num_hidden_channels (int): Number of initial hidden channels.
             Default: ``16``.
-        mask_act_fn (str): Mask activation function. Default: ``'sigmoid'``.
-        leak_factor (float): Leak factor if ``mask_act_fn='leaky_relu'``.
-            Default: ``0``.
-        dropout_p (float): Layer dropout probability. Default: ``0.4``.
-        normalize_input (bool): Whether to learn input scaling/centering
-            parameters. Default: ``True``.
-        normalize_output (bool): Whether to learn output scaling/centering
-            parameters. Default: ``True``.
+        mask_act_fn (str): Mask activation function.
+            Default: ``'sigmoid'``.
+        leak_factor (float): If ``leak_factor`` > 0, network will
+            have Leaky ReLU activation layers, and SELU activation layers
+            otherwise. Default: ``0``.
+        dropout_p (float): Layer dropout probability.
+            Default: ``0.4``.
+        normalize_input (bool): Whether to learn input
+            scaling/centering parameters. Default: ``True``.
+        normalize_output (bool): Whether to learn output
+            scaling/centering parameters. Default: ``True``.
         device (str): Device. Default: ``'cpu'``.
+
+    Keyword Args:
+        kwargs: Additional constructor arguments (depending on the
+            ``base_model_type``).
     """
 
-    estimate_audio: FloatTensor
-    estimate_spec: FloatTensor
-    mix_spec: FloatTensor
-    mix_phase: FloatTensor
-    target_audio: FloatTensor
-    target_spec: FloatTensor
-    mask: FloatTensor
+    audio_transform: AudioTransform
 
     def __init__(
         self,
-        base_model_type: str,
-        target_labels: List[str],
+        model_type: str,
+        targets: List[str],
         num_fft: int = 1024,
         window_size: int = 1024,
         hop_length: int = 512,
@@ -66,15 +73,16 @@ class SpectrogramMaskModel(SeparationModel):
         dropout_p: float = 0.4,
         normalize_input: bool = True,
         normalize_output: bool = True,
-        device: str = 'cpu'
+        device: str = 'cpu',
+        **kwargs
     ):
         super(SpectrogramMaskModel, self).__init__()
 
-        self.target_labels = sorted(target_labels)
-        self.device = device
+        self._targets = sorted(targets)
+        self._device = device
 
         # Calculate number of frames (temporal dimension).
-        self.num_stft_frames = get_num_stft_frames(
+        self.num_stft_frames = _get_num_stft_frames(
             sample_len=sample_length,
             sr=sample_rate,
             win_size=window_size,
@@ -85,17 +93,16 @@ class SpectrogramMaskModel(SeparationModel):
         # Note that the num bins will be num_fft // 2 + 1 due to symmetry.
         self.n_fft_bins = num_fft // 2 + 1
         self.num_out_channels = num_channels
-        self._multi_estimator = len(self.target_labels) > 1
-        self._is_best_model = False
+        self._multi_estimator = len(self.targets) > 1
 
         # Retrieve requested base model architecture class.
         base_class = getattr(
             importlib.import_module("auralflow.models"),
-            base_model_type
+            model_type
         )
 
         # Create the model instance and set to current device.
-        self.model = base_class(
+        self._model = base_class(
             num_fft_bins=self.n_fft_bins,
             num_frames=self.num_stft_frames,
             num_channels=self.num_out_channels,
@@ -105,136 +112,137 @@ class SpectrogramMaskModel(SeparationModel):
             dropout_p=dropout_p,
             normalize_input=normalize_input,
             normalize_output=normalize_output,
-            device=self.device
+            device=self.device,
+            **kwargs
         ).to(self.device)
 
         # Instantiate data transformer for pre/post audio processing.
-        self.transform = AudioTransform(
+        self.audio_transform = AudioTransform(
             num_fft=num_fft,
             hop_length=hop_length,
             window_size=window_size,
             device=self.device
         )
 
-    def set_data(self, mix: Tensor, target: Optional[Tensor] = None) -> None:
-        """Wrapper method processes and sets data for internal access.
+    def to_spectrogram(self, audio: Tensor) -> Tuple[FloatTensor, FloatTensor]:
+        """Transforms audio signal data to spectrogram data.
 
-        Transforms mixture audio (and optionally target audio) into
-        spectrogram data.
+        Given a raw audio signal, a complex spectrogram is produced and then
+        split into its constituent magnitude and phase content. Transfers
+        ``audio`` to the same device as the model.
 
         Args:
-            mix (Tensor): Mixture audio data.
-            target (Optional[Tensor]): Target audio data.
+            audio (Tensor): Audio signal of dimension
+                `(batch, channels, time)`.
+
+        Returns:
+            Tuple[FloatTensor, FloatTensor]: Magnitude and phase
+            spectrograms, respectively, both of dimension
+            `(batch, channels, freq, frames)`.
         """
-        # Compute complex-valued STFTs and send tensors to GPU if available.
-        mix_complex_stft = self.transform.to_spectrogram(mix.to(self.device))
-        if target is not None:
-            # target_complex_stft = self.transform.to_spectrogram(
-            #     target.squeeze(-1).to(self.device)
-            # )
-            # # Separate target magnitude and phase.
-            # self.target = torch.abs(target_complex_stft)
-            self.target_spec = target.squeeze(-1).to(self.device).float()
-
-        # Separate mixture magnitude and phase.
-        self.mix_spec = torch.abs(mix_complex_stft)
-        self.mix_phase = torch.angle(mix_complex_stft).float()
-
-    def forward(self) -> None:
-        """Estimates target by applying the learned mask to the mixture."""
-        self.mask = self.model(self.mix_spec)
-        self.estimate_spec = self.mask * (self.mix_spec.clone().detach())
-
-        phase_corrected = self.estimate_spec * torch.exp(1j * self.mix_phase)
-        self.estimate_audio = self.transform.to_audio(phase_corrected).float()
-
-    def separate(self, audio: Tensor) -> Tensor:
-        """Transforms and returns source estimate in the audio domain."""
-        # Set data and estimate source.
-        self.set_data(mix=audio)
-        self.test()
-
-        # Apply phase correction to estimate.
-        phase_corrected = self.estimate_spec * torch.exp(1j * self.mix_phase)
-        target_estimate = self.transform.to_audio(phase_corrected)
-        return target_estimate
-
-    def compute_loss(self) -> float:
-        """Updates and returns the current batch-wise loss."""
-        self.criterion()
-        # Apply scaling.
-        self.batch_loss = self.scale * self.batch_loss
-        return self.batch_loss.item()
-
-    def backward(self) -> None:
-        """Performs gradient computation and backpropagation."""
-        self.batch_loss.backward()
-
-    def optimizer_step(self) -> None:
-        """Updates model's parameters."""
-        self.train()
-        # skip_update = False
-        # for name, param in self.model.named_parameters():
-        #     if param.grad is not None:
-        #         if param.grad.isnan().any() or param.grad.isinf().any():
-        #             skip_update = True
-        #             print(name)
-        # if not skip_update:
-        #     self.update_f32_gradients()
-        # self.optimizer.step()
-        grad_norm = nn.utils.clip_grad_norm_(
-            self.model.parameters(), max_norm=100
+        # Compute complex-valued STFT and send tensor to GPU if available.
+        # Squeeze the last dimension (target sources) if possible.
+        complex_stft = self.audio_transform.to_spectrogram(
+            audio.squeeze(-1).to(self.device)
         )
-        self.optimizer.step()
+        # Separate magnitude and phase.
+        mag_spec = torch.abs(complex_stft).float()
+        phase_spec = torch.angle(complex_stft).float()
+        return mag_spec, phase_spec
 
-        # self.grad_scaler.unscale_(self.optimizer)
-        # grad_norm = nn.utils.clip_grad_norm_(self.f32_weights, max_norm=2e10)
-        # print(grad_norm)
+    def to_audio(
+        self, estimate: FloatTensor, phase: FloatTensor
+    ) -> FloatTensor:
+        """Transforms the target estimate from spectrogram data to audio data.
 
-        # self.grad_scaler.step(self.optimizer)
-        # self.grad_scaler.update()
-        # for param in self.model.parameters():
-        #     if param.grad is not None:
-        #         weight_norm = torch.linalg.norm(param)
-        #         grad_norm = torch.linalg.norm(param.grad)
-        #         print(f"weight norm: {weight_norm} \n grad norm {grad_norm}")
+        Uses the "dirty phase" approximation trick, which utilizes the phase
+        content of the mixture spectrogram to reconstruct the audio signal of
+        the estimated target spectrogram.
 
-        # Quicker gradient zeroing.
-        for param in self.model.parameters():
-            param.grad = None
+        Args:
+            estimate (FloatTensor): Estimated target source spectrogram
+                of dimension `(batch, channels, freq, frames)`.
+            phase (FloatTensor): Phase spectrogram of dimension
+                `(batch, channels, freq, frames)`.
 
-        # self.f32_weights = self.copy_params(self.model)
+        Returns:
+            FloatTensor: Estimated target source audio signal of dimension
+            `(batch, channels, time)`.
+        """
+        phase_corrected = estimate * torch.exp(1j * phase)
+        estimate_audio = self.audio_transform.to_audio(phase_corrected).float()
+        return estimate_audio
 
-    def scheduler_step(self) -> bool:
-        """Reduces lr if val loss does not improve, and signals early stop."""
-        self.scheduler.step(self.val_losses[-1])
-        prev_loss = min(self.val_losses[:-1], default=float("inf"))
-        delta = prev_loss - self.val_losses[-1]
+    def forward(
+        self, mixture: FloatTensor
+    ) -> Tuple[FloatTensor, Dict[str, FloatTensor]]:
+        r"""Estimates the magnitude spectrogram of the target source.
 
-        if delta > 0.01:
-            self.stop_patience = self.training_params["stop_patience"]
-            self._is_best_model = True
+        Applies the learned soft-mask (output of the network) via an
+        element-wise product, to the magnitude spectrogram of the mixture,
+        extracting an estimate of the target source. Given the magnitude
+        spectrogram of a mixture, :math:`|X|`, it returns:
+
+        .. math::
+
+            \hat Y = M_{\theta} \odot |X|
+
+        where :math:`M_{\theta}` is the learned soft-mask and :math:`\hat Y`
+        is the target source estimate as a magnitude spectrogram.
+
+        Args:
+            mixture (torch.FloatTensor): Magnitude spectrogram of the mixture,
+                of dimension `(batch, channels, freq, frames)`.
+
+        Returns:
+            Tuple[FloatTensor, Dict[str, FloatTensor]]: Magnitude spectrogram
+            of the estimated target source, of dimension
+            `(batch, channels, freq, frames)`, followed by a dictionary mapping
+            ``'mask'`` to the soft-mask estimate, of dimension
+            `(batch, channels, freq, frames)`, ``'mu'`` and ``'sigma'``
+            to the distribution parameters: :math:`\mu, \sigma`, respectively,
+            if ``self.model`` is an instance of ``SpectrogramNetVAE``.
+        """
+        output = self.model(mixture)
+        # Handle network output.
+        if isinstance(output, tuple):
+            mask, mu, sigma = output
+            data = {"mask": mask, "mu": mu, "sigma": sigma}
         else:
-            self.stop_patience -= 1
-            self._max_lr_steps -= 1 if not self.stop_patience else 0
-            self._is_best_model = False
-        return not self._max_lr_steps
+            mask = output
+            data = {"mask": mask}
+        estimate_spec = mask * (mixture.clone().detach())
+        return estimate_spec, data
 
+    def separate(self, mixture: Tensor) -> Tensor:
+        r"""Extracts the target source audio signal given a mixture.
 
+        Runs ``forward(...)`` in evaluation mode, and handles pre/post audio
+        transformations.
 
-    # @staticmethod
-    # def copy_params(src_module):
-    #     params_dest = {}
-    #     for name, param in src_module.named_parameters():
-    #         params_dest[name] = copy.deepcopy(param.data)
-    #         param = param.to(dtype=torch.float16)
-    #     return params_dest
-    #
-    # def update_f32_gradients(self):
-    #     for name, param in self.model.named_parameters():
-    #         if param.grad is not None:
-    #             self.f32_weights[name].grad = param.grad.to(
-    #                 dtype=torch.float32
-    #             )
-    #             self.f32_weights[name].grad /= self.scale
-    #     self.model._parameters = self.f32_weights
+        .. math::
+
+            \hat S = \text{iSTFT}(\hat Y \odot \text{exp}(j \odot
+                \angle_{\phi} X))
+
+        where :math:`\text{iSTFT}` is the inverse short-time Fourier transform,
+        :math:`\hat Y` is the target source estimate as a magnitude
+        spectrogram, :math:`j` is imaginary and :math:`\angle_{\phi} X` is
+        the element-wise angle of the `complex` spectrogram of the mixture.
+
+        Args:
+            mixture (Tensor): Mixture audio signal of dimension
+                `(batch, channels, time)`
+
+        Returns:
+            Tensor: Target source audio signal of dimension
+            `(batch, channels, time)`.
+        """
+        self.eval()
+        with torch.no_grad():
+            mixture_mag, mixture_phase = self.to_spectrogram(audio=mixture)
+            estimate_spec, mask = self.forward(mixture=mixture_mag)
+            estimate_audio = self.to_audio(
+                estimate=estimate_spec, phase=mixture_phase
+            )
+        return estimate_audio

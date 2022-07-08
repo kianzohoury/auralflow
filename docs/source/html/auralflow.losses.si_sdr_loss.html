@@ -185,7 +185,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
@@ -232,8 +231,8 @@
 <h1>auralflow.losses.si_sdr_loss<a class="headerlink" href="#auralflow-losses-si-sdr-loss" title="Permalink to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="auralflow.losses.si_sdr_loss">
-<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">si_sdr_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">estimate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#si_sdr_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.si_sdr_loss" title="Permalink to this definition">#</a></dt>
-<dd><p>Scale-invariant (SI-SDR) signal to distortion loss.</p>
+<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">si_sdr_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">estimate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gitb00e4e8 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#si_sdr_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.si_sdr_loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Scale-invariant (SI-SDR) signal-to-distortion loss.</p>
 <p>Typically used as an evaluation metric, but can be optimized for directly.
 For a single audio track, the loss is defined as:</p>
 <div class="math-wrapper docutils container">
@@ -244,7 +243,7 @@ For a single audio track, the loss is defined as:</p>
 </div>
 <dl class="simple">
 <dt>where:</dt><dd><ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(y\)</span>: true target signal</p></li>
+<li><p><span class="math notranslate nohighlight">\(y\)</span>: ground-truth target source signal</p></li>
 <li><p><span class="math notranslate nohighlight">\(\hat y\)</span>: estimated target source signal</p></li>
 </ul>
 </dd>
@@ -252,29 +251,29 @@ For a single audio track, the loss is defined as:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>estimate</strong> (<em>FloatTensor</em>) -- Target source estimate in the audio domain.</p></li>
-<li><p><strong>target</strong> (<em>FloatTensor</em>) -- Ground-truth target source in the audio domain.</p></li>
+<li><p><strong>estimate</strong> (<em>FloatTensor</em>) -- Source estimate signal data.</p></li>
+<li><p><strong>target</strong> (<em>FloatTensor</em>) -- Ground-truth target source signal data.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Mean SI-SDR loss.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tensor</p>
+<dd class="field-even"><p><em>Tensor</em> -- Mean SI-SDR loss.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># get estimate and target audio data</span>
+<p>Get estimate and target audio signals:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">estimate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">88200</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">88200</span><span class="p">))</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># calculate SI-SDR loss</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">si_sdr_loss</span><span class="p">(</span><span class="n">estimate</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Calculate SI-SDR loss:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">si_sdr_loss</span><span class="p">(</span><span class="n">estimate</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 <span class="go">&lt;class &#39;torch.Tensor&#39;&gt;</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get its scalar value</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Get its scalar value:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">loss_val</span><span class="p">)</span>
 <span class="go">&lt;class &#39;float&#39;&gt;</span>
 </pre></div>

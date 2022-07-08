@@ -26,7 +26,7 @@ dd > dl > dt {
 
 .sig-name.descname {
     font-weight: 700 !important;
-    color: #049EF4 !important;
+    color: #734f96 !important;
 }
 
 .sig-param {
@@ -119,14 +119,6 @@ blockquote {
     padding: 0px !important;
 }
 
-.simple > li > p > em {
-    color: #049EF4 !important;
-}
-
-.field-list .simple > dd > p > em {
-    color: #049EF4 !important;
-}
-
 p.rubric {
     font-weight: 400 !important;
     font-size: 14px !important;
@@ -151,9 +143,8 @@ ul > .search > li > a {
     background-color: #f3f4f7 !important;
     border-left: none !important;
 }
-
-.admonition-title {
-    background-color: #049EF4 !important;
+.admonition.note > .admonition-title {
+    background-color: #212529; !important;
     color: white !important;
 }
 

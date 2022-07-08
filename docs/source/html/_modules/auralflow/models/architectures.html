@@ -184,7 +184,6 @@
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.customs.html">auralflow.customs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.datasets.html">auralflow.datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.losses.html">auralflow.losses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../generated/auralflow.models.html">auralflow.models</a></li>
@@ -239,10 +238,9 @@
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
 
-<span class="kn">from</span> <span class="nn">auralflow.transforms.transforms</span> <span class="kn">import</span> <span class="n">get_deconv_pad</span>
+<span class="kn">from</span> <span class="nn">auralflow.transforms.transforms</span> <span class="kn">import</span> <span class="n">_get_deconv_pad</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">FloatTensor</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
-
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="c1"># Use CNN GPU optimizations if available.</span>
 <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">cudnn</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
@@ -470,18 +468,19 @@
 <span class="sd">    Args:</span>
 <span class="sd">        num_fft_bins (int): Number of FFT bins (aka filterbanks).</span>
 <span class="sd">        num_frames (int): Number of temporal features (time axis).</span>
-<span class="sd">        num_channels (int): 1 for mono, 2 for stereo. Default: 1.</span>
-<span class="sd">        hidden_channels (int): Number of initial output channels. Default: 16.</span>
+<span class="sd">        num_channels (int): 1 for mono, 2 for stereo. Default: ``1``.</span>
+<span class="sd">        hidden_channels (int): Number of initial output channels.</span>
+<span class="sd">            Default: ``16``.</span>
 <span class="sd">        mask_act_fn (str): Final activation layer that creates the</span>
-<span class="sd">            multiplicative soft-mask. Default: &#39;sigmoid&#39;.</span>
+<span class="sd">            multiplicative soft-mask. Default: ``&#39;sigmoid&#39;``.</span>
 <span class="sd">        leak_factor (float): Alpha constant if using Leaky ReLU activation.</span>
-<span class="sd">            Default: 0.</span>
-<span class="sd">        dropout_p (float): Dropout probability. Default: 0.5.</span>
+<span class="sd">            Default: ``0``.</span>
+<span class="sd">        dropout_p (float): Dropout probability. Default: ``0.4``.</span>
 <span class="sd">        normalize_input (bool): Whether to learn input normalization</span>
-<span class="sd">            parameters. Default: False.</span>
+<span class="sd">            parameters. Default: ``True.``</span>
 <span class="sd">        normalize_output (bool): Whether to learn output normalization</span>
-<span class="sd">            parameters. Default: False.</span>
-<span class="sd">        device (optional[str]): Device. Default: None.</span>
+<span class="sd">            parameters. Default: ``True``.</span>
+<span class="sd">        device (str): Device. Default: ``None``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -492,9 +491,9 @@
         <span class="n">hidden_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
         <span class="n">mask_act_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span>
         <span class="n">leak_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="n">dropout_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">normalize_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">normalize_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">dropout_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span>
+        <span class="n">normalize_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">normalize_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SpectrogramNetSimple</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -563,7 +562,7 @@
         <span class="n">padding_sizes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_sizes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">padding_sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">get_deconv_pad</span><span class="p">(</span>
+                <span class="n">_get_deconv_pad</span><span class="p">(</span>
                     <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">],</span>
                     <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span> <span class="o">-</span> <span class="n">i</span><span class="p">],</span>
                     <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
@@ -614,18 +613,6 @@
             <span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">num_channels</span><span class="p">)</span>
         <span class="p">)</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">phase_head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
-                <span class="n">in_channels</span><span class="o">=</span><span class="n">hidden_channels</span><span class="p">,</span>
-                <span class="n">out_channels</span><span class="o">=</span><span class="n">num_channels</span><span class="p">,</span>
-                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">num_channels</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">()</span>
-        <span class="p">)</span>
 
         <span class="c1"># Define output norm layer. Uses identity fn if not activated.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_norm</span> <span class="o">=</span> <span class="n">CenterScaleNormalization</span><span class="p">(</span>
@@ -651,20 +638,26 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">mask_activation</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SpectrogramNetSimple.forward"><a class="viewcode-back" href="../../../auralflow.models.SpectrogramNetSimple.html#auralflow.models.SpectrogramNetSimple.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatTensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Forward method that estimates the source mask.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Forward method that estimates the target-specific soft-mask.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data (FloatTensor): Input spectrogram.</span>
+<span class="sd">            data (FloatTensor): Input spectrogram of shape `(batch, channels,</span>
+<span class="sd">                freq, frames)`.</span>
 
-<span class="sd">        Shape:</span>
-<span class="sd">            - input: :math:`(N, C, F, T)`</span>
-<span class="sd">            - output: :math:`(N, C, F, T)`</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            FloatTensor: Soft-mask of dimension `(batch, channels, freq,</span>
+<span class="sd">            frames)`.</span>
 
-<span class="sd">            where</span>
-<span class="sd">                - :math:`N`: batch size</span>
-<span class="sd">                - :math:`C`: number of channels</span>
-<span class="sd">                - :math:`F`: number of frequency bins</span>
-<span class="sd">                - :math:`T`: number of frames</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; import torch</span>
+<span class="sd">            &gt;&gt;&gt; mixture_spec = torch.rand((16, 1,  512, 173)).float()</span>
+<span class="sd">            &gt;&gt;&gt; network = SpectrogramNetSimple(</span>
+<span class="sd">            ...     num_fft_bins=512,</span>
+<span class="sd">            ...     num_frames=173,</span>
+<span class="sd">            ...     num_channels=1</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; mask = network(mixture_spec)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Normalize input if applicable.</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_norm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -702,27 +695,58 @@
     <span class="sd">&quot;&quot;&quot;Deep mask estimation model using LSTM bottleneck layers.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        recurrent_depth (int): Number of stacked lstm layers. Default: 3.</span>
-<span class="sd">        hidden_size (int): Requested number of hidden features. Default: 1024.</span>
+<span class="sd">        num_fft_bins (int): Number of FFT bins (aka filterbanks).</span>
+<span class="sd">        num_frames (int): Number of temporal features (time axis).</span>
+<span class="sd">        num_channels (int): 1 for mono, 2 for stereo. Default: ``1``.</span>
+<span class="sd">        hidden_channels (int): Number of initial output channels. Default:</span>
+<span class="sd">            ``16``.</span>
+<span class="sd">        mask_act_fn (str): Final activation layer that creates the</span>
+<span class="sd">            multiplicative soft-mask. Default: ``&#39;sigmoid&#39;``.</span>
+<span class="sd">        leak_factor (float): Alpha constant if using Leaky ReLU activation.</span>
+<span class="sd">            Default: ``0``.</span>
+<span class="sd">        dropout_p (float): Dropout probability. Default: ``0.4``.</span>
+<span class="sd">        normalize_input (bool): Whether to learn input normalization</span>
+<span class="sd">            parameters. Default: ``True.``</span>
+<span class="sd">        normalize_output (bool): Whether to learn output normalization</span>
+<span class="sd">            parameters. Default: ``True``.</span>
+<span class="sd">        recurrent_depth (int): Number of stacked lstm layers. Default: ``3``.</span>
+<span class="sd">        hidden_size (int): Requested number of hidden features. Default:</span>
+<span class="sd">            ``1024``.</span>
 <span class="sd">        input_axis (int): Whether to feed dim 0 (frequency axis) or dim 1</span>
-<span class="sd">            (time axis) as features to the lstm. Default: 1.</span>
-
-<span class="sd">    Keyword Args:</span>
-<span class="sd">        args: Positional arguments for constructor.</span>
-<span class="sd">        kwargs: Additional keyword arguments for constructor.</span>
+<span class="sd">            (time axis) as features to the lstm. Default: ``1``.</span>
+<span class="sd">        device (str): Device. Default: ``None``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">num_fft_bins</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_frames</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">hidden_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="n">mask_act_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span>
+        <span class="n">leak_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">dropout_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span>
+        <span class="n">normalize_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">normalize_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">recurrent_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
         <span class="n">hidden_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
         <span class="n">input_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SpectrogramNetLSTM</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">recurrent_depth</span> <span class="o">=</span> <span class="n">recurrent_depth</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SpectrogramNetLSTM</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">num_fft_bins</span><span class="o">=</span><span class="n">num_fft_bins</span><span class="p">,</span>
+            <span class="n">num_frames</span><span class="o">=</span><span class="n">num_frames</span><span class="p">,</span>
+            <span class="n">num_channels</span><span class="o">=</span><span class="n">num_channels</span><span class="p">,</span>
+            <span class="n">hidden_channels</span><span class="o">=</span><span class="n">hidden_channels</span><span class="p">,</span>
+            <span class="n">mask_act_fn</span><span class="o">=</span><span class="n">mask_act_fn</span><span class="p">,</span>
+            <span class="n">leak_factor</span><span class="o">=</span><span class="n">leak_factor</span><span class="p">,</span>
+            <span class="n">dropout_p</span><span class="o">=</span><span class="n">dropout_p</span><span class="p">,</span>
+            <span class="n">normalize_input</span><span class="o">=</span><span class="n">normalize_input</span><span class="p">,</span>
+            <span class="n">normalize_output</span><span class="o">=</span><span class="n">normalize_output</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+        <span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">recurrent_depth</span> <span class="o">=</span> <span class="n">recurrent_depth</span>
         <span class="c1"># Set to min between last channel size to avoid over-parameterization.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_axis</span> <span class="o">=</span> <span class="n">input_axis</span>
@@ -756,7 +780,28 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="SpectrogramNetLSTM.forward"><a class="viewcode-back" href="../../../auralflow.models.SpectrogramNetLSTM.html#auralflow.models.SpectrogramNetLSTM.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatTensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Forward method.&quot;&quot;&quot;</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Forward method that estimates the target-specific soft-mask.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (FloatTensor): Input spectrogram of shape `(batch, channels,</span>
+<span class="sd">                freq, frames)`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            FloatTensor: Soft-mask of dimension `(batch, channels, freq,</span>
+<span class="sd">            frames)`.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; import torch</span>
+<span class="sd">            &gt;&gt;&gt; mixture_spec = torch.rand((16, 1,  512, 173)).float()</span>
+<span class="sd">            &gt;&gt;&gt; network = SpectrogramNetLSTM(</span>
+<span class="sd">            ...     num_fft_bins=512,</span>
+<span class="sd">            ...     num_frames=173,</span>
+<span class="sd">            ...     num_channels=1,</span>
+<span class="sd">            ...     hidden_size=1024</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; mask = network(mixture_spec)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Normalize input if applicable.</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_norm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
@@ -792,10 +837,6 @@
 
         <span class="c1"># Pass through final 1x1 conv and normalize output if applicable.</span>
         <span class="n">dec_final</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_conv</span><span class="p">(</span><span class="n">dec_5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">phase_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phase_head</span><span class="p">(</span><span class="n">dec_5</span><span class="p">),</span> <span class="nb">min</span><span class="o">=-</span><span class="mf">3.14</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">3.14</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-
         <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_norm</span><span class="p">(</span><span class="n">dec_final</span><span class="p">)</span>
 
         <span class="c1"># Generate multiplicative soft-mask.</span>
@@ -803,7 +844,7 @@
         <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">mask</span></div>
 
-<div class="viewcode-block" id="SpectrogramNetLSTM.split_lstm_parameters"><a class="viewcode-back" href="../../../auralflow.models.SpectrogramNetLSTM.html#auralflow.models.SpectrogramNetLSTM.split_lstm_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">split_lstm_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_split_lstm_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Separates model&#39;s LSTM parameters from non-LSTM parameters.&quot;&quot;&quot;</span>
         <span class="n">lstm_params</span><span class="p">,</span> <span class="n">other_params</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">param_val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
@@ -811,27 +852,78 @@
                 <span class="n">lstm_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">other_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">lstm_params</span><span class="p">,</span> <span class="n">other_params</span></div></div>
+        <span class="k">return</span> <span class="n">lstm_params</span><span class="p">,</span> <span class="n">other_params</span></div>
 
 
 <div class="viewcode-block" id="SpectrogramNetVAE"><a class="viewcode-back" href="../../../auralflow.models.SpectrogramNetVAE.html#auralflow.models.SpectrogramNetVAE">[docs]</a><span class="k">class</span> <span class="nc">SpectrogramNetVAE</span><span class="p">(</span><span class="n">SpectrogramNetLSTM</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Spectrogram U-Net model with a VAE and LSTM bottleneck.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spectrogram variational autoencoder model with an LSTM bottleneck.</span>
 
-<span class="sd">    Encoder =&gt; VAE =&gt; LSTM x 3 =&gt; decoder. Models a Gaussian conditional</span>
-<span class="sd">    distribution p(z|x) to sample latent variable z ~ p(z|x), to feed into</span>
-<span class="sd">    decoder to generate x&#39; ~ p(x|z).</span>
+<span class="sd">    Utilizes a recurrent bottleneck layer similar to ``SpectrogramNetVAE``, but</span>
+<span class="sd">    also samples from a modeled probability distribution prior to the recurrent</span>
+<span class="sd">    layers in order to accurately represent the latent space. More</span>
+<span class="sd">    specifically, a sampled latent variable :math:`z` is generated as:</span>
 
-<span class="sd">    Keyword Args:</span>
-<span class="sd">        args: Positional arguments for constructor.</span>
-<span class="sd">        kwargs: Additional keyword arguments for constructor.</span>
+<span class="sd">    .. math::</span>
+
+<span class="sd">        z = \epsilon \odot \sigma + \mu</span>
+
+<span class="sd">    where :math:`\epsilon \sim N(0, I)`, and :math:`\mu, \sigma` are the mean</span>
+<span class="sd">    and standard deviation of the modeled probability distribution.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_fft_bins (int): Number of FFT bins (aka filterbanks).</span>
+<span class="sd">        num_frames (int): Number of temporal features (time axis).</span>
+<span class="sd">        num_channels (int): 1 for mono, 2 for stereo. Default: ``1``.</span>
+<span class="sd">        hidden_channels (int): Number of initial output channels. Default:</span>
+<span class="sd">            ``16``.</span>
+<span class="sd">        mask_act_fn (str): Final activation layer that creates the</span>
+<span class="sd">            multiplicative soft-mask. Default: ``&#39;sigmoid&#39;``.</span>
+<span class="sd">        leak_factor (float): Alpha constant if using Leaky ReLU activation.</span>
+<span class="sd">            Default: ``0``.</span>
+<span class="sd">        dropout_p (float): Dropout probability. Default: ``0.4``.</span>
+<span class="sd">        normalize_input (bool): Whether to learn input normalization</span>
+<span class="sd">            parameters. Default: ``True.``</span>
+<span class="sd">        normalize_output (bool): Whether to learn output normalization</span>
+<span class="sd">            parameters. Default: ``True``.</span>
+<span class="sd">        recurrent_depth (int): Number of stacked lstm layers. Default: ``3``.</span>
+<span class="sd">        hidden_size (int): Requested number of hidden features. Default:</span>
+<span class="sd">            ``1024``.</span>
+<span class="sd">        input_axis (int): Whether to feed dim 0 (frequency axis) or dim 1</span>
+<span class="sd">            (time axis) as features to the lstm. Default: ``1``.</span>
+<span class="sd">        device (str): Device. Default: ``None``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">latent_data</span><span class="p">:</span> <span class="n">FloatTensor</span>
-    <span class="n">mu_data</span><span class="p">:</span> <span class="n">FloatTensor</span>
-    <span class="n">sigma_data</span><span class="p">:</span> <span class="n">FloatTensor</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SpectrogramNetVAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">num_fft_bins</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_frames</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">hidden_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="n">mask_act_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span>
+        <span class="n">leak_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">dropout_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span>
+        <span class="n">normalize_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">normalize_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">recurrent_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">hidden_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">input_axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SpectrogramNetVAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">num_fft_bins</span><span class="o">=</span><span class="n">num_fft_bins</span><span class="p">,</span>
+            <span class="n">num_frames</span><span class="o">=</span><span class="n">num_frames</span><span class="p">,</span>
+            <span class="n">num_channels</span><span class="o">=</span><span class="n">num_channels</span><span class="p">,</span>
+            <span class="n">hidden_channels</span><span class="o">=</span><span class="n">hidden_channels</span><span class="p">,</span>
+            <span class="n">mask_act_fn</span><span class="o">=</span><span class="n">mask_act_fn</span><span class="p">,</span>
+            <span class="n">leak_factor</span><span class="o">=</span><span class="n">leak_factor</span><span class="p">,</span>
+            <span class="n">dropout_p</span><span class="o">=</span><span class="n">dropout_p</span><span class="p">,</span>
+            <span class="n">normalize_input</span><span class="o">=</span><span class="n">normalize_input</span><span class="p">,</span>
+            <span class="n">normalize_output</span><span class="o">=</span><span class="n">normalize_output</span><span class="p">,</span>
+            <span class="n">recurrent_depth</span><span class="o">=</span><span class="n">recurrent_depth</span><span class="p">,</span>
+            <span class="n">hidden_size</span><span class="o">=</span><span class="n">hidden_size</span><span class="p">,</span>
+            <span class="n">input_axis</span><span class="o">=</span><span class="n">input_axis</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+        <span class="p">)</span>
 
         <span class="c1"># Define normalizing flow layers.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span><span class="p">)</span>
@@ -843,8 +935,31 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="o">.</span><span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="o">.</span><span class="n">loc</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
 
-<div class="viewcode-block" id="SpectrogramNetVAE.forward"><a class="viewcode-back" href="../../../auralflow.models.SpectrogramNetVAE.html#auralflow.models.SpectrogramNetVAE.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatTensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Forward method.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SpectrogramNetVAE.forward"><a class="viewcode-back" href="../../../auralflow.models.SpectrogramNetVAE.html#auralflow.models.SpectrogramNetVAE.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">FloatTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Forward method that estimates the target-specific soft-mask.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (FloatTensor): Input spectrogram of shape `(batch, channels,</span>
+<span class="sd">                freq, frames)`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[FloatTensor, ...]: Soft-mask of dimension</span>
+<span class="sd">            `(batch, channels, freq, frames)`, followed by :math:`\mu` and</span>
+<span class="sd">            :math:`\sigma`, the mean and standard deviation of the modeled</span>
+<span class="sd">            probability distribution.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; import torch</span>
+<span class="sd">            &gt;&gt;&gt; mixture_spec = torch.rand((16, 1,  512, 173)).float()</span>
+<span class="sd">            &gt;&gt;&gt; network = SpectrogramNetVAE(</span>
+<span class="sd">            ...     num_fft_bins=512,</span>
+<span class="sd">            ...     num_frames=173,</span>
+<span class="sd">            ...     num_channels=1,</span>
+<span class="sd">            ...     hidden_size=1024</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; mask, mu, sigma = network(mixture_spec)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Normalize input if applicable.</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_norm</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
@@ -854,23 +969,23 @@
         <span class="n">enc_3</span><span class="p">,</span> <span class="n">skip_3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_3</span><span class="p">(</span><span class="n">enc_2</span><span class="p">)</span>
         <span class="n">enc_4</span><span class="p">,</span> <span class="n">skip_4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_4</span><span class="p">(</span><span class="n">enc_3</span><span class="p">)</span>
         <span class="n">enc_5</span><span class="p">,</span> <span class="n">skip_5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_5</span><span class="p">(</span><span class="n">enc_4</span><span class="p">)</span>
-        <span class="n">enc_6</span><span class="p">,</span> <span class="n">skip_6</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_6</span><span class="p">(</span><span class="n">enc_5</span><span class="p">)</span>
+        <span class="c1"># enc_6, skip_6 = self.down_6(enc_5)</span>
 
         <span class="c1"># Reshape encodings to match dimensions of latent space.</span>
-        <span class="n">enc_6</span> <span class="o">=</span> <span class="n">enc_6</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_perm</span><span class="p">)</span>
-        <span class="n">n_batch</span><span class="p">,</span> <span class="n">dim1</span><span class="p">,</span> <span class="n">n_channel</span><span class="p">,</span> <span class="n">dim2</span> <span class="o">=</span> <span class="n">enc_6</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
-        <span class="n">enc_6</span> <span class="o">=</span> <span class="n">enc_6</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_batch</span><span class="p">,</span> <span class="n">dim1</span><span class="p">,</span> <span class="n">n_channel</span> <span class="o">*</span> <span class="n">dim2</span><span class="p">))</span>
+        <span class="n">enc_5</span> <span class="o">=</span> <span class="n">enc_5</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_perm</span><span class="p">)</span>
+        <span class="n">n_batch</span><span class="p">,</span> <span class="n">dim1</span><span class="p">,</span> <span class="n">n_channel</span><span class="p">,</span> <span class="n">dim2</span> <span class="o">=</span> <span class="n">enc_5</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">enc_5</span> <span class="o">=</span> <span class="n">enc_5</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_batch</span><span class="p">,</span> <span class="n">dim1</span><span class="p">,</span> <span class="n">n_channel</span> <span class="o">*</span> <span class="n">dim2</span><span class="p">))</span>
 
         <span class="c1"># Normalizing flow.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mu_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">enc_6</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_sigma</span><span class="p">(</span><span class="n">enc_6</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">mu_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">enc_5</span><span class="p">)</span>
+        <span class="n">sigma_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_sigma</span><span class="p">(</span><span class="n">enc_5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="n">eps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
         <span class="c1"># Sample z from the modeled distribution.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">latent_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">*</span> <span class="n">eps</span>
+        <span class="n">latent_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">*</span> <span class="n">eps</span>
 
         <span class="c1"># Pass through recurrent stack.</span>
-        <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">latent_data</span><span class="p">)</span>
+        <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">latent_data</span><span class="p">)</span>
         <span class="n">lstm_out</span> <span class="o">=</span> <span class="n">lstm_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_batch</span> <span class="o">*</span> <span class="n">dim1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
         <span class="c1"># Pass through affine layers and reshape for decoder.</span>
@@ -879,20 +994,21 @@
         <span class="n">dec_0</span> <span class="o">=</span> <span class="n">dec_0</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_perm</span><span class="p">)</span>
 
         <span class="c1"># Pass through decoder.</span>
-        <span class="n">dec_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_1</span><span class="p">(</span><span class="n">dec_0</span><span class="p">,</span> <span class="n">skip_6</span><span class="p">)</span>
-        <span class="n">dec_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_2</span><span class="p">(</span><span class="n">dec_1</span><span class="p">,</span> <span class="n">skip_5</span><span class="p">)</span>
-        <span class="n">dec_3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_3</span><span class="p">(</span><span class="n">dec_2</span><span class="p">,</span> <span class="n">skip_4</span><span class="p">)</span>
-        <span class="n">dec_4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_4</span><span class="p">(</span><span class="n">dec_3</span><span class="p">,</span> <span class="n">skip_3</span><span class="p">)</span>
-        <span class="n">dec_5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_5</span><span class="p">(</span><span class="n">dec_4</span><span class="p">,</span> <span class="n">skip_2</span><span class="p">)</span>
-        <span class="n">dec_6</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_6</span><span class="p">(</span><span class="n">dec_5</span><span class="p">,</span> <span class="n">skip_1</span><span class="p">)</span>
+        <span class="n">dec_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_1</span><span class="p">(</span><span class="n">dec_0</span><span class="p">,</span> <span class="n">skip_5</span><span class="p">)</span>
+        <span class="n">dec_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_2</span><span class="p">(</span><span class="n">dec_1</span><span class="p">,</span> <span class="n">skip_4</span><span class="p">)</span>
+        <span class="n">dec_3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_3</span><span class="p">(</span><span class="n">dec_2</span><span class="p">,</span> <span class="n">skip_3</span><span class="p">)</span>
+        <span class="n">dec_4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_4</span><span class="p">(</span><span class="n">dec_3</span><span class="p">,</span> <span class="n">skip_2</span><span class="p">)</span>
+        <span class="n">dec_5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_5</span><span class="p">(</span><span class="n">dec_4</span><span class="p">,</span> <span class="n">skip_1</span><span class="p">)</span>
+        <span class="c1"># dec_6 = self.up_6(dec_5, skip_1)</span>
 
         <span class="c1"># Pass through final 1x1 conv and normalize output if applicable.</span>
-        <span class="n">dec_final</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_conv</span><span class="p">(</span><span class="n">dec_6</span><span class="p">)</span>
+        <span class="n">dec_final</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_conv</span><span class="p">(</span><span class="n">dec_5</span><span class="p">)</span>
         <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_norm</span><span class="p">(</span><span class="n">dec_final</span><span class="p">)</span>
 
         <span class="c1"># Generate multiplicative soft-mask.</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_activation</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mask</span></div></div>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">mask</span><span class="p">,</span> <span class="n">mu_data</span><span class="p">,</span> <span class="n">sigma_data</span></div></div>
 </pre></div>
         </article>
       </div>
