@@ -3,6 +3,7 @@ name = "auralflow"
 version = "0.1.2"
 description = "A lightweight music source separation toolkit."
 authors = ["Kian Zohoury <kzohoury@berkeley.edu>"]
+readme = "README.md"
 license = "MIT"
 packages = [{include = "auralflow"}]
 
