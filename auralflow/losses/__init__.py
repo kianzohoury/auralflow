@@ -37,5 +37,4 @@ from .losses import (
     L2Loss,
     # RMSELoss,
     MaskLoss,
-    _get_loss_criterion
 )

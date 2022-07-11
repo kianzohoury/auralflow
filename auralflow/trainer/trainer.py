@@ -15,12 +15,13 @@ from auralflow.visualizer import ProgressBar
 from .callbacks import CallbackManager, _create_callbacks
 from pathlib import Path
 from torch import Tensor
-from torch.cuda.amp import autocast, GradScaler
+from torch import autocast
+from torch.cuda.amp import GradScaler
 from torch.optim import Optimizer, AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Union, Tuple
 
 
 def defaults_handler(constructor):
@@ -113,7 +114,7 @@ class ModelTrainer(ABC):
             Default: ``True``.
     """
 
-    _lr: Union[float, List[float, float]] = 0.008
+    _lr: Union[float, Tuple[float, float]] = 0.008
     _init_scale: float = 2.0 ** 16
     _max_grad_norm: Optional = 100.0
     _max_plateaus: int = 5
@@ -132,7 +133,6 @@ class ModelTrainer(ABC):
     _image_freq: int = 5
     _silent: bool = False
 
-    @defaults_handler
     def __init__(
         self,
         model: SeparationModel,
@@ -156,8 +156,14 @@ class ModelTrainer(ABC):
         self.use_amp = use_amp and self.device == "cuda"
 
         # Setting checkpoint and logging paths.
-        self.checkpoint_path = str(Path(os.getcwd(), checkpoint))
-        self.logging_dir = str(Path(os.getcwd(), logging_dir))
+        if not checkpoint == "checkpoint.pth":
+            self.checkpoint_path = checkpoint
+        else:
+            self.checkpoint_path = str(Path(os.getcwd(), checkpoint))
+        if not logging_dir == "runs":
+            self.logging_dir = logging_dir
+        else:
+            self.logging_dir = str(Path(os.getcwd(), logging_dir))
 
         if resume:
             self.load_state(checkpoint_path=self.checkpoint_path)
@@ -179,9 +185,9 @@ class ModelTrainer(ABC):
                 self.optimizer = optimizer
             else:
                 # Use the default optimizer. Split parameters if necessary.
+                if isinstance(self._lr, float):
+                    self._lr = (self._lr, self._lr)
                 if hasattr(self.model, "split_params"):
-                    if isinstance(self._lr, float):
-                        self._lr = [self._lr] * 2
                     group_1, group_2 = model.model._split_params()
                     # Assign different learning rates to the groups.
                     params = [
@@ -302,7 +308,11 @@ class ModelTrainer(ABC):
                 train_loader, total=max_iters, desc="train"
             ) as pbar:
                 for idx, (mixture, target) in enumerate(pbar):
-                    with autocast(enabled=self.use_amp):
+                    with autocast(
+                        device_type=self.device,
+                        enabled=self.use_amp,
+                        dtype=torch.float16 if self.use_amp else torch.bfloat16
+                    ):
 
                         # Run forward pass, calculate mini-batch loss.
                         batch_loss = self.full_forward(mixture, target)
@@ -386,7 +396,11 @@ class ModelTrainer(ABC):
             val_loader, total=max_iters, desc="valid"
         ) as pbar:
             for idx, (mixture, target) in enumerate(pbar):
-                with autocast(enabled=self.use_amp):
+                with autocast(
+                    device_type=self.device,
+                    enabled=self.use_amp,
+                    dtype=torch.float16 if self.use_amp else torch.bfloat16
+                ):
                     with torch.no_grad():
 
                         # Run forward pass, calculate mini-batch loss.
@@ -450,7 +464,7 @@ class ModelTrainer(ABC):
     def save_state(self, checkpoint_path: str) -> None:
         if not Path(checkpoint_path).exists():
             if not self._silent:
-                print(f"Saving to {checkpoint_path}...")
+                print(f"Saving trainer to {checkpoint_path}...")
             # Initialize trainer state.
             self._state = {
                 "last_global_step": -1,
@@ -537,24 +551,24 @@ class ModelTrainer(ABC):
 
     @property
     def scheduler(self):
-        return self.scheduler
+        return self._scheduler
 
     @scheduler.setter
-    def scheduler(self, scheduler: object) -> None:
-        if hasattr(scheduler, "state_dict"):
-            is_valid = callable(scheduler.state_dict)
+    def scheduler(self, scheduler_obj: object) -> None:
+        if hasattr(scheduler_obj, "state_dict"):
+            is_valid = callable(scheduler_obj.state_dict)
         else:
             raise AttributeError("Scheduler must define state_dict().")
-        if hasattr(scheduler, "load_state_dict"):
-            is_valid = is_valid and callable(scheduler.load_state_dict)
+        if hasattr(scheduler_obj, "load_state_dict"):
+            is_valid = is_valid and callable(scheduler_obj.load_state_dict)
         else:
             raise AttributeError("Scheduler must define load_state_dict().")
         if not is_valid:
             raise ValueError(
-                f"{scheduler.__class__.__name__} is not a valid scheduler."
+                f"{scheduler_obj.__class__.__name__} is not a valid scheduler."
             )
         else:
-            self.scheduler = scheduler
+            self._scheduler = scheduler_obj
 
 
 class _DefaultModelTrainer(ModelTrainer):
@@ -579,3 +593,4 @@ class _DefaultModelTrainer(ModelTrainer):
     def scheduler_step(self, val_loss: float) -> None:
         """Reduces lr if val loss does not improve enough within a window."""
         self.scheduler.step(val_loss)
+

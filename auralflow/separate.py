@@ -4,25 +4,21 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from argparse import ArgumentParser
-from typing import Union, Mapping
-from pathlib import Path
-
-from torch import Tensor
-from tqdm import tqdm
+# __all__ = ["separate_audio"]
 
 import librosa
 import torch
 from scipy.io import wavfile
 
-from auralflow.models import _build_model
+
+from typing import Union, Mapping
+from pathlib import Path
+from torch import Tensor
+from auralflow.trainer.setup import _build_from_config
 from auralflow.utils import load_config
 from auralflow.transforms import trim_audio
 from auralflow.visualizer import ProgressBar
 from auralflow.models import SeparationModel
-
-
-__all__ = ["separate_audio"]
 
 
 def separate_audio(
@@ -123,7 +119,7 @@ def main(
 
     # Load model. Setup restores previous state if resuming training.
     print("Loading model...")
-    model = _build_model(
+    model = _build_from_config(
         **configuration
     )
     # model = setup_model(model)

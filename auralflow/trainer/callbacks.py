@@ -685,22 +685,26 @@ def _create_callbacks(
             )
         )
     if visualize_waveform:
-        wave_dir = None if save_dir is None else Path(save_dir, "waveform")
+        wave_dir = None if save_dir is None else str(
+            Path(save_dir, "waveform")
+        )
         callbacks.add_callback(
             WaveformVisualCallback(
                 tensorboard_writer=tensorboard_writer,
                 model=model,
-                save_dir=str(wave_dir.absolute()),
+                save_dir=wave_dir,
                 save_freq=save_freq
             )
         )
     if visualize_spectrogram and isinstance(model, SpectrogramMaskModel):
-        spec_dir = None if save_dir is None else Path(save_dir, "spectrogram")
+        spec_dir = None if save_dir is None else str(
+            Path(save_dir, "spectrogram")
+        )
         callbacks.add_callback(
             SpectrogramVisualCallback(
                 tensorboard_writer=tensorboard_writer,
                 model=model,
-                save_dir=str(spec_dir.absolute()),
+                save_dir=spec_dir,
                 save_freq=save_freq
             )
         )

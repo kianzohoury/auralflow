@@ -3,21 +3,50 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
+import functools
 import inspect
+import json
 
 import torch.nn as nn
-
+from prettytable import PrettyTable
 
 from auralflow.losses import *
 from auralflow.models import SeparationModel, SpectrogramMaskModel, SPEC_MODELS, AUDIO_MODELS, ALL_MODELS
-from dataclasses import dataclass
-from typing import List, Union, Optional
+from auralflow.utils import save_config, load_config
+from dataclasses import asdict, dataclass, fields, MISSING
+from typing import List, Union, Optional, Tuple, Dict
 
 
 @dataclass(frozen=True)
-class AudioModelConfig:
+class Config:
+    """Base class for all configurations."""
+
+    def __init__(self, *args, **kwargs):
+        super(Config, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def from_dict(cls, **kwargs) -> 'Config':
+        """Filters out keyword arguments before creating a new instance."""
+        valid_args = [field.name for field in fields(cls)]
+        filtered_args = {
+            key: val for (key, val) in kwargs.items() if key in valid_args
+        }
+        return cls(**filtered_args)
+
+    @classmethod
+    def defaults(cls) -> Dict:
+        """Returns the default training configuration keyword arguments."""
+        return _get_dataclass_defaults(data_class=cls)
+
+    def save(self, filepath: str) -> None:
+        """Saves the configuration given a filepath."""
+        save_config(config=asdict(self), save_filepath=filepath)
+
+
+@dataclass(frozen=True)
+class AudioModelConfig(Config):
     """Specifies the build configuration for audio-based models."""
-    # Core model default parameters.
+
     model_type: str
     targets: List[str]
     num_channels: int = 1
@@ -28,15 +57,29 @@ class AudioModelConfig:
     leak_factor: float = 0
     normalize_input: bool = True
     normalize_output: bool = True
-    # LSTM model default parameters.
+
+    # Additional default parameters for LSTM models.
     recurrent_depth: int = 3
     hidden_size: int = 1024
     input_axis: int = 1
+
+    def __str__(self) -> str:
+        """Displays the model configuration as a table."""
+        param_table = PrettyTable(
+            field_names=["Parameter", "Value"],
+            align="l",
+            title="Model Configuration",
+            min_width=21
+        )
+        for param_label, param in asdict(self).items():
+            param_table.add_row([param_label, param])
+        return str(param_table)
 
 
 @dataclass(frozen=True)
 class SpecModelConfig(AudioModelConfig):
     """Specifies the build configuration for spectrogram-based models."""
+
     mask_act_fn: str = "sigmoid"
     num_fft: int = 1024
     window_size: int = 1024
@@ -44,8 +87,9 @@ class SpecModelConfig(AudioModelConfig):
 
 
 @dataclass(frozen=True)
-class CriterionConfig:
+class CriterionConfig(Config):
     """Specifies the model loss criterion for all model types."""
+
     input_type: str
     criterion: str = "si_sdr"
     construction_loss: str = "l2"
@@ -55,30 +99,11 @@ class CriterionConfig:
     beta: float = 0.8
 
 
-@dataclass
-class TrainingConfig:
-    """Specifies all parameters and settings for running model training."""
-    checkpoint: str
-    logging_dir: str
-    criterion_config: CriterionConfig
-    device: str
-    resume: bool = True
-    use_amp: bool = True
-    scale_grad: bool = True
-    clip_grad: bool = True
-    lr: Union[float, List[float, float]] = 0.008
-    init_scale: float = 2.0 ** 16
-    max_grad_norm: Optional[float] = 100.0
-    max_plateaus: int = 5
-    stop_patience: int = 5
-    min_delta: float = 0.01
-    max_epochs: int = 100
-    batch_size: int = 32
-    num_workers: int = 8
-    persistent_workers: bool = True
-    pin_memory: bool = True
-    pre_fetch: int = 4
-    # Visualization parameters.
+@dataclass(frozen=True)
+class VisualsConfig(Config):
+    """Specifies all visualization options for tensorboard logging."""
+
+    logging_dir: Optional[str]
     tensorboard: bool = True
     view_as_norm: bool = True
     view_epoch: bool = True
@@ -94,17 +119,61 @@ class TrainingConfig:
     silent: bool = False
 
 
-def _parse_to_config(model_type: str, **kwargs) -> AudioModelConfig:
-    assert model_type in ALL_MODELS, "Invalid base model type."
-    if model_type in SPEC_MODELS:
-        constructor_params = inspect.signature(SpecModelConfig.__init__).parameters
-        filtered_args = {key: val for (key, val) in kwargs.items() if key in constructor_params}
-        model_config = SpecModelConfig(model_type=model_type, **filtered_args)
-    else:
-        constructor_params = inspect.signature(AudioModelConfig.__init__).parameters
-        filtered_args = {key: val for (key, val) in kwargs.items() if key in constructor_params}
-        model_config = AudioModelConfig(model_type=model_type, **filtered_args)
-    return model_config
+@dataclass(frozen=True)
+class TrainingConfig(Config):
+    """Specifies all parameters and settings for running model training."""
+
+    criterion_config: CriterionConfig
+    visuals_config: VisualsConfig
+    checkpoint: str
+    device: str
+    use_amp: bool = True
+    scale_grad: bool = True
+    clip_grad: bool = True
+    lr: Union[float, Tuple[float, float]] = 0.008
+    init_scale: float = 2.0 ** 16
+    max_grad_norm: Optional[float] = 100.0
+    max_plateaus: int = 5
+    stop_patience: int = 5
+    min_delta: float = 0.01
+    max_epochs: int = 100
+    batch_size: int = 32
+    num_workers: int = 8
+    persistent_workers: bool = True
+    pin_memory: bool = True
+    pre_fetch: int = 4
+
+
+def _get_dataclass_defaults(data_class) -> Dict:
+    default_kwargs = {}
+    for field in fields(data_class):
+        if field.default is not MISSING:
+            default_kwargs[field.name] = field.default
+    return default_kwargs
+
+
+def _create_model_config(
+    model_type: str, targets: List[str], **kwargs
+) -> AudioModelConfig:
+    data_class = SpecModelConfig if model_type in SPEC_MODELS else AudioModelConfig
+    constructor_params = inspect.signature(data_class.__init__).parameters
+    filtered_args = {}
+    for key, val in kwargs.items():
+        if key in constructor_params:
+            filtered_args[key] = val
+    return data_class(model_type=model_type, targets=targets, **filtered_args)
+
+
+def _load_model_config(filepath: str) -> AudioModelConfig:
+    """Loads configuration data from a file to create a new instance."""
+    try:
+        with open(filepath, "r") as config_file:
+            config_data = json.load(fp=config_file)
+            model_type = config_data["model_type"]
+            cls = SpecModelConfig if model_type in SPEC_MODELS else AudioModelConfig
+            return cls(**config_data)
+    except IOError as error:
+        raise error
 
 
 def _build_from_config(

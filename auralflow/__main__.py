@@ -4,53 +4,87 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+import dataclasses
 import os
+import pprint
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentError
+
+import torch.cuda
+
 from auralflow.models import ALL_MODELS, AUDIO_MODELS, SPEC_MODELS
-from auralflow.trainer import AudioModelConfig, SpecModelConfig, _parse_to_config, TrainingConfig
+from auralflow.trainer import AudioModelConfig, SpecModelConfig, CriterionConfig, TrainingConfig, VisualsConfig
+from auralflow.trainer import setup
 from auralflow import separate
 from auralflow import train
 from auralflow import test
 from auralflow.utils import save_config, load_config
 from pathlib import Path
-from prettytable import PrettyTable
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Main script.")
     subparsers = parser.add_subparsers(dest="command")
 
-    # Define configuration parser.
+    # Define model configuration parser.
     config_parser = subparsers.add_parser(name="config")
     config_parser.add_argument(
         "model_type", type=str, choices=ALL_MODELS, help="Base model."
     )
     config_parser.add_argument(
+        "-b",
+        "--bass",
+        action="store_true",
+        required=False,
+        help="Estimate bass."
+    )
+    config_parser.add_argument(
+        "-d",
+        "--drums",
+        action="store_true",
+        required=False,
+        help="Estimate drums."
+    )
+    config_parser.add_argument(
+        "-o",
+        "--other",
+        action="store_true",
+        required=False,
+        help="Estimate other/background."
+    )
+    config_parser.add_argument(
+        "-v",
+        "--vocals",
+        action="store_true",
+        required=False,
+        help="Estimate vocals."
+    )
+    config_parser.add_argument(
         "--save",
-        type=str,
-        help="Relative path of the folder which will store all created files.",
         default=str(Path(os.getcwd(), "my_model").absolute()),
         required=False,
+        help="Path to the folder which will store all files created."
     )
     config_parser.add_argument(
         "--display",
-        help="Print model configuration settings.",
         action="store_true",
         required=False,
+        help="Displays the model spec after its configuration file is created"
     )
-
-    # # Fill keyword args with defaults.
-    # # Only consider spectrogram-based models for now.
-    # for optional_key, optional_type in _config_optionals.items():
-    #     if optional_type is bool:
-    #         config_parser.add_argument(
-    #             optional_key, action="store_true", required=False
-    #         )
-    #     else:
-    #         config_parser.add_argument(
-    #             optional_key, type=optional_type, required=False
-    #         )
+    # Store default model configuration keyword args.
+    for key, val in AudioModelConfig.defaults().items():
+        if isinstance(val, bool):
+            config_parser.add_argument(
+                f"--{key.replace('_', '-')}",
+                required=False,
+                action="store_true"
+            )
+        else:
+            config_parser.add_argument(
+                f"--{key.replace('_', '-')}",
+                default=val,
+                required=False
+            )
 
     # Define training parser.
     train_parser = subparsers.add_parser(name="train")
@@ -58,7 +92,7 @@ if __name__ == "__main__":
         "folder_name", type=str, help="Path to model training folder."
     )
     train_parser.add_argument(
-        "dataset_path", type=str, help="Path to a dataset."
+        "dataset_path", type=str, help="Path to a valid dataset."
     )
     train_parser.add_argument(
         "--max-tracks",
@@ -74,6 +108,54 @@ if __name__ == "__main__":
         default=10000,
         required=False,
     )
+    train_parser.add_argument(
+        "--resume",
+        help="Resumes training from the previous state.",
+        required=False,
+        action="store_true"
+    )
+    # Store default criterion configuration keyword args.
+    for key, val in CriterionConfig.defaults().items():
+        if isinstance(val, bool):
+            train_parser.add_argument(
+                f"--{key.replace('_', '-')}",
+                required=False,
+                action="store_true"
+            )
+        else:
+            train_parser.add_argument(
+                f"--{key.replace('_', '-')}",
+                default=val,
+                required=False
+            )
+    # Store default training configuration keyword args.
+    for key, val in TrainingConfig.defaults().items():
+        if isinstance(val, bool):
+            train_parser.add_argument(
+                f"--{key.replace('_', '-')}",
+                required=False,
+                action="store_true"
+            )
+        elif key not in ["max_tracks", "max_samples", "dataset_path"]:
+            train_parser.add_argument(
+                f"--{key.replace('_', '-')}",
+                default=val,
+                required=False
+            )
+    # Store default visualization configuration keyword args.
+    for key, val in VisualsConfig.defaults().items():
+        if isinstance(val, bool):
+            train_parser.add_argument(
+                f"--{key.replace('_', '-')}",
+                required=False,
+                action="store_true"
+            )
+        else:
+            train_parser.add_argument(
+                f"--{key.replace('_', '-')}",
+                default=val,
+                required=False
+            )
 
     # Define separator parser.
     separator_parser = subparsers.add_parser(name="separate")
@@ -135,51 +217,96 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.command == "config":
 
-        model_type = args.model_type
-        save_dir = Path(os.getcwd(), args.save)
+        # Get target labels.
+        if not (args.bass or args.drums or args.other or args.vocals):
+            raise ArgumentError(
+                argument=None,
+                message=(
+                    "Missing target source(s) to estimate. Specify targets "
+                    "with flags: -b (bass), -d (drums), -o (other), "
+                    "-v (vocals)."
+                )
+            )
+        else:
+            targets = []
+            targets.extend(["bass"] if args.__dict__.pop("bass") else [])
+            targets.extend(["drums"] if args.__dict__.pop("drums") else [])
+            targets.extend(["other"] if args.__dict__.pop("other") else [])
+            targets.extend(["vocals"] if args.__dict__.pop("vocals") else [])
 
-        model_config = _parse_to_config(model_type=model_type, **args.__dict__)
-
-        # Make folder and save the configuration file inside it.
-        save_dir.mkdir(parents=True, exist_ok=True)
-
-        save_config(
-            config=model_config.__dict__,
-            save_filepath=str(save_dir.joinpath("model.json"))
+        # Create model configuration from args.
+        model_config = setup._create_model_config(
+            model_type=args.__dict__.pop("model_type"),
+            targets=targets,
+            **args.__dict__
         )
 
-        # # Display model config as a table.
-        # if args.display:
-        #     param_table = PrettyTable(["Parameter", "Value"])
-        #     param_table.align = "l"
-        #     param_table.title = "Model Configuration"
-        #     param_table.min_width = 21
-        #     p_labels, p_vals = [], []
-        #     for param_label, param in config["model_params"]:
-        #         p_labels.append(param_label)
-        #         p_vals.append([param])
-        #         param_table.add_row([param_label, param])
-        #     print(param_table)
+        # Save the model configuration file within the specified directory.
+        save_dir = Path(args.save)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        model_config.save(filepath=str(save_dir.joinpath("model.json")))
+
+        # Display model config as a table.
+        if args.display:
+            print(model_config)
 
     elif args.command == "train":
-        print("Reading configuration file...")
+        print("Reading configuration files...")
+        save_dir = Path(args.folder_name)
 
-        save_dir = Path(os.getcwd(), args.save)
-        model_config_data = load_config(
-            save_filepath=str(save_dir.joinpath("model.json"))
-        )
-        model_config = _parse_to_config(
-            model_type=model_config_data["model_type"],
-            **model_config_data
+        # Load model configuration.
+        model_config = setup._load_model_config(
+            filepath=str(save_dir.joinpath("model.json"))
         )
 
-        training_config = TrainingConfig(**args.__dict__)
+        # Create loss criterion configuration.
+        if isinstance(model_config, SpecModelConfig):
+            input_type = "spectrogram"
+        else:
+            input_type = "audio"
+        criterion_config = setup.CriterionConfig.from_dict(
+            input_type=input_type, **args.__dict__
+        )
+
+        # Set default logging directory path if tensorboard is enabled.
+        if not args.tensorboard:
+            logging_dir = None
+        else:
+            logging_dir = str(save_dir.joinpath("runs"))
+
+        # Create visualization configuration.
+        visuals_config = VisualsConfig.from_dict(
+            logging_dir=logging_dir,
+            **args.__dict__
+        )
+
+        # Create trainer configuration.
+        training_config = TrainingConfig.from_dict(
+            criterion_config=criterion_config,
+            visuals_config=visuals_config,
+            checkpoint=str(save_dir.joinpath("checkpoint.pth")),
+            device="cuda" if torch.cuda.is_available() else "cpu",
+            **args.__dict__
+        )
+
+        # Save the training configuration in the same directory.
+        training_config.save(filepath=str(save_dir.joinpath("trainer.json")))
+
+        if not args.resume:
+            # Delete existing metadata files.
+            for metadata_file in list(save_dir.glob("*.pickle")):
+                metadata_file.unlink(missing_ok=True)
+            # Delete existing checkpoint.
+            Path(save_dir.joinpath("checkpoint.pth")).unlink(missing_ok=True)
+
         train.main(
             model_config=model_config,
+            save_dir=str(save_dir),
             training_config=training_config,
             dataset_path=args.dataset_path,
             max_num_tracks=args.max_tracks,
-            max_num_samples=args.max_samples
+            max_num_samples=args.max_samples,
+            resume=args.resume
         )
 
     elif args.command == "separate":

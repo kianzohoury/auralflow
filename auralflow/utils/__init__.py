@@ -4,15 +4,14 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-__all__ = [
-]
-
 import json
 import os
 import shutil
 
 from pathlib import Path
 from typing import Dict, Optional, Union
+
+from prettytable import PrettyTable
 
 
 def save_config(config: dict, save_filepath: str) -> None:

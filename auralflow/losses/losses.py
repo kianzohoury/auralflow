@@ -475,7 +475,9 @@ class SISDRLoss(nn.Module):
         # Run model's forward pass.
         estimate_spec, data = model.forward(mixture=mix_spec)
         # Separate.
-        estimate_audio = model.separate(mixture=estimate_spec)
+        estimate_audio = model.to_audio(
+            estimate=estimate_spec, phase=mix_phase
+        )
         target_audio = target_audio.to(model.device)
         # Get loss.
         loss = self.forward(

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
+import pickle
 
 import librosa
 import numpy as np
@@ -16,7 +17,7 @@ from numpy import ndarray
 from pathlib import Path
 from torch import Tensor
 from torch.utils.data.dataset import Dataset, IterableDataset
-from typing import Iterator, List, Mapping,Optional, Tuple
+from typing import Dict, Iterator, List, Mapping,Optional, Tuple
 
 
 class AudioFolder(IterableDataset):
@@ -180,6 +181,8 @@ class AudioDataset(Dataset):
         num_chunks (int): Number of resampled chunks to create. Default: 10000.
     """
 
+    _metadata: List[Dict] = None
+
     def __init__(
         self,
         dataset: List,
@@ -187,14 +190,16 @@ class AudioDataset(Dataset):
         chunk_size: int = 3,
         num_chunks: int = int(1e4),
         sample_rate: int = 44100,
+        metadata: Optional[List[Dict]] = None
     ):
         super(AudioDataset, self).__init__()
         self.targets = targets or []
-        self.dataset = _make_chunks(
+        self.dataset, self._metadata = _make_chunks(
             dataset=dataset,
             chunk_size=chunk_size,
             num_chunks=num_chunks,
             sr=sample_rate,
+            metadata=metadata
         )
 
     def __len__(self):
@@ -209,6 +214,23 @@ class AudioDataset(Dataset):
         mixture, targets = self.dataset[idx]
         return mixture, targets
 
+    def _save_metadata(self, filepath: str) -> None:
+        """Save the metadata of the current dataset."""
+        with open(filepath, mode="wb") as dataset_file:
+            pickle.dump(self._metadata, file=dataset_file)
+
+    @classmethod
+    def _load_from_metadata(
+        cls, filepath: Optional[str], *args, **kwargs
+    ) -> 'AudioDataset':
+        """Loads the metadata from a previous dataset, given its filepath."""
+        if filepath is not None and Path(filepath).exists():
+            with open(filepath, mode="rb") as dataset_file:
+                metadata = pickle.load(file=dataset_file)
+        else:
+            metadata = None
+        return cls(*args, metadata=metadata, **kwargs)
+
 
 def _make_chunks(
     dataset: List,
@@ -216,21 +238,33 @@ def _make_chunks(
     num_chunks: int,
     sr: int = 44100,
     energy_cutoff: float = 0.1,
-) -> List[List[Tensor]]:
+    metadata: List[Dict] = None
+) -> Tuple[List[List[Tensor]], List[Dict]]:
     """Transforms an audio dataset into a chunked dataset."""
     chunked_dataset = []
     num_tracks = len(dataset)
+    overwrite_metadata = metadata is None
+    num_chunks = len(metadata) if metadata is not None else num_chunks
+    metadata = [] if metadata is None else metadata
 
     with ProgressBar(
         range(num_chunks), total=num_chunks, fmt=False, unit="chunk"
     ) as pbar:
         for index, _ in enumerate(pbar):
             discard_entry = False
-            entry = dataset[np.random.randint(num_tracks)]
+            if not overwrite_metadata:
+                idx = metadata[index]["index"]
+            else:
+                idx = np.random.randint(num_tracks)
+            entry = dataset[idx]
             mixture = entry["mixture"]
-            duration = entry["duration"]
-            offset = np.random.randint(0, duration - chunk_size * sr)
-            stop = offset + int(sr * chunk_size)
+            if not overwrite_metadata:
+                offset = metadata[index]["offset"]
+                stop = metadata[index]["stop"]
+            else:
+                duration = entry["duration"]
+                offset = np.random.randint(0, duration - chunk_size * sr)
+                stop = offset + int(sr * chunk_size)
             mix_chunk = torch.from_numpy(mixture[offset:stop])
 
             # Discard silent entries.
@@ -259,11 +293,14 @@ def _make_chunks(
                     mix_chunk = mix_chunk.unsqueeze(0)
                     target_chunks = target_chunks.unsqueeze(0)
                 chunked_dataset.append([mix_chunk, target_chunks])
-
+                if overwrite_metadata:
+                    metadata.append({
+                        "index": idx, "offset": offset, "stop": stop
+                    })
             if index == num_chunks:
                 break
     del dataset
-    return chunked_dataset
+    return chunked_dataset, metadata
 
 
 def verify_dataset(
@@ -293,7 +330,11 @@ def verify_dataset(
     targets = targets or []
     targets += ["mixture"]
     for track_name in dataset_path.iterdir():
+        if track_name.name.startswith("."):
+            continue
         track_stems = list(track_name.iterdir())
+        if not track_stems:
+            continue
         track_stems = [stem.name.removesuffix(".wav") for stem in track_stems]
         for target in targets:
             if target not in track_stems:
@@ -450,6 +491,7 @@ def create_audio_dataset(
     max_num_tracks: int = 100,
     sample_rate: int = 44100,
     mono: bool = True,
+    metadata_path: Optional[str] = None
 ) -> AudioDataset:
     """Helper method that creates an ``AudioDataset``.
 
@@ -499,12 +541,16 @@ def create_audio_dataset(
         sample_rate=sample_rate,
         mono=mono,
     )
+    if not len(full_dataset):
+        raise ValueError("Dataset must contain at least one track.")
     # Chunked dataset.
-    chunked_dataset = AudioDataset(
+    chunked_dataset = AudioDataset._load_from_metadata(
+        filepath=metadata_path,
         dataset=full_dataset,
         targets=targets,
         chunk_size=chunk_size,
         num_chunks=int(num_chunks),
-        sample_rate=sample_rate,
+        sample_rate=sample_rate
     )
+    chunked_dataset._save_metadata(filepath=metadata_path)
     return chunked_dataset

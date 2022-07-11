@@ -21,7 +21,7 @@ if torch.backends.cudnn.is_available():
 
 def constructor_handler(constructor):
     """Handles invalid keyword args to a model constructor by removing them."""
-    valid_parameters = inspect.Signature(constructor).parameters
+    valid_parameters = inspect.signature(constructor).parameters
 
     # Inner function that removes the unknown keywords.
     def remove_keywords(*args, **kwargs):

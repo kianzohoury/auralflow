@@ -32,12 +32,11 @@ from .trainer import (
     _DefaultModelTrainer
 )
 
+from . import setup
 from .setup import (
-    _build_from_config,
-    _parse_to_config,
-    _get_loss_criterion,
-    CriterionConfig,
     AudioModelConfig,
+    CriterionConfig,
     SpecModelConfig,
     TrainingConfig,
+    VisualsConfig
 )

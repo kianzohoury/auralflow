@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import csv
 
-from auralflow.models import _build_model
+from auralflow.trainer import setup
 from auralflow.separate import separate_audio
 from auralflow.utils import load_config
 from torchaudio.transforms import Resample
@@ -29,7 +29,7 @@ def main(
     print("  Successful.")
 
     # Load model. Setup restores previous state if resuming training.
-    model = _build_model(*configuration)
+    model = setup._build_from_config(*configuration)
     # model = setup_model(model)
 
     # Path to test set.
