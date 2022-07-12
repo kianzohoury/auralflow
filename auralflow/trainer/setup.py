@@ -105,7 +105,7 @@ class VisualsConfig(Config):
 
     logging_dir: Optional[str]
     tensorboard: bool = True
-    view_as_norm: bool = True
+    view_norm: bool = True
     view_epoch: bool = True
     view_iter: bool = True
     view_grad: bool = True

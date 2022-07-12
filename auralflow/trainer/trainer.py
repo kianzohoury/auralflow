@@ -87,7 +87,7 @@ class ModelTrainer(ABC):
             if ``self.scheduler`` is an instance of
             :class:`~torch.optim.lr_scheduler.ReduceLROnPlateau`. Default:
             ``5``.
-        view_as_norm (bool): If ``True``, logs the 2-norm of each
+        view_norm (bool): If ``True``, logs the 2-norm of each
             weight/gradient if tensorboard is enabled. Default: ``True``.
         view_epoch (bool): If ``True``, logs epoch training and
             validation loss if tensorboard is enabled. Default: ``True``.
@@ -120,7 +120,7 @@ class ModelTrainer(ABC):
     _max_plateaus: int = 5
     _stop_patience: int = 5
     _min_delta: float = 0.01
-    _view_as_norm: bool = True
+    _view_norm: bool = True
     _view_epoch: bool = True
     _view_iter: bool = True
     _view_grad: bool = True
@@ -452,7 +452,7 @@ class ModelTrainer(ABC):
                 write_epoch_loss=self._view_epoch,
                 visualize_weights=self._view_weights,
                 visualize_gradients=self._view_grad,
-                visualize_norm=self._view_as_norm,
+                visualize_norm=self._view_norm,
                 visualize_waveform=self._view_wave,
                 visualize_spectrogram=self._view_spec,
                 play_audio=self._play_estimate,
