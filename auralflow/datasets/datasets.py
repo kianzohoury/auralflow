@@ -17,7 +17,7 @@ from numpy import ndarray
 from pathlib import Path
 from torch import Tensor
 from torch.utils.data.dataset import Dataset, IterableDataset
-from typing import Dict, Iterator, List, Mapping,Optional, Tuple
+from typing import Dict, Iterator, List, Mapping, Optional, Tuple
 
 
 class AudioFolder(IterableDataset):

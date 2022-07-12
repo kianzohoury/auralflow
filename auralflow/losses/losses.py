@@ -4,7 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-import asteroid.metrics
+# import asteroid.metrics
 import torch
 import torch.nn as nn
 
@@ -728,15 +728,16 @@ def get_evaluation_metrics(
 
     for i in range(num_batch):
         # Compute metrics.
-        named_metrics = asteroid.metrics.get_metrics(
-            mix=mixture[i],
-            clean=target[i],
-            estimate=estimate[i],
-            sample_rate=sr,
-            metrics_list="all",
-            ignore_metrics_errors=True,
-            average=True,
-        )
+        # named_metrics = asteroid.metrics.get_metrics(
+        #     mix=mixture[i],
+        #     clean=target[i],
+        #     estimate=estimate[i],
+        #     sample_rate=sr,
+        #     metrics_list="all",
+        #     ignore_metrics_errors=True,
+        #     average=True,
+        # )
+        named_metrics = {}
         # Accumulate metrics.
         for metric_name, val in named_metrics.items():
             if val is not None and metric_name in running_metrics:

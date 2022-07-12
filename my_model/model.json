@@ -1,0 +1,21 @@
+{
+    "model_type": "SpectrogramNetSimple",
+    "targets": [
+        "vocals"
+    ],
+    "num_channels": 1,
+    "num_hidden_channels": 16,
+    "sample_length": 3,
+    "sample_rate": 44100,
+    "dropout_p": 0.4,
+    "leak_factor": 0,
+    "normalize_input": false,
+    "normalize_output": false,
+    "recurrent_depth": 3,
+    "hidden_size": 1024,
+    "input_axis": 1,
+    "mask_act_fn": "sigmoid",
+    "num_fft": 1024,
+    "window_size": 1024,
+    "hop_length": 512
+}
