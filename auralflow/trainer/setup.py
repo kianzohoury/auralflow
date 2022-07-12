@@ -134,7 +134,8 @@ class TrainingConfig(Config):
     use_amp: bool = True
     scale_grad: bool = True
     clip_grad: bool = True
-    lr: Union[float, Tuple[float, float]] = 0.008
+    lr: float = 0.008
+    lr_lstm: float = lr * 1e-3
     init_scale: float = 2.0 ** 16
     max_grad_norm: Optional[float] = 100.0
     max_plateaus: int = 5
