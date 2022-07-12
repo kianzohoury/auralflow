@@ -335,9 +335,15 @@ def verify_dataset(
         track_stems = list(track_name.iterdir())
         if not track_stems:
             continue
-        track_stems = [stem.name.removesuffix(".wav") for stem in track_stems]
+        # Check that all stems have .wav suffix.
+        stems = []
+        for stem in track_stems:
+            if not stem.name.endswith('.wav'):
+                raise IOError(f"Track {stem.name} is not a wav file.")
+            else:
+                stems.append(stem.name[:-4])
         for target in targets:
-            if target not in track_stems:
+            if target not in stems:
                 raise IOError(f"Missing {target}.wav from {track_name}.")
 
 
