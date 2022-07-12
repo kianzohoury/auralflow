@@ -72,7 +72,7 @@ if __name__ == "__main__":
         help="Displays the model spec after its configuration file is created"
     )
     # Store default model configuration keyword args.
-    for key, val in AudioModelConfig.defaults().items():
+    for key, val in SpecModelConfig.defaults().items():
         if isinstance(val, bool):
             config_parser.add_argument(
                 f"--{key.replace('_', '-')}",

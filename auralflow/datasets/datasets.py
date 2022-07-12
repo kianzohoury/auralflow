@@ -415,7 +415,7 @@ def load_stems(
     max_num_tracks: Optional[int] = None,
     sample_rate: int = 44100,
     mono: bool = True,
-) -> List[OrderedDict[..., Mapping[str, ndarray], Mapping[str, int]]]:
+) -> List[OrderedDict]:
     """Loads audio data (mixture and stems/targets) directly into memory.
 
     Args:
