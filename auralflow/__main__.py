@@ -71,19 +71,19 @@ if __name__ == "__main__":
         required=False,
         help="Displays the model spec after its configuration file is created"
     )
-    # Store default model configuration keyword args.
-    for key, val in SpecModelConfig.defaults().items():
-        if isinstance(val, bool):
+    # Store default model configuration optional args.
+    for field in SpecModelConfig.defaults():
+        if field.type is bool:
             config_parser.add_argument(
-                f"--{key.replace('_', '-')}",
+                f"--{field.name.replace('_', '-')}",
                 required=False,
                 action="store_true"
             )
         else:
             config_parser.add_argument(
-                f"--{key.replace('_', '-')}",
-                type=type(val),
-                default=val,
+                f"--{field.name.replace('_', '-')}",
+                type=field.type,
+                default=field.default,
                 required=False
             )
 
@@ -115,49 +115,19 @@ if __name__ == "__main__":
         required=False,
         action="store_true"
     )
-    # Store default criterion configuration keyword args.
-    for key, val in CriterionConfig.defaults().items():
-        if isinstance(val, bool):
+    # Store default training configuration optional args.
+    for field in CriterionConfig.defaults() + TrainingConfig.defaults() + VisualsConfig.defaults():
+        if field.type is bool:
             train_parser.add_argument(
-                f"--{key.replace('_', '-')}",
+                f"--{field.name.replace('_', '-')}",
                 required=False,
                 action="store_true"
             )
         else:
             train_parser.add_argument(
-                f"--{key.replace('_', '-')}",
-                type=type(val),
-                default=val,
-                required=False
-            )
-    # Store default training configuration keyword args.
-    for key, val in TrainingConfig.defaults().items():
-        if isinstance(val, bool):
-            train_parser.add_argument(
-                f"--{key.replace('_', '-')}",
-                required=False,
-                action="store_true"
-            )
-        elif key not in ["max_tracks", "max_samples", "dataset_path"]:
-            train_parser.add_argument(
-                f"--{key.replace('_', '-')}",
-                type=type(val),
-                default=val,
-                required=False
-            )
-    # Store default visualization configuration keyword args.
-    for key, val in VisualsConfig.defaults().items():
-        if isinstance(val, bool):
-            train_parser.add_argument(
-                f"--{key.replace('_', '-')}",
-                required=False,
-                action="store_true"
-            )
-        else:
-            train_parser.add_argument(
-                f"--{key.replace('_', '-')}",
-                type=type(val),
-                default=val,
+                f"--{field.name.replace('_', '-')}",
+                type=field.type,
+                default=field.default,
                 required=False
             )
 

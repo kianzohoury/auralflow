@@ -13,7 +13,7 @@ from prettytable import PrettyTable
 from auralflow.losses import *
 from auralflow.models import SeparationModel, SpectrogramMaskModel, SPEC_MODELS, AUDIO_MODELS, ALL_MODELS
 from auralflow.utils import save_config, load_config
-from dataclasses import asdict, dataclass, fields, MISSING
+from dataclasses import asdict, dataclass, Field, fields, MISSING
 from typing import List, Union, Optional, Tuple, Dict
 
 
@@ -34,9 +34,13 @@ class Config:
         return cls(**filtered_args)
 
     @classmethod
-    def defaults(cls) -> Dict:
+    def defaults(cls) -> List[Field]:
         """Returns the default training configuration keyword arguments."""
-        return _get_dataclass_defaults(data_class=cls)
+        default_fields = []
+        for field in fields(cls):
+            if field.default is not MISSING:
+                default_fields.append(field)
+        return default_fields
 
     def save(self, filepath: str) -> None:
         """Saves the configuration given a filepath."""
@@ -142,14 +146,6 @@ class TrainingConfig(Config):
     persistent_workers: bool = True
     pin_memory: bool = True
     pre_fetch: int = 4
-
-
-def _get_dataclass_defaults(data_class) -> Dict:
-    default_kwargs = {}
-    for field in fields(data_class):
-        if field.default is not MISSING:
-            default_kwargs[field.name] = field.default
-    return default_kwargs
 
 
 def _create_model_config(
