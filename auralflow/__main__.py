@@ -295,9 +295,11 @@ if __name__ == "__main__":
         if not args.resume:
             # Delete existing metadata files.
             for metadata_file in list(save_dir.glob("*.pickle")):
-                metadata_file.unlink(missing_ok=True)
+                metadata_file.unlink()
             # Delete existing checkpoint.
-            Path(save_dir.joinpath("checkpoint.pth")).unlink(missing_ok=True)
+            prev_checkpoint = save_dir.joinpath("checkpoint.pth")
+            if prev_checkpoint.exists():
+                prev_checkpoint.unlink(missing_ok=True)
 
         train.main(
             model_config=model_config,
