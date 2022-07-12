@@ -254,6 +254,8 @@ if __name__ == "__main__":
             **args.__dict__
         )
 
+        print(args.__dict__)
+
         # Create trainer configuration.
         training_config = TrainingConfig.from_dict(
             criterion_config=criterion_config,
