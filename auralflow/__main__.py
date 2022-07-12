@@ -82,6 +82,7 @@ if __name__ == "__main__":
         else:
             config_parser.add_argument(
                 f"--{key.replace('_', '-')}",
+                type=type(val),
                 default=val,
                 required=False
             )
@@ -125,6 +126,7 @@ if __name__ == "__main__":
         else:
             train_parser.add_argument(
                 f"--{key.replace('_', '-')}",
+                type=type(val),
                 default=val,
                 required=False
             )
@@ -139,6 +141,7 @@ if __name__ == "__main__":
         elif key not in ["max_tracks", "max_samples", "dataset_path"]:
             train_parser.add_argument(
                 f"--{key.replace('_', '-')}",
+                type=type(val),
                 default=val,
                 required=False
             )
@@ -153,6 +156,7 @@ if __name__ == "__main__":
         else:
             train_parser.add_argument(
                 f"--{key.replace('_', '-')}",
+                type=type(val),
                 default=val,
                 required=False
             )

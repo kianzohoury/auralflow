@@ -44,6 +44,7 @@ def main(
     val_dataset_metadata_path = str(Path(save_dir).joinpath(
         ".val_dataset_metadata.pickle")
     )
+    
     train_dataset = create_audio_dataset(
         dataset_path=dataset_path,
         split="train",

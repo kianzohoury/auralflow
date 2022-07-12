@@ -167,7 +167,7 @@ def _create_model_config(
 def _load_model_config(filepath: str) -> AudioModelConfig:
     """Loads configuration data from a file to create a new instance."""
     try:
-        with open(filepath, "r") as config_file:
+        with open(filepath) as config_file:
             config_data = json.load(fp=config_file)
             model_type = config_data["model_type"]
             cls = SpecModelConfig if model_type in SPEC_MODELS else AudioModelConfig
