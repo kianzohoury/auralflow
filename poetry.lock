@@ -357,11 +357,14 @@ tests = ["pytest", "pytest-cov", "pytest-lazy-fixture"]
 
 [[package]]
 name = "protobuf"
-version = "4.21.2"
-description = ""
+version = "3.13.0"
+description = "Protocol Buffers"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = "*"
+
+[package.dependencies]
+six = ">=1.9"
 
 [[package]]
 name = "pyasn1"
@@ -691,7 +694,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">= 3.7.11 <= 3.7.13"
-content-hash = "6bd106dde4cd5c195bfd878007f1132e2bfa2ad6561386434c8993402f08e98d"
+content-hash = "aeaa61ae716d18ac9d0d59a7138130ba10f75197311f1e23fc5f8d08bbc36e22"
 
 [metadata.files]
 absl-py = []

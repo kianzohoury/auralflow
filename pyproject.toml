@@ -18,6 +18,7 @@ tqdm = "^4.64.0"
 cffi = "^1.15.1"
 resampy = "^0.3.1"
 tensorboard = "2.8.0"
+protobuf = "3.13"
 
 
 [tool.poetry.dev-dependencies]
