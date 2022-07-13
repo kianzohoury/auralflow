@@ -73,7 +73,7 @@ class ModelTrainer(ABC):
             to the bottleneck layers. Default: ``0.008``.
         init_scale (float): Initial value for the gradient scaler, if one
             is enabled. Default: ``2.0 ** 16``.
-        max_grad_norm (optional[float]): Maximum gradient norm used for
+        max_grad_norm (float): Maximum gradient norm used for
             gradient clipping, if enabled. Default: ``100.0``.
         max_plateaus (int): Maximum number of times the stop patience can
             expire before training is halted. Only applicable if the scheduler
@@ -116,7 +116,7 @@ class ModelTrainer(ABC):
 
     _lr: Union[float, Tuple[float, float]] = 0.008
     _init_scale: float = 2.0 ** 16
-    _max_grad_norm: Optional = 100.0
+    _max_grad_norm: float = 100.0
     _max_plateaus: int = 5
     _stop_patience: int = 5
     _min_delta: float = 0.01
@@ -292,6 +292,7 @@ class ModelTrainer(ABC):
         """
         # Setup training callbacks.
         self._setup_callbacks()
+        print(123)
 
         self._state["last_epoch"] += 1
         self._state["last_global_step"] += 1
@@ -435,14 +436,20 @@ class ModelTrainer(ABC):
             param.grad = None
 
     def _setup_callbacks(self):
+        print(self.logging_dir)
         if self.logging_dir is not None:
             # Create tensorboard writer.
             if not self._silent:
                 print(f"Logging tensorboard data to {self.logging_dir}.")
-            self._writer = SummaryWriter(
-                log_dir=self.logging_dir
-            )
+                print(700)
+            writer = SummaryWriter()
+            # self._writer = SummaryWriter(
+            #     log_dir=self.logging_dir
+            # )
+            self._writer = None
+
             # Define visualization callbacks.
+            print(999)
             self._callbacks = _create_callbacks(
                 model=self.model,
                 tensorboard_writer=self._writer,
@@ -458,6 +465,7 @@ class ModelTrainer(ABC):
                 play_audio=self._play_estimate,
                 embed_residual=self._play_residual
             )
+            print(0)
         else:
             self._callbacks = CallbackManager()
 
