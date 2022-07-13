@@ -436,20 +436,15 @@ class ModelTrainer(ABC):
             param.grad = None
 
     def _setup_callbacks(self):
-        print(self.logging_dir)
         if self.logging_dir is not None:
             # Create tensorboard writer.
             if not self._silent:
                 print(f"Logging tensorboard data to {self.logging_dir}.")
                 print(700)
-            writer = SummaryWriter()
-            # self._writer = SummaryWriter(
-            #     log_dir=self.logging_dir
-            # )
-            self._writer = None
-
+            self._writer = SummaryWriter(
+                log_dir=self.logging_dir
+            )
             # Define visualization callbacks.
-            print(999)
             self._callbacks = _create_callbacks(
                 model=self.model,
                 tensorboard_writer=self._writer,
