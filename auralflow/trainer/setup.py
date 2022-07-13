@@ -158,14 +158,9 @@ class TrainingConfig(Config):
 
 def _create_model_config(
     model_type: str, targets: List[str], **kwargs
-) -> AudioModelConfig:
-    data_class = SpecModelConfig if model_type in SPEC_MODELS else AudioModelConfig
-    constructor_params = inspect.signature(data_class.__init__).parameters
-    filtered_args = {}
-    for key, val in kwargs.items():
-        if key in constructor_params:
-            filtered_args[key] = val
-    return data_class(model_type=model_type, targets=targets, **filtered_args)
+) -> Config:
+    cls = SpecModelConfig if model_type in SPEC_MODELS else AudioModelConfig
+    return cls.from_dict(model_type=model_type, targets=targets, **kwargs)
 
 
 def _load_model_config(filepath: str) -> AudioModelConfig:

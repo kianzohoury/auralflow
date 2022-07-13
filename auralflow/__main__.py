@@ -12,8 +12,14 @@ from argparse import ArgumentParser, ArgumentError
 
 import torch.cuda
 
-from auralflow.models import ALL_MODELS, AUDIO_MODELS, SPEC_MODELS
-from auralflow.trainer import AudioModelConfig, SpecModelConfig, CriterionConfig, TrainingConfig, VisualsConfig
+from auralflow.models import ALL_MODELS, SPEC_MODELS
+from auralflow.trainer import (
+    AudioModelConfig,
+    SpecModelConfig,
+    CriterionConfig,
+    TrainingConfig,
+    VisualsConfig
+)
 from auralflow.trainer import setup
 from auralflow import separate
 from auralflow import train
