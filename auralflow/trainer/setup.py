@@ -14,7 +14,7 @@ from auralflow.losses import *
 from auralflow.models import SeparationModel, SpectrogramMaskModel, SPEC_MODELS, AUDIO_MODELS, ALL_MODELS
 from auralflow.utils import save_config, load_config
 from dataclasses import asdict, dataclass, Field, fields, MISSING
-from typing import List, Union, Optional, Tuple, Dict, get_origin, get_args
+from typing import List, Union, Optional, Tuple, Dict
 
 
 @dataclass(frozen=True)
@@ -39,8 +39,8 @@ class Config:
         default_fields = []
         for field in fields(cls):
             if field.default is not MISSING:
-                if get_origin(field.type) is Optional:
-                    field.type = get_args(field.type)
+                print(field.type.__origin__, field.type.__args__)
+
                 default_fields.append(field)
         return default_fields
 
