@@ -357,11 +357,11 @@ tests = ["pytest", "pytest-cov", "pytest-lazy-fixture"]
 
 [[package]]
 name = "protobuf"
-version = "3.19.4"
-description = "Protocol Buffers"
+version = "4.21.2"
+description = ""
 category = "main"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.7"
 
 [[package]]
 name = "pyasn1"
@@ -546,7 +546,7 @@ numpy = ["numpy"]
 
 [[package]]
 name = "tensorboard"
-version = "2.9.1"
+version = "2.8.0"
 description = "TensorBoard lets you watch Tensors Flow"
 category = "main"
 optional = false
@@ -559,11 +559,11 @@ google-auth-oauthlib = ">=0.4.1,<0.5"
 grpcio = ">=1.24.3"
 markdown = ">=2.6.8"
 numpy = ">=1.12.0"
-protobuf = ">=3.9.2,<3.20"
+protobuf = ">=3.6.0"
 requests = ">=2.21.0,<3"
 tensorboard-data-server = ">=0.6.0,<0.7.0"
 tensorboard-plugin-wit = ">=1.6.0"
-werkzeug = ">=1.0.1"
+werkzeug = ">=0.11.15"
 
 [[package]]
 name = "tensorboard-data-server"
@@ -691,7 +691,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">= 3.7.11 <= 3.7.13"
-content-hash = "8b88d29ee4580e0c540778a7d795a3a996367cdca50297c73913855d8b037aec"
+content-hash = "6bd106dde4cd5c195bfd878007f1132e2bfa2ad6561386434c8993402f08e98d"
 
 [metadata.files]
 absl-py = []
