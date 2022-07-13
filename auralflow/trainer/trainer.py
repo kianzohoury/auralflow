@@ -464,7 +464,7 @@ class ModelTrainer(ABC):
     def save_state(self, checkpoint_path: str) -> None:
         if not Path(checkpoint_path).exists():
             if not self._silent:
-                print(f"Saving trainer to {checkpoint_path}...")
+                print(f"Saving trainer to {checkpoint_path}")
             # Initialize trainer state.
             self._state = {
                 "last_global_step": -1,

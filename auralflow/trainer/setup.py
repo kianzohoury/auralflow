@@ -39,8 +39,13 @@ class Config:
         default_fields = []
         for field in fields(cls):
             if field.default is not MISSING:
-                print(field.type.__origin__, field.type.__args__)
-
+                # Handle optional type fields.
+                if hasattr(field.type, "__args__"):
+                    union_types = field.type.__args__
+                    if len(union_types) == 2 and union_types[-1] is type(None):
+                        field.type = union_types[0]
+                    else:
+                        continue
                 default_fields.append(field)
         return default_fields
 
@@ -109,7 +114,8 @@ class CriterionConfig(Config):
 class VisualsConfig(Config):
     """Specifies all visualization options for tensorboard logging."""
 
-    logging_dir: Optional[str]
+    image_dir: str
+    logging_dir: str
     tensorboard: bool = True
     view_norm: bool = True
     view_epoch: bool = True
@@ -120,7 +126,6 @@ class VisualsConfig(Config):
     view_wave: bool = True
     play_estimate: bool = True
     play_residual: bool = True
-    image_dir: Optional[str] = None
     image_freq: int = 5
     silent: bool = False
 
@@ -139,7 +144,7 @@ class TrainingConfig(Config):
     lr: float = 0.008
     lr_lstm: float = lr * 1e-3
     init_scale: float = 2.0 ** 16
-    max_grad_norm: Optional[float] = 100.0
+    max_grad_norm: float = 100.0
     max_plateaus: int = 5
     stop_patience: int = 5
     min_delta: float = 0.01

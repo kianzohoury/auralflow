@@ -115,8 +115,12 @@ if __name__ == "__main__":
         required=False,
         action="store_true"
     )
+
     # Store default training configuration optional args.
-    for field in CriterionConfig.defaults() + TrainingConfig.defaults() + VisualsConfig.defaults():
+    training_defaults = TrainingConfig.defaults()
+    training_defaults += CriterionConfig.defaults()
+    training_defaults += VisualsConfig.defaults()
+    for field in training_defaults:
         if field.type is bool:
             train_parser.add_argument(
                 f"--{field.name.replace('_', '-')}",
@@ -244,17 +248,17 @@ if __name__ == "__main__":
 
         # Set default logging directory path if tensorboard is enabled.
         if not args.tensorboard:
-            logging_dir = None
+            logging_dir = image_dir = None
         else:
             logging_dir = str(save_dir.joinpath("runs"))
+            image_dir = str(save_dir)
 
         # Create visualization configuration.
         visuals_config = VisualsConfig.from_dict(
             logging_dir=logging_dir,
+            image_dir=image_dir,
             **args.__dict__
         )
-
-        print(args.__dict__)
 
         # Create trainer configuration.
         training_config = TrainingConfig.from_dict(
@@ -275,7 +279,7 @@ if __name__ == "__main__":
             # Delete existing checkpoint.
             prev_checkpoint = save_dir.joinpath("checkpoint.pth")
             if prev_checkpoint.exists():
-                prev_checkpoint.unlink(missing_ok=True)
+                prev_checkpoint.unlink()
 
         train.main(
             model_config=model_config,
