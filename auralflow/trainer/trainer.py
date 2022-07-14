@@ -9,6 +9,9 @@ import os
 import torch
 import torch.nn as nn
 
+# import tensorflow
+
+
 from abc import ABC, abstractmethod
 from auralflow.models import SeparationModel
 from auralflow.visualizer import ProgressBar
@@ -377,7 +380,7 @@ class ModelTrainer(ABC):
                 break
 
             self._state["last_epoch"] += 1
-            self._flush_writer()
+            # self._flush_writer()
 
     def validate(self, val_loader: DataLoader) -> float:
         """Given a validation set, runs validation and returns the mean loss.
@@ -441,9 +444,14 @@ class ModelTrainer(ABC):
             if not self._silent:
                 print(f"Logging tensorboard data to {self.logging_dir}.")
                 print(700)
-            self._writer = SummaryWriter(
-                log_dir=self.logging_dir
-            )
+            try:
+                self._writer = None
+                self._writer = SummaryWriter(
+                    log_dir=self.logging_dir
+                )
+            except Exception as error:
+                print(111)
+                raise error
             # Define visualization callbacks.
             self._callbacks = _create_callbacks(
                 model=self.model,
