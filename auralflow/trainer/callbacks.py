@@ -108,10 +108,11 @@ class CallbackManager(object):
         for callback in self._callbacks.get("on_epoch_end", []):
             callback(global_step=epoch, **kwargs)
 
-    def add_callback(self, callback: TrainingCallback):
+    def add_callback(self, callback: TrainingCallback) -> None:
+        """Attach a callback to the group associated with its event."""
         if callback.event not in self._callbacks:
             self._callbacks[callback.event] = []
-        self._callbacks[callback.event] = []
+        self._callbacks[callback.event].append(callback)
 
 
 #
