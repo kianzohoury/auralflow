@@ -216,8 +216,9 @@ class AudioDataset(Dataset):
 
     def _save_metadata(self, filepath: str) -> None:
         """Save the metadata of the current dataset."""
-        with open(filepath, mode="wb") as dataset_file:
-            pickle.dump(self._metadata, file=dataset_file)
+        if filepath is not None:
+            with open(filepath, mode="wb") as dataset_file:
+                pickle.dump(self._metadata, file=dataset_file)
 
     @classmethod
     def _load_from_metadata(
