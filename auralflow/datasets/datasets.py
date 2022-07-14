@@ -551,14 +551,23 @@ def create_audio_dataset(
     if not len(full_dataset):
         raise ValueError("Dataset must contain at least one track.")
     # Chunked dataset.
-    chunked_dataset = AudioDataset._load_from_metadata(
-        filepath=metadata_path,
-        dataset=full_dataset,
-        targets=targets,
-        chunk_size=chunk_size,
-        num_chunks=int(num_chunks),
-        sample_rate=sample_rate
-    )
+    if metadata_path is not None and Path(metadata_path).exists():
+        chunked_dataset = AudioDataset._load_from_metadata(
+            filepath=metadata_path,
+            dataset=full_dataset,
+            targets=targets,
+            chunk_size=chunk_size,
+            num_chunks=int(num_chunks),
+            sample_rate=sample_rate
+        )
+    else:
+        chunked_dataset = AudioDataset(
+            dataset=full_dataset,
+            targets=targets,
+            chunk_size=chunk_size,
+            num_chunks=int(num_chunks),
+            sample_rate=sample_rate
+        )
     if metadata_path is not None and not Path(metadata_path).exists():
         chunked_dataset._save_metadata(filepath=metadata_path)
     return chunked_dataset
