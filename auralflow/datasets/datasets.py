@@ -216,7 +216,7 @@ class AudioDataset(Dataset):
 
     def _save_metadata(self, filepath: str) -> None:
         """Save the metadata of the current dataset."""
-        if filepath is not None:
+        if filepath is not None and not Path(filepath).exists():
             with open(filepath, mode="wb") as dataset_file:
                 pickle.dump(self._metadata, file=dataset_file)
 
@@ -559,5 +559,6 @@ def create_audio_dataset(
         num_chunks=int(num_chunks),
         sample_rate=sample_rate
     )
-    chunked_dataset._save_metadata(filepath=metadata_path)
+    if metadata_path is not None and not Path(metadata_path).exists():
+        chunked_dataset._save_metadata(filepath=metadata_path)
     return chunked_dataset
