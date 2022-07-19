@@ -11,7 +11,8 @@ import torch.nn as nn
 from prettytable import PrettyTable
 
 from auralflow.losses import *
-from auralflow.models import SeparationModel, SpectrogramMaskModel, SPEC_MODELS, AUDIO_MODELS, ALL_MODELS
+from auralflow.models import SeparationModel, SpectrogramMaskModel, \
+    SPEC_MODELS, AUDIO_MODELS, ALL_MODELS
 from auralflow.utils import save_config, load_config
 from dataclasses import asdict, dataclass, Field, fields, MISSING
 from typing import List, Union, Optional, Tuple, Dict
@@ -36,18 +37,7 @@ class Config:
     @classmethod
     def defaults(cls) -> List[Field]:
         """Returns the default training configuration keyword arguments."""
-        default_fields = []
-        for field in fields(cls):
-            if field.default is not MISSING:
-                # Handle optional type fields.
-                if hasattr(field.type, "__args__"):
-                    union_types = field.type.__args__
-                    if len(union_types) == 2 and union_types[-1] is type(None):
-                        field.type = union_types[0]
-                    else:
-                        continue
-                default_fields.append(field)
-        return default_fields
+        return _get_default_fields(cls)
 
     def save(self, filepath: str) -> None:
         """Saves the configuration given a filepath."""
@@ -156,8 +146,25 @@ class TrainingConfig(Config):
     pre_fetch: int = 4
 
 
+def _get_default_fields(cls) -> List[Field]:
+    default_fields = []
+    for field in fields(cls):
+        if field.default is not MISSING:
+            # Handle optional type fields.
+            if hasattr(field.type, "__args__"):
+                union_types = field.type.__args__
+                if len(union_types) == 2 and union_types[-1] is type(None):
+                    field.type = union_types[0]
+                else:
+                    continue
+            default_fields.append(field)
+        elif issubclass(field.type, Config):
+            default_fields.extend(_get_default_fields(field.type))
+    return default_fields
+
+
 def _create_model_config(
-    model_type: str, targets: List[str], **kwargs
+        model_type: str, targets: List[str], **kwargs
 ) -> Config:
     cls = SpecModelConfig if model_type in SPEC_MODELS else AudioModelConfig
     return cls.from_dict(model_type=model_type, targets=targets, **kwargs)
@@ -176,7 +183,7 @@ def _load_model_config(filepath: str) -> AudioModelConfig:
 
 
 def _build_from_config(
-    model_config: AudioModelConfig, device: str = 'cpu'
+        model_config: AudioModelConfig, device: str = 'cpu'
 ) -> SeparationModel:
     r"""Creates a new ``SeparationModel`` instance given custom specifications.
 

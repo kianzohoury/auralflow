@@ -41,34 +41,14 @@ if __name__ == "__main__":
     config_parser.add_argument(
         "model_type", type=str, choices=ALL_MODELS, help="Base model."
     )
-    config_parser.add_argument(
-        "-b",
-        "--bass",
-        action="store_true",
-        required=False,
-        help="Estimate bass."
-    )
-    config_parser.add_argument(
-        "-d",
-        "--drums",
-        action="store_true",
-        required=False,
-        help="Estimate drums."
-    )
-    config_parser.add_argument(
-        "-o",
-        "--other",
-        action="store_true",
-        required=False,
-        help="Estimate other/background."
-    )
-    config_parser.add_argument(
-        "-v",
-        "--vocals",
-        action="store_true",
-        required=False,
-        help="Estimate vocals."
-    )
+    for target in ["bass", "drums", "other", "vocals"]:
+        config_parser.add_argument(
+            f"-{target[0]}",
+            f"--{target}",
+            action="store_true",
+            required=False,
+            help=f"Estimate {target}."
+        )
     config_parser.add_argument(
         "--save",
         default=str(Path(os.getcwd(), "my_model").absolute()),
@@ -79,7 +59,7 @@ if __name__ == "__main__":
         "--display",
         action="store_true",
         required=False,
-        help="Displays the model spec after its configuration file is created"
+        help="Displays the model spec after its configuration file is created."
     )
 
     # Store default model configuration optional args.
@@ -122,16 +102,13 @@ if __name__ == "__main__":
     )
     train_parser.add_argument(
         "--resume",
-        help="Resumes training from the previous state.",
+        help="Resumes model training from the checkpoint file.",
         required=False,
         action="store_true"
     )
 
     # Store default training configuration optional args.
-    training_defaults = TrainingConfig.defaults()
-    training_defaults += CriterionConfig.defaults()
-    training_defaults += VisualsConfig.defaults()
-    for field in training_defaults:
+    for field in TrainingConfig.defaults():
         if field.type is bool:
             train_parser.add_argument(
                 f"--{field.name.replace('_', '-')}",
@@ -247,8 +224,6 @@ if __name__ == "__main__":
         model_config = setup._load_model_config(
             filepath=str(save_dir.joinpath("model.json"))
         )
-
-        print(list(save_dir.iterdir()))
 
         # Create loss criterion configuration.
         if isinstance(model_config, SpecModelConfig):
