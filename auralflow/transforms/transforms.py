@@ -8,7 +8,7 @@ import math
 import torch
 import numpy as np
 
-from librosa import amplitude_to_db
+
 from typing import Optional, Tuple, Callable, List, Union
 from torch import Tensor
 from torchaudio import transforms
@@ -63,9 +63,6 @@ class AudioTransform(object):
             # norm="slaney",
         )
 
-        # Use librosa implementation due to discrepancy w/ torchaudio.
-        self.amp_to_db_ = amplitude_to_db
-
         # Transfer window functions and filterbanks to GPU if available.
         self.stft.window = self.stft.window.to(device)
         self.inv_stft.window = self.inv_stft.window.to(device)
@@ -84,10 +81,17 @@ class AudioTransform(object):
         Returns:
             spectrogram (Tensor): Log-normalized spectrogram data.
         """
-        log_normal = torch.from_numpy(
-            self.amp_to_db_(spectrogram.cpu(), ref=np.max)
-        ).to(spectrogram.device)
-        return log_normal
+        # Use algo similar to librosa due to discrepancy w/ torchaudio.
+        eps = torch.full_like(spectrogram, fill_value=1e-5)
+        norm_spec = spectrogram / torch.max(spectrogram)
+        log_norm_spec = 20 * torch.log10(
+            torch.max(norm_spec, eps)
+        )
+        # Clamp values between -80 and 0 db.
+        log_norm_spec_clamped = torch.maximum(
+            log_norm_spec, torch.max(log_norm_spec) - 80.0
+        )
+        return log_norm_spec_clamped
 
     def to_spectrogram(
         self, audio: Tensor, use_padding: bool = True

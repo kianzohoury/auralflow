@@ -3,21 +3,21 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
-import pickle
 
-import librosa
 import numpy as np
+import pickle
 import torch
 import torchaudio
 
 
 from auralflow.visualizer import ProgressBar
 from collections import OrderedDict
-from numpy import ndarray
+# from librosa import load, get_duration
 from pathlib import Path
+from scipy.io import wavfile
 from torch import Tensor
 from torch.utils.data.dataset import Dataset, IterableDataset
-from typing import Dict, Iterator, List, Mapping, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 
 
 class AudioFolder(IterableDataset):
@@ -93,7 +93,9 @@ class AudioFolder(IterableDataset):
             )
 
         if sampled_track.name not in self._duration_cache:
-            duration = librosa.get_duration(filename=src_filepaths[0])
+            # duration = get_duration(filename=src_filepaths[0])
+            sr, mixture_track = wavfile.read(filename=src_filepaths[0])
+            duration = len(mixture_track)
             self._duration_cache[sampled_track.name] = duration
         else:
             duration = self._duration_cache[sampled_track.name]
@@ -234,7 +236,7 @@ class AudioDataset(Dataset):
 
 
 def _make_chunks(
-    dataset: List,
+    dataset: List[OrderedDict],
     chunk_size: int,
     num_chunks: int,
     sr: int = 44100,
@@ -266,7 +268,7 @@ def _make_chunks(
                 duration = entry["duration"]
                 offset = np.random.randint(0, duration - chunk_size * sr)
                 stop = offset + int(sr * chunk_size)
-            mix_chunk = torch.from_numpy(mixture[offset:stop])
+            mix_chunk = torch.from_numpy(mixture[:, offset:stop])
 
             # Discard silent entries.
             if torch.linalg.norm(mix_chunk) < energy_cutoff:
@@ -274,7 +276,7 @@ def _make_chunks(
 
             target_tensors = []
             for target_name, target_data in list(entry.items())[1:-1]:
-                target_chunk = torch.from_numpy(target_data[offset:stop])
+                target_chunk = torch.from_numpy(target_data[:, offset:stop])
 
                 # Discard silent entries.
                 if torch.linalg.norm(target_chunk) < energy_cutoff:
@@ -289,10 +291,6 @@ def _make_chunks(
                 else:
                     target_chunks = torch.empty_like(mix_chunk)
 
-                # Un-squeeze channels dimension if audio is mono.
-                if mix_chunk.dim() == 1:
-                    mix_chunk = mix_chunk.unsqueeze(0)
-                    target_chunks = target_chunks.unsqueeze(0)
                 chunked_dataset.append([mix_chunk, target_chunks])
                 if overwrite_metadata:
                     metadata.append({
@@ -329,7 +327,7 @@ def verify_dataset(
     """
     dataset_path = Path(subset_path)
     targets = targets or []
-    targets += ["mixture"]
+    targets = targets + ["mixture"]
     for track_name in dataset_path.iterdir():
         if track_name.name.startswith("."):
             continue
@@ -459,7 +457,7 @@ def load_stems(
     n_tracks = min(len(subset_dir), max_num_tracks)
 
     with ProgressBar(
-            subset_dir, total=n_tracks, fmt=False, unit="track"
+        subset_dir, total=n_tracks, fmt=False, unit="track"
     ) as pbar:
         for index, track_folder in enumerate(pbar):
 
@@ -469,23 +467,53 @@ def load_stems(
             if not track_name.is_file():
                 continue
 
-            # Load mixture and target tracks.
-            mixture_track, sr = librosa.load(track_name, sr=sample_rate)
+            # Load mixture and target tracks. Use scipy over librosa for now.
+            # mixture_track, sr = load(track_name, sr=sample_rate, mono=mono)
+            sr, mixture_track = wavfile.read(filename=track_name)
+
+            # Un-squeeze channels dimension if loading mono tracks.
+            if mixture_track.ndim == 1:
+                mixture_track = np.expand_dims(mixture_track, axis=-1)
+
+            # Get bit depth for normalization.
+            bit_depth = mixture_track.dtype
+            if bit_depth == np.int16:
+                num_bits = 16
+            elif bit_depth == np.int32:
+                num_bits = 32
+            elif bit_depth == np.uint8:
+                num_bits = 8
+            else:
+                num_bits = 1
+
+            # Normalize mixture.
+            mixture_track = mixture_track / (2.0 ** (num_bits - 1))
+            if mono:
+                mixture_track = np.mean(mixture_track.T, axis=0, keepdims=True)
             entry["mixture"] = mixture_track
+
+            # Same process for each target source.
             for target in sorted(targets):
                 target_name = f"{str(track_folder)}/{target}.wav"
-                entry[target], sr = librosa.load(target_name, sr=sr, mono=mono)
+
+                # stem_track, sr = load(target_name, sr=sr, mono=mono)
+                sr, stem_track = wavfile.read(filename=target_name)
+                if stem_track.ndim == 1:
+                    stem_track = np.expand_dims(stem_track, axis=-1)
+                stem_track = stem_track / (2.0 ** (num_bits - 1))
+                stem_track = np.mean(stem_track.T, axis=0, keepdims=True)
+                entry[target] = stem_track
 
             # Record duration of mixture track.
-            num_seconds = librosa.get_duration(y=mixture_track, sr=44100)
-            duration = int(num_seconds * sr)
+            # num_seconds = get_duration(y=mixture_track, sr=sample_rate)
+            # duration = int(num_seconds * sr)
+            duration = mixture_track.shape[-1]
             entry["duration"] = duration
 
             # Store entry.
             audio_tracks.append(entry)
             if index == n_tracks:
                 break
-
     return audio_tracks
 
 
@@ -568,6 +596,7 @@ def create_audio_dataset(
         num_chunks=int(num_chunks),
         sample_rate=sample_rate
     )
+
     # if metadata_path is not None and not Path(metadata_path).exists():
     #     chunked_dataset._save_metadata(filepath=metadata_path)
     return chunked_dataset

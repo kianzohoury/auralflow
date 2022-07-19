@@ -7,6 +7,7 @@
 import torch
 import torch.backends.cudnn
 import torch.nn as nn
+from time import clock
 
 
 from auralflow.transforms.transforms import _get_deconv_pad

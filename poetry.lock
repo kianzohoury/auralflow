@@ -602,7 +602,7 @@ tests = ["pandas", "pillow", "tensorflow", "keras", "pytest", "pytest-xdist", "p
 
 [[package]]
 name = "kiwisolver"
-version = "1.4.3"
+version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
 category = "main"
 optional = false
@@ -655,11 +655,11 @@ python-versions = ">=3.7,<3.11"
 
 [[package]]
 name = "markdown"
-version = "3.3.7"
+version = "3.4.1"
 description = "Python implementation of Markdown."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 importlib-metadata = {version = ">=4.4", markers = "python_version < \"3.10\""}
@@ -1548,7 +1548,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">= 3.7.11 <= 3.7.13"
-content-hash = "49e3ac90328adea88d49b31d81a8f1d7acf8c562acd90fa5e5a0a973c3930b15"
+content-hash = "b449c2822f4ad98c4ba99e4b34c7f7dd90e31d0e4628b1f50dbf4f4fa5bbca3c"
 
 [metadata.files]
 absl-py = []

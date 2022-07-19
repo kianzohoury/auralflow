@@ -12,7 +12,6 @@ python = ">= 3.7.11 <= 3.7.13"
 jupyter = "^1.0.0"
 torch = "1.12.0"
 librosa = "0.8.1"
-torchaudio = "0.12.0"
 tqdm = "4.64.0"
 matplotlib = "3.2.2"
 prettytable = "3.3.0"
@@ -20,6 +19,8 @@ tensorboard = "2.9.1"
 tensorflow = "2.9.1"
 protobuf = "3.9.2"
 numpy = "1.21.6"
+numba = "0.55.2"
+torchaudio = "0.12.0"
 
 
 [tool.poetry.dev-dependencies]

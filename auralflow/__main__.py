@@ -4,6 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
+from time import clock
 import dataclasses
 import os
 import pprint
@@ -13,6 +14,7 @@ from argparse import ArgumentParser, ArgumentError
 import torch.cuda
 
 from auralflow.models import ALL_MODELS, SPEC_MODELS
+
 from auralflow.trainer import (
     AudioModelConfig,
     SpecModelConfig,
@@ -20,6 +22,7 @@ from auralflow.trainer import (
     TrainingConfig,
     VisualsConfig
 )
+
 from auralflow.trainer import setup
 from auralflow import separate
 from auralflow import train
@@ -29,6 +32,7 @@ from pathlib import Path
 
 
 if __name__ == "__main__":
+
     parser = ArgumentParser(description="Main script.")
     subparsers = parser.add_subparsers(dest="command")
 
@@ -77,6 +81,7 @@ if __name__ == "__main__":
         required=False,
         help="Displays the model spec after its configuration file is created"
     )
+
     # Store default model configuration optional args.
     for field in SpecModelConfig.defaults():
         if field.type is bool:
@@ -242,6 +247,8 @@ if __name__ == "__main__":
         model_config = setup._load_model_config(
             filepath=str(save_dir.joinpath("model.json"))
         )
+
+        print(list(save_dir.iterdir()))
 
         # Create loss criterion configuration.
         if isinstance(model_config, SpecModelConfig):

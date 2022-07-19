@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # import asteroid.metrics
-import librosa
+
 import numpy as np
 import torch
 import csv
@@ -54,9 +54,9 @@ def main(
         max_frames = stems["estimate"].shape[-1]
 
         # Load target audio.
-        target_audio, sr = librosa.load(
-            str(track_name) + f"/{label}.wav", sr=44100, dtype=np.float32
-        )
+        # target_audio, sr = librosa.load(
+        #     str(track_name) + f"/{label}.wav", sr=44100, dtype=np.float32
+        # )
 
         # # Reduce sample rate.
         # resampler = Resample(

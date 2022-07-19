@@ -6,7 +6,7 @@
 
 # __all__ = ["separate_audio"]
 
-import librosa
+
 import torch
 from scipy.io import wavfile
 
@@ -34,11 +34,12 @@ def separate_audio(
     track_path = Path(filename)
     print(track_path.name, flush=True)
 
-    # Load audio.
-    mix_audio, sr = librosa.load(
-        str(track_path) + "/mixture.wav", sr=sr, duration=duration
-    )
-    mix_audio = torch.from_numpy(mix_audio).unsqueeze(0)
+    # # Load audio.
+    # mix_audio, sr = librosa.load(
+    #     str(track_path) + "/mixture.wav", sr=sr, duration=duration
+    # )
+    mix_audio = None
+    # mix_audio = torch.from_numpy(mix_audio).unsqueeze(0)
 
     # Split audio into chunks.
     length = model.dataset_params["sample_length"]
