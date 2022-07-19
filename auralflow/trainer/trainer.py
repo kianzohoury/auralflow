@@ -295,8 +295,6 @@ class ModelTrainer(ABC):
         """
         # Setup training callbacks.
         self._setup_callbacks()
-        print(123)
-
         self._state["last_epoch"] += 1
         self._state["last_global_step"] += 1
         stop_epoch = self._state["last_epoch"] + max_epochs

@@ -294,7 +294,7 @@ def _waveform_visual_handler(
         OSError: Raised if the image cannot be saved.
     """
     # Separate audio.
-    estimate_audio = model.separate(audio=mixture_audio)
+    estimate_audio = model.separate(mixture=mixture_audio)
     estimate_audio, mixture_audio = trim_audio([estimate_audio, mixture_audio])
 
     # Take only the first tensors from the batch.
@@ -685,6 +685,7 @@ def _create_callbacks(
             )
         )
     if visualize_waveform:
+        print("FUCK")
         wave_dir = None if save_dir is None else str(
             Path(save_dir, "waveform")
         )
@@ -697,6 +698,7 @@ def _create_callbacks(
             )
         )
     if visualize_spectrogram and isinstance(model, SpectrogramMaskModel):
+        print("FUCKkkkk")
         spec_dir = None if save_dir is None else str(
             Path(save_dir, "spectrogram")
         )
