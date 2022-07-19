@@ -9,13 +9,12 @@ import os
 import torch
 import torch.nn as nn
 
-# import tensorflow
-
 
 from abc import ABC, abstractmethod
-from auralflow.models import SeparationModel
+from auralflow.models import SeparationModel, SpectrogramNetLSTM
 from auralflow.visualizer import ProgressBar
 from .callbacks import CallbackManager, _create_callbacks
+from copy import deepcopy
 from pathlib import Path
 from torch import Tensor
 from torch import autocast
@@ -25,17 +24,6 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from typing import Callable, List, Optional, Union, Tuple
-
-
-def defaults_handler(constructor):
-    def bind_keyword_args(*args, **kwargs):
-        cls = args[0].__class__
-        class_attributes = inspect.getmembers(cls)
-        for (key, val) in class_attributes:
-            if val is not None:
-                kwargs.setdefault(key[1:], val)
-        return constructor(*args, **kwargs)
-    return bind_keyword_args
 
 
 class ModelTrainer(ABC):
@@ -158,28 +146,22 @@ class ModelTrainer(ABC):
             self.device = "cpu"
         self.use_amp = use_amp and self.device == "cuda"
 
-        # Setting checkpoint and logging paths.
-        if not checkpoint == "checkpoint.pth":
-            self.checkpoint_path = checkpoint
-        else:
-            self.checkpoint_path = str(Path(os.getcwd(), checkpoint))
-        if not logging_dir == "runs":
-            self.logging_dir = logging_dir
-        else:
-            self.logging_dir = str(Path(os.getcwd(), logging_dir))
+        # Set checkpoint and logging paths.
+        self.checkpoint_path = checkpoint
+        self.logging_dir = logging_dir
 
-        if resume:
+        # Load previous trainer or initialize a new one.
+        if resume and Path(self.checkpoint_path).exists():
             self.load_state(checkpoint_path=self.checkpoint_path)
         else:
             self._state = {}
-            # Set instance attributes.
+            # Set instance attributes corresponding to specified kwargs.
             for key, val in kwargs.items():
                 setattr(self, f"_{key}", val)
 
             # Set model and device.
             self.model = model
             self.model.device = self.device
-
             # Set criterion.
             self.criterion = criterion
 
@@ -187,10 +169,10 @@ class ModelTrainer(ABC):
             if optimizer is not None:
                 self.optimizer = optimizer
             else:
-                # Use the default optimizer. Split parameters if necessary.
+                # Use default optimizer. Split parameters if necessary.
                 if isinstance(self._lr, float):
                     self._lr = (self._lr, self._lr)
-                if hasattr(self.model, "split_params"):
+                if issubclass(self.model.__class__, SpectrogramNetLSTM):
                     group_1, group_2 = model.model._split_params()
                     # Assign different learning rates to the groups.
                     params = [
@@ -213,22 +195,103 @@ class ModelTrainer(ABC):
                     patience=self._stop_patience
                 )
 
-            # Enable gradient scaling if requested and using mixed precision.
+            # Enable gradient scaling and mixed precision, if possible.
             self._grad_scaler = GradScaler(
                 init_scale=self._init_scale,
                 enabled=self.use_amp and scale_grad
             )
-
             # Disable gradient clipping if specified.
             if not clip_grad:
                 self._max_grad_norm = float("inf")
-
             # Only use a counter for default scheduler (ReduceLROnPlateau).
             if not isinstance(self.scheduler, ReduceLROnPlateau):
                 self._max_plateaus = 1
 
-            # Save initial trainer state.
+    def save_state(self, checkpoint_path: str) -> None:
+        if not self._silent:
+            print(f"Saving trainer to {checkpoint_path}.")
+
+        if not Path(checkpoint_path).exists():
+            self._state = {
+                "last_global_step": -1,
+                "last_epoch": -1,
+                "patience": self._stop_patience,
+                "num_plateaus": 0,
+                "train_losses": [],
+                "val_losses": [],
+                "best_val_loss": float("inf"),
+                "best_epoch": -1
+            }
+            # Store private instance attributes.
+            for key, val in vars(self).items():
+                if key[0] == '_' and key not in {"_callbacks", "_writer"}:
+                    self._state[key[1:]] = val
+
+        # Gather object states.
+        self._state["model"] = self.model.model.cpu().state_dict()
+        self._state["best_model"] = deepcopy(self._state["model"])
+        self._state["optimizer"] = self.optimizer.state_dict()
+        self._state["scheduler"] = self.scheduler.state_dict()
+        if self._grad_scaler.is_enabled():
+            self._state["grad_scaler"] = self._grad_scaler.state_dict()
+
+        # Transfer model back to current device.
+        self.model.device = self.device
+
+        # Save checkpoint.
+        torch.save(self._state, f=checkpoint_path)
+        if not self._silent:
+            print("  Successful")
+
+    def _save_if_best(self, val_loss: float):
+        """Saves model only if epoch validation loss improves."""
+        delta = self._state["best_val_loss"] - val_loss
+        if delta >= self._min_delta:
+            self._state["best_val_loss"] = val_loss
+            # Reset stop patience.
+            self._state["patience"] = self._stop_patience
+            # Save states.
             self.save_state(checkpoint_path=self.checkpoint_path)
+        else:
+            self._state["patience"] -= 1
+            if not self._state["patience"]:
+                # Decrement total lr steps.
+                self._state["num_plateaus"] += 1
+                self._state["patience"] = self._stop_patience
+
+    def load_state(self, checkpoint_path: str) -> None:
+        if Path(checkpoint_path).exists():
+            # Load previous trainer state.
+            if not self._silent:
+                print(f"Loading from {checkpoint_path}...")
+            self._state = torch.load(
+                f=checkpoint_path,
+                map_location=self.device
+            )
+            # Load model parameters.
+            self.model.load_state(
+                state=self._state["model"], device=self.device
+            )
+            # Load optimizer.
+            self.optimizer.load_state_dict(
+                self._state["optimizer"]
+            )
+            # Load scheduler.
+            self.scheduler.load_state_dict(
+                self._state["scheduler"]
+            )
+            # Load gradient scaler.
+            if self.use_amp and self._state["scale_grad"]:
+                self._grad_scaler.load_state_dict(
+                    self._state["grad_scaler"]
+                )
+            else:
+                self._grad_scaler = GradScaler(enabled=False)
+            # Set instance attributes.
+            for key, val in self._state.items():
+                setattr(self, f"_{key}", val)
+            if not self._silent:
+                print("  Successful")
 
     @abstractmethod
     def scheduler_step(self, *args, **kwargs) -> None:
@@ -470,90 +533,6 @@ class ModelTrainer(ABC):
         else:
             self._callbacks = CallbackManager()
 
-    def save_state(self, checkpoint_path: str) -> None:
-        if not Path(checkpoint_path).exists():
-            if not self._silent:
-                print(f"Saving trainer to {checkpoint_path}")
-            # Initialize trainer state.
-            self._state = {
-                "last_global_step": -1,
-                "last_epoch": -1,
-                "patience": self._stop_patience,
-                "num_plateaus": 0,
-                "train_losses": [],
-                "val_losses": [],
-                "best_val_loss": float("inf"),
-                "best_epoch": -1,
-            }
-            # Store instance attributes.
-            for key, val in vars(self).items():
-                if key[0] == "_" and key not in ["_callbacks", "_writer"]:
-                    self._state[key[1:]] = val
-
-        # Gather object states.
-        self._state["model"] = self.model.model.cpu().state_dict()
-        self._state["optimizer"] = self.optimizer.state_dict()
-        self._state["scheduler"] = self.scheduler.state_dict()
-        if self._grad_scaler.is_enabled():
-            self._state["grad_scaler"] = self._grad_scaler.state_dict()
-
-        # Save checkpoint.
-        torch.save(self._state, f=checkpoint_path)
-        # Transfer model back to GPU if necessary.
-        self.model.device = self.device
-        if not self._silent:
-            print("  Successful")
-
-    def load_state(self, checkpoint_path: str) -> None:
-        if Path(checkpoint_path).exists():
-            # Load previous trainer state.
-            if not self._silent:
-                print(f"Loading from {checkpoint_path}...")
-            self._state = torch.load(
-                f=checkpoint_path,
-                map_location=self.device
-            )
-            # Load model state and set device.
-            self.model.load_state(
-                state=self._state["model"], device=self.device
-            )
-            # Load optimizer.
-            self.optimizer.load_state_dict(
-                self._state["optimizer"]
-            )
-            # Load scheduler.
-            self.scheduler.load_state_dict(
-                self._state["scheduler"]
-            )
-            if self.use_amp and self._state["scale_grad"]:
-                # Load gradient scaler.
-                self._grad_scaler.load_state_dict(
-                    self._state["grad_scaler"]
-                )
-            else:
-                self._grad_scaler = GradScaler(enabled=False)
-            # Set instance attributes.
-            for key, val in self._state.items():
-                setattr(self, f"_{key}", val)
-            if not self._silent:
-                print("  Successful")
-
-    def _save_if_best(self, val_loss: float):
-        """Saves model only if epoch validation loss improves."""
-        delta = self._state["best_val_loss"] - val_loss
-        if delta >= self._min_delta:
-            self._state["best_val_loss"] = val_loss
-            # Reset stop patience.
-            self._state["patience"] = self._stop_patience
-            # Save states.
-            self.save_state(checkpoint_path=self.checkpoint_path)
-        else:
-            self._state["patience"] -= 1
-            if not self._state["patience"]:
-                # Decrement total lr steps.
-                self._state["num_plateaus"] += 1
-                self._state["patience"] = self._stop_patience
-
     def _flush_writer(self):
         if self.logging_dir is not None:
             self._writer.flush()
@@ -602,4 +581,3 @@ class _DefaultModelTrainer(ModelTrainer):
     def scheduler_step(self, val_loss: float) -> None:
         """Reduces lr if val loss does not improve enough within a window."""
         self.scheduler.step(val_loss)
-
