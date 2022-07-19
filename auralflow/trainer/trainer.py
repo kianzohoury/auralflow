@@ -154,7 +154,15 @@ class ModelTrainer(ABC):
         if resume and Path(self.checkpoint_path).exists():
             self.load_state(checkpoint_path=self.checkpoint_path)
         else:
-            self._state = {}
+            self._state = {
+                "last_global_step": -1,
+                "last_epoch": -1,
+                "patience": self._stop_patience,
+                "num_plateaus": 0,
+                "train_losses": [],
+                "val_losses": [],
+                "best_val_loss": float("inf"),
+            }
             # Set instance attributes corresponding to specified kwargs.
             for key, val in kwargs.items():
                 setattr(self, f"_{key}", val)
@@ -207,21 +215,14 @@ class ModelTrainer(ABC):
             if not isinstance(self.scheduler, ReduceLROnPlateau):
                 self._max_plateaus = 1
 
+        # Create training callback manager.
+        self._setup_callbacks()
+
     def save_state(self, checkpoint_path: str) -> None:
         if not self._silent:
             print(f"Saving trainer to {checkpoint_path}.")
 
         if not Path(checkpoint_path).exists():
-            self._state = {
-                "last_global_step": -1,
-                "last_epoch": -1,
-                "patience": self._stop_patience,
-                "num_plateaus": 0,
-                "train_losses": [],
-                "val_losses": [],
-                "best_val_loss": float("inf"),
-                "best_epoch": -1
-            }
             # Store private instance attributes.
             for key, val in vars(self).items():
                 if key[0] == '_' and key not in {"_callbacks", "_writer"}:
@@ -293,6 +294,33 @@ class ModelTrainer(ABC):
             if not self._silent:
                 print("  Successful")
 
+    def _setup_callbacks(self):
+        if self.logging_dir is not None:
+            # Create tensorboard writer.
+            if not self._silent:
+                print(f"Logging tensorboard data to {self.logging_dir}.")
+            self._writer = SummaryWriter(
+                log_dir=self.logging_dir
+            )
+            # Define visualization callbacks.
+            self._callbacks = _create_callbacks(
+                model=self.model,
+                tensorboard_writer=self._writer,
+                save_dir=self._image_dir,
+                save_freq=self._image_freq,
+                write_iter_loss=self._view_iter,
+                write_epoch_loss=self._view_epoch,
+                visualize_weights=self._view_weights,
+                visualize_gradients=self._view_grad,
+                visualize_norm=self._view_norm,
+                visualize_waveform=self._view_wave,
+                visualize_spectrogram=self._view_spec,
+                play_audio=self._play_estimate,
+                embed_residual=self._play_residual
+            )
+        else:
+            self._callbacks = CallbackManager()
+
     @abstractmethod
     def scheduler_step(self, *args, **kwargs) -> None:
         """Updates the learning rate according to the scheduler used.
@@ -356,8 +384,6 @@ class ModelTrainer(ABC):
                 Default: ``100``.
 
         """
-        # Setup training callbacks.
-        self._setup_callbacks()
         self._state["last_epoch"] += 1
         self._state["last_global_step"] += 1
         stop_epoch = self._state["last_epoch"] + max_epochs
@@ -498,40 +524,6 @@ class ModelTrainer(ABC):
         # Quicker gradient zeroing.
         for param in self.model.model.parameters():
             param.grad = None
-
-    def _setup_callbacks(self):
-        if self.logging_dir is not None:
-            # Create tensorboard writer.
-            if not self._silent:
-                print(f"Logging tensorboard data to {self.logging_dir}.")
-                print(700)
-            try:
-                self._writer = None
-                self._writer = SummaryWriter(
-                    log_dir=self.logging_dir
-                )
-            except Exception as error:
-                print(111)
-                raise error
-            # Define visualization callbacks.
-            self._callbacks = _create_callbacks(
-                model=self.model,
-                tensorboard_writer=self._writer,
-                save_dir=self._image_dir,
-                save_freq=self._image_freq,
-                write_iter_loss=self._view_iter,
-                write_epoch_loss=self._view_epoch,
-                visualize_weights=self._view_weights,
-                visualize_gradients=self._view_grad,
-                visualize_norm=self._view_norm,
-                visualize_waveform=self._view_wave,
-                visualize_spectrogram=self._view_spec,
-                play_audio=self._play_estimate,
-                embed_residual=self._play_residual
-            )
-            print(0)
-        else:
-            self._callbacks = CallbackManager()
 
     def _flush_writer(self):
         if self.logging_dir is not None:
