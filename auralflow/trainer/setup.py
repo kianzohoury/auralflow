@@ -74,7 +74,11 @@ class AudioModelConfig(Config):
             min_width=21
         )
         for param_label, param in asdict(self).items():
-            param_table.add_row([param_label, param])
+            if param_label in {"recurrent_depth", "hidden_size", "input_axis"}:
+                if "LSTM" in self.model_type:
+                    param_table.add_row([param_label, param])
+            else:
+                param_table.add_row([param_label, param])
         return str(param_table)
 
 

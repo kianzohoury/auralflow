@@ -685,7 +685,6 @@ def _create_callbacks(
             )
         )
     if visualize_waveform:
-        print("FUCK")
         wave_dir = None if save_dir is None else str(
             Path(save_dir, "waveform")
         )
@@ -698,7 +697,6 @@ def _create_callbacks(
             )
         )
     if visualize_spectrogram and isinstance(model, SpectrogramMaskModel):
-        print("FUCKkkkk")
         spec_dir = None if save_dir is None else str(
             Path(save_dir, "spectrogram")
         )

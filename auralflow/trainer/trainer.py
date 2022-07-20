@@ -401,7 +401,7 @@ class ModelTrainer(ABC):
                 for idx, (mixture, target) in enumerate(pbar):
                     with autocast(
                         device_type=self.device,
-                        enabled=self.use_amp,
+                        enabled=False,
                         dtype=torch.float16 if self.use_amp else torch.bfloat16
                     ):
 
@@ -425,7 +425,7 @@ class ModelTrainer(ABC):
                     # Loss-end/post-backward phase callback.
                     self._callbacks.on_loss_end(
                         named_losses={
-                            "batch_loss_train": loss_val,
+                            # "batch_loss_train": loss_val,
                             "total_loss_train": total_train_loss,
                         },
                         global_step=self._state["last_global_step"]
@@ -435,7 +435,7 @@ class ModelTrainer(ABC):
                     # Iteration-end callback.
                     self._callbacks.on_iteration_end(
                         named_losses={
-                            "batch_loss_train": loss_val,
+                            # "batch_loss_train": loss_val,
                             "total_loss_train": total_train_loss,
                         },
                         global_step=self._state["last_global_step"]
@@ -443,8 +443,9 @@ class ModelTrainer(ABC):
                     # Update global step count.
                     self._state["last_global_step"] += 1
 
-            # Run validation loop.
+            # Run validation loop. 
             mean_val_loss = self.validate(val_loader=val_loader)
+            self.scheduler_step(val_loss=mean_val_loss)
             self._state["val_losses"].append(mean_val_loss)
 
             # Epoch-end callback.
@@ -467,7 +468,7 @@ class ModelTrainer(ABC):
                 break
 
             self._state["last_epoch"] += 1
-            # self._flush_writer()
+            self._flush_writer()
 
     def validate(self, val_loader: DataLoader) -> float:
         """Given a validation set, runs validation and returns the mean loss.
@@ -489,7 +490,7 @@ class ModelTrainer(ABC):
             for idx, (mixture, target) in enumerate(pbar):
                 with autocast(
                     device_type=self.device,
-                    enabled=self.use_amp,
+                    enabled=False,
                     dtype=torch.float16 if self.use_amp else torch.bfloat16
                 ):
                     with torch.no_grad():
@@ -517,7 +518,6 @@ class ModelTrainer(ABC):
         _ = nn.utils.clip_grad_norm_(
             self.model.model.parameters(), max_norm=self._max_grad_norm
         )
-
         self._grad_scaler.step(self.optimizer)
         self._grad_scaler.update()
 

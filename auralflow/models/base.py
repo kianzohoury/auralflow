@@ -69,11 +69,13 @@ class SeparationModel(ABC):
 
     def train(self) -> None:
         """Sets model to training mode."""
-        self._model = self._model.train()
+        pass
+        # self._model.train()
 
     def eval(self) -> None:
         """Sets model to evaluation mode."""
-        self._model.eval()
+        pass
+        # self._model.eval()
 
     @property
     def model(self):
