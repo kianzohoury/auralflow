@@ -541,30 +541,33 @@ def _audio_player_handler(
 ) -> None:
     """Logs audio to tensorboard."""
     # Separate audio.
-    estimate_audio = model.separate(audio=mixture_audio)
+    estimate_audio = model.separate(mixture=mixture_audio).unsqueeze(-1)
+    print(estimate_audio.shape, target_audio.shape, mixture_audio.unsqueeze(-1).shape)
     estimate_audio, mixture_audio, target_audio = trim_audio(
-        [estimate_audio, mixture_audio, target_audio]
+        [estimate_audio, mixture_audio.unsqueeze(-1), target_audio]
     )
+    print(estimate_audio.shape, target_audio.shape, mixture_audio.shape)
 
     # Compensate for single-target models for now. # Take only the first
     # tensors from the batch.
     if estimate_audio.dim() == 3:
-        estimate_audio = estimate_audio.unsqueeze(-1)[0].cpu()
+        estimate_audio = estimate_audio.unsqueeze(-1)
     if target_audio.dim() == 3:
-        target_audio = target_audio.unsqueeze(-1)[0].cpu()
+        target_audio = target_audio.unsqueeze(-1)
 
     for i, label in enumerate(model.targets):
         # Embed source estimate.
+        print(estimate_audio.shape)
         tensorboard_writer.add_audio(
             tag=f"{label}/estimate",
-            snd_tensor=estimate_audio[..., i].T,
+            snd_tensor=estimate_audio[0, ..., i].T.cpu(),
             global_step=global_step,
             sample_rate=sample_rate,
         )
         # Embed true source.
         tensorboard_writer.add_audio(
             tag=f"{label}/true",
-            snd_tensor=target_audio[..., i].T,
+            snd_tensor=target_audio[0, ..., i].T.cpu(),
             global_step=global_step,
             sample_rate=sample_rate,
         )
