@@ -234,10 +234,11 @@ if __name__ == "__main__":
             input_type=input_type, **args.__dict__
         )
 
-        # Set default logging directory path if tensorboard is enabled.
+        # Set logging and image directories.
         if not args.tensorboard:
             logging_dir = image_dir = None
         else:
+            # Assign to default directories.
             logging_dir = str(save_dir.joinpath("runs"))
             image_dir = str(save_dir)
 
@@ -269,6 +270,7 @@ if __name__ == "__main__":
             if prev_checkpoint.exists():
                 prev_checkpoint.unlink()
 
+        # Run training.
         train.main(
             model_config=model_config,
             save_dir=str(save_dir),

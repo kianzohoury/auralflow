@@ -111,12 +111,12 @@ class VisualsConfig(Config):
     view_norm: bool = True
     view_epoch: bool = True
     view_iter: bool = True
-    view_grad: bool = True
-    view_weights: bool = True
-    view_spec: bool = True
-    view_wave: bool = True
-    play_estimate: bool = True
-    play_residual: bool = True
+    view_grad: bool = False
+    view_weights: bool = False
+    view_spec: bool = False
+    view_wave: bool = False
+    play_estimate: bool = False
+    play_residual: bool = False
     image_freq: int = 5
     silent: bool = False
 
@@ -146,6 +146,13 @@ class TrainingConfig(Config):
     pin_memory: bool = True
     pre_fetch: int = 4
 
+    @classmethod
+    def defaults(cls):
+        field_defaults = super().defaults()
+        field_defaults += CriterionConfig.defaults()
+        field_defaults += VisualsConfig.defaults()
+        return field_defaults
+
 
 def _get_default_fields(cls) -> List[Field]:
     default_fields = []
@@ -159,12 +166,6 @@ def _get_default_fields(cls) -> List[Field]:
                 else:
                     continue
             default_fields.append(field)
-        else:
-            print(field.type)
-            print(issubclass(field.type, Config))
-            
-            # issubclass(importlib.import_module(field.type), Config):
-            # default_fields.extend(_get_default_fields(field.type))
     return default_fields
 
 
