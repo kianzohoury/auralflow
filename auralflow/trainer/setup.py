@@ -6,6 +6,7 @@
 import functools
 import inspect
 import json
+import sys
 
 import torch.nn as nn
 from prettytable import PrettyTable
@@ -158,8 +159,12 @@ def _get_default_fields(cls) -> List[Field]:
                 else:
                     continue
             default_fields.append(field)
-        elif issubclass(field.type, Config):
-            default_fields.extend(_get_default_fields(field.type))
+        else:
+            print(field.type)
+            print(issubclass(field.type, Config))
+            
+            # issubclass(importlib.import_module(field.type), Config):
+            # default_fields.extend(_get_default_fields(field.type))
     return default_fields
 
 
