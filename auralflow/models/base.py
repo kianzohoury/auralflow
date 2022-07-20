@@ -73,7 +73,7 @@ class SeparationModel(ABC):
 
     def eval(self) -> None:
         """Sets model to evaluation mode."""
-        self._model = self._model.eval()
+        self._model.eval()
 
     @property
     def model(self):
