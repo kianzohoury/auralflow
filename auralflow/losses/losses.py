@@ -401,8 +401,9 @@ class KLDivergenceLoss(nn.Module):
         """
         if not isinstance(model.model, SpectrogramNetVAE):
             raise ValueError(
-                f"Expected model of type {type(SpectrogramNetVAE)}, but "
-                f"received {type(model.model)}."
+                f"Expected model of type "
+                f"{SpectrogramNetVAE}, but received one of type "
+                f"{type(model.model)}."
             )
         # Preprocess data.
         mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)

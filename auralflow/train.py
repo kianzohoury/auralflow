@@ -3,15 +3,13 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
-from pathlib import Path
 
 from auralflow.datasets import create_audio_dataset
-from auralflow.trainer import (
-    AudioModelConfig, _DefaultModelTrainer, TrainingConfig
-)
-from auralflow.trainer import setup
+from auralflow.configurations import AudioModelConfig, TrainingConfig
+from auralflow.trainer import _DefaultModelTrainer
+from auralflow import configurations
 from torch.utils.data import DataLoader
-from typing import Optional
+from pathlib import Path
 
 
 def main(
@@ -95,9 +93,9 @@ def main(
         f"{model_config.sample_length}s."
     )
 
-    # Load model.
-    print(f"Loading model...")
-    model = setup._build_from_config(
+    # Build and initialize the source separation model.
+    print(f"Building model...")
+    model = setup._build_model(
         model_config=model_config,
         device=training_config.device
     )

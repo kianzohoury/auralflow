@@ -4,7 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-"""Separation models and PyTorch ``nn.Module`` classes."""
+"""Source separation model wrappers and ``torch.nn.Module`` models."""
 
 __all__ = [
     "SeparationModel",
@@ -22,11 +22,21 @@ from .architectures import (
 from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
 
-# Only spectrogram-based models for now.
-SPEC_MODELS = {
+# Constants for parsing model configurations.
+SPEC_MODEL_NAMES = [
     "SpectrogramNetSimple",
     "SpectrogramNetLSTM",
     "SpectrogramNetVAE"
-}
-AUDIO_MODELS = set()
-ALL_MODELS = SPEC_MODELS | AUDIO_MODELS
+]
+AUDIO_MODEL_NAMES = ...
+MODEL_NAMES = SPEC_MODEL_NAMES[:]
+MASK_ACT_FN_NAMES = [
+    "relu",
+    "hardtanh",
+    "tanh",
+    "softmax",
+    "prelu",
+    "selu",
+    "elu",
+    "sigmoid"
+]

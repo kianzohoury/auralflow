@@ -11,11 +11,10 @@ import torch
 from scipy.io import wavfile
 
 
-from typing import Union, Mapping
+from typing import Mapping
 from pathlib import Path
 from torch import Tensor
-from auralflow.trainer.setup import _build_from_config
-from auralflow.utils import load_config
+from auralflow.configurations import _build_model
 from auralflow.transforms import trim_audio
 from auralflow.visualizer import ProgressBar
 from auralflow.models import SeparationModel
@@ -115,12 +114,13 @@ def main(
 
     # Load configuration file.
     print("Reading configuration file...")
-    configuration = load_config(config_filepath)
+    # configuration = load_config(config_filepath)
+    configuration = {}
     print("  Successful.")
 
     # Load model. Setup restores previous state if resuming training.
     print("Loading model...")
-    model = _build_from_config(
+    model = _build_model(
         **configuration
     )
     # model = setup_model(model)

@@ -244,22 +244,6 @@ class ModelTrainer(ABC):
         if not self._silent:
             print("  Successful")
 
-    def _save_if_best(self, val_loss: float):
-        """Saves model only if epoch validation loss improves."""
-        delta = self._state["best_val_loss"] - val_loss
-        if delta >= self._min_delta:
-            self._state["best_val_loss"] = val_loss
-            # Reset stop patience.
-            self._state["patience"] = self._stop_patience
-            # Save states.
-            self.save_state(checkpoint_path=self.checkpoint_path)
-        else:
-            self._state["patience"] -= 1
-            if not self._state["patience"]:
-                # Decrement total lr steps.
-                self._state["num_plateaus"] += 1
-                self._state["patience"] = self._stop_patience
-
     def load_state(self, checkpoint_path: str) -> None:
         if Path(checkpoint_path).exists():
             # Load previous trainer state.
@@ -293,6 +277,22 @@ class ModelTrainer(ABC):
                 setattr(self, f"_{key}", val)
             if not self._silent:
                 print("  Successful")
+
+    def _save_if_best(self, val_loss: float):
+        """Saves model only if epoch validation loss improves."""
+        delta = self._state["best_val_loss"] - val_loss
+        if delta >= self._min_delta:
+            self._state["best_val_loss"] = val_loss
+            # Reset stop patience.
+            self._state["patience"] = self._stop_patience
+            # Save states.
+            self.save_state(checkpoint_path=self.checkpoint_path)
+        else:
+            self._state["patience"] -= 1
+            if not self._state["patience"]:
+                # Decrement total lr steps.
+                self._state["num_plateaus"] += 1
+                self._state["patience"] = self._stop_patience
 
     def _setup_callbacks(self):
         if self.logging_dir is not None:
@@ -571,5 +571,4 @@ class _DefaultModelTrainer(ModelTrainer):
             )
 
     def scheduler_step(self, val_loss: float) -> None:
-        """Reduces lr if val loss does not improve enough within a window."""
         self.scheduler.step(val_loss)

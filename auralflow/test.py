@@ -2,16 +2,12 @@ from pathlib import Path
 
 # import asteroid.metrics
 
-import numpy as np
 import torch
 import csv
 
-from auralflow.trainer import setup
+from auralflow import configurations
 from auralflow.separate import separate_audio
-from auralflow.utils import load_config
-from torchaudio.transforms import Resample
 from auralflow.losses import si_sdr_loss
-import matplotlib.pyplot as plt
 
 
 def main(
@@ -25,11 +21,12 @@ def main(
 
     # Load configuration file.
     print("Reading configuration file...")
-    configuration = load_config(config_filepath)
+    configuration = {}
+    # configuration = load_config(config_filepath)
     print("  Successful.")
 
     # Load model. Setup restores previous state if resuming training.
-    model = setup._build_from_config(*configuration)
+    model = setup._build_model(*configuration)
     # model = setup_model(model)
 
     # Path to test set.

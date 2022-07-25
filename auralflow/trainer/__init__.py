@@ -27,16 +27,4 @@ from .callbacks import (
     TrainingCallback,
     WaveformVisualCallback,
 )
-from .trainer import (
-    ModelTrainer,
-    _DefaultModelTrainer
-)
-
-from . import setup
-from .setup import (
-    AudioModelConfig,
-    CriterionConfig,
-    SpecModelConfig,
-    TrainingConfig,
-    VisualsConfig
-)
+from .trainer import ModelTrainer, _DefaultModelTrainer

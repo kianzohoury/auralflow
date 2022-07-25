@@ -3,46 +3,43 @@
 # SPDX-License-Identifier: MIT
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
-import functools
-import inspect
+
 import json
-import sys
-
 import torch.nn as nn
-from prettytable import PrettyTable
 
-from auralflow.losses import *
-from auralflow.models import SeparationModel, SpectrogramMaskModel, \
-    SPEC_MODELS, AUDIO_MODELS, ALL_MODELS
-from auralflow.utils import save_config, load_config
-from dataclasses import asdict, dataclass, Field, fields, MISSING
-from typing import List, Union, Optional, Tuple, Dict
+
+from auralflow import losses
+from auralflow import models
+from dataclasses import asdict, dataclass, fields, Field, MISSING
+from prettytable import PrettyTable
+from typing import Dict, List, Optional
 
 
 @dataclass(frozen=True)
 class Config:
-    """Base class for all configurations."""
+    """Base class for data configurations specified through CLI input."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super(Config, self).__init__(*args, **kwargs)
-
-    @classmethod
-    def from_dict(cls, **kwargs) -> 'Config':
-        """Filters out keyword arguments before creating a new instance."""
-        valid_args = [field.name for field in fields(cls)]
-        filtered_args = {
-            key: val for (key, val) in kwargs.items() if key in valid_args
-        }
-        return cls(**filtered_args)
 
     @classmethod
     def defaults(cls) -> List[Field]:
         """Returns the default training configuration keyword arguments."""
         return _get_default_fields(cls)
 
+    @classmethod
+    def from_dict(cls, **kwargs) -> 'Config':
+        """Returns a new config instance from keyword arguments."""
+        valid_args = [field.name for field in fields(cls)]
+        filtered_args = {
+            key: val for (key, val) in kwargs.items() if key in valid_args
+        }
+        return cls(**filtered_args)
+
     def save(self, filepath: str) -> None:
-        """Saves the configuration given a filepath."""
-        save_config(config=asdict(self), save_filepath=filepath)
+        """Saves the configuration to the given filepath."""
+        with open(filepath, "w") as config_file:
+            json.dump(obj=asdict(self), fp=config_file, indent=4)
 
 
 @dataclass(frozen=True)
@@ -57,8 +54,8 @@ class AudioModelConfig(Config):
     sample_rate: int = 44100
     dropout_p: float = 0.4
     leak_factor: float = 0
-    normalize_input: bool = True
-    normalize_output: bool = True
+    normalize_input: bool = False
+    normalize_output: bool = False
 
     # Additional default parameters for LSTM models.
     recurrent_depth: int = 3
@@ -66,20 +63,13 @@ class AudioModelConfig(Config):
     input_axis: int = 1
 
     def __str__(self) -> str:
-        """Displays the model configuration as a table."""
-        param_table = PrettyTable(
-            field_names=["Parameter", "Value"],
-            align="l",
-            title="Model Configuration",
-            min_width=21
+        if "LSTM" not in self.model_type:
+            excluded_fields = ["recurrent_depth", "hidden_size", "input_axis"]
+        else:
+            excluded_fields = []
+        return _config_to_str(
+            config=self, title="model config", excluded_fields=excluded_fields
         )
-        for param_label, param in asdict(self).items():
-            if param_label in {"recurrent_depth", "hidden_size", "input_axis"}:
-                if "LSTM" in self.model_type:
-                    param_table.add_row([param_label, param])
-            else:
-                param_table.add_row([param_label, param])
-        return str(param_table)
 
 
 @dataclass(frozen=True)
@@ -151,18 +141,23 @@ class TrainingConfig(Config):
     pre_fetch: int = 4
 
     @classmethod
-    def defaults(cls):
+    def defaults(cls) -> List[Field]:
+        """Returns the default training arguments."""
         field_defaults = super().defaults()
         field_defaults += CriterionConfig.defaults()
         field_defaults += VisualsConfig.defaults()
         return field_defaults
 
+    def __str__(self):
+        return _config_to_str(config=self, title="training config")
+
 
 def _get_default_fields(cls) -> List[Field]:
+    """Helper function that returns the field defaults for the given class."""
     default_fields = []
     for field in fields(cls):
         if field.default is not MISSING:
-            # Handle optional type fields.
+            # Handle optional-type fields.
             if hasattr(field.type, "__args__"):
                 union_types = field.type.__args__
                 if len(union_types) == 2 and union_types[-1] is type(None):
@@ -174,97 +169,105 @@ def _get_default_fields(cls) -> List[Field]:
 
 
 def _create_model_config(
-        model_type: str, targets: List[str], **kwargs
+    model_type: str, targets: List[str], **kwargs
 ) -> Config:
-    cls = SpecModelConfig if model_type in SPEC_MODELS else AudioModelConfig
+    """Returns a model configuration corresponding to the provided specs."""
+    if model_type in models.SPEC_MODEL_NAMES:
+        cls = SpecModelConfig
+    else:
+        cls = AudioModelConfig
     return cls.from_dict(model_type=model_type, targets=targets, **kwargs)
 
 
-def _load_model_config(filepath: str) -> AudioModelConfig:
-    """Loads configuration data from a file to create a new instance."""
+def _load_model_config(filepath: str) -> Config:
+    """Returns a model configuration read from a previous config file."""
     try:
-        with open(filepath) as config_file:
+        with open(filepath, "r") as config_file:
             config_data = json.load(fp=config_file)
-            model_type = config_data["model_type"]
-            cls = SpecModelConfig if model_type in SPEC_MODELS else AudioModelConfig
-            return cls(**config_data)
+            return _create_model_config(**config_data)
     except IOError as error:
         raise error
 
 
-def _build_from_config(
-        model_config: AudioModelConfig, device: str = 'cpu'
-) -> SeparationModel:
-    r"""Creates a new ``SeparationModel`` instance given custom specifications.
+def _build_model(
+    model_config: AudioModelConfig, device: str = 'cpu'
+) -> models.SeparationModel:
+    r"""Initializes a ``SeparationModel`` given a model configuration.
 
     Note that the model's parameters will be in some initial state (instead of
     some previous training state/checkpoint).
-
-    Args:
-        model_config (AudioModelConfig): Model configuration settings.
-        device (str): Device to load model onto. Default: ``cpu``.
-    Returns:
-        SeparationModel: Customized model.
     """
     if isinstance(model_config, SpecModelConfig):
-        model = SpectrogramMaskModel(
-            model_type=model_config.model_type,
-            targets=model_config.targets,
-            num_fft=model_config.num_fft,
-            window_size=model_config.window_size,
-            hop_length=model_config.hop_length,
-            sample_length=model_config.sample_length,
-            sample_rate=model_config.sample_rate,
-            num_channels=model_config.num_channels,
-            num_hidden_channels=model_config.num_hidden_channels,
-            mask_act_fn=model_config.mask_act_fn,
-            leak_factor=model_config.leak_factor,
-            dropout_p=model_config.dropout_p,
-            normalize_input=model_config.normalize_input,
-            normalize_output=model_config.normalize_output,
-            recurrent_depth=model_config.recurrent_depth,
-            hidden_size=model_config.hidden_size,
-            input_axis=model_config.input_axis,
-            device=device
+        model = models.SpectrogramMaskModel(
+            **model_config.__dict__, device=device
         )
     else:
         # TODO: Audio-based models.
-        model = None
+        raise NotImplementedError
     return model
 
 
 def _get_loss_criterion(criterion_config: CriterionConfig) -> nn.Module:
-    """Returns a loss criterion given its specific configuration."""
+    """Returns the model loss criterion according to its configuration data."""
     if criterion_config.input_type == "spectrogram":
         if criterion_config.criterion == "component":
-            criterion = ComponentLoss(
+            criterion = losses.ComponentLoss(
                 alpha=criterion_config.alpha, beta=criterion_config.beta
             )
         elif criterion_config.criterion == "kl_div":
-            criterion = KLDivergenceLoss(
+            criterion = losses.KLDivergenceLoss(
                 loss_fn=criterion_config.construction_loss
             )
         elif criterion_config.criterion == "l2":
-            criterion = L2Loss(
+            criterion = losses.L2Loss(
                 reduce_mean=criterion_config.reduction == "mean"
             )
         elif criterion_config.criterion == "l1":
-            criterion = L1Loss(
+            criterion = losses.L1Loss(
                 reduce_mean=criterion_config.reduction == "mean"
             )
         elif criterion_config.criterion == "mask":
-            criterion = MaskLoss(
+            criterion = losses.MaskLoss(
                 loss_fn=criterion_config.construction_loss,
                 reduce_mean=criterion_config.reduction == "mean"
             )
         elif criterion_config.criterion == "si_sdr":
-            criterion = SISDRLoss(best_perm=criterion_config.best_perm)
+            criterion = losses.SISDRLoss(best_perm=criterion_config.best_perm)
         elif criterion_config.criterion == "rmse":
             # TODO: RMSE loss.
-            criterion = None
+            raise NotImplementedError
         else:
-            criterion = None
+            raise ValueError(
+                f"{criterion_config.criterion} is not a valid loss criterion."
+            )
     else:
         # TODO: Audio-based models.
-        criterion = None
+        raise NotImplementedError
     return criterion
+
+
+def _config_to_str(
+    config: Config, title: str, excluded_fields: Optional[List[str]] = None
+) -> str:
+    """Returns a string representation for the given configuration."""
+    param_table = PrettyTable(
+        field_names=["parameter", "value"],
+        align="l",
+        title=title,
+        min_width=21
+    )
+    excluded_fields = excluded_fields if excluded_fields is not None else []
+    for param_label, param in _flatten_dict(asdict(config)).items():
+        if param_label not in excluded_fields:
+            param_table.add_row([param_label, param])
+    return str(param_table)
+
+
+def _flatten_dict(d: Dict) -> Dict:
+    flattened = {}
+    for key, val in d.items():
+        if isinstance(val, dict):
+            flattened.update(_flatten_dict(val))
+        else:
+            flattened[key] = val
+    return flattened

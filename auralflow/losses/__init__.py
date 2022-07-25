@@ -38,3 +38,15 @@ from .losses import (
     # RMSELoss,
     MaskLoss,
 )
+
+
+CRITERION_NAMES = [
+    "kl_div",
+    "l1",
+    "l2",
+    "mask",
+    "si_sdr",
+    "rmse"
+]
+
+CONSTRUCTION_LOSS_NAMES = ["l1", "l2"]
