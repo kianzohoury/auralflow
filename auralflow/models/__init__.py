@@ -21,22 +21,3 @@ from .architectures import (
 )
 from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel
-
-# Constants for parsing model configurations.
-SPEC_MODEL_NAMES = [
-    "SpectrogramNetSimple",
-    "SpectrogramNetLSTM",
-    "SpectrogramNetVAE"
-]
-AUDIO_MODEL_NAMES = ...
-MODEL_NAMES = SPEC_MODEL_NAMES[:]
-MASK_ACT_FN_NAMES = [
-    "relu",
-    "hardtanh",
-    "tanh",
-    "softmax",
-    "prelu",
-    "selu",
-    "elu",
-    "sigmoid"
-]
