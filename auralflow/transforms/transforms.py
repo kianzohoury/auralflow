@@ -319,16 +319,16 @@ def trim_audio(
                 for aud in audio_tensors
             ]
         )
-        if len(audio_tensors[0].shape) == 2:
-            audio_tensors = [
-                np.expand_dims(aud, axis=0) for aud in audio_tensors
-            ]
+        # if len(audio_tensors[0].shape) == 2:
+        #     audio_tensors = [
+        #         np.expand_dims(aud, axis=0) for aud in audio_tensors
+        #     ]
     elif len(audio_tensors):
         assert all(
             [aud.dim() == audio_tensors[0].dim() for aud in audio_tensors]
         )
-        if audio_tensors[0].dim() == 2:
-            audio_tensors = [aud.unsqueeze(0) for aud in audio_tensors]
+        # if audio_tensors[0].dim() == 2:
+        #     audio_tensors = [aud.unsqueeze(0) for aud in audio_tensors]
     n_frames = min(audio_tensors, key=lambda aud: aud.shape[-1]).shape[-1]
     trimmed_audio = [aud[:, :, :n_frames] for aud in audio_tensors]
     return trimmed_audio

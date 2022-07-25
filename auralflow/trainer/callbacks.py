@@ -541,23 +541,23 @@ def _audio_player_handler(
 ) -> None:
     """Logs audio to tensorboard."""
     # Separate audio.
-    estimate_audio = model.separate(mixture=mixture_audio).unsqueeze(-1)
-    print(estimate_audio.shape, target_audio.shape, mixture_audio.unsqueeze(-1).shape)
+    estimate_audio = model.separate(mixture=mixture_audio)
     estimate_audio, mixture_audio, target_audio = trim_audio(
-        [estimate_audio, mixture_audio.unsqueeze(-1), target_audio]
+        [estimate_audio, mixture_audio, target_audio.squeeze(-1)]
     )
-    print(estimate_audio.shape, target_audio.shape, mixture_audio.shape)
-
-    # Compensate for single-target models for now. # Take only the first
-    # tensors from the batch.
+    mixture_audio = mixture_audio.to(estimate_audio.device)
+    target_audio = target_audio.to(estimate_audio.device)
+    # Compensate for single-target models for now.
     if estimate_audio.dim() == 3:
         estimate_audio = estimate_audio.unsqueeze(-1)
     if target_audio.dim() == 3:
         target_audio = target_audio.unsqueeze(-1)
+    if mixture_audio.dim() == 3:
+        mixture_audio = mixture_audio.unsqueeze(-1)
 
+    # Take only the first tensor from the batch.
     for i, label in enumerate(model.targets):
         # Embed source estimate.
-        print(estimate_audio.shape)
         tensorboard_writer.add_audio(
             tag=f"{label}/estimate",
             snd_tensor=estimate_audio[0, ..., i].T.cpu(),
@@ -573,8 +573,8 @@ def _audio_player_handler(
         )
 
         if embed_residual:
-            estimate_res_audio = mixture_audio[0] - estimate_audio[..., i]
-            target_res_audio = mixture_audio[0] - target_audio[..., i]
+            estimate_res_audio = mixture_audio[0, ..., i] - estimate_audio[0, ..., i]
+            target_res_audio = mixture_audio[0, ..., i] - target_audio[0, ..., i]
 
             # Embed residual estimate.
             tensorboard_writer.add_audio(

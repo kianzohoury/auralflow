@@ -7,10 +7,12 @@
 from argparse import ArgumentParser, ArgumentError, Namespace
 from auralflow import configurations
 from pathlib import Path
+from typing import List
 
 # Define constants for parsing configurations.
 CONSTRUCTION_LOSS_NAMES = ["l1", "l2"]
 CRITERION_NAMES = [
+    "component",
     "kl_div",
     "l1",
     "l2",
@@ -197,15 +199,11 @@ def parse():
     return args
 
 
-def parse_targets(args: Namespace):
-    targets = []
-    for target in TARGETS:
-        if not getattr(args, target):
-            raise ArgumentError(
-                argument=None,
-                message=f"Missing target source(s) to estimate: {TARGETS}."
-            )
-        else:
-            targets.extend([target] if target is not None else [])
-    args.__setattr__("targets", targets)
-    return args
+def parse_targets(args: Namespace) -> List[str]:
+    targets = [target for target in TARGETS if getattr(args, target)]
+    if not targets:
+        raise ArgumentError(
+            argument=None,
+            message=f"Missing target source(s) to estimate: {TARGETS}."
+        )
+    return targets

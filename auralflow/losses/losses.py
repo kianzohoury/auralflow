@@ -448,11 +448,10 @@ class SISDRLoss(nn.Module):
         Returns:
             Tensor: SI-SDR loss.
         """
-        estimate_audio = estimate_audio[..., :target_audio.shape[-1]]
-        target_audio = target_audio.squeeze(-1)
         loss = si_sdr_loss(
             estimate=estimate_audio, target=target_audio
         )
+        print(estimate_audio.shape, target_audio.shape, loss.item())
         if self.best_perm:
             loss_perm = si_sdr_loss(
                 estimate=target_audio, target=estimate_audio
@@ -480,6 +479,9 @@ class SISDRLoss(nn.Module):
             estimate=estimate_spec, phase=mix_phase
         )
         target_audio = target_audio.to(model.device)
+        # Compensate for last dimension for now.
+        estimate_audio = estimate_audio.unsqueeze(-1)
+        target_audio = target_audio[..., estimate_audio.shape[-2]:, ...]
         # Get loss.
         loss = self.forward(
             estimate_audio=estimate_audio, target_audio=target_audio

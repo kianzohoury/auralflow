@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
         # Create model configuration from args.
         model_config = configurations._create_model_config(
-            model_type=args.__dict__["model_type"],
+            model_type=args.__dict__.pop("model_type"),
             targets=parse.parse_targets(args),
             **args.__dict__
         )
