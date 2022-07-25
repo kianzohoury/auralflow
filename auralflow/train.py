@@ -5,7 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from auralflow.datasets import create_audio_dataset
-from auralflow.configurations import AudioModelConfig, TrainingConfig
+from auralflow import configurations
 from auralflow.trainer import _DefaultModelTrainer
 from auralflow import configurations
 from torch.utils.data import DataLoader
@@ -13,8 +13,8 @@ from pathlib import Path
 
 
 def main(
-    model_config: AudioModelConfig,
-    training_config: TrainingConfig,
+    model_config: configurations.AudioModelConfig,
+    training_config: configurations.TrainingConfig,
     save_dir: str,
     dataset_path: str,
     max_num_tracks: int,
@@ -95,7 +95,7 @@ def main(
 
     # Build and initialize the source separation model.
     print(f"Building model...")
-    model = setup._build_model(
+    model = configurations._build_model(
         model_config=model_config,
         device=training_config.device
     )
@@ -103,7 +103,7 @@ def main(
 
     print(f"Loading trainer...")
     # Get criterion.
-    criterion = setup._get_loss_criterion(
+    criterion = configurations._get_loss_criterion(
         criterion_config=training_config.criterion_config
     )
     # Initialize trainer.

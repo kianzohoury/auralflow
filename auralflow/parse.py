@@ -4,7 +4,7 @@
 # This code is part of the auralflow project linked below.
 # https://github.com/kianzohoury/auralflow.git
 
-from argparse import ArgumentParser, ArgumentError
+from argparse import ArgumentParser, ArgumentError, Namespace
 from auralflow import configurations
 from pathlib import Path
 
@@ -55,7 +55,7 @@ def _add_default_args(sub_parser: ArgumentParser, fields, **kwargs) -> None:
             )
 
 
-def _create_main_parser():
+def parse():
     parser = ArgumentParser(
         description="Main script."
     )
@@ -193,4 +193,19 @@ def _create_main_parser():
         default=44100,
         required=False,
     )
-    return parser
+    args = parser.parse_args()
+    return args
+
+
+def parse_targets(args: Namespace):
+    targets = []
+    for target in TARGETS:
+        if not getattr(args, target):
+            raise ArgumentError(
+                argument=None,
+                message=f"Missing target source(s) to estimate: {TARGETS}."
+            )
+        else:
+            targets.extend([target] if target is not None else [])
+    args.__setattr__("targets", targets)
+    return args

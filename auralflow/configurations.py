@@ -172,10 +172,7 @@ def _create_model_config(
     model_type: str, targets: List[str], **kwargs
 ) -> Config:
     """Returns a model configuration corresponding to the provided specs."""
-    if model_type in models.SPEC_MODEL_NAMES:
-        cls = SpecModelConfig
-    else:
-        cls = AudioModelConfig
+    cls = SpecModelConfig if "spec" in model_type.lower() else AudioModelConfig
     return cls.from_dict(model_type=model_type, targets=targets, **kwargs)
 
 

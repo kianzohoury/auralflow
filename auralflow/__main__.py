@@ -10,38 +10,21 @@ from argparse import ArgumentParser, ArgumentError
 
 from auralflow import configurations
 from auralflow import models
-from auralflow.parse import _create_main_parser
+from auralflow import parse
 from auralflow import losses
 from auralflow import train
 from pathlib import Path
 
 
 if __name__ == "__main__":
-    parser = _create_main_parser()
     # Parse args.
-    args = parser.parse_args()
+    args = parse.parse()
     if args.command == "config":
-        # Get target labels.
-        if not (args.bass or args.drums or args.other or args.vocals):
-            raise ArgumentError(
-                argument=None,
-                message=(
-                    "Missing target source(s) to estimate. Specify targets "
-                    "with flags: --bass (bass), --drums (drums),"
-                    "--other (other), --vocals (vocals)."
-                )
-            )
-        else:
-            targets = []
-            targets.extend(["bass"] if args.__dict__.pop("bass") else [])
-            targets.extend(["drums"] if args.__dict__.pop("drums") else [])
-            targets.extend(["other"] if args.__dict__.pop("other") else [])
-            targets.extend(["vocals"] if args.__dict__.pop("vocals") else [])
 
         # Create model configuration from args.
         model_config = configurations._create_model_config(
-            model_type=args.__dict__.pop("model_type"),
-            targets=targets,
+            model_type=args.__dict__["model_type"],
+            targets=parse.parse_targets(args),
             **args.__dict__
         )
 
