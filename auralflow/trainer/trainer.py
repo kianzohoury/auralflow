@@ -408,7 +408,6 @@ class ModelTrainer(ABC):
                         # Run forward pass, calculate mini-batch loss.
                         batch_loss = self.full_forward(mixture, target)
                         loss_val = batch_loss.item()
-                        print(loss_val)
                         total_train_loss += loss_val
                         mean_train_loss = total_train_loss / (idx + 1)
                         self._state["train_losses"].append(mean_train_loss)
@@ -495,7 +494,6 @@ class ModelTrainer(ABC):
                     dtype=torch.float16 if self.use_amp else torch.bfloat16
                 ):
                     with torch.no_grad():
-
                         # Run forward pass, calculate mini-batch loss.
                         batch_loss = self.full_forward(mixture, target)
                         loss_val = batch_loss.item()
@@ -513,15 +511,14 @@ class ModelTrainer(ABC):
 
     def _optimizer_step(self) -> None:
         """Optimizes and updates the model's parameters."""
-        # self._grad_scaler.unscale_(self.optimizer)
+        self._grad_scaler.unscale_(self.optimizer)
 
         # Clip gradient.
         _ = nn.utils.clip_grad_norm_(
             self.model.model.parameters(), max_norm=self._max_grad_norm
         )
-        # self._grad_scaler.step(self.optimizer)
-        # self._grad_scaler.update()
-        self.optimizer.step()
+        self._grad_scaler.step(self.optimizer)
+        self._grad_scaler.update()
 
         # Quicker gradient zeroing.
         for param in self.model.model.parameters():

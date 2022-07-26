@@ -577,23 +577,8 @@ class L2Loss(nn.Module):
         # Preprocess data.
         mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
         target_spec, _ = model.to_spectrogram(audio=target_audio)
-        import sys
-        if mix_spec.isnan().any():
-            print("MIX")
-            print(mix_spec)
-            sys.exit(1)
-        elif target_spec.isnan().any():
-            print("TARGET")
-            print(target_spec)
-            sys.exit(1)
-
         # Run model's forward pass.
         estimate_spec, _ = model.forward(mixture=mix_spec)
-        if estimate_spec.isnan().any():
-            print("ESTIMATE")
-            print(estimate_spec)
-            print(mix_spec)
-            sys.exit(1)
         # Get loss.
         loss = self.forward(
             estimate_spec=estimate_spec, target_spec=target_spec
