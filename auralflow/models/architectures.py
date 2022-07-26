@@ -153,19 +153,34 @@ class UpBlock(nn.Module):
         self.dropout = nn.Dropout2d(drop_p, inplace=True)
 
     def forward(self, data: FloatTensor, skip: FloatTensor) -> FloatTensor:
+        import sys
         """Forward method."""
+        if data.isnan().any():
+            print("INPUT", data)
+            print(torch.min(data), torch.max(data), data.isnan())
+            sys.exit(1)
         data = self.up(data, output_size=skip.size())
         if data.isnan().any():
             print("UP", data)
+            print(torch.min(data), torch.max(data), data.isnan())
+            sys.exit(1)
         data = self.bn(data)
         if data.isnan().any():
             print("BN", data)
+            print(torch.min(data), torch.max(data), data.isnan())
+            sys.exit(1)
         data = self.conv_block(torch.cat([data, skip], dim=1))
         if data.isnan().any():
             print("CONV", data)
+            print(torch.min(data), torch.max(data), data.isnan())
+            sys.exit(1)
         output = self.dropout(data)
         if data.isnan().any():
             print("DROP", data)
+            print(torch.min(data), torch.max(data), data.isnan())
+            sys.exit(1)
+        
+        
         return output
 
 
@@ -407,7 +422,7 @@ class SpectrogramNetSimple(nn.Module):
                 stride=1,
                 padding="same",
             ),
-            nn.BatchNorm2d(num_channels, eps=6.2e-5)
+            nn.BatchNorm2d(num_channels)
         )
 
         # Define output norm layer. Uses identity fn if not activated.
