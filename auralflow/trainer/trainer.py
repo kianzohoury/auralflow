@@ -399,26 +399,26 @@ class ModelTrainer(ABC):
                 train_loader, total=max_iters, desc="train"
             ) as pbar:
                 for idx, (mixture, target) in enumerate(pbar):
-                    with autocast(
-                        device_type=self.device,
-                        enabled=self.use_amp,
-                        dtype=torch.float16 if self.use_amp else torch.bfloat16
-                    ):
+                    # with autocast(
+                    #     device_type=self.device,
+                    #     enabled=self.use_amp,
+                    #     dtype=torch.float16 if self.use_amp else torch.bfloat16
+                    # ):
+                    # Run forward pass, calculate mini-batch loss.
+                    batch_loss = self.full_forward(mixture, target)
 
-                        # Run forward pass, calculate mini-batch loss.
-                        batch_loss = self.full_forward(mixture, target)
-                        loss_val = batch_loss.item()
-                        total_train_loss += loss_val
-                        mean_train_loss = total_train_loss / (idx + 1)
-                        self._state["train_losses"].append(mean_train_loss)
+                    loss_val = batch_loss.item()
+                    total_train_loss += loss_val
+                    mean_train_loss = total_train_loss / (idx + 1)
+                    self._state["train_losses"].append(mean_train_loss)
 
-                        # Display loss via progress bar.
-                        pbar.set_postfix(
-                            {
-                                "loss": f"{loss_val:6.6f}",
-                                "mean_loss": f"{mean_train_loss:6.6f}",
-                            }
-                        )
+                    # Display loss via progress bar.
+                    pbar.set_postfix(
+                        {
+                            "loss": f"{loss_val:6.6f}",
+                            "mean_loss": f"{mean_train_loss:6.6f}",
+                        }
+                    )
 
                     # Backprop.
                     self._grad_scaler.scale(batch_loss).backward()

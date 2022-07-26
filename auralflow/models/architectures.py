@@ -592,47 +592,46 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             ... )
             >>> mask = network(mixture_spec)
         """
-        with autocast(device_type="cuda", enabled=True):
-            # Normalize input if applicable.
-            data = self.input_norm(data)
+        # Normalize input if applicable.
+        data = self.input_norm(data)
 
-            # Pass through encoder.
-            enc_1, skip_1 = self.down_1(data)
-            enc_2, skip_2 = self.down_2(enc_1)
-            enc_3, skip_3 = self.down_3(enc_2)
-            enc_4, skip_4 = self.down_4(enc_3)
-            enc_5, skip_5 = self.down_5(enc_4)
-            # enc_6, skip_6 = self.down_6(enc_5)
+        # Pass through encoder.
+        enc_1, skip_1 = self.down_1(data)
+        enc_2, skip_2 = self.down_2(enc_1)
+        enc_3, skip_3 = self.down_3(enc_2)
+        enc_4, skip_4 = self.down_4(enc_3)
+        enc_5, skip_5 = self.down_5(enc_4)
+        # enc_6, skip_6 = self.down_6(enc_5)
 
-            # Reshape encoded audio to pass through bottleneck.
-            enc_5 = enc_5.permute(self.input_perm)
-            n_batch, dim1, n_channel, dim2 = enc_5.size()
-            enc_5 = enc_5.reshape((n_batch, dim1, n_channel * dim2))
+        # Reshape encoded audio to pass through bottleneck.
+        enc_5 = enc_5.permute(self.input_perm)
+        n_batch, dim1, n_channel, dim2 = enc_5.size()
+        enc_5 = enc_5.reshape((n_batch, dim1, n_channel * dim2))
 
-            # Pass through recurrent stack.
-            lstm_out, _ = self.lstm(enc_5)
-            lstm_out = lstm_out.reshape((n_batch * dim1, -1))
-            
-            # Project latent audio onto affine space, and reshape for decoder.
-            latent_data = self.linear(lstm_out)
-            latent_data = latent_data.reshape((n_batch, dim1, n_channel * 2, dim2))
-            latent_data = latent_data.permute(self.output_perm)
+        # Pass through recurrent stack.
+        lstm_out, _ = self.lstm(enc_5)
+        lstm_out = lstm_out.reshape((n_batch * dim1, -1))
+        
+        # Project latent audio onto affine space, and reshape for decoder.
+        latent_data = self.linear(lstm_out)
+        latent_data = latent_data.reshape((n_batch, dim1, n_channel * 2, dim2))
+        latent_data = latent_data.permute(self.output_perm)
 
-            # Pass through decoder.
-            dec_1 = self.up_1(latent_data, skip_5)
-            dec_2 = self.up_2(dec_1, skip_4)
-            dec_3 = self.up_3(dec_2, skip_3)
-            dec_4 = self.up_4(dec_3, skip_2)
-            dec_5 = self.up_5(dec_4, skip_1)
-            # dec_6 = self.up_6(dec_5, skip_1)
+        # Pass through decoder.
+        dec_1 = self.up_1(latent_data, skip_5)
+        dec_2 = self.up_2(dec_1, skip_4)
+        dec_3 = self.up_3(dec_2, skip_3)
+        dec_4 = self.up_4(dec_3, skip_2)
+        dec_5 = self.up_5(dec_4, skip_1)
+        # dec_6 = self.up_6(dec_5, skip_1)
 
-            # Pass through final 1x1 conv and normalize output if applicable.
-            dec_final = self.soft_conv(dec_5)
-            output = self.output_norm(dec_final)
+        # Pass through final 1x1 conv and normalize output if applicable.
+        dec_final = self.soft_conv(dec_5)
+        output = self.output_norm(dec_final)
 
-            # Generate multiplicative soft-mask.
-            mask = self.mask_activation(output)
-            mask = torch.clamp(mask, min=0, max=1.0).float()
+        # Generate multiplicative soft-mask.
+        mask = self.mask_activation(output)
+        mask = torch.clamp(mask, min=0, max=1.0).float()
         return mask
 
     def _split_params(self) -> Tuple[list, list]:

@@ -15,6 +15,7 @@ from torch import FloatTensor, Tensor
 from torch.nn import functional
 from torchaudio.transforms import Resample
 from typing import Mapping
+from torch import autocast
 
 
 def component_loss(
@@ -469,26 +470,31 @@ class SISDRLoss(nn.Module):
         Calls self.forward(...) after model.forward(...). Used in
         ``trainer.run_training(...)`` to fully encapsulate the forward phase.
         """
-        # Preprocess data.
-        mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
-        # Run model's forward pass.
-        estimate_spec, data = model.forward(mixture=mix_spec)
-        # Separate.
-        estimate_audio = model.to_audio(
-            estimate=estimate_spec, phase=mix_phase
-        )
-        # Squeeze last dimension for now.
-        target_audio = target_audio.to(model.device).squeeze(-1)
-        estimate_audio = estimate_audio[..., :target_audio.shape[-1]]
-        # Get loss.
-        loss = self.forward(
-            estimate_audio=estimate_audio, target_audio=target_audio
-        )
-        # Add KL loss term if applicable.
-        if isinstance(model.model, SpectrogramNetVAE):
-            mu, sigma = data["mu"], data["sigma"]
-            kl_loss = kl_div_loss(mu=mu, sigma=sigma)
-            loss = loss + kl_loss
+        with autocast(
+            device_type=model.device,
+            enabled=True,
+            dtype=torch.float16
+        ):
+            # Preprocess data.
+            mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
+            # Run model's forward pass.
+            estimate_spec, data = model.forward(mixture=mix_spec)
+            # Separate.
+            estimate_audio = model.to_audio(
+                estimate=estimate_spec, phase=mix_phase
+            )
+            # Squeeze last dimension for now.
+            target_audio = target_audio.to(model.device).squeeze(-1)
+            estimate_audio = estimate_audio[..., :target_audio.shape[-1]]
+            # Get loss.
+            loss = self.forward(
+                estimate_audio=estimate_audio, target_audio=target_audio
+            )
+            # Add KL loss term if applicable.
+            if isinstance(model.model, SpectrogramNetVAE):
+                mu, sigma = data["mu"], data["sigma"]
+                kl_loss = kl_div_loss(mu=mu, sigma=sigma)
+                loss = loss + kl_loss
         return loss
 
 
