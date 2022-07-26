@@ -66,7 +66,6 @@ class ConvBlock(nn.Module):
         # Batch normalization.
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
 
-    @autocast(device_type="cuda", enabled=True)
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
         import sys
@@ -138,8 +137,9 @@ class DownBlock(nn.Module):
 
     def forward(self, data: FloatTensor) -> Tuple[FloatTensor, ...]:
         """Forward method."""
-        skip = self.conv_block(data)
-        output = self.down(skip)
+        with autocast(device_type="cuda", enabled=True):
+            skip = self.conv_block(data)
+            output = self.down(skip)
         return output, skip
 
 
@@ -169,7 +169,6 @@ class UpBlock(nn.Module):
         self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.dropout = nn.Dropout2d(drop_p, inplace=True)
 
-    @autocast(device_type="cuda", enabled=True)
     def forward(self, data: FloatTensor, skip: FloatTensor) -> FloatTensor:
         """Forward method."""
         import sys
@@ -611,7 +610,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             nn.SELU(inplace=True),
         )
 
-    @autocast(device_type="cuda", enabled=True)
+    
     def forward(self, data: FloatTensor) -> FloatTensor:
         r"""Forward method that estimates the target-specific soft-mask.
 
@@ -635,46 +634,63 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             ... )
             >>> mask = network(mixture_spec)
         """
-        # Normalize input if applicable.
-        data = self.input_norm(data)
+        with autocast(device_type="cuda", enabled=True):
+            # Normalize input if applicable.
+            data = self.input_norm(data)
 
-        # Pass through encoder.
-        enc_1, skip_1 = self.down_1(data)
-        enc_2, skip_2 = self.down_2(enc_1)
-        enc_3, skip_3 = self.down_3(enc_2)
-        enc_4, skip_4 = self.down_4(enc_3)
-        enc_5, skip_5 = self.down_5(enc_4)
-        # enc_6, skip_6 = self.down_6(enc_5)
+            # Pass through encoder.
+            enc_1, skip_1 = self.down_1(data)
+            print(10)
+            enc_2, skip_2 = self.down_2(enc_1)
+            print(20)
+            enc_3, skip_3 = self.down_3(enc_2)
+            print(30)
+            enc_4, skip_4 = self.down_4(enc_3)
+            print(40)
+            enc_5, skip_5 = self.down_5(enc_4)
+            print(50)
+            # enc_6, skip_6 = self.down_6(enc_5)
 
-        # Reshape encoded audio to pass through bottleneck.
-        enc_5 = enc_5.permute(self.input_perm)
-        n_batch, dim1, n_channel, dim2 = enc_5.size()
-        enc_5 = enc_5.reshape((n_batch, dim1, n_channel * dim2))
+            # Reshape encoded audio to pass through bottleneck.
+            enc_5 = enc_5.permute(self.input_perm)
+            n_batch, dim1, n_channel, dim2 = enc_5.size()
+            enc_5 = enc_5.reshape((n_batch, dim1, n_channel * dim2))
 
-        # Pass through recurrent stack.
-        lstm_out, _ = self.lstm(enc_5)
-        lstm_out = lstm_out.reshape((n_batch * dim1, -1))
+            # Pass through recurrent stack.
+            lstm_out, _ = self.lstm(enc_5)
+            lstm_out = lstm_out.reshape((n_batch * dim1, -1))
+            print(60)
+            
+            # Project latent audio onto affine space, and reshape for decoder.
+            latent_data = self.linear(lstm_out)
+            print(70)
+            latent_data = latent_data.reshape((n_batch, dim1, n_channel * 2, dim2))
+            latent_data = latent_data.permute(self.output_perm)
 
-        # Project latent audio onto affine space, and reshape for decoder.
-        latent_data = self.linear(lstm_out)
-        latent_data = latent_data.reshape((n_batch, dim1, n_channel * 2, dim2))
-        latent_data = latent_data.permute(self.output_perm)
+            with autocast(device_type="cuda", enabled=False):
+                # Pass through decoder.
+                dec_1 = self.up_1(latent_data, skip_5)
+                print(1)
+                dec_2 = self.up_2(dec_1, skip_4)
+                print(2)
+                dec_3 = self.up_3(dec_2, skip_3)
+                print(3)
+                dec_4 = self.up_4(dec_3, skip_2)
+                print(4)
+                dec_5 = self.up_5(dec_4, skip_1)
+                print(5)
+                # dec_6 = self.up_6(dec_5, skip_1)
 
-        # Pass through decoder.
-        dec_1 = self.up_1(latent_data, skip_5)
-        dec_2 = self.up_2(dec_1, skip_4)
-        dec_3 = self.up_3(dec_2, skip_3)
-        dec_4 = self.up_4(dec_3, skip_2)
-        dec_5 = self.up_5(dec_4, skip_1)
-        # dec_6 = self.up_6(dec_5, skip_1)
+                # Pass through final 1x1 conv and normalize output if applicable.
+            dec_final = self.soft_conv(dec_5)
+            print("FINAL")
+            output = self.output_norm(dec_final)
+            print("OUTPUT NORM")
 
-        # Pass through final 1x1 conv and normalize output if applicable.
-        dec_final = self.soft_conv(dec_5)
-        output = self.output_norm(dec_final)
-
-        # Generate multiplicative soft-mask.
-        mask = self.mask_activation(output)
-        mask = torch.clamp(mask, min=0, max=1.0).float()
+            # Generate multiplicative soft-mask.
+            mask = self.mask_activation(output)
+            print("MASK")
+            mask = torch.clamp(mask, min=0, max=1.0).float()
         for i, arr in enumerate([data, enc_1, enc_2, enc_3, enc_4, enc_5, lstm_out, latent_data, dec_1, dec_2, dec_3, dec_4, dec_5, dec_5, dec_final, output, mask]):
             if arr.isnan().any():
                 print(f"LAYER {i}")
