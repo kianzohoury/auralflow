@@ -10,7 +10,7 @@ import torch
 
 from auralflow.transforms import AudioTransform, _get_num_stft_frames
 from .base import SeparationModel
-from torch import FloatTensor, Tensor
+from torch import autocast, FloatTensor, Tensor
 from typing import Dict, List, Tuple
 
 

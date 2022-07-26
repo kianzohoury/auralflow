@@ -16,8 +16,7 @@ from auralflow.visualizer import ProgressBar
 from .callbacks import CallbackManager, _create_callbacks
 from copy import deepcopy
 from pathlib import Path
-from torch import Tensor
-from torch import autocast
+from torch import autocast, Tensor
 from torch.cuda.amp import GradScaler
 from torch.optim import Optimizer, AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau

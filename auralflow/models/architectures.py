@@ -8,7 +8,7 @@ import torch
 import torch.backends.cudnn
 import torch.nn as nn
 from time import clock
-
+from torch import autocast
 
 from auralflow.transforms.transforms import _get_deconv_pad
 import inspect
@@ -64,13 +64,30 @@ class ConvBlock(nn.Module):
             self.activation = nn.SELU()
 
         # Batch normalization.
-        self.bn = nn.BatchNorm2d(out_channels, eps=6.2e-5) if bn else nn.Identity()
+        self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
 
+    @autocast(device_type="cuda", enabled=True)
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
-        data = self.conv(data)
-        data = self.activation(data)
-        output = self.bn(data)
+        import sys
+        with autocast(device_type="cuda", enabled=True):
+            if data.isnan().any():
+                print("input", data)
+                sys.exit(1)
+            data = self.conv(data)
+            if data.isnan().any():
+                print("conv", data)
+                sys.exit(1)
+            data = self.activation(data)
+            if data.isnan().any():
+                print("act", data)
+                sys.exit(1)
+            output = self.bn(data)
+            if output.isnan().any():
+                print("out", output)
+                print(data[output.isnan()], data[output.isnan()].min(), data[output.isnan()].max())
+                print(output.isnan().any(), output.isnan())
+                sys.exit(1)
         return output
 
 
@@ -149,38 +166,41 @@ class UpBlock(nn.Module):
             stride=2,
             padding=padding,
         )
-        self.bn = nn.BatchNorm2d(out_channels, eps=6.2e-5) if bn else nn.Identity()
+        self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
         self.dropout = nn.Dropout2d(drop_p, inplace=True)
 
+    @autocast(device_type="cuda", enabled=True)
     def forward(self, data: FloatTensor, skip: FloatTensor) -> FloatTensor:
-        import sys
         """Forward method."""
-        if data.isnan().any():
-            print("INPUT", data)
-            print(torch.min(data), torch.max(data), data.isnan())
-            sys.exit(1)
-        data = self.up(data, output_size=skip.size())
-        if data.isnan().any():
-            print("UP", data)
-            print(torch.min(data), torch.max(data), data.isnan())
-            sys.exit(1)
-        data = self.bn(data)
-        if data.isnan().any():
-            print("BN", data)
-            print(torch.min(data), torch.max(data), data.isnan())
-            sys.exit(1)
-        data = self.conv_block(torch.cat([data, skip], dim=1))
-        if data.isnan().any():
-            print("CONV", data)
-            print(torch.min(data), torch.max(data), data.isnan())
-            sys.exit(1)
-        output = self.dropout(data)
-        if data.isnan().any():
-            print("DROP", data)
-            print(torch.min(data), torch.max(data), data.isnan())
-            sys.exit(1)
-        
-        
+        import sys
+        with autocast(device_type="cuda", enabled=True):
+            if data.isnan().any():
+                print("INPUT", data)
+                print(torch.min(data), torch.max(data), data.isnan())
+                sys.exit(1)
+            data = self.up(data, output_size=skip.size())
+            if data.isnan().any():
+                print("UP", data)
+                print(torch.min(data), torch.max(data), data.isnan())
+                sys.exit(1)
+            data = self.bn(data)
+            if data.isnan().any():
+                print("BN", data)
+                print(torch.min(data), torch.max(data), data.isnan())
+                sys.exit(1)
+            data = self.conv_block(torch.cat([data, skip], dim=1))
+            if skip.isnan().any():
+                print("SKIP", skip)
+                sys.exit(1)
+            if data.isnan().any():
+                print("CONV", data)
+                print(torch.min(data), torch.max(data), data.isnan())
+                sys.exit(1)
+            output = self.dropout(data)
+            if output.isnan().any():
+                print("DROP", output)
+                print(torch.min(output), torch.max(output), output.isnan())
+                sys.exit(1)
         return output
 
 
@@ -591,6 +611,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             nn.SELU(inplace=True),
         )
 
+    @autocast(device_type="cuda", enabled=True)
     def forward(self, data: FloatTensor) -> FloatTensor:
         r"""Forward method that estimates the target-specific soft-mask.
 
