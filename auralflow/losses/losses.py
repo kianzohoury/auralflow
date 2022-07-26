@@ -451,7 +451,6 @@ class SISDRLoss(nn.Module):
         loss = si_sdr_loss(
             estimate=estimate_audio, target=target_audio
         )
-        print(estimate_audio.shape, target_audio.shape, loss.item())
         if self.best_perm:
             loss_perm = si_sdr_loss(
                 estimate=target_audio, target=estimate_audio
@@ -478,10 +477,9 @@ class SISDRLoss(nn.Module):
         estimate_audio = model.to_audio(
             estimate=estimate_spec, phase=mix_phase
         )
-        target_audio = target_audio.to(model.device)
-        # Compensate for last dimension for now.
-        estimate_audio = estimate_audio.unsqueeze(-1)
-        target_audio = target_audio[..., estimate_audio.shape[-2]:, ...]
+        # Squeeze last dimension for now.
+        target_audio = target_audio.to(model.device).squeeze(-1)
+        estimate_audio = estimate_audio[..., :target_audio.shape[-1]]
         # Get loss.
         loss = self.forward(
             estimate_audio=estimate_audio, target_audio=target_audio
@@ -579,8 +577,23 @@ class L2Loss(nn.Module):
         # Preprocess data.
         mix_spec, mix_phase = model.to_spectrogram(audio=mix_audio)
         target_spec, _ = model.to_spectrogram(audio=target_audio)
+        import sys
+        if mix_spec.isnan().any():
+            print("MIX")
+            print(mix_spec)
+            sys.exit(1)
+        elif target_spec.isnan().any():
+            print("TARGET")
+            print(target_spec)
+            sys.exit(1)
+
         # Run model's forward pass.
         estimate_spec, _ = model.forward(mixture=mix_spec)
+        if estimate_spec.isnan().any():
+            print("ESTIMATE")
+            print(estimate_spec)
+            print(mix_spec)
+            sys.exit(1)
         # Get loss.
         loss = self.forward(
             estimate_spec=estimate_spec, target_spec=target_spec

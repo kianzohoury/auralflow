@@ -64,7 +64,7 @@ class ConvBlock(nn.Module):
             self.activation = nn.SELU()
 
         # Batch normalization.
-        self.bn = nn.BatchNorm2d(out_channels) if bn else nn.Identity()
+        self.bn = nn.BatchNorm2d(out_channels, eps=6.2e-5) if bn else nn.Identity()
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
@@ -149,15 +149,23 @@ class UpBlock(nn.Module):
             stride=2,
             padding=padding,
         )
-        self.bn = nn.BatchNorm2d(out_channels)
+        self.bn = nn.BatchNorm2d(out_channels, eps=6.2e-5) if bn else nn.Identity()
         self.dropout = nn.Dropout2d(drop_p, inplace=True)
 
     def forward(self, data: FloatTensor, skip: FloatTensor) -> FloatTensor:
         """Forward method."""
         data = self.up(data, output_size=skip.size())
+        if data.isnan().any():
+            print("UP", data)
         data = self.bn(data)
+        if data.isnan().any():
+            print("BN", data)
         data = self.conv_block(torch.cat([data, skip], dim=1))
+        if data.isnan().any():
+            print("CONV", data)
         output = self.dropout(data)
+        if data.isnan().any():
+            print("DROP", data)
         return output
 
 
@@ -631,6 +639,9 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         # Generate multiplicative soft-mask.
         mask = self.mask_activation(output)
         mask = torch.clamp(mask, min=0, max=1.0).float()
+        for i, arr in enumerate([data, enc_1, enc_2, enc_3, enc_4, enc_5, lstm_out, latent_data, dec_1, dec_2, dec_3, dec_4, dec_5, dec_5, dec_final, output, mask]):
+            if arr.isnan().any():
+                print(f"LAYER {i}")
         return mask
 
     def _split_params(self) -> Tuple[list, list]:

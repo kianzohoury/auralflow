@@ -211,6 +211,7 @@ class ModelTrainer(ABC):
             # Disable gradient clipping if specified.
             if not clip_grad:
                 self._max_grad_norm = float("inf")
+
             # Only use a counter for default scheduler (ReduceLROnPlateau).
             if not isinstance(self.scheduler, ReduceLROnPlateau):
                 self._max_plateaus = 1
@@ -401,13 +402,13 @@ class ModelTrainer(ABC):
                 for idx, (mixture, target) in enumerate(pbar):
                     with autocast(
                         device_type=self.device,
-                        enabled=False,
-                        dtype=torch.float16 if self.use_amp else torch.bfloat16
+                        enabled=self.use_amp
                     ):
 
                         # Run forward pass, calculate mini-batch loss.
                         batch_loss = self.full_forward(mixture, target)
                         loss_val = batch_loss.item()
+                        print(loss_val)
                         total_train_loss += loss_val
                         mean_train_loss = total_train_loss / (idx + 1)
                         self._state["train_losses"].append(mean_train_loss)
@@ -425,8 +426,8 @@ class ModelTrainer(ABC):
                     # Loss-end/post-backward phase callback.
                     self._callbacks.on_loss_end(
                         named_losses={
-                            # "batch_loss_train": loss_val,
-                            "total_loss_train": total_train_loss,
+                            "batch_loss_train": loss_val,
+                            # "total_loss_train": total_train_loss,
                         },
                         global_step=self._state["last_global_step"]
                     )
@@ -435,8 +436,8 @@ class ModelTrainer(ABC):
                     # Iteration-end callback.
                     self._callbacks.on_iteration_end(
                         named_losses={
-                            # "batch_loss_train": loss_val,
-                            "total_loss_train": total_train_loss,
+                            "batch_loss_train": loss_val,
+                            # "total_loss_train": total_train_loss,
                         },
                         global_step=self._state["last_global_step"]
                     )
