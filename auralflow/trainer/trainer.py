@@ -401,7 +401,8 @@ class ModelTrainer(ABC):
                 for idx, (mixture, target) in enumerate(pbar):
                     with autocast(
                         device_type=self.device,
-                        enabled=self.use_amp
+                        enabled=self.use_amp,
+                        dtype=torch.float16 if self.use_amp else torch.bfloat16
                     ):
 
                         # Run forward pass, calculate mini-batch loss.
@@ -490,7 +491,7 @@ class ModelTrainer(ABC):
             for idx, (mixture, target) in enumerate(pbar):
                 with autocast(
                     device_type=self.device,
-                    enabled=False,
+                    enabled=self.use_amp,
                     dtype=torch.float16 if self.use_amp else torch.bfloat16
                 ):
                     with torch.no_grad():
@@ -512,14 +513,15 @@ class ModelTrainer(ABC):
 
     def _optimizer_step(self) -> None:
         """Optimizes and updates the model's parameters."""
-        self._grad_scaler.unscale_(self.optimizer)
+        # self._grad_scaler.unscale_(self.optimizer)
 
         # Clip gradient.
         _ = nn.utils.clip_grad_norm_(
             self.model.model.parameters(), max_norm=self._max_grad_norm
         )
-        self._grad_scaler.step(self.optimizer)
-        self._grad_scaler.update()
+        # self._grad_scaler.step(self.optimizer)
+        # self._grad_scaler.update()
+        self.optimizer.step()
 
         # Quicker gradient zeroing.
         for param in self.model.model.parameters():

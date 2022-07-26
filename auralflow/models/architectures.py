@@ -68,25 +68,9 @@ class ConvBlock(nn.Module):
 
     def forward(self, data: FloatTensor) -> FloatTensor:
         """Forward method."""
-        import sys
-        with autocast(device_type="cuda", enabled=True):
-            if data.isnan().any():
-                print("input", data)
-                sys.exit(1)
-            data = self.conv(data)
-            if data.isnan().any():
-                print("conv", data)
-                sys.exit(1)
-            data = self.activation(data)
-            if data.isnan().any():
-                print("act", data)
-                sys.exit(1)
-            output = self.bn(data)
-            if output.isnan().any():
-                print("out", output)
-                print(data[output.isnan()], data[output.isnan()].min(), data[output.isnan()].max())
-                print(output.isnan().any(), output.isnan())
-                sys.exit(1)
+        data = self.conv(data)
+        data = self.activation(data)
+        output = self.bn(data)
         return output
 
 
@@ -103,8 +87,8 @@ class ConvBlockTriple(nn.Module):
     ) -> None:
         super(ConvBlockTriple, self).__init__()
         self.conv = nn.Sequential(
-            ConvBlock(in_channels, out_channels, kernel_size, False, leak),
-            ConvBlock(out_channels, out_channels, kernel_size, False, leak),
+            ConvBlock(in_channels, out_channels, kernel_size, bn, leak),
+            ConvBlock(out_channels, out_channels, kernel_size, bn, leak),
             ConvBlock(out_channels, out_channels, kernel_size, bn, leak),
         )
 
@@ -137,9 +121,8 @@ class DownBlock(nn.Module):
 
     def forward(self, data: FloatTensor) -> Tuple[FloatTensor, ...]:
         """Forward method."""
-        with autocast(device_type="cuda", enabled=True):
-            skip = self.conv_block(data)
-            output = self.down(skip)
+        skip = self.conv_block(data)
+        output = self.down(skip)
         return output, skip
 
 
@@ -171,35 +154,10 @@ class UpBlock(nn.Module):
 
     def forward(self, data: FloatTensor, skip: FloatTensor) -> FloatTensor:
         """Forward method."""
-        import sys
-        with autocast(device_type="cuda", enabled=True):
-            if data.isnan().any():
-                print("INPUT", data)
-                print(torch.min(data), torch.max(data), data.isnan())
-                sys.exit(1)
-            data = self.up(data, output_size=skip.size())
-            if data.isnan().any():
-                print("UP", data)
-                print(torch.min(data), torch.max(data), data.isnan())
-                sys.exit(1)
-            data = self.bn(data)
-            if data.isnan().any():
-                print("BN", data)
-                print(torch.min(data), torch.max(data), data.isnan())
-                sys.exit(1)
-            data = self.conv_block(torch.cat([data, skip], dim=1))
-            if skip.isnan().any():
-                print("SKIP", skip)
-                sys.exit(1)
-            if data.isnan().any():
-                print("CONV", data)
-                print(torch.min(data), torch.max(data), data.isnan())
-                sys.exit(1)
-            output = self.dropout(data)
-            if output.isnan().any():
-                print("DROP", output)
-                print(torch.min(output), torch.max(output), output.isnan())
-                sys.exit(1)
+        data = self.up(data, output_size=skip.size())
+        data = self.bn(data)
+        data = self.conv_block(torch.cat([data, skip], dim=1))
+        output = self.dropout(data)
         return output
 
 
@@ -640,15 +598,10 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
 
             # Pass through encoder.
             enc_1, skip_1 = self.down_1(data)
-            print(10)
             enc_2, skip_2 = self.down_2(enc_1)
-            print(20)
             enc_3, skip_3 = self.down_3(enc_2)
-            print(30)
             enc_4, skip_4 = self.down_4(enc_3)
-            print(40)
             enc_5, skip_5 = self.down_5(enc_4)
-            print(50)
             # enc_6, skip_6 = self.down_6(enc_5)
 
             # Reshape encoded audio to pass through bottleneck.
@@ -659,41 +612,27 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             # Pass through recurrent stack.
             lstm_out, _ = self.lstm(enc_5)
             lstm_out = lstm_out.reshape((n_batch * dim1, -1))
-            print(60)
             
             # Project latent audio onto affine space, and reshape for decoder.
             latent_data = self.linear(lstm_out)
-            print(70)
             latent_data = latent_data.reshape((n_batch, dim1, n_channel * 2, dim2))
             latent_data = latent_data.permute(self.output_perm)
 
-            with autocast(device_type="cuda", enabled=False):
-                # Pass through decoder.
-                dec_1 = self.up_1(latent_data, skip_5)
-                print(1)
-                dec_2 = self.up_2(dec_1, skip_4)
-                print(2)
-                dec_3 = self.up_3(dec_2, skip_3)
-                print(3)
-                dec_4 = self.up_4(dec_3, skip_2)
-                print(4)
-                dec_5 = self.up_5(dec_4, skip_1)
-                print(5)
-                # dec_6 = self.up_6(dec_5, skip_1)
+            # Pass through decoder.
+            dec_1 = self.up_1(latent_data, skip_5)
+            dec_2 = self.up_2(dec_1, skip_4)
+            dec_3 = self.up_3(dec_2, skip_3)
+            dec_4 = self.up_4(dec_3, skip_2)
+            dec_5 = self.up_5(dec_4, skip_1)
+            # dec_6 = self.up_6(dec_5, skip_1)
 
-                # Pass through final 1x1 conv and normalize output if applicable.
+            # Pass through final 1x1 conv and normalize output if applicable.
             dec_final = self.soft_conv(dec_5)
-            print("FINAL")
             output = self.output_norm(dec_final)
-            print("OUTPUT NORM")
 
             # Generate multiplicative soft-mask.
             mask = self.mask_activation(output)
-            print("MASK")
             mask = torch.clamp(mask, min=0, max=1.0).float()
-        for i, arr in enumerate([data, enc_1, enc_2, enc_3, enc_4, enc_5, lstm_out, latent_data, dec_1, dec_2, dec_3, dec_4, dec_5, dec_5, dec_final, output, mask]):
-            if arr.isnan().any():
-                print(f"LAYER {i}")
         return mask
 
     def _split_params(self) -> Tuple[list, list]:
