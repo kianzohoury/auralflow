@@ -8,7 +8,7 @@ import torch
 import torch.backends.cudnn
 import torch.nn as nn
 from time import clock
-from torch import autocast
+
 
 from auralflow.transforms.transforms import _get_deconv_pad
 import inspect
@@ -567,7 +567,6 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             nn.Linear(hidden_size, self.num_features * 2),
             nn.SELU(inplace=True),
         )
-
     
     def forward(self, data: FloatTensor) -> FloatTensor:
         r"""Forward method that estimates the target-specific soft-mask.

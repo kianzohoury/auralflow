@@ -399,13 +399,13 @@ class ModelTrainer(ABC):
                 train_loader, total=max_iters, desc="train"
             ) as pbar:
                 for idx, (mixture, target) in enumerate(pbar):
-                    # with autocast(
-                    #     device_type=self.device,
-                    #     enabled=self.use_amp,
-                    #     dtype=torch.float16 if self.use_amp else torch.bfloat16
-                    # ):
-                    # Run forward pass, calculate mini-batch loss.
-                    batch_loss = self.full_forward(mixture, target)
+                    with autocast(
+                        device_type=self.device,
+                        enabled=self.use_amp,
+                        dtype=torch.float16 if self.use_amp else torch.bfloat16
+                    ):
+                        # Run forward pass, calculate mini-batch loss.
+                        batch_loss = self.full_forward(mixture, target)
 
                     loss_val = batch_loss.item()
                     total_train_loss += loss_val
