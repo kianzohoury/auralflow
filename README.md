@@ -249,8 +249,8 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 ### Training a Deep Mask Estimator<a name="masking-and-source-estimation"></a>
 - Given a training set of $\large n$ input mixture signals and $\large m$ target sources, $\large D = \set{(A_{i}, T_{i}^{k}): i \in [1, n], k \in [1, m]}$, we pre-process each pair by:
-1. Applying $\large f$ to get the complex spectrograms of each signal.
-2. Taking the magnitude of each complex spectrogram.
+  1. Applying $\large f$ to get the complex spectrograms of the mixture and targets, $\large f(A_{i})$ and $\large f(T_{i}^k)$, respectively.
+  2. Taking the magnitude of each complex spectrogram.
   
   $$
   \large (|X_{i}|, |Y_{i}^k|) = \large (|f(A_{i})|, |f(T_{i}^k)|)
