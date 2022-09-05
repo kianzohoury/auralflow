@@ -56,9 +56,7 @@ python3 auralflow download <model name> --save path/to/save/model
 `````
 Alternatively, model weights can be loaded directly into a model like so:
 ```python
-model = auralflow.models.load(
-  model="SpectrogramNetVAE", target="vocals"
-)
+model = auralflow.models.load(model="SpectrogramNetVAE", target="vocals")
 ```
 
 ## Training Models <a name="usage"></a>
