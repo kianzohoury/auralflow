@@ -58,7 +58,7 @@ python3 auralflow download <model name> --save path/to/save/model.pth
 ## Training Models <a name="usage"></a>
 The quickest way to use auralflow is through shell commands. 
 
-### Model Configuration <a name="model-config"></a>
+### Model Configuration with `config`<a name="model-config"></a>
 
 ```bash
 auralflow config SpectrogramNetVAE --save ./my_model \
@@ -79,32 +79,6 @@ auralflow config SpectrogramNetVAE --save ./my_model \
 --window-size 2048 \
 --hop-length 1024 \
 ```
-
-### `config`
-To initialize a new configuration file, run the `config` command:
-```bash
-auralflow config my_model SpectrogramNetSimple --save path/to/save
-```
-which will create a model folder named `my_model` and copy the starting
-template for `SpectrogramNetSimple` as `config.json` to the folder. 
-Additionally, we can specify a location
-we'd like to save the folder with the `--save` argument. By default,
-the folder will be saved in the current directory.
-
-Next, to modify some of the starting settings we can either edit the
-`config.json` file in a text editor (recommended), or pass in the desired
-value for each argument within the command line like so:
-```bash
-auralflow config my_model --mask_activation relu --dropout_p 0.4 --display
-```
-Here, we've changed two parameters simultaneously:
-* the model's masking function to ReLU by specifying the `--mask_activation` argument
-* the dropout probability for its layers with the `--dropout_p` argument
-
-Any number of [configuration settings](#config-settings) can be changed with
-one or more commands. Optionally, the `--display` flag will display your
-changes in the terminal output.
-
 
 ## Running Training <a name="running-training"></a>
 ### `train`
