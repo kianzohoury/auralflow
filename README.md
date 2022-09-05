@@ -16,7 +16,7 @@ from music tracks and recorded audio. The package offers the following:
 - source separation of large audio folders
 
 A Google Colab demo is available [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing), as well as
-a link to the official API [documentation](https://kianzohoury.github.io/auralflow/source/html/landing-page.html).
+a link to the official API [documentation](https://kianzohoury.github.io/auralflow).
 ### Table of Contents
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
