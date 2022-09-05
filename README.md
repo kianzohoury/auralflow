@@ -26,12 +26,13 @@ a link to the official API [documentation](https://kianzohoury.github.io/auralfl
 
 ## Pretrained Models <a name="pretrained-models"></a>
 Auralflow models use deep mask estimation networks to perform source separation 
-in the magnitude spectrogram domain. The underlying network is a deep 
-convolutional autoencoder with a U-Net architecture that uses skip connections.
-The final model uses a variational autoencoder as well as self-normalization.
+in the time-frequency domain (i.e. on magnitude spectrograms). The underlying 
+network is a deep convolutional autoencoder with a U-Net architecture that 
+uses skip connections. The final model uses a variational autoencoder as well
+as self-normalization.
 
-The models were trained on the musdb18 dataset. The table below compares each model relative to
-its **scale-invariant signal-to-distortion ratio (____SI-SDR____)**,
+The models were trained on the musdb18 dataset. The table below compares each 
+model relative to its **scale-invariant signal-to-distortion ratio (____SI-SDR____)**,
 which is averaged across audio tracks from a hidden test set.
 
 | Base Model                           | # Parameters (MM) | Pretrained | Trainable | Performance (si-sdr in db) |
