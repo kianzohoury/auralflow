@@ -85,31 +85,34 @@ auralflow config SpectrogramNetVAE --save ./my_model \
 Now that we've configured our model, we can train it by using the `train`
 command:
 ```bash
-auralflow train my_model path/to/dataset
+auralflow train /content/my_model /content/drive/MyDrive/MUSDB18/wav \
+--max-tracks 1 \
+--max-samples 1000 \
+--criterion "l2" \
+--use-amp \
+--max-grad-norm 1000 \
+--clip-grad \
+--scale-grad \
+--lr 0.01 \
+--stop-patience 5 \
+--max-epochs 100 \
+--batch-size 32 \
+--num-workers 8 \
+--persistent-workers \
+--pin-memory \
+--pre-fetch 4 \
+--tensorboard \
+--view-iter \
+--view-epoch \
+--view-weights \
+--view-grad \
+--view-norm \
+--play-estimate \
+--play-residual \
+--display \
+# --view-spec \
+# --view-wav \
 ```
-Note that we must pass in a path to a valid audio dataset to train on. We
-can also resume training with the same exact command, which will load the
-previous states and train for an additional `max_epochs`.
-
-Depending on the configurations we set, we can expect the contents of our
-model folder to look like the following after training is complete.
-```bash
-my_model
-  ├── audio/...
-  ├── config.json
-  ├── checkpoint/...
-  ├── evaluation.csv
-  ├── images/...
-  └── runs/...
-```
-where
-* `config.json`: the configuration file for model, data and training settings
-* `checkpoint`: folder that stores model, optimizer, lr scheduler and gradient scaling states
-* `evaluation.cvs`: a printout of the performance of your model using standard
-MIR evaluation metrics
-* `audio`: folder that stores .wav file snippets of separated audio from validation data
-* `images`: folder that stores spectrograms and waveforms of separated audio
-from validation data
 
 ## Separating Audio <a name="separating-audio"></a>
 The separation script allows us to separate a single song or multiple songs
