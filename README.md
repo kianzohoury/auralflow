@@ -120,7 +120,6 @@ auralflow train my_model path/to/dataset \
 ## Separating Audio Files <a name="separating-audio"></a>
 The separation script allows us to separate a single song or multiple songs
 contained in a folder.
-### `separate`
 To separate audio using our model, use the `separate` command:
 ```bash
 auralflow separate my_model path/to/files \
