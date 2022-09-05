@@ -42,9 +42,10 @@ which is averaged across audio tracks from a hidden test set.
 | **SpectrogramNetVAE*** (VAE + LSTM)  | **40**            | yes        | yes       | **+5.4**                   |
 
 ## Installation <a name="installation"></a>
-Install auralflow with pip using the following command:
+Install auralflow via the `PyPi <https://pypi.org>`_ package manager:
+
 ```bash
-pip install auralflow
+$ pip install auralflow
 `````
 
 ## Training Models <a name="usage"></a>
