@@ -223,9 +223,9 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 ## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
 ### Short Time Fourier Transform <a name="stft"></a>
-Let an input mixture signal be a $\Huge 2$-dimensional audio waveform
-$\Huge A \in \mathbb{R}^{c, t}$ with $\Huge c$ channels and $\Huge t$ samples, often normalized
-such that the amplitude of each sample $\Huge a_i \in [-1, 1]$.
+Let $\Huge A \in \mathbb{R}^{c, t}$ be an audio waveform with $\Huge c$
+channels, and $\Huge t$ samples, normalized such that the value of each
+sample (aka amplitude) $\Huge a_i \in [-1, 1]$.
 
 Let $\Huge f: A ↦ X$ be an linear transformation, mapping an audio signal $\Huge A$
 to a complex-valued time-frequency representation $\Huge X \in \mathbb{C}^{c, f, τ}$,
