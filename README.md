@@ -228,7 +228,7 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 - Let $\large f: A ↦ S$ be an linear transformation that maps $\large A$ to a complex time-frequency representation (also known as a spectrogram) $\large S \in \mathbb{C}^{c, f, τ}$, with $\large f$ filterbanks and $\large τ$ number of frames.  
 - Similarly, let $\large f^{-1}: S ↦ A$ be the inverse transformation that maps a complex spectrogram $\large S \in \mathbb{C}^{c, f, τ}$ to its audio signal $\large A \in \mathbb{R}^{c, t}$. 
-- Since the **Discrete Fourier Transform (DFT)** works best under the assumption that a signal is locally stationary, we use $\large f$, or the **Short-Time Fourier Transform (STFT)**, which uses a window function to apply the **DFT** to small, overlapping segments of $\large A$. As a disclaimer, $\large f$ has been trivially extended to have a channel dimension even though it is not the canonical convention.
+- Since the **Discrete Fourier Transform (DFT)** works best under the assumption that a signal is locally stationary, we use $\large f$, or the **Short-Time Fourier Transform (STFT)**, which uses a window function to apply the **DFT** to small, overlapping segments of $\large A$. As a disclaimer, $\large f$ has been trivially extended to have a channel dimension, despite it not being the canonical convention.
 - Since $\large f$ is only an approximation, $\large f^{-1}(f(A)) \neq A$. However, by carefully selecting some parameters for $f$, we can minimize the unknown additive noise factor $\large E_{noise}$, such that $\large f^{-1}(f(A)) = A + E_{noise} \approx A$.
 
 ### Magnitude and Phase <a name="magnitude-and-phase"></a>
