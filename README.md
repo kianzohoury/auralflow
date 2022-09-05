@@ -233,10 +233,10 @@ A walk-through involving training a model to separate vocals can be found [here]
 
   $$
   \large f^{-1}(f(A)) \neq A
-  $$ 
+  $$
 
 - However, by carefully selecting some parameters for $\large f$, we can minimize the unknown additive noise factor $\large E_{noise}$, such that: 
- 
+
   $$
   \large f^{-1}(f(A)) = A + E_{noise} \approx A
   $$
@@ -248,7 +248,7 @@ A walk-through involving training a model to separate vocals can be found [here]
 - Each complex-valued spectrogram $\large S$ has separable magnitude and phase content. That is, $\large |S|$ represents the magnitude, and $\large ∠_{\phi} S$ represents the phase, which is calculated as the element-wise angle of each complex entry of $\large S$.
 
 ### Training a Deep Mask Estimator<a name="masking-and-source-estimation"></a>
-- Given a training set of $\large n$ input mixture signals and $\large m$ target sources, $\large D = \set{(A_{i}, T_{i}^{k}): i = 1,\hdot, n, k \in [1, m]}$, we pre-process each pair by:
+- Given a training set of $\large n$ input mixture signals and $\large m$ target sources, $\large D = \set{(A_{i}, T_{i}^{k}): i = 1,\dots, n, k \in [1, m]}$, we pre-process each pair by:
   1. Applying $\large f$ to get the complex spectrograms of the mixture and targets, resulting in $\large f(A_{i})$ and $\large f(T_{i}^k)$, respectively.
   2. Taking the magnitude of each complex spectrogram, resulting in $\large |X_{i}| = |f(A_{i})|$ and $\large |Y_{i}^k| = |f(T_{i}^k)|$, respectively.
 
