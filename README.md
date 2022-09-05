@@ -80,7 +80,7 @@ over the typical SDR is because it's an unbiased and fairer measurement.
 |--------------------------|-------------------|------------|-----------|----------------------------|
 | SpectrogramNetSimple     | 7.9               | yes        | yes       | + 2.9                      |
 | SpectrogramNetLSTM       | 32.3              | yes        | yes       | +4.3                       |
-| **SpectrogramNetVAE***   | 40                | yes        | yes       | **+5.4**                   |
+| **SpectrogramNetVAE***   | **40**            | yes        | yes       | **+5.4**                   |
 
 **\*-Simple** (suffix): model uses a simple U-Net encoder/decoder architecture.
 
