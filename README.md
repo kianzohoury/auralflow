@@ -10,9 +10,8 @@ from music tracks and recorded audio. The package offers the following:
 - efficient data chunking of long audio clips via dataset classes
 - different loss functions (e.g. component loss, Si-SDR loss, etc.)
 - wrapper classes with built-in pre/post processing methods
-- trainer class for training models
-- visualization tools
-- data processing tools
+- model trainer
+- data processing & visualization tools
 - GPU-accelerated MIR evaluation (e.g. Si-SDR, Si-SNR, etc.)
 - separation of large audio folders
 
