@@ -678,24 +678,6 @@ class MaskLoss(nn.Module):
             loss = loss + kl_loss
         return loss
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def get_evaluation_metrics(
         mixture: Tensor,
         estimate: Tensor,

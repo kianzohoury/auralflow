@@ -244,8 +244,9 @@ def _get_num_stft_frames(
     remainder = n_samples % hop_len
     n_samples += hop_len - remainder
 
-    win_size = (1 - bool(center)) * win_size
-    frames = math.floor((n_samples - win_size) / hop_len + 1)
+    win_size = win_size if center else 0
+    n_samples = n_samples + win_size if center else n_samples
+    frames = math.floor((n_samples - win_size) / hop_len) + 1
     return frames
 
 

@@ -549,6 +549,16 @@ class ModelTrainer(ABC):
         else:
             self._scheduler = scheduler_obj
 
+import time
+def time_forward(full_forward):
+    def inner(*args, **kwargs):
+        t1 = time.clock()
+        result = full_forward(*args, **kwargs)
+        t2 = time.clock()
+        print(f"TIME: {t2 - t1}")
+        return result
+    return inner
+        
 
 class _DefaultModelTrainer(ModelTrainer):
     """Default ``ModelTrainer`` class."""
@@ -558,16 +568,25 @@ class _DefaultModelTrainer(ModelTrainer):
     def __init__(self, *args, **kwargs) -> None:
         super(_DefaultModelTrainer, self).__init__(*args, **kwargs)
 
+    @time_forward
     def full_forward(self, mixture: Tensor, target: Tensor) -> Tensor:
-        if hasattr(self.criterion, "_forward_wrapper"):
-            loss = self.criterion._forward_wrapper(
-                    model=self.model, mix_audio=mixture, target_audio=target
-            )
-            return loss
-        else:
-            raise AttributeError(
-                "Criterion must define the _forward_wrapper() method."
-            )
+        with autocast(
+            device_type=self.device,
+            enabled=self.use_amp,
+            dtype=torch.float16 if self.use_amp else torch.bfloat16
+        ):
+            if hasattr(self.criterion, "_forward_wrapper"):
+                loss = self.criterion._forward_wrapper(
+                        model=self.model, mix_audio=mixture, target_audio=target
+                )
+                return loss
+            else:
+                raise AttributeError(
+                    "Criterion must define the _forward_wrapper() method."
+                )
 
     def scheduler_step(self, val_loss: float) -> None:
         self.scheduler.step(val_loss)
+
+
+    
