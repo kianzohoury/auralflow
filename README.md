@@ -80,7 +80,7 @@ auralflow config SpectrogramNetVAE --save ./my_model \
 --hop-length 1024 \
 ```
 
-### `train`
+### Run training with `train`
 Now that we've configured our model, we can train it by using the `train`
 command:
 ```bash
