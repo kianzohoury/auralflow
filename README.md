@@ -52,7 +52,7 @@ pip install auralflow
 ## Downloading Model Weights
 To download a pretrained model, run the following:
 ```bash
-python3 auralflow download <model name> --save path/to/save/model.pth
+python3 auralflow download <model name> --save path/to/save/model
 `````
 
 ## Training Models <a name="usage"></a>
