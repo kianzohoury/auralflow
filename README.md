@@ -267,16 +267,16 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 ### Signal Reconstruction using Phase Approximation <a name="phase-approximation"></a>
 - With deep mask estimation, the network is only trained to estimate magnitude spectrograms. Therefore, to reconstruct the corresponding audio signal of an estimated magnitude spectrogram, we will use a technique that incorporates the phase content of the original mixture spectrogram. Note that while there are more precise methods of phase approximation (e.g.  [Griffin-Lim](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&rep=rep1&type=pdf)), the following technique is effective and commonly used in practice.
-  well. 
 - Given the magnitude spectrogram of the estimate target source $\large |\hat Y_i^k|$ and the phase spectrogram of the mixture, $\large ∠_{\phi} X$, we generate the phase-corrected estimate of the target source as:
 
-$$
-\large \bar Y_i^k = |\hat Y_i^k| ⊙ {\rm exp}(j \cdot ∠_{\phi} X)
-$$
+  $$
+  \large \bar Y_i^k = |\hat Y_i^k| ⊙ {\rm exp}(j \cdot ∠_{\phi} X)
+  $$
 
-​		Note that $\large \bar Y_i^k$ is a complex spectrogram, as $\large j$ is imaginary.
+  Note that $\large \bar Y_i^k$ is a complex spectrogram, as $\large j$ is imaginary.
 
 - Lastly, we reconstruct an audio signal from $\large \bar Y_i^k$  using $\large f^{-1}$. That is,
+  
   $$
   \large \hat T_i^k = f^{-1}(\bar Y_i^k)
   $$
