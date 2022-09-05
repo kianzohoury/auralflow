@@ -252,13 +252,13 @@ A walk-through involving training a model to separate vocals can be found [here]
   1. Applying $\large f$ to get the complex spectrograms of the mixture and targets, resulting in $\large f(A_{i})$ and $\large f(T_{i}^k)$, respectively.
   2. Taking the magnitude of each complex spectrogram, resulting in $\large |X_{i}| = |f(A_{i})|$ and $\large |Y_{i}^k| = |f(T_{i}^k)|$, respectively.
 
-- Let $\large g_{\theta}$ be the trainable deep mask estimation network. For each training pair, we feed the network $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta} = g_{\theta}(|X_i|)$ , where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}$ is applied to $\large |X_i|$ via Hadamard product to isolate an estimate of the target source from the mixture:
+- Let $\large g_{\theta}^k$ be the trainable deep mask estimation network for target source $\large k$. For each training pair, we feed the network $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta}^k = g_{\theta}(|X_i|)$ , where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}$ is applied to $\large |X_i|$ via Hadamard product to isolate an estimate of the target source from the mixture:
   
   $$
-  \large |\hat Y_i^k| = \large M_{\theta} \odot |X_i|
+  \large |\hat Y_i^k| = \large M_{\theta}^k \odot |X_i|
   $$
 
-- Let $\large L$ be the loss criterion (typically MSE or $\large L_1$​ loss). The objective in training the network is to find an optimal choice of parameters, namely $\large \theta^{*}$, that minimize the loss over $\large D$:
+- Let $\large L$ be the loss criterion (typically MSE or $\large L_1$ loss). The objective in training the network is to find an optimal choice of parameters, namely $\large \theta^{*}$, that minimize the loss over $\large D$:
   
 - $$
   \large \theta^{*} = \arg\min_{\theta} \sum_{i=1}^{n} L(|\hat Y_i^k|, |Y_i^k|)
