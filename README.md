@@ -245,7 +245,7 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 
 ### Magnitude and Phase <a name="magnitude-and-phase"></a>
-- Each complex-valued spectrogram $\large S$ has seperable magnitude and phase content. That is, $\large |S|$ represents the magnitude, and $\large ∠_{\phi} S$ represents the phase, or the element-wise angle of each complex entry.
+- Each complex-valued spectrogram $\large S$ has separable magnitude and phase content. That is, $\large |S|$ represents the magnitude, and $\large ∠_{\phi} S$ represents the phase, which is calculated as the element-wise angle of each complex entry $\large s_i$.
 
 ### Training a Deep Mask Estimator<a name="masking-and-source-estimation"></a>
 - Given a training set of $\large n$ input mixture signals and $\large m$ target sources, $\large D = \set{(A_{i}, T_{i}^{k}): i \in [1, n], k \in [1, m]}$, we pre-process each pair by first applying $\large f$ to get the complex spectrograms of each signal, and taking the magnitude of each complex spectrogram:
