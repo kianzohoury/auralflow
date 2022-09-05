@@ -54,7 +54,7 @@ To download a pretrained model locally, run the following:
 ```bash
 python3 auralflow download <model name> --save path/to/save/model
 `````
-Alternatively, model weights can be loaded directly into a model like so:
+Alternatively, weights can be loaded directly into a model like so:
 ```python
 model = auralflow.models.load(model="SpectrogramNetVAE", target="vocals")
 ```
