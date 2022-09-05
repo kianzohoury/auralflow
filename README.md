@@ -46,7 +46,7 @@ Install auralflow with pip using the following command:
 pip install auralflow
 `````
 
-## Command Line Usage <a name="usage"></a>
+## Training Models <a name="usage"></a>
 The quickest way to use auralflow is through shell commands. 
 
 ### Model Configuration <a name="model-config"></a>
