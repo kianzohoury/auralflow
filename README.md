@@ -260,7 +260,7 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 - Let $\large L$ be the loss criterion (typically MSE or $\large L_1$ loss). The objective in training the network is to find an optimal choice of parameters, namely $\large \theta^{*}$, that minimize the loss over $\large D$:
   
-- $$
+  $$
   \large \theta^{*} = \arg\min_{\theta} \sum_{i=1}^{n} L(|\hat Y_i^k|, |Y_i^k|)
   $$
   
