@@ -110,8 +110,8 @@ auralflow train /content/my_model /content/drive/MyDrive/MUSDB18/wav \
 --play-estimate \
 --play-residual \
 --display \
-# --view-spec \
-# --view-wav \
+--view-spec \
+--view-wav \
 ```
 
 ## Separating Audio <a name="separating-audio"></a>
