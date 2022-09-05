@@ -1,6 +1,6 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing)
 
-[//]: # (![Auralflow Logo]&#40;docs/static/logo.png&#41;)
+![Auralflow Logo](docs/static/af_logo.jpg)
 
 # Auralflow: A Lightweight BSS Modeling Toolkit For PyTorch
 Auralflow is **blind source separation (BSS)** modeling toolkit designed for 
