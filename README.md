@@ -59,15 +59,27 @@ python3 auralflow download <model name> --save path/to/save/model.pth
 The quickest way to use auralflow is through shell commands. 
 
 ### Model Configuration <a name="model-config"></a>
-Auralflow uses a single configuration file in order to store important
-training, data processing and model information, among other things. For example,
-things like
-* model base architecture
-* number of filterbanks, hop length or window size
-* visualization tools for monitoring training progress
 
-can be customized by simply editing the configuration file belonging to your
-model. Let's dive in.
+```bash
+auralflow config SpectrogramNetVAE --save ./my_model \
+--vocals \
+--num-channels 1 \
+--num-hidden-channels 16 \
+--sample-length 3 \
+--sample-rate 44100 \
+--dropout-p  0.4 \
+--leak-factor 0 \
+--normalize-input \
+--normalize-output \
+--recurrent-depth 3 \
+--hidden-size 1024 \
+--input-axis 1 \
+--mask-act-fn 'sigmoid' \
+--num-fft 2048 \
+--window-size 2048 \
+--hop-length 1024 \
+```
+
 ### `config`
 To initialize a new configuration file, run the `config` command:
 ```bash
