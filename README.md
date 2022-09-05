@@ -234,6 +234,7 @@ A walk-through involving training a model to separate vocals can be found [here]
   \large f^{-1}(f(A)) \neq A
   $$
 
+
 - However, by carefully selecting some parameters for $\large f$, we can minimize the unknown additive noise factor $\large E_{noise}$, such that 
   $$
   \large f^{-1}(f(A)) = A + E_{noise} \approx A
