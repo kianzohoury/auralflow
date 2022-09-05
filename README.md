@@ -21,11 +21,6 @@ and evaluation tools are available for a more seamless and efficient workflow.
 * [Notebook Demo](#demo)
 * [API Documentation](#documentation)
 * [Deep Mask Estimation: More on the Mathematics](#deep-mask-estimation)
-  * [Short Time Fourier Transform](#stft)
-  * [Magnitude and Phase](#magnitude-and-phase)
-  * [Masking and Source Estimation](#masking-and-source-estimation)
-  * [Optimization](#optimization)
-  * [Phase Approximation](#phase-approximation)
 * [Contribution](#contribution)
 * [License](#license)
 
@@ -213,7 +208,7 @@ A walk-through involving training a model to separate vocals can be found [here]
 
 
 ## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
-### Short Time Fourier Transform <a name="stft"></a>
+### Short Time Fourier Transform
 
 - Let $\large A \in \mathbb{R}^{c, t}$ be an audio signal with $\large c$ channels and $\large t$ samples, normalized such that the value of each sample (also known as the amplitude) $\large a_i \in [-1, 1]$.
 
@@ -235,10 +230,10 @@ A walk-through involving training a model to separate vocals can be found [here]
   if $\large ||E_{noise}||$ is relatively small and imperceptible.
 
 
-### Magnitude and Phase <a name="magnitude-and-phase"></a>
+### Magnitude and Phase
 - Each complex-valued spectrogram $\large S$ has separable magnitude and phase content. That is, $\large |S|$ represents the magnitude, and $\large ∠_{\phi} S$ represents the phase, which is calculated as the element-wise angle of each complex entry of $\large S$.
 
-### Training a Deep Mask Estimator<a name="masking-and-source-estimation"></a>
+### Training a Deep Mask Estimator
 - Given a training set of $\large n$ mixture-target audio pairs, $\large D = \set{(A_{i}, T_{i}): i = 1,\dots, n}$, where $\large T_{i}^k$ corresponds to target source $\large k$ in $\large T_{i} = (t_{i}^1,...,t_{i}^m)$, we pre-process each pair by:
   1. Applying $\large f$ to get the complex spectrograms of the mixture and targets, resulting in $\large f(A_{i})$ and $\large f(T_{i})$, respectively.
   2. Taking the magnitude of each complex spectrogram, resulting in $\large |X_{i}| = |f(A_{i})|$ and $\large |Y_{i}| = |f(T_{i})|$, respectively.
@@ -256,7 +251,7 @@ A walk-through involving training a model to separate vocals can be found [here]
   $$
   
 
-### Signal Reconstruction using Phase Approximation <a name="phase-approximation"></a>
+### Signal Reconstruction using Phase Approximation
 - With deep mask estimation, the network is only trained to estimate magnitude spectrograms. Therefore, to reconstruct the corresponding audio signal of an estimated magnitude spectrogram, we will use a technique that incorporates the phase content of the original mixture spectrogram. Note that while there are more precise methods of phase approximation (e.g.  [Griffin-Lim](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.306.7858&rep=rep1&type=pdf)), the following technique is effective and commonly used in practice.
 - Given the magnitude spectrogram of the estimate target source $\large |\hat Y_i^k|$ and the phase spectrogram of the mixture, $\large ∠_{\phi} X$, we generate the phase-corrected estimate of the target source as:
 
