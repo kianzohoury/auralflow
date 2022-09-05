@@ -9,11 +9,11 @@ from music tracks and recorded audio. The package offers the following:
 - pretrained music source separator models (via downloadable model weights)
 - efficient data chunking of long audio clips via dataset classes
 - different loss functions (e.g. component loss, Si-SDR loss, etc.)
-- wrapper classes with built-in pre/post processing methods
-- model trainer
+- models wrappers with built-in pre/post processing methods
+- model trainer for easy training
 - data processing & visualization tools
 - GPU-accelerated MIR evaluation (e.g. Si-SDR, Si-SNR, etc.)
-- separation of large audio folders
+- source separation of large audio folders
 
 * [Introduction: Music Source Separation](#introduction)
 * [Pretrained Models](#pretrained-models)
