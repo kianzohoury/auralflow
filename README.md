@@ -41,17 +41,18 @@ which is averaged across audio tracks from a hidden test set.
 | SpectrogramNetLSTM (LSTM bottleneck) | 32.3              | yes        | yes       | +4.3                       |
 | **SpectrogramNetVAE*** (VAE + LSTM)  | **40**            | yes        | yes       | **+5.4**                   |
 
-```python
-model = auralflow.models.load(
-  model="SpectrogramNetVAE", targets=["vocals"]
-)
-```
 
 ## Installation <a name="installation"></a>
 Install auralflow via the [PyPi](https://pypi.org) package manager:
 
 ```bash
 pip install auralflow
+`````
+
+## Downloading Model Weights
+To download a pretrained model, run the following:
+```bash
+python3 auralflow download <model name> --save path/to/save/model.pth
 `````
 
 ## Training Models <a name="usage"></a>
