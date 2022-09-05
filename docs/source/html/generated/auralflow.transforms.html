@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="auralflow.utils" href="auralflow.utils.html" /><link rel="prev" title="auralflow.trainer" href="auralflow.trainer.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
         <title>auralflow.transforms - auralflow</title>
@@ -183,8 +183,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../theory.html">A Shallow Dive into Theory</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../api.html">Python API</a></li>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">Python API</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="auralflow.datasets.html">auralflow.datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auralflow.losses.html">auralflow.losses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auralflow.models.html">auralflow.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">auralflow.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auralflow.utils.html">auralflow.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auralflow.visualizer.html">auralflow.visualizer</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -218,8 +227,36 @@
           </label>
         </div>
         <article role="main">
-          <section id="auralflow-transforms">
-<h1>auralflow.transforms<a class="headerlink" href="#auralflow-transforms" title="Permalink to this headline">#</a></h1>
+          <section id="module-auralflow.transforms">
+<span id="auralflow-transforms"></span><h1>auralflow.transforms<a class="headerlink" href="#module-auralflow.transforms" title="Permalink to this headline">#</a></h1>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.transforms.trim_audio.html#auralflow.transforms.trim_audio" title="auralflow.transforms.trim_audio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim_audio</span></code></a></p></td>
+<td><p>Trims duration of all audio data to match that of the shortest one.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../auralflow.transforms.AudioTransform.html#auralflow.transforms.AudioTransform" title="auralflow.transforms.AudioTransform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AudioTransform</span></code></a></p></td>
+<td><p>Wrapper class that conveniently stores multiple transformation tools.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 
         </article>
@@ -227,8 +264,26 @@
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="auralflow.utils.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">auralflow.utils</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="auralflow.trainer.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">auralflow.trainer</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">

@@ -184,7 +184,16 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.transforms.html">auralflow.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.utils.html">auralflow.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -220,6 +229,44 @@
         <article role="main">
           <section id="auralflow-datasets-load-stems">
 <h1>auralflow.datasets.load_stems<a class="headerlink" href="#auralflow-datasets-load-stems" title="Permalink to this headline">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.datasets.load_stems">
+<span class="sig-prename descclassname"><span class="pre">auralflow.datasets.</span></span><span class="sig-name descname"><span class="pre">load_stems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'train'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_tracks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mono</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.OrderedDict" title="(in Python v3.10)"><span class="pre">OrderedDict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/auralflow/datasets/datasets.html#load_stems"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.datasets.load_stems" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads audio data (mixture and stems/targets) directly into memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Path to the directory of audio files belonging to
+a dataset.</p></li>
+<li><p><strong>targets</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) -- Labels of the ground-truth source
+signals. Default: None.</p></li>
+<li><p><strong>split</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Subset of the directory to read from. Default: &quot;train&quot;.</p></li>
+<li><p><strong>max_num_tracks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Max number of full audio tracks to resample from.
+Default: 100.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Sample rate. Default: 44100.</p></li>
+<li><p><strong>mono</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Load tracks as mono. Default: True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p><em>List[..., OrderedDict]</em> --</p>
+<dl class="simple">
+<dt>A list of ordered mappings</dt><dd><p>(one for each track), where each ordered mapping consists of:
+- mixture (ndarray): Mixture track.
+- bass (ndarray): Bass track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).
+- drums (ndarray): Drums track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).
+- vocal (ndarray): Vocals track (if <code class="docutils literal notranslate"><span class="pre">targets</span></code>).
+- other (ndarray): Other/background track (if in <code class="docutils literal notranslate"><span class="pre">targets</span></code>).
+- duration (int): Duration of the mixture track.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.10)"><strong>IOError</strong></a> -- Raised if the dataset cannot be verified.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>

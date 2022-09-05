@@ -4,7 +4,6 @@ Python API
 .. autosummary::
    :toctree: generated
 
-   auralflow.customs
    auralflow.datasets
    auralflow.losses
    auralflow.models

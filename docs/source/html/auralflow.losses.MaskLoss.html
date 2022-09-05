@@ -184,7 +184,16 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.transforms.html">auralflow.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.utils.html">auralflow.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -220,6 +229,42 @@
         <article role="main">
           <section id="auralflow-losses-maskloss">
 <h1>auralflow.losses.MaskLoss<a class="headerlink" href="#auralflow-losses-maskloss" title="Permalink to this headline">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.losses.MaskLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">MaskLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_mean</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/losses/losses.html#MaskLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.MaskLoss" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.13.0a0+gite91c1e6 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<p>Wrapper class for calculating the loss on soft-masks directly.</p>
+<p>The loss is defined as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[L_{mask}(X, Y, M_{\theta}) = l(\frac{|Y|}{max(|X|, \epsilon)}, M_{\theta})\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(l\)</span> is the loss function, <span class="math notranslate nohighlight">\(|X|\)</span> and <span class="math notranslate nohighlight">\(|Y|\)</span> are
+the magnitude spectrograms of the mixture and targets respectively,
+<span class="math notranslate nohighlight">\(M_{\theta}\)</span> is the estimated soft-mask (output of the network) and
+<span class="math notranslate nohighlight">\(\epsilon\)</span> is a small constant added for numerical stability.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) -- Loss function. Default: <code class="docutils literal notranslate"><span class="pre">'l1'</span></code>.</p></li>
+<li><p><strong>reduce_mean</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- If <code class="docutils literal notranslate"><span class="pre">True</span></code>, returns the batch-wise mean of the
+loss; otherwise, returns the batch-wise sum of the loss.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.losses.MaskLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gite91c1e6 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#MaskLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.MaskLoss.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculates the mask loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><em>Tensor</em> -- Mask loss.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -262,5 +307,6 @@
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

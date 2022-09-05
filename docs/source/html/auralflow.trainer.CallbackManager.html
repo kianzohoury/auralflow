@@ -184,7 +184,16 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.transforms.html">auralflow.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.utils.html">auralflow.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -220,6 +229,58 @@
         <article role="main">
           <section id="auralflow-trainer-callbackmanager">
 <h1>auralflow.trainer.CallbackManager<a class="headerlink" href="#auralflow-trainer-callbackmanager" title="Permalink to this headline">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.CallbackManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.</span></span><span class="sig-name descname"><span class="pre">CallbackManager</span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.CallbackManager" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Handles a group of training callbacks.</p>
+<p>By default, calling a method corresponding to an event will have no effect.
+Each event can be handled by either implementing the corresponding
+handler method manually, or by calling <code class="docutils literal notranslate"><span class="pre">add_callback(...)</span></code>, which bins a
+<code class="docutils literal notranslate"><span class="pre">TrainingCallback</span></code> to its event.</p>
+<p>Note that this class currently has limited functionality and is not stable
+due to the current implementation of <code class="docutils literal notranslate"><span class="pre">trainer.ModelTrainer</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">auralflow.trainer</span> <span class="kn">import</span> <span class="n">CallbackManager</span><span class="p">,</span> <span class="n">LayersVisualCallback</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">callbacks</span> <span class="o">=</span> <span class="n">CallbackManager</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># create a new callback</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">layers_callback</span> <span class="o">=</span> <span class="n">LayersVisualCallback</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># add to callbacks manager</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">callbacks</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">layers_callback</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.CallbackManager.add_callback">
+<span class="sig-name descname"><span class="pre">add_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.trainer.callbacks.html#auralflow.trainer.callbacks.TrainingCallback" title="auralflow.trainer.callbacks.TrainingCallback"><span class="pre">TrainingCallback</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.add_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.CallbackManager.add_callback" title="Permalink to this definition">#</a></dt>
+<dd><p>Attach a callback to the group associated with its event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.CallbackManager.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.CallbackManager.on_epoch_end" title="Permalink to this definition">#</a></dt>
+<dd><p>Post-epoch callback.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.CallbackManager.on_epoch_start">
+<span class="sig-name descname"><span class="pre">on_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.on_epoch_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.CallbackManager.on_epoch_start" title="Permalink to this definition">#</a></dt>
+<dd><p>Pre-epoch callback.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.CallbackManager.on_iteration_end">
+<span class="sig-name descname"><span class="pre">on_iteration_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.on_iteration_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.CallbackManager.on_iteration_end" title="Permalink to this definition">#</a></dt>
+<dd><p>Post-iteration callback.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.CallbackManager.on_loss_end">
+<span class="sig-name descname"><span class="pre">on_loss_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#CallbackManager.on_loss_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.CallbackManager.on_loss_end" title="Permalink to this definition">#</a></dt>
+<dd><p>Post-backward phase callback.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>

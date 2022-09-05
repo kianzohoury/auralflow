@@ -184,7 +184,16 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.transforms.html">auralflow.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.utils.html">auralflow.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -220,6 +229,78 @@
         <article role="main">
           <section id="auralflow-losses-component-loss">
 <h1>auralflow.losses.component_loss<a class="headerlink" href="#auralflow-losses-component-loss" title="Permalink to this headline">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="auralflow.losses.component_loss">
+<span class="sig-prename descclassname"><span class="pre">auralflow.losses.</span></span><span class="sig-name descname"><span class="pre">component_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gite91c1e6 ))"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/auralflow/losses/losses.html#component_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.losses.component_loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Weighted loss that combines different loss components.</p>
+<p>Uses two or three loss components depending on the arguments for <code class="docutils literal notranslate"><span class="pre">alpha</span></code>
+and <code class="docutils literal notranslate"><span class="pre">beta</span></code>. If <code class="docutils literal notranslate"><span class="pre">beta=0</span></code>, it weighs the quality of target source
+separation against the amount of residual noise attenuation. If <code class="docutils literal notranslate"><span class="pre">beta&gt;0</span></code>,
+the third component balances the quality of the attenuated residual noise
+against the other two terms. The 2-component loss is defined as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[L_{2c}(X; Y_{k}; \theta; \alpha) = \frac{1-\alpha}{n} ||Y_{f, k}
+    - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}\]</div>
+</div>
+<p>and the 3-component loss is defined as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[L_{3c}(X; Y_{k}; \theta; \alpha; \beta) = \frac{1-\alpha -\beta}{n}
+    ||Y_{f, k} - |Y_{k}|||_2^{2} + \frac{\alpha}{n}||R_f||_2^{2}
+    + \frac{\beta}{n}|| \hat{R_f} - \hat{R}||_2^2\]</div>
+</div>
+<dl class="simple">
+<dt>where:</dt><dd><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(Y_{f, k} := M_{\theta}\odot |Y_{k}|\)</span>, filtered target</p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{f} := M_{ \theta }\odot (|X| - |Y_{k}|)\)</span>, filtered residual</p></li>
+<li><p><span class="math notranslate nohighlight">\(\hat{R_{f}} := \frac{R_{f}}{||R_{f}||_2}\)</span>, filtered unit-residual</p></li>
+<li><p><span class="math notranslate nohighlight">\(\hat{R} := \frac{R}{||R||_2}\)</span>, unit residual</p></li>
+<li><p><span class="math notranslate nohighlight">\(n\)</span>: number of tensor elements</p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha\)</span>: 2-term coefficient value</p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha\)</span>: 3-term coefficient value</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask</strong> (<em>FloatTensor</em>) -- Estimated soft-mask (output of the network).</p></li>
+<li><p><strong>target</strong> (<em>FloatTensor</em>) -- Ground-truth target source.</p></li>
+<li><p><strong>residual</strong> (<em>FloatTensor</em>) -- The residual or background noise, defined as
+the difference between the mixture and target sources.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Coefficient value for the two-term component loss.
+Default: <code class="docutils literal notranslate"><span class="pre">0.2</span></code>.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) -- Coefficient value for the three-term component loss.
+Default: <code class="docutils literal notranslate"><span class="pre">0.8</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>Tensor</em> -- Mean component loss.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get mask, target and resiual spectrograms:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">173</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">173</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">residual</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">173</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Calculate the weighted loss:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">component_loss</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">residual</span><span class="o">=</span><span class="n">residual</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+<span class="go">&lt;class &#39;torch.Tensor&#39;&gt;</span>
+</pre></div>
+</div>
+<p>Get its scalar value:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">loss_val</span><span class="p">)</span>
+<span class="go">&lt;class &#39;float&#39;&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 
         </article>
@@ -262,5 +343,6 @@
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

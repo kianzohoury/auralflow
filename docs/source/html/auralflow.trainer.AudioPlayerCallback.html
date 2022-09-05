@@ -184,7 +184,16 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.datasets.html">auralflow.datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.losses.html">auralflow.losses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.models.html">auralflow.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.trainer.html">auralflow.trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.transforms.html">auralflow.transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.utils.html">auralflow.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/auralflow.visualizer.html">auralflow.visualizer</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -220,6 +229,42 @@
         <article role="main">
           <section id="auralflow-trainer-audioplayercallback">
 <h1>auralflow.trainer.AudioPlayerCallback<a class="headerlink" href="#auralflow-trainer-audioplayercallback" title="Permalink to this headline">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="auralflow.trainer.AudioPlayerCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">auralflow.trainer.</span></span><span class="sig-name descname"><span class="pre">AudioPlayerCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensorboard_writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.13.0a0+gite91c1e6 ))"><span class="pre">SummaryWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.base.SeparationModel"><span class="pre">SeparationModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">44100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#AudioPlayerCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.AudioPlayerCallback" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="auralflow.trainer.callbacks.html#auralflow.trainer.callbacks.TrainingCallback" title="auralflow.trainer.callbacks.TrainingCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrainingCallback</span></code></a></p>
+<p>Plays back separated audio via tensorboard.</p>
+<p>Note that this callback is only triggered on <code class="docutils literal notranslate"><span class="pre">'on_epoch_end'</span></code> events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensorboard_writer</strong> (<em>SummaryWriter</em>) -- Tensorboard writer.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="auralflow.models.SeparationModel.html#auralflow.models.SeparationModel" title="auralflow.models.SeparationModel"><em>SeparationModel</em></a>) -- Model.</p></li>
+<li><p><strong>embed_residual</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) -- Additionally embeds the residual (background)
+track. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>sample_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Sample rate. Default: <code class="docutils literal notranslate"><span class="pre">44100</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="auralflow.trainer.AudioPlayerCallback.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mixture_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gite91c1e6 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.13.0a0+gite91c1e6 ))"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/auralflow/trainer/callbacks.html#AudioPlayerCallback.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#auralflow.trainer.AudioPlayerCallback.__call__" title="Permalink to this definition">#</a></dt>
+<dd><p>Calls the event handler for playing back audio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mixture_audio</strong> (<em>Tensor</em>) -- Mixture audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p></li>
+<li><p><strong>target_audio</strong> (<em>Tensor</em>) -- Target audio signal of dimension
+<cite>(batch, channels, time)</cite>.</p></li>
+<li><p><strong>global_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) -- Global step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
