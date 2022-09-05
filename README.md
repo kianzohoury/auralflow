@@ -84,10 +84,10 @@ auralflow config SpectrogramNetVAE --save ./my_model \
 Now that we've configured our model, we can train it by using the `train`
 command:
 ```bash
-auralflow train /content/my_model /content/drive/MyDrive/MUSDB18/wav \
---max-tracks 1 \
---max-samples 1000 \
---criterion "l2" \
+auralflow train my_model path/to/dataset \
+--max-tracks 80 \
+--max-samples 10000 \
+--criterion "si-sdr" \
 --use-amp \
 --max-grad-norm 1000 \
 --clip-grad \
