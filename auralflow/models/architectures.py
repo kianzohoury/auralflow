@@ -7,7 +7,7 @@
 import torch
 import torch.backends.cudnn
 import torch.nn as nn
-from time import clock
+# from time import clock
 from torch import autocast
 
 
