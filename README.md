@@ -27,23 +27,20 @@ a link to the official API [documentation](https://kianzohoury.github.io/auralfl
 * [Deep Mask Estimation: Brief Math Overview](#deep-mask-estimation)
 
 ## Pretrained Models <a name="pretrained-models"></a>
-Auralflow includes several base model architectures that have already been
-trained on the musdb18 dataset. The table below compares each model relative to
+Auralflow models use deep mask estimation networks to perform source separation 
+in the magnitude spectrogram domain. The underlying network is a deep 
+convolutional autoencoder with a U-Net architecture that uses skip connections.
+The final model uses a variational autoencoder as well as self-normalization.
+
+The models were trained on the musdb18 dataset. The table below compares each model relative to
 its **scale-invariant signal-to-distortion ratio (____SI-SDR____)**,
-which is averaged across audio tracks from a hidden test set. The choice of using the SI-SDR
-over the typical SDR is because it's an unbiased and fairer measurement. 
+which is averaged across audio tracks from a hidden test set.
 
-| Base Model               | # Parameters (MM) | Pretrained | Trainable | Performance (si-sdr in db) |
-|--------------------------|-------------------|------------|-----------|----------------------------|
-| SpectrogramNetSimple     | 7.9               | yes        | yes       | + 2.9                      |
-| SpectrogramNetLSTM       | 32.3              | yes        | yes       | +4.3                       |
-| **SpectrogramNetVAE***   | **40**            | yes        | yes       | **+5.4**                   |
-
-**\*-Simple** (suffix): model uses a simple U-Net encoder/decoder architecture.
-
-**\*-LSTM** (suffix): model uses an additional stack of recurrent bottleneck layers.
-
-**\*-VAE** (suffix): model uses a Variational Autoencoder (VAE) + LSTM.
+| Base Model                           | # Parameters (MM) | Pretrained | Trainable | Performance (si-sdr in db) |
+|--------------------------------------|-------------------|------------|-----------|----------------------------|
+| SpectrogramNetSimple                 | 7.9               | yes        | yes       | + 2.9                      |
+| SpectrogramNetLSTM (LSTM bottleneck) | 32.3              | yes        | yes       | +4.3                       |
+| **SpectrogramNetVAE*** (VAE + LSTM)  | **40**            | yes        | yes       | **+5.4**                   |
 
 ## Installation <a name="installation"></a>
 Install auralflow with pip using the following command:
