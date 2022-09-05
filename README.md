@@ -251,12 +251,8 @@ A walk-through involving training a model to separate vocals can be found [here]
 - Given a training set of $\large n$ input mixture signals and $\large m$ target sources, $\large D = \set{(A_{i}, T_{i}^{k}): i \in [1, n], k \in [1, m]}$, we pre-process each pair by:
   1. Applying $\large f$ to get the complex spectrograms of the mixture and targets, resulting in $\large f(A_{i})$ and $\large f(T_{i}^k)$, respectively.
   2. Taking the magnitude of each complex spectrogram, resulting in $\large |X_{i}| = |f(A_{i})|$ and $\large |Y_{i}^k| = |f(T_{i}^k)|$, respectively.
-  
-  $$
-  \large (|X_{i}|, |Y_{i}^k|) = \large (|f(A_{i})|, |f(T_{i}^k)|)
-  $$
-  
-- Let $\large g_{\theta}$ be the trainable deep mask estimation network. For each pair $\large (|X_i|, |Y_{i}^k|)$, we feed the magnitude spectrogram of the input mixture $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta} = g_{\theta}(|X_i|)$ , where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}$ is applied to $\large |X_i|$ via Hadamard product to estimate the magnitude spectrogram of the target source $\large |Y_i^k|$:
+
+- Let $\large g_{\theta}$ be the trainable deep mask estimation network. For each training pair, we feed the network $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta} = g_{\theta}(|X_i|)$ , where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}$ is applied to $\large |X_i|$ via Hadamard product to estimate the magnitude spectrogram of the target source $\large |Y_i^k|$:
   $$
   \large |\hat Y_i^k| = \large M_{\theta} \odot |X_i|
   $$
