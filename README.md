@@ -233,11 +233,13 @@ A walk-through involving training a model to separate vocals can be found [here]
   $$
   \large f^{-1}(f(A)) \neq A
   $$
-  However, by carefully selecting some parameters for $\large f$, we can minimize the unknown additive noise factor $\large E_{noise}$, such that 
+
+- However, by carefully selecting some parameters for $\large f$, we can minimize the unknown additive noise factor $\large E_{noise}$, such that 
   $$
   \large f^{-1}(f(A)) = A + E_{noise} \approx A
   $$ 
   if $||E_{noise}||$ is small.
+
 
 ### Magnitude and Phase <a name="magnitude-and-phase"></a>
 - Each complex-valued spectrogram $\large S$ has seperable magnitude and phase content. That is, $\large |S|$ represents the magnitude, and $\large ∠_{\phi} S$ represents the phase, or the element-wise angle of each complex entry.
