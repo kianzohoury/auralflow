@@ -83,28 +83,28 @@ auralflow config SpectrogramNetVAE E --save my_model \
 --hop-length 1024 \
 ```
 ### Parameters
-- `model_type` (str): Base model architecture.
-- `--<target>` (str): Target source \[bass|drums|vocals|other]
-- `num_channels` (int): Number of audio channels. Default: 1.
-- `num_hidden_channels` (int): Initial number of channels or filters.
+- `--model_type` (str): Base model architecture.
+- `--<target>` (str): Target source \[bass|drums|vocals|other].
+- `--num_channels` (int): Number of audio channels. Default: 1.
+- `--num_hidden_channels` (int): Initial number of channels or filters.
 Default: 16.
-- `sample_length` (int): Length of audio chunks. Default: 3.
-- `sample_rate` (int): Sample rate. Default: 44100.
-- `dropout_p` (float): Dropout layer probability. Default: 0.4.
-- `leak_factor` (float): Leak factor if using leaky_relu mask activation.
+- `--sample_length` (int): Length of audio chunks. Default: 3.
+- `--sample_rate` (int): Sample rate. Default: 44100.
+- `--dropout_p` (float): Dropout layer probability. Default: 0.4.
+- `--leak_factor` (float): Leak factor if using leaky_relu mask activation.
 Default: 0.
-- `normalize_input` (bool): Trains learnable input normalization parameters. 
-Default: False
-- `normalize_output` (bool): Trains learnable output normalization parameters.
-  Default: False
-- `mask_act_fn` (str): Mask activation function: Default: "sigmoid".
-- `num_fft` (int): Number of FFT bins. Default: 1024.
-- `window_size` (int): Window size. Default: 1024.
-- `hop_length` (int): Hop length. Default: 512.
+- `--normalize_input` (bool): Trains learnable input normalization parameters. 
+Default: False.
+- `--normalize_output` (bool): Trains learnable output normalization parameters.
+  Default: False.
+- `--mask_act_fn` (str): Mask activation function: Default: "sigmoid".
+- `--num_fft` (int): Number of FFT bins. Default: 1024.
+- `--window_size` (int): Window size. Default: 1024.
+- `--hop_length` (int): Hop length. Default: 512.
   #### Additional parameters for LSTM models.
-- `recurrent_depth` (int): Number of LSTM layer. Default: 3.
-- `hidden_size` (int): Hidden size. Default: 1024.
-- `input_axis` (int): Axis to squeeze features along. Default: 1.
+- `--recurrent_depth` (int): Number of LSTM layer. Default: 3.
+- `--hidden_size` (int): Hidden size. Default: 1024.
+- `--input_axis` (int): Axis to squeeze features along. Default: 1.
 
 ### Run training with `train`
 Now that we've configured our model, we can train it by using the `train`
