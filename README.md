@@ -50,10 +50,16 @@ pip install auralflow
 `````
 
 ## Downloading Model Weights
-To download a pretrained model, run the following:
+To download a pretrained model locally, run the following:
 ```bash
 python3 auralflow download <model name> --save path/to/save/model
 `````
+Alternatively, model weights can be loaded directly into a model like so:
+```python
+model = auralflow.models.load(
+  model="SpectrogramNetVAE", targets=["vocals"]
+)
+```
 
 ## Training Models <a name="usage"></a>
 The quickest way to use auralflow is through shell commands. 
