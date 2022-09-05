@@ -234,12 +234,11 @@ A walk-through involving training a model to separate vocals can be found [here]
   \large f^{-1}(f(A)) \neq A
   $$
 
-
-- However, by carefully selecting some parameters for $\large f$, we can minimize the unknown additive noise factor $\large E_{noise}$, such that 
-  $$
-  \large f^{-1}(f(A)) = A + E_{noise} \approx A
-  $$ 
-  if $||E_{noise}||$ is small.
+​		However, by carefully selecting some parameters for $\large f$, we can minimize the unknown additive noise factor $\large E_{noise}$, such that 
+$$
+\large f^{-1}(f(A)) = A + E_{noise} \approx A
+$$
+​		if $||E_{noise}||$ is relatively small and imperceivable.
 
 
 ### Magnitude and Phase <a name="magnitude-and-phase"></a>
@@ -251,7 +250,6 @@ A walk-through involving training a model to separate vocals can be found [here]
   \large (|X_{i}|, |Y_{i}^k|) = \large (|f(A_{i})|, |f(T_{i}^k)|)
   $$
   
-
 - Let $\large g_{\theta}$ be the trainable deep mask estimation network. For each pair $\large (|X_i|, |Y_{i}^k|)$, we feed the magnitude spectrogram of the input mixture $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta} = g_{\theta}(|X_i|)$ , where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}$ is applied to $\large |X_i|$ via Hadamard product to estimate the magnitude spectrogram of the target source $\large |Y_i^k|$:
   $$
   \large |\hat Y_i^k| = \large M_{\theta} \odot |X_i|
@@ -272,7 +270,7 @@ $$
 \large \bar Y_i^k = |\hat Y_i^k| ⊙ {\rm exp}(j \cdot ∠_{\phi} X)
 $$
 
-Note that $\large \bar Y_i^k$ is a complex spectrogram, as $\large j$ is imaginary.
+​		Note that $\large \bar Y_i^k$ is a complex spectrogram, as $\large j$ is imaginary.
 
 - Lastly, we reconstruct an audio signal from $\large \bar Y_i^k$  using $\large f^{-1}$. That is,
   $$
