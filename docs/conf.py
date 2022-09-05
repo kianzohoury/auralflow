@@ -121,7 +121,7 @@ html_theme_options = {
     'navigation_depth': 4,
 }
 
-html_additional_pages = {
-    "landing-page": "html/landing-page.html"
-}
+# html_additional_pages = {
+#     "landing-page": "html/landing-page.html"
+# }
 
