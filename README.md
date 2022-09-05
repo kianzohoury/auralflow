@@ -238,7 +238,7 @@ A walk-through involving training a model to separate vocals can be found [here]
   $$
   \large f^{-1}(f(A)) = A + E_{noise} \approx A
   $$
-  if $||E_{noise}||$ is relatively small and imperceptible.
+  if $\large ||E_{noise}||$ is relatively small and imperceptible.
 
 
 ### Magnitude and Phase <a name="magnitude-and-phase"></a>
