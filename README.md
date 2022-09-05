@@ -133,11 +133,6 @@ path/to/save/separated_audio
         ├── vocals.wav
         └── residual.wav
 ```
-And we're done! If you'd like for more control and functionality, read the
-[documentation](#documentation). 
-## [Notebook Demo](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing) <a name="demo"></a> 
-A walk-through involving training a model to separate vocals can be found [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing).
-
 
 ## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
 ### Short Time Fourier Transform
