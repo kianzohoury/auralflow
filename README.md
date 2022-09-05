@@ -2,10 +2,20 @@
 
 [//]: # (![Auralflow Logo]&#40;docs/static/logo.png&#41;)
 
-# Auralflow: A Lightweight BSS Model Toolkit For PyTorch
-Auralflow is an all-in-one **blind source separation (BSS)** (also known as
-**music source separation**) package designed for PyTorch
-integration. It offers ready-to-go, pretrained DL models capable of separating
+# Auralflow: A Lightweight BSS Modeling Toolkit For PyTorch
+Auralflow is **blind source separation (BSS)** modeling toolkit designed for 
+training deep convolutional autoencoder models that isolate stems (e.g. vocals)
+from audio tracks. The package has the following capabilities:
+- automatic chunking of long audio clips to create large datasets for training
+- loss functions (e.g. weighted component loss, Si-SDR loss, etc.)
+- model classes and wrapper classes that handle pre and post processing
+- a high-level trainer class for training models
+- visualization tools for viewing spectrograms and waveforms
+- data processing tools
+- GPU-accelerated MIR evaluation (e.g. Si-SDR, Si-SNR, etc.)
+- file I/O, saving large folders of separated audio, etc.
+
+It offers ready-to-go, pretrained DL models capable of separating
 music tracks into multiple sources: vocals, bass, drums and other. Auralflow
 also provides customizable base model architectures, which can be trained 
 natively in auralflow or ported to your own custom training pipeline. 
