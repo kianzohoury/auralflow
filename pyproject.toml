@@ -20,6 +20,7 @@ protobuf = "3.9.2"
 numpy = "1.21.6"
 numba = "0.55.2"
 torchaudio = "0.12.0"
+scipy = "1.7.3"
 
 
 [tool.poetry.dev-dependencies]
