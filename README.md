@@ -252,7 +252,8 @@ A walk-through involving training a model to separate vocals can be found [here]
   1. Applying $\large f$ to get the complex spectrograms of the mixture and targets, resulting in $\large f(A_{i})$ and $\large f(T_{i}^k)$, respectively.
   2. Taking the magnitude of each complex spectrogram, resulting in $\large |X_{i}| = |f(A_{i})|$ and $\large |Y_{i}^k| = |f(T_{i}^k)|$, respectively.
 
-- Let $\large g_{\theta}$ be the trainable deep mask estimation network. For each training pair, we feed the network $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta} = g_{\theta}(|X_i|)$ , where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}$ is applied to $\large |X_i|$ via Hadamard product to estimate the magnitude spectrogram of the target source $\large |Y_i^k|$:
+- Let $\large g_{\theta}$ be the trainable deep mask estimation network. For each training pair, we feed the network $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta} = g_{\theta}(|X_i|)$ , where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}$ is applied to $\large |X_i|$ via Hadamard product to isolate an estimate of the target source from the mixture:
+  
   $$
   \large |\hat Y_i^k| = \large M_{\theta} \odot |X_i|
   $$
