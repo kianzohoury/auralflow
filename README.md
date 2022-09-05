@@ -137,7 +137,7 @@ path/to/save/separated_audio
         └── residual.wav
 ```
 
-## Deep Mask Estimation: Brief Math Overview <a name="deep-mask-estimation"></a>
+## Supplementary Info for Beginners <a name="deep-mask-estimation"></a>
 ### Short Time Fourier Transform
 
 - Let $\large A \in \mathbb{R}^{c, t}$ be an audio signal with $\large c$ channels and $\large t$ samples, normalized such that the value of each sample (also known as the amplitude) $\large a_i \in [-1, 1]$.
