@@ -15,18 +15,17 @@ from music tracks and recorded audio. The package offers the following:
 - GPU-accelerated MIR evaluation (e.g. Si-SDR, Si-SNR, etc.)
 - source separation of large audio folders
 
-* [Introduction: Music Source Separation](#introduction)
+A Google Colab demo is available [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing), as well as
+a link to the official API [documentation](https://kianzohoury.github.io/auralflow/source/html/landing-page.html).
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
 * [Command Line Usage](#usage)
   * [Model Configuration](#model-config)
   * [Running Training](#running-training)
   * [Separating Audio](#separating-audio)
-* [Notebook Demo](#demo)
-* [API Documentation](#documentation)
+  
 * [Deep Mask Estimation: Brief Math Overview](#deep-mask-estimation)
-* [Contribution](#contribution)
-* [License](#license)
+
 
 
 ## Introduction: Music Source Separation <a name="introduction"></a>
