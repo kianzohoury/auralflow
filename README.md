@@ -28,14 +28,10 @@ from music tracks and recorded audio. The package offers the following:
 * [Contribution](#contribution)
 * [License](#license)
 
-TODO:
-- [ ] testing
-- [ ] train audio-domain models
-- [ ] documentation
-- [ ] package distribution
 
 ## Introduction: Music Source Separation <a name="introduction"></a>
-![Auralflow Logo](docs/static/wave_form_example.png)
+
+[//]: # (![Auralflow Logo]&#40;docs/static/wave_form_example.png&#41;)
 Source separation is the process of separating an input signal into
 separate signals that compose it. In the simplest terms, a signal is a linear
 combination of vectors that belong to a (potentially huge dimensional) sub space. 
