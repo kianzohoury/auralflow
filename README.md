@@ -45,7 +45,7 @@ which is averaged across audio tracks from a hidden test set.
 Install auralflow via the `PyPi <https://pypi.org>`_ package manager:
 
 ```bash
-$ pip install auralflow
+pip install auralflow
 `````
 
 ## Training Models <a name="usage"></a>
