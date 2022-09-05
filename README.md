@@ -17,14 +17,12 @@ from music tracks and recorded audio. The package offers the following:
 
 A Google Colab demo is available [here](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing), as well as
 a link to the official API [documentation](https://kianzohoury.github.io/auralflow/source/html/landing-page.html).
+### Table of Contents
 * [Pretrained Models](#pretrained-models)
 * [Installation](#installation)
-* [Command Line Usage](#usage)
-  * [Model Configuration](#model-config)
-  * [Running Training](#running-training)
-  * [Separating Audio](#separating-audio)
-  
-* [Deep Mask Estimation: Brief Math Overview](#deep-mask-estimation)
+* [Training Models](#usage)
+* [Separating Audio Files](#separating-audio)
+* [Supplementary Info for Beginners](#deep-mask-estimation)
 
 ## Pretrained Models <a name="pretrained-models"></a>
 Auralflow models use deep mask estimation networks to perform source separation 
