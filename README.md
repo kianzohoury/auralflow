@@ -86,7 +86,7 @@ auralflow config [SpectrogramNetSimple|SpectrogramNetLSTM|SpectrogramNetVAE]
 ### Parameters
 - `--save` (str): Name/path to the training folder.
 - `--display`: Displays the model config after the file is created.
-- `--<target>` (str): Target source from \['bass' | 'drums' | 'vocals' | 'other'].
+- `--<target>` (str): Target source to isolate: 'bass' | 'drums' | 'vocals' | 'other' .
 - `--num_channels` (int): Number of audio channels. Default: 1.
 - `--num_hidden_channels` (int): Initial number of channels or filters.
 Default: 16.
