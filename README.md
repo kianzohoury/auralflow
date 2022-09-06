@@ -66,7 +66,7 @@ command, which saves the model specifications under the training session folder,
 as`my_model/model.json` by default:
 
 ```
-auralflow config <model type> --save my_model --display \
+auralflow config <model_type> --save my_model --display \
 --vocals \
 --num-channels 1 \
 --num-hidden-channels 16 \
@@ -85,7 +85,7 @@ auralflow config <model type> --save my_model --display \
 --hop-length 1024 \
 ```
 ### Parameters
-- `[model type]` (str): '`SpectrogramNetSimple'` | `'SpectrogramNetLSTM'` | `'SpectrogramNetVAE'`.
+- `model_type` (str): '`SpectrogramNetSimple'` | `'SpectrogramNetLSTM'` | `'SpectrogramNetVAE'`.
 - `--save` (str): Name/path to the training session folder.
 - `--display`: Displays the model config after the file is created.
 - `--<target>` (str): Target source to isolate: `'bass'` | `'drums'` | `'vocals'` | `'other'` .
@@ -116,7 +116,7 @@ Assuming you have access to an audio dataset with the same file structure,
 we can build and train the model specified in the training session folder by
 running the `train` command: 
 ```bash
-auralflow train my_model <path to dataset> --resume --display \
+auralflow train <folder_name> <dataset_path> --resume --display \
 --max-tracks 80 \
 --max-samples 10000 \
 --batch-size 32 \
@@ -145,6 +145,8 @@ auralflow train my_model <path to dataset> --resume --display \
 ```
 Note that CUDA will be automatically enabled if it is available.
 ### Parameters
+- `folder_name` (str): Path to training session folder.
+- `dataset_path` (str): Path to an audio dataset.
 - `--resume`: Resumes model training from checkpoint, if one exists.
 - `--display`: Displays the training parameters after the file is created.
 - `--max-tracks` (int): Max number of tracks to load into memory. Default: 80.
