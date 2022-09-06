@@ -86,7 +86,7 @@ auralflow config [SpectrogramNetSimple|SpectrogramNetLSTM|SpectrogramNetVAE]
 ### Parameters
 - `--save` (str): Name/path to the training folder.
 - `--display`: Displays the model config after the file is created.
-- `--<target>` (str): Target source to isolate: 'bass' | 'drums' | 'vocals' | 'other' .
+- `--<target>` (str): Target source to isolate: `'bass'` | `'drums'` | `'vocals'` | `'other'` .
 - `--num_channels` (int): Number of audio channels. Default: 1.
 - `--num_hidden_channels` (int): Initial number of channels or filters.
 Default: 16.
@@ -99,7 +99,7 @@ Default: 0.
 Default: False.
 - `--normalize_output` (bool): Trains learnable output normalization parameters.
   Default: False.
-- `--mask_act_fn` (str): Mask activation function: Default: "sigmoid".
+- `--mask_act_fn` (str): Mask activation function: Default: 'sigmoid'.
 - `--num_fft` (int): Number of FFT bins. Default: 1024.
 - `--window_size` (int): Window size. Default: 1024.
 - `--hop_length` (int): Hop length. Default: 512.
@@ -154,7 +154,7 @@ tracks. Default: 10000.
 - `--pre-fetch` (int): Number of batches pre-loaded. Default: 4. 
 - `--max-epochs` (int): Max number of epochs to train for. Default: 100.
 - `--lr 0.01` (float): Learning rate. Default: 0.01.
-- `--criterion` (str): Loss criterion: 'component' | 'kl_div' | 'l1' | 'l2' | 'mask' | 'si_sdr' | 'rmse'. Default: 'si_sdr'.
+- `--criterion` (str): Loss criterion: `'component'` | `'kl_div'` | `'l1'` | `'l2'` | `'mask'` | `'si_sdr'` | `'rmse'`. Default: 'si_sdr'.
 - `--use-amp` (bool): Enables automatic mixed precision if CUDA is enabled. Default: False.
 - `--clip-grad` (bool): Clip gradients. Default: False.
 - `--max-grad-norm` (float): Maximum value of gradient if clipping is used. Default: 1000.
@@ -172,12 +172,12 @@ tracks. Default: 10000.
 - `--view-spec`: Sends magnitude spectrograms images to tensorboard, if tensorboard is enabled.
 - `--view-wav`:  Sends waveform images to tensorboard, if tensorboard is enabled.
 #### Additional training parameters.
-- `--construction_loss` (str): Construction loss for KL Divergence: 'l2' | 'l1'. Defaults to 'l2'.
+- `--construction_loss` (str): Construction loss for KL Divergence: `'l2'` | `'l1'`. Defaults to 'l2'.
 - `--lr-lstm` (float): Separate learning rate for the LSTM layers. Default: 0.00001.
 - `--init-scale` (float): Initial gradient scaler value. Default: 2.0 ** 16.
 - `--max-plateaus` (int): Maximum number of times the stop patience can expire before training is halted. Default: 5.
 - `--min_delta` (float): Minimum improvement in the validation loss required to reset the stop patience counter. Default: 0.01.
-- `--reduction` (str): Whether to average or sum the loss: 'mean', 'sum'. Default: 'mean'. 
+- `--reduction` (str): Whether to average or sum the loss: `'mean'`| `'sum'`. Default: 'mean'. 
 - `--best-perm`: Chooses the permutation of the signals that results in the smallest loss, if using SI-SDR loss.
 - `--alpha` (float): Weight of the first component, if using component loss. Default: 0.2.
 - `--beta` (float): Weight of the second component, if using component loss. Default: 0.8.
