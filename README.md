@@ -210,8 +210,7 @@ where
 
 ### Model evaluation with `test`
 To evaluate a model, we simply run the `test` command, assuming the audio
-dataset has a `/test` split, which will save the MIR metrics to `eval.csv`
-to the training session folder:
+dataset has a `/test` split, which will save the MIR metrics to `eval.csv`:
 ```
 auralflow test <folder_name> <dataset_path> --save <path/to/save/metrics>
 ```
