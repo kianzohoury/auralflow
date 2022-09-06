@@ -123,7 +123,7 @@ auralflow train my_model <path to dataset> --resume --display \
 --pre-fetch 4 \
 --max-epochs 100 \
 --lr 0.01 \
---criterion "si-sdr" \
+--criterion si-sdr \
 --use-amp \
 --clip-grad \
 --max-grad-norm 1000 \
