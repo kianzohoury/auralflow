@@ -154,7 +154,7 @@ tracks. Default: 10000.
 - `--pre-fetch` (int): Number of batches pre-loaded. Default: 4. 
 - `--max-epochs` (int): Max number of epochs to train for. Default: 100.
 - `--lr 0.01` (float): Learning rate. Default: 0.01.
-- `--criterion` (str): Loss criterion: `'component'` | `'kl_div'` | `'l1'` | `'l2'` | `'mask'` | `'si_sdr'` | `'rmse'`. Default: 'si_sdr'.
+- `--criterion` (str): Loss fn: `'component'` | `'kl_div'` | `'l1'` | `'l2'` | `'mask'` | `'si_sdr'` | `'rmse'`. Default: 'si_sdr'.
 - `--use-amp` (bool): Enables automatic mixed precision if CUDA is enabled. Default: False.
 - `--clip-grad` (bool): Clip gradients. Default: False.
 - `--max-grad-norm` (float): Maximum value of gradient if clipping is used. Default: 1000.
