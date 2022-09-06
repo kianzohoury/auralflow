@@ -52,7 +52,7 @@ pip install auralflow
 ## Downloading Model Weights
 To download the weights of a pretrained model locally, run the following:
 ```
-python3 auralflow download <model name> --save <path to weights>
+python3 auralflow download <model_type> --save <path/to/save/weights>
 `````
 Alternatively, weights can be loaded directly into a model like so:
 ```python
