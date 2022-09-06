@@ -62,7 +62,8 @@ model = auralflow.models.load(model="SpectrogramNetVAE", target="vocals")
 ## Training Models <a name="usage"></a>
 ### Config a model with `config`
 To train a model from scratch, first configure a model with the `config`
-command, which saves the model specifications to `my_model/model.json` by default.
+command, which saves the model specifications under the training session folder,
+as`my_model/model.json` by default:
 
 ```bash
 auralflow config [SpectrogramNetSimple|SpectrogramNetLSTM|SpectrogramNetVAE]
