@@ -82,7 +82,7 @@ auralflow config <model_type> --save my_model --display \
 --mask-act-fn sigmoid \
 --num-fft 2048 \
 --window-size 2048 \
---hop-length 1024 \
+--hop-length 1024 
 ```
 ### Parameters
 - `model_type` (str): '`SpectrogramNetSimple'` | `'SpectrogramNetLSTM'` | `'SpectrogramNetVAE'`.
@@ -141,7 +141,7 @@ auralflow train <folder_name> <dataset_path> --resume --display \
 --play-estimate \
 --play-residual \
 --view-spec \
---view-wav \
+--view-wav 
 ```
 Note that CUDA will be automatically enabled if it is available.
 ### Parameters
