@@ -208,11 +208,20 @@ where
 - `spectrogram`: optional folder that contains spectrogram images saved during training.
 - `waveform`: optional folder that contains waveform images saved during training.
 
+### Model evaluation with `test`
+To evaluate a model, we simply run the `test` command, assuming the audio
+dataset has a `/test` split, which will save the MIR metrics to `eval.csv`
+to the training session folder:
+```
+auralflow test <folder_name> <dataset_path> --save <path/to/save/metrics>
+```
+If `--save` is not specified, the results will be saved to 
+`path/to/folder_name/eval.csv` by default.
 ## Separating Audio Files <a name="separating-audio"></a>
 The separation script allows us to separate a single song or multiple songs
 contained in a folder.
 To separate audio using our model, use the `separate` command:
-```bash
+```
 auralflow separate my_model path/to/files \
 --residual \
 --duration 90 \
