@@ -22,7 +22,7 @@ a link to the official API [documentation](https://kianzohoury.github.io/auralfl
 * [Installation](#installation)
 * [Training Models](#usage)
 * [Separating Audio Files](#separating-audio)
-* [Supplementary Info for Beginners](#deep-mask-estimation)
+* [Supplementary Math & Background Info](#deep-mask-estimation)
 
 ## Pretrained Models <a name="pretrained-models"></a>
 Auralflow models use deep mask estimation networks to perform source separation 
@@ -236,7 +236,7 @@ path/to/save/separated_audio
         └── residual.wav
 ```
 
-## Supplementary Info for Beginners <a name="deep-mask-estimation"></a>
+## Supplementary Math & Background Info <a name="deep-mask-estimation"></a>
 ### Short Time Fourier Transform
 
 - Let $\large A \in \mathbb{R}^{c, t}$ be an audio signal with $\large c$ channels and $\large t$ samples, normalized such that the value of each sample (also known as the amplitude) $\large a_i \in [-1, 1]$.
