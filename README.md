@@ -217,7 +217,7 @@ auralflow test <folder_name> <dataset_path> --save <path/to/save/metrics>
 If `--save` is not specified, the results will be saved to 
 `path/to/folder_name/eval.csv` by default.
 ## Separating Audio Files <a name="separating-audio"></a>
-Separation can be done on single audio files as well as folder of audio files
+Separation can be done on single audio files as well as folders of audio files
 with the `separate` command:
 
 ```
