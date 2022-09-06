@@ -85,7 +85,7 @@ auralflow config <model type> --save my_model --display \
 --hop-length 1024 \
 ```
 ### Parameters
-- `[model type]` (str): Base model: '`SpectrogramNetSimple'` | `'SpectrogramNetLSTM'` | `'SpectrogramNetVAE'`.
+- `[model type]` (str): Model: '`SpectrogramNetSimple'` | `'SpectrogramNetLSTM'` | `'SpectrogramNetVAE'`.
 - `--save` (str): Name/path to the training session folder.
 - `--display`: Displays the model config after the file is created.
 - `--<target>` (str): Target source to isolate: `'bass'` | `'drums'` | `'vocals'` | `'other'` .
