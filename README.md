@@ -110,8 +110,8 @@ Default: False.
 
 ### Run training with `train`
 See instructions on downloading the MUSDB18 dataset [here]().
-Assuming you have access to a structured audio dataset, we can immediately
-train the model using the `train` command:
+Assuming you have access to an audio dataset with the same file structure,
+we can train the model using the `train` command:
 ```bash
 auralflow train my_model <path to dataset> --resume --display \
 --max-tracks 80 \
