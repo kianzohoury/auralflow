@@ -140,6 +140,7 @@ auralflow train my_model <path to dataset> --resume --display \
 --view-spec \
 --view-wav \
 ```
+Note that CUDA will be automatically enabled if it is available.
 ### Parameters
 - `--resume`: Resumes model training from checkpoint, if one exists.
 - `--display`: Displays the training parameters after the file is created.
