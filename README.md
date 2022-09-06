@@ -66,8 +66,7 @@ command, which saves the model specifications under the training session folder,
 as`my_model/model.json` by default:
 
 ```bash
-auralflow config [SpectrogramNetSimple|SpectrogramNetLSTM|SpectrogramNetVAE]
---save my_model --display \
+auralflow config <model type> --save my_model --display \
 --vocals \
 --num-channels 1 \
 --num-hidden-channels 16 \
@@ -86,6 +85,7 @@ auralflow config [SpectrogramNetSimple|SpectrogramNetLSTM|SpectrogramNetVAE]
 --hop-length 1024 \
 ```
 ### Parameters
+- `[model type]` (str): Base model type: '`SpectrogramNetSimple'` | `'SpectrogramNetLSTM'` | `'SpectrogramNetVAE'`.
 - `--save` (str): Name/path to the training session folder.
 - `--display`: Displays the model config after the file is created.
 - `--<target>` (str): Target source to isolate: `'bass'` | `'drums'` | `'vocals'` | `'other'` .
