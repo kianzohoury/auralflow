@@ -65,7 +65,7 @@ To train a model from scratch, first configure a model with the `config`
 command, which saves the model specifications under the training session folder,
 as`my_model/model.json` by default:
 
-```bash
+```
 auralflow config <model type> --save my_model --display \
 --vocals \
 --num-channels 1 \
