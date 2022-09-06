@@ -17,8 +17,8 @@ def main(
     training_config: configurations.TrainingConfig,
     save_dir: str,
     dataset_path: str,
-    max_num_tracks: int,
-    max_num_samples: int,
+    max_num_tracks: int = 80,
+    max_num_samples: int = 10000,
     resume: bool = True
 ) -> None:
     """Trains a model given a valid path to a configuration file.
@@ -32,8 +32,9 @@ def main(
         training_config (TrainingConfig): Training configuration.
         dataset_path (str): Path to the dataset.
         max_num_tracks (int): Max number of tracks to load into memory.
+            Default: 80.
         max_num_samples (int): Max number of resampled chunks from the pool
-            of tracks.
+            of tracks. Default: 10000.
     """
     print("Loading training data...")
     train_dataset_metadata_path = str(Path(save_dir).joinpath(

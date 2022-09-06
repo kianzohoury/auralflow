@@ -111,9 +111,9 @@ class VisualsConfig(Config):
     image_dir: str
     logging_dir: str
     tensorboard: bool = True
-    view_norm: bool = True
-    view_epoch: bool = True
-    view_iter: bool = True
+    view_norm: bool = False
+    view_epoch: bool = False
+    view_iter: bool = False
     view_grad: bool = False
     view_weights: bool = False
     view_spec: bool = False
@@ -132,10 +132,10 @@ class TrainingConfig(Config):
     visuals_config: VisualsConfig
     checkpoint: str
     device: str
-    use_amp: bool = True
-    scale_grad: bool = True
-    clip_grad: bool = True
-    lr: float = 0.008
+    use_amp: bool = False
+    scale_grad: bool = False
+    clip_grad: bool = False
+    lr: float = 0.01
     lr_lstm: float = lr * 1e-3
     init_scale: float = 2.0 ** 16
     max_grad_norm: float = 100.0
@@ -145,8 +145,8 @@ class TrainingConfig(Config):
     max_epochs: int = 100
     batch_size: int = 32
     num_workers: int = 8
-    persistent_workers: bool = True
-    pin_memory: bool = True
+    persistent_workers: bool = False
+    pin_memory: bool = False
     pre_fetch: int = 4
 
     @classmethod

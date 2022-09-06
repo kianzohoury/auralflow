@@ -60,11 +60,12 @@ model = auralflow.models.load(model="SpectrogramNetVAE", target="vocals")
 ```
 
 ## Training Models <a name="usage"></a>
-To train a model from scratch, first configure a model with `config`, which 
-saves the model specifications to `my_model/model.json` by default.
+To train a model from scratch, first configure a model with the `config`
+command, which saves the model specifications to `my_model/model.json` by default.
 
 ```bash
-auralflow config SpectrogramNetVAE E --save my_model \
+auralflow config [SpectrogramNetSimple|SpectrogramNetLSTM|SpectrogramNetVAE]
+--save my_model --display \
 --vocals \
 --num-channels 1 \
 --num-hidden-channels 16 \
@@ -83,8 +84,9 @@ auralflow config SpectrogramNetVAE E --save my_model \
 --hop-length 1024 \
 ```
 ### Parameters
-- `--model_type` (str): Base model architecture.
-- `--<target>` (str): Target source \[bass|drums|vocals|other].
+- `--save` (str): Name/path to the training folder.
+- `--display`: Displays the model config after the file is created.
+- `--<target>` (str): Target source from \['bass' | 'drums' | 'vocals' | 'other'].
 - `--num_channels` (int): Number of audio channels. Default: 1.
 - `--num_hidden_channels` (int): Initial number of channels or filters.
 Default: 16.
@@ -101,31 +103,32 @@ Default: False.
 - `--num_fft` (int): Number of FFT bins. Default: 1024.
 - `--window_size` (int): Window size. Default: 1024.
 - `--hop_length` (int): Hop length. Default: 512.
-  #### Additional parameters for LSTM models.
+#### Additional parameters for LSTM models.
 - `--recurrent_depth` (int): Number of LSTM layer. Default: 3.
 - `--hidden_size` (int): Hidden size. Default: 1024.
 - `--input_axis` (int): Axis to squeeze features along. Default: 1.
 
 ### Run training with `train`
-Now that we've configured our model, we can train it by using the `train`
-command:
+See instructions on downloading the MUSDB18 dataset [here]().
+Assuming you have access to a structured audio dataset, we can immediately
+train the model using the `train` command:
 ```bash
-auralflow train my_model path/to/dataset \
+auralflow train my_model <path to dataset> --resume --display \
 --max-tracks 80 \
 --max-samples 10000 \
---criterion "si-sdr" \
---use-amp \
---max-grad-norm 1000 \
---clip-grad \
---scale-grad \
---lr 0.01 \
---stop-patience 5 \
---max-epochs 100 \
 --batch-size 32 \
 --num-workers 8 \
 --persistent-workers \
 --pin-memory \
 --pre-fetch 4 \
+--max-epochs 100 \
+--lr 0.01 \
+--criterion "si-sdr" \
+--use-amp \
+--clip-grad \
+--max-grad-norm 1000 \
+--scale-grad \
+--stop-patience 5 \
 --tensorboard \
 --view-iter \
 --view-epoch \
@@ -134,10 +137,51 @@ auralflow train my_model path/to/dataset \
 --view-norm \
 --play-estimate \
 --play-residual \
---display \
 --view-spec \
 --view-wav \
 ```
+### Parameters
+- `--resume`: Resumes model training from checkpoint, if one exists.
+- `--display`: Displays the training parameters after the file is created.
+- `--max-tracks` (int): Max number of tracks to load into memory. Default: 80.
+- `--max-samples` (int): Max number of resampled chunks from the pool of 
+tracks. Default: 10000.
+- `--batch-size` (int): Batch size. Default: 32.
+- `--num-workers` (int): Number of worker processes. Default: 8. 
+- `--persistent-workers` (bool): Keeps workers from being terminated. Default: False.
+- `--pin-memory` (bool): Pins memory to GPU for faster loading. Default: False.
+- `--pre-fetch` (int): Number of batches pre-loaded. Default: 4. 
+- `--max-epochs` (int): Max number of epochs to train for. Default: 100.
+- `--lr 0.01` (float): Learning rate. Default: 0.01.
+- `--criterion` (str): Loss criterion from \['component' | 'kl_div' | 'l1' | 'l2' | 'mask' | 'si_sdr' | 'rmse']. Default: 'si_sdr'.
+- `--use-amp` (bool): Enables automatic mixed precision if CUDA is enabled. Default: False.
+- `--clip-grad` (bool): Clip gradients. Default: False.
+- `--max-grad-norm` (float): Maximum value of gradient if clipping is used. Default: 1000.
+- `--scale-grad` (bool): Enables gradient scaling if CUDA is enabled. Default: False.
+- `--stop-patience` (int): Number of epochs to train before stopping
+  if the validation loss does not improve. Default: 5.
+- `--tensorboard`: Enables tensorboard.
+- `--view-iter`: Logs iteration training loss, if tensorboard is enabled.
+- `--view-epoch`: Logs epoch training loss, if tensorboard is enabled.
+- `--view-weights`: Logs model weights by layer, if tensorboard is enabled.
+- `--view-grad`: Logs gradients with respect to each layer, if tensorboard is enabled.
+- `--view-norm`: Logs the 2-norm of each weight/gradient, if tensorboard is enabled.
+- `--play-estimate`: Sends target source estimates to tensorboard for playback, if tensorboard is enabled.
+- `--play-residual`: Sends residual estimates to tensorboard for playback, if tensorboard is enabled.
+- `--view-spec`: Sends magnitude spectrograms images to tensorboard, if tensorboard is enabled.
+- `--view-wav`:  Sends waveform images to tensorboard, if tensorboard is enabled.
+#### Additional training parameters.
+- `--construction_loss` (str): Construction loss for KL Divergence \['l2' | 'l1']. Defaults to 'l2'.
+- `--lr-lstm` (float): Separate learning rate for the LSTM layers. Default: 0.00001.
+- `--init-scale` (float): Initial gradient scaler value. Default: 2.0 ** 16.
+- `--max-plateaus` (int): Maximum number of times the stop patience can expire before training is halted. Default: 5.
+- `--min_delta` (float): Minimum improvement in the validation loss required to reset the stop patience counter. Default: 0.01.
+- `--reduction` (str): Whether to average or sum the loss \['mean', 'sum']. Default: 'mean'. 
+- `--best-perm`: Chooses the permutation of the signals that results in the smallest loss, if using SI-SDR loss.
+- `--alpha` (float): Weight of the first component, if using component loss. Default: 0.2.
+- `--beta` (float): Weight of the second component, if using component loss. Default: 0.8.
+- `--image_freq` (int): Frequency (in epochs) at which to save images. Default: 5.
+- `--silent`: Suppresses checkpoint logging. 
 
 ## Separating Audio Files <a name="separating-audio"></a>
 The separation script allows us to separate a single song or multiple songs

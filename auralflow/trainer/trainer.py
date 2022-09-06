@@ -73,10 +73,6 @@ class ModelTrainer(ABC):
             if the validation loss does not improve. Default: ``5``.
         min_delta (float): Minimum improvement in the validation loss
             required to reset the stop patience counter. Default: ``0.01``.
-        max_lr_steps (int): Maximum number of learning rate reductions
-            if ``self.scheduler`` is an instance of
-            :class:`~torch.optim.lr_scheduler.ReduceLROnPlateau`. Default:
-            ``5``.
         view_norm (bool): If ``True``, logs the 2-norm of each
             weight/gradient if tensorboard is enabled. Default: ``True``.
         view_epoch (bool): If ``True``, logs epoch training and
@@ -85,7 +81,7 @@ class ModelTrainer(ABC):
             tensorboard is enabled. Default: ``True``.
         view_grad (bool): If ``True``, logs gradients with respect
             to layers if tensorboard is enabled. Default: ``True``.
-         view_weights (bool): If ``True``, logs model weights by layer if
+        view_weights (bool): If ``True``, logs model weights by layer if
             tensorboard is enabled. Default: ``True``.
         view_spec (bool): If ``True``, logs target source estimates
             as spectrogram images if model is an instance of a
