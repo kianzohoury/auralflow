@@ -78,7 +78,7 @@ auralflow config [SpectrogramNetSimple|SpectrogramNetLSTM|SpectrogramNetVAE]
 --recurrent-depth 3 \
 --hidden-size 1024 \
 --input-axis 1 \
---mask-act-fn 'sigmoid' \
+--mask-act-fn sigmoid \
 --num-fft 2048 \
 --window-size 2048 \
 --hop-length 1024 \
