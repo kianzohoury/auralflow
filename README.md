@@ -105,7 +105,7 @@ Default: False.
 - `--num_fft` (int): Number of FFT bins. Default: 1024.
 - `--window_size` (int): Window size. Default: 1024.
 - `--hop_length` (int): Hop length. Default: 512.
-#### Additional parameters for LSTM models.
+#### Additional parameters for LSTM-based models.
 - `--recurrent_depth` (int): Number of LSTM layer. Default: 3.
 - `--hidden_size` (int): Hidden size. Default: 1024.
 - `--input_axis` (int): Axis to squeeze features along. Default: 1.
