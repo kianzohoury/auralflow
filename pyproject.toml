@@ -28,3 +28,6 @@ scipy = "1.7.3"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+auralflow = "auralflow.__main__:main"

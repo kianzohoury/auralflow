@@ -16,7 +16,7 @@ from auralflow import train
 from pathlib import Path
 
 
-if __name__ == "__main__":
+def main():
     # Parse args.
     args = parse.parse()
     if args.command == "config":
@@ -133,3 +133,7 @@ if __name__ == "__main__":
     #         max_tracks=args.max_tracks,
     #         resample_rate=args.resample_rate,
     #     )
+
+
+if __name__ == "__main__":
+    main()
