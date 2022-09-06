@@ -217,23 +217,28 @@ auralflow test <folder_name> <dataset_path> --save <path/to/save/metrics>
 If `--save` is not specified, the results will be saved to 
 `path/to/folder_name/eval.csv` by default.
 ## Separating Audio Files <a name="separating-audio"></a>
-The separation script allows us to separate a single song or multiple songs
-contained in a folder.
-To separate audio using our model, use the `separate` command:
+Separation can be done on single audio files as well as folder of audio files
+with the `separate` command:
+
 ```
-auralflow separate my_model path/to/files \
+auralflow separate <folder_name> <audio_filepath> --save path/to/save \
 --residual \
 --duration 90 \
---save path/to/save
 ```
-The results for each track will placed within a single folder called
-`separated_audio` like so:
-```bash
-path/to/save/separated_audio
-  └── artist - track name
-        ├── original.wav
-        ├── vocals.wav
-        └── residual.wav
+### Parameters
+- `audio_filepath` (str): Path to an audio file or folder of audio files.
+- `--residual`: Save the residual track resulting from subtracting the target source.
+- `--duration` (int): Duration in seconds (starting from 0s) to trim audio clips before separation. Default: 30.
+- `--sr` (int): Sample rate. Default: 44100.
+- `--padding` (int): Negative offset length (overlap) between separation windows. Default: 200.
+
+The results for each track will placed within its own folder corresponding to
+the audio file's name. For example, separating vocals on the track titled:
+AI James - Schoolboy Fascination.wav will produce:
+```
+AI James - Schoolboy Fascination
+  ├── vocals.wav
+  └── residual.wav
 ```
 
 ## Supplementary Math & Background Info <a name="deep-mask-estimation"></a>
