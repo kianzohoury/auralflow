@@ -45,13 +45,13 @@ which is averaged across audio tracks from a hidden test set.
 ## Installation <a name="installation"></a>
 Install auralflow via the [PyPi](https://pypi.org) package manager:
 
-```bash
+```
 pip install auralflow
 `````
 
 ## Downloading Model Weights
 To download the weights of a pretrained model locally, run the following:
-```bash
+```
 python3 auralflow download <model name> --save <path to weights>
 `````
 Alternatively, weights can be loaded directly into a model like so:
@@ -115,7 +115,7 @@ See instructions on downloading the MUSDB18 dataset [here]().
 Assuming you have access to an audio dataset with the same file structure,
 we can build and train the model specified in the training session folder by
 running the `train` command: 
-```bash
+```
 auralflow train <folder_name> <dataset_path> --resume --display \
 --max-tracks 80 \
 --max-samples 10000 \
