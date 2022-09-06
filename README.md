@@ -84,7 +84,7 @@ auralflow config [SpectrogramNetSimple|SpectrogramNetLSTM|SpectrogramNetVAE]
 --hop-length 1024 \
 ```
 ### Parameters
-- `--save` (str): Name/path to the training folder.
+- `--save` (str): Name/path to the training session folder.
 - `--display`: Displays the model config after the file is created.
 - `--<target>` (str): Target source to isolate: `'bass'` | `'drums'` | `'vocals'` | `'other'` .
 - `--num_channels` (int): Number of audio channels. Default: 1.
@@ -111,7 +111,8 @@ Default: False.
 ### Run training with `train`
 See instructions on downloading the MUSDB18 dataset [here]().
 Assuming you have access to an audio dataset with the same file structure,
-we can train the model using the `train` command:
+we can build and train the model specified in the training session folder by
+running the `train` command: 
 ```bash
 auralflow train my_model <path to dataset> --resume --display \
 --max-tracks 80 \
@@ -182,6 +183,26 @@ tracks. Default: 10000.
 - `--beta` (float): Weight of the second component, if using component loss. Default: 0.8.
 - `--image_freq` (int): Frequency (in epochs) at which to save images. Default: 5.
 - `--silent`: Suppresses checkpoint logging. 
+
+After training, the training session folder will have been populated with
+various files:
+```
+my_model
+  ├── model.json
+  ├── trainer.json
+  ├── checkpoint.pth
+  ├── runs/...
+  ├── spectrogram/...
+  └── waveform/...
+```
+where
+
+- `model.json`: model configuration file.
+- `trainer.json`: trainer configuration file.
+- `checkpoint.pth`: model and training state.
+- `runs`: optional folder that stores training logs if tensorboard is enabled.
+- `spectrogram`: optional folder that contains spectrogram images saved during training.
+- `waveform`: optional folder that contains waveform images saved during training.
 
 ## Separating Audio Files <a name="separating-audio"></a>
 The separation script allows us to separate a single song or multiple songs
