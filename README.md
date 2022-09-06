@@ -159,8 +159,7 @@ tracks. Default: 10000.
 - `--clip-grad` (bool): Clip gradients. Default: False.
 - `--max-grad-norm` (float): Maximum value of gradient if clipping is used. Default: 1000.
 - `--scale-grad` (bool): Enables gradient scaling if CUDA is enabled. Default: False.
-- `--stop-patience` (int): Number of epochs to train before stopping
-  if the validation loss does not improve. Default: 5.
+- `--stop-patience` (int): Number of epochs to wait before stopping, if the validation loss plateaus. Default: 5.
 - `--tensorboard`: Enables tensorboard.
 - `--view-iter`: Logs iteration training loss, if tensorboard is enabled.
 - `--view-epoch`: Logs epoch training loss, if tensorboard is enabled.
