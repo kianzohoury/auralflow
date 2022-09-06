@@ -39,7 +39,7 @@ which is averaged across audio tracks from a hidden test set.
 |--------------------------------------|-------------------|------------|-----------|----------------------------|
 | SpectrogramNetSimple                 | 7.9               | yes        | yes       | + 2.9                      |
 | SpectrogramNetLSTM (LSTM bottleneck) | 32.3              | yes        | yes       | +4.3                       |
-| **SpectrogramNetVAE*** (VAE + LSTM)  | **40**            | yes        | yes       | **+5.4**                   |
+| **SpectrogramNetVAE*** (VAE+LSTM)    | **40**            | yes        | yes       | **+5.4**                   |
 
 
 ## Installation <a name="installation"></a>
