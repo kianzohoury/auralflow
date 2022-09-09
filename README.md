@@ -1,5 +1,5 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16IezJ1YXPUPJR5U7XkxfThviT9-JgG4X?usp=sharing)
-
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Auralflow Logo](docs/static/af_logo.jpg)
 
 # Auralflow: A BSS Modeling Toolkit For PyTorch 🔊
@@ -56,6 +56,7 @@ python3 auralflow download <model_type> --save <path/to/save/weights>
 `````
 Alternatively, weights can be loaded directly into a model like so:
 ```python
+import auralflow
 model = auralflow.models.load(model="SpectrogramNetVAE", target="vocals")
 ```
 
