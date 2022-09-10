@@ -216,7 +216,7 @@ class ModelTrainer(ABC):
 
     def save_state(self, checkpoint_path: str) -> None:
         if not self._silent:
-            print(f"Saving trainer to {checkpoint_path}.")
+            print(f"Saving checkpoint to {checkpoint_path}.")
 
         if not Path(checkpoint_path).exists():
             # Store private instance attributes.
