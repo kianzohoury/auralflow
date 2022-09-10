@@ -545,15 +545,15 @@ class ModelTrainer(ABC):
         else:
             self._scheduler = scheduler_obj
 
-import time
-def time_forward(full_forward):
-    def inner(*args, **kwargs):
-        t1 = time.clock()
-        result = full_forward(*args, **kwargs)
-        t2 = time.clock()
-        print(f"TIME: {t2 - t1}")
-        return result
-    return inner
+# import time
+# def time_forward(full_forward):
+#     def inner(*args, **kwargs):
+#         t1 = time.clock()
+#         result = full_forward(*args, **kwargs)
+#         t2 = time.clock()
+#         print(f"TIME: {t2 - t1}")
+#         return result
+#     return inner
         
 
 class _DefaultModelTrainer(ModelTrainer):
@@ -564,7 +564,7 @@ class _DefaultModelTrainer(ModelTrainer):
     def __init__(self, *args, **kwargs) -> None:
         super(_DefaultModelTrainer, self).__init__(*args, **kwargs)
 
-    @time_forward
+    # @time_forward
     def full_forward(self, mixture: Tensor, target: Tensor) -> Tensor:
         with autocast(
             device_type=self.device,
