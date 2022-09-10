@@ -97,3 +97,8 @@ class SeparationModel(ABC):
     def load_state(self, state: OrderedDict[str, Tensor], device: str) -> None:
         self._model.load_state_dict(state_dict=state)
         self.device = device
+
+
+def load(model: str, target: str) -> SeparationModel:
+    """Loads the weights of the pretrained, target-specific model."""
+    pass
