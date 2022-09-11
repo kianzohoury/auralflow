@@ -213,7 +213,9 @@ class ModelTrainer(ABC):
         if not Path(checkpoint_path).exists():
             # Store private instance attributes.
             for key, val in vars(self).items():
-                if key[0] == '_' and key not in {"_callbacks", "_writer"}:
+                if key[0] == '_' and key not in {
+                    "_state", "_callbacks", "_writer"
+                }:
                     self._state[key[1:]] = val
 
         # Gather object states.
@@ -233,26 +235,21 @@ class ModelTrainer(ABC):
             print("  Successful")
 
     def load_state(self, checkpoint_path: str) -> None:
-        print(999, self.scheduler)
         if Path(checkpoint_path).exists():
             # Load previous trainer state.
             if not self._silent:
                 print(f"Loading from {checkpoint_path}...")
 
-            print(111, self.scheduler)
             self._state = torch.load(
                 f=checkpoint_path,
                 map_location=self.device
             )
-            print(222, self.scheduler)
+
             # Set instance attributes.
             for key, val in self._state.items():
                 if hasattr(self, f"_{key}"):
-                    print(key)
                     setattr(self, f"_{key}", val)
             
-            print(333, self.scheduler)
-
             # Load model parameters.
             self.model.load_state(
                 state=self._state["model"], device=self.device
@@ -420,12 +417,10 @@ class ModelTrainer(ABC):
                     self._state["train_losses"].append(mean_train_loss)
 
                     # Display loss via progress bar.
-                    pbar.set_postfix(
-                        {
-                            "loss": f"{loss_val:6.6f}",
-                            "mean_loss": f"{mean_train_loss:6.6f}",
-                        }
-                    )
+                    pbar.set_postfix({
+                        "loss": f"{loss_val:6.6f}",
+                        "mean_loss": f"{mean_train_loss:6.6f}",
+                    })
 
                     # Backprop.
                     self.grad_scaler.scale(batch_loss).backward()
@@ -508,12 +503,10 @@ class ModelTrainer(ABC):
                         mean_loss = total_loss / (idx + 1)
 
                 # Display loss.
-                pbar.set_postfix(
-                    {
-                        "loss": f"{loss_val:6.6f}",
-                        "mean_loss": f"{mean_loss:6.6f}",
-                    }
-                )
+                pbar.set_postfix({
+                    "loss": f"{loss_val:6.6f}",
+                    "mean_loss": f"{mean_loss:6.6f}",
+                })
         return mean_loss
 
     def _optimizer_step(self) -> None:
@@ -535,26 +528,26 @@ class ModelTrainer(ABC):
         if self.logging_dir is not None:
             self._writer.flush()
 
-    @property
-    def scheduler(self):
-        return self._scheduler
+    # @property
+    # def scheduler(self):
+    #     return self._scheduler
 
-    @scheduler.setter
-    def scheduler(self, scheduler_obj: object) -> None:
-        if hasattr(scheduler_obj, "state_dict"):
-            is_valid = callable(scheduler_obj.state_dict)
-        else:
-            raise AttributeError("Scheduler must define state_dict().")
-        if hasattr(scheduler_obj, "load_state_dict"):
-            is_valid = is_valid and callable(scheduler_obj.load_state_dict)
-        else:
-            raise AttributeError("Scheduler must define load_state_dict().")
-        if not is_valid:
-            raise ValueError(
-                f"{scheduler_obj.__class__.__name__} is not a valid scheduler."
-            )
-        else:
-            self._scheduler = scheduler_obj
+    # @scheduler.setter
+    # def scheduler(self, scheduler_obj: object) -> None:
+    #     if hasattr(scheduler_obj, "state_dict"):
+    #         is_valid = callable(scheduler_obj.state_dict)
+    #     else:
+    #         raise AttributeError("Scheduler must define state_dict().")
+    #     if hasattr(scheduler_obj, "load_state_dict"):
+    #         is_valid = is_valid and callable(scheduler_obj.load_state_dict)
+    #     else:
+    #         raise AttributeError("Scheduler must define load_state_dict().")
+    #     if not is_valid:
+    #         raise ValueError(
+    #             f"{scheduler_obj.__class__.__name__} is not a valid scheduler."
+    #         )
+    #     else:
+    #         self._scheduler = scheduler_obj
 
 # import time
 # def time_forward(full_forward):
