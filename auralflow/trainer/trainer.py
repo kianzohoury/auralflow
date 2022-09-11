@@ -415,7 +415,6 @@ class ModelTrainer(ABC):
                     loss_val = batch_loss.item()
                     total_train_loss += loss_val
                     mean_train_loss = total_train_loss / (idx + 1)
-                    self._state["train_losses"].append(mean_train_loss)
 
                     # Display loss via progress bar.
                     pbar.set_postfix({
@@ -449,6 +448,7 @@ class ModelTrainer(ABC):
             # Run validation loop. 
             mean_val_loss = self.validate(val_loader=val_loader)
             self.scheduler_step(val_loss=mean_val_loss)
+            self._state["train_losses"].append(mean_train_loss)
             self._state["val_losses"].append(mean_val_loss)
 
             # Epoch-end callback.
@@ -472,6 +472,9 @@ class ModelTrainer(ABC):
 
             self._state["last_epoch"] += 1
             self._flush_writer()
+        
+        # save final state
+        self.save_state(checkpoint_path=self.checkpoint_path)
 
     def validate(self, val_loader: DataLoader) -> float:
         """Given a validation set, runs validation and returns the mean loss.
