@@ -144,6 +144,7 @@ class ModelTrainer(ABC):
         self._state = {
             "last_global_step": -1,
             "last_epoch": -1,
+            "stop_epoch": -1,
             "patience": self._stop_patience,
             "num_plateaus": 0,
             "train_losses": [],
@@ -269,8 +270,6 @@ class ModelTrainer(ABC):
                 )
             else:
                 self.grad_scaler = GradScaler(enabled=False)
-            if not self._silent:
-                print("  Successful")
 
     def _save_if_best(self, val_loss: float):
         """Saves model only if epoch validation loss improves."""
@@ -388,13 +387,15 @@ class ModelTrainer(ABC):
         # Create training callbacks manager.
         self._setup_callbacks()
 
+        if self._state["last_epoch"] >= self._state["stop_epoch"]:
+            self._state["stop_epoch"] += max_epochs
         self._state["last_epoch"] += 1
         self._state["last_global_step"] += 1
-        stop_epoch = self._state["last_epoch"] + max_epochs
+        stop_epoch = self._state["stop_epoch"]
         max_iters = len(train_loader)
 
         for epoch in range(self._state["last_epoch"], stop_epoch):
-            print(f"Epoch {epoch}/{stop_epoch - 1}", flush=True)
+            print(f"Epoch [{epoch}/{stop_epoch}]", flush=True)
             total_train_loss = 0
 
             # Set model to training mode.
