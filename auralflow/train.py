@@ -130,7 +130,7 @@ def main(
         view_grad=training_config.visuals_config.view_grad,
         view_weights=training_config.visuals_config.view_weights,
         view_spec=training_config.visuals_config.view_spec,
-        view_wav=training_config.visuals_config.view_wave,
+        view_wave=training_config.visuals_config.view_wave,
         play_estimate=training_config.visuals_config.play_estimate,
         play_residual=training_config.visuals_config.play_residual,
         image_dir=training_config.visuals_config.image_dir,

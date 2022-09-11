@@ -301,8 +301,6 @@ def _waveform_visual_handler(
     estimate_wav = torch.mean(estimate_audio, dim=1)[0]
     target_wav = torch.mean(target_audio.squeeze(-1), dim=1)[0]
 
-    print(estimate_wav.shape, target_wav.shape)
-
     # Compensate for single-target models for now.
     if estimate_wav.dim() == 1:
         estimate_wav = estimate_wav.unsqueeze(-1).cpu()
@@ -389,7 +387,7 @@ class WaveformVisualCallback(TrainingCallback):
         else:
             save_dir = None
         self._count += 1
-        
+
         _waveform_visual_handler(
             tensorboard_writer=self._writer,
             model=self._model,
