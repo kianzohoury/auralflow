@@ -5,6 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import torch.cuda
+import shutil
 
 from argparse import ArgumentParser, ArgumentError
 
@@ -30,6 +31,8 @@ def main():
 
         # Save the model configuration file within the specified save dir.
         save_dir = Path(args.save)
+        if save_dir.is_dir():
+            shutil.rmtree(str(save_dir))
         save_dir.mkdir(parents=True, exist_ok=True)
         model_config.save(filepath=str(save_dir.joinpath("model.json")))
 
