@@ -42,25 +42,22 @@ class ModelTrainer(ABC):
             ``ReduceLROnPlateau`` is used.
         use_amp (bool): If ``True``, enables automatic mixed
             precision if possible. Default: ``True``.
-        scale_grad (bool): If ``True``, gradient scaling is used if possible.
-            Default: ``True``.
-        clip_grad (bool): If ``True``, loss gradients are clipped. Default:
-            ``True``.
         checkpoint (optional[str]): Name of the checkpoint file to save.
             If ``None`` is specified, checkpointing will be skipped.
             Default: ``checkpoint.pth``.
         logging_dir (optional[str]): Name of the directory to save tensorboard
             files to. If ``None`` is specified, tensorboard will be disabled.
             Default: ``runs``.
-        resume (bool): If ``True``, training will be resumed from the specified
-            checkpoint file, if possible. Otherwise, training will be
-            restarted. Default: ``True``.
         device (str): Device: ``'cpu'`` | ``'cuda'``. Default: ``'cpu'``.
 
     Keyword Args:
         lr (Union[float, List[float, float]]]): Learning rate or a pair of
             learning rates. If two are passed in, the second value corresponds
             to the bottleneck layers. Default: ``0.008``.
+        scale_grad (bool): If ``True``, gradient scaling is used if possible.
+            Default: ``True``.
+        clip_grad (bool): If ``True``, loss gradients are clipped. Default:
+            ``True``.
         init_scale (float): Initial value for the gradient scaler, if one
             is enabled. Default: ``2.0 ** 16``.
         max_grad_norm (float): Maximum gradient norm used for
@@ -73,42 +70,44 @@ class ModelTrainer(ABC):
             if the validation loss does not improve. Default: ``5``.
         min_delta (float): Minimum improvement in the validation loss
             required to reset the stop patience counter. Default: ``0.01``.
-        view_norm (bool): If ``True``, logs the 2-norm of each
+        view_norm (bool): If ``False``, logs the 2-norm of each
             weight/gradient if tensorboard is enabled. Default: ``True``.
-        view_epoch (bool): If ``True``, logs epoch training and
+        view_epoch (bool): If ``False``, logs epoch training and
             validation loss if tensorboard is enabled. Default: ``True``.
-        view_iter (bool): If ``True``, logs iteration training loss if
-            tensorboard is enabled. Default: ``True``.
+        view_iter (bool): If ``False``, logs iteration training loss if
+            tensorboard is enabled. Default: ``False``.
         view_grad (bool): If ``True``, logs gradients with respect
-            to layers if tensorboard is enabled. Default: ``True``.
+            to layers if tensorboard is enabled. Default: ``False``.
         view_weights (bool): If ``True``, logs model weights by layer if
-            tensorboard is enabled. Default: ``True``.
+            tensorboard is enabled. Default: ``False``.
         view_spec (bool): If ``True``, logs target source estimates
             as spectrogram images if model is an instance of a
             ``SpectrogramMaskModel`` and tensorboard is enabled. Default:
-            ``True``.
+            ``False``.
         view_wave (bool): If ``True``, logs target source estimates
-            as waveform images if tensorboard is enabled. Default: ``True``.
+            as waveform images if tensorboard is enabled. Default: ``False``.
         play_estimate (bool): If ``True``, logs listenable target source
-            estimates if tensorboard is enabled. Default: ``True``.
+            estimates if tensorboard is enabled. Default: ``False``.
         play_residual (bool): If ``True``, logs listenable background track
-            estimates if tensorboard is enabled. Default: ``True``.
+            estimates if tensorboard is enabled. Default: ``False``.
         image_dir (optional[str]):
         image_freq (int): Frequency (in epochs) at which to save images.
             Default: ``5``.
         silent (bool): If ``True``, suppresses checkpoint logging.
-            Default: ``True``.
+            Default: ``False``.
     """
 
     _lr: Union[float, Tuple[float, float]] = 0.008
+    _scale_grad: bool = True
+    _clip_grad: bool = True
     _init_scale: float = 2.0 ** 16
     _max_grad_norm: float = 100.0
     _max_plateaus: int = 5
     _stop_patience: int = 5
     _min_delta: float = 0.01
-    _view_norm: bool = True
-    _view_epoch: bool = True
-    _view_iter: bool = True
+    _view_norm: bool = False
+    _view_epoch: bool = False
+    _view_iter: bool = False
     _view_grad: bool = False
     _view_weights: bool = False
     _view_spec: bool = False
@@ -126,11 +125,8 @@ class ModelTrainer(ABC):
         optimizer: Optional[Optimizer] = None,
         scheduler: Optional[object] = None,
         use_amp: bool = True,
-        scale_grad: bool = True,
-        clip_grad: bool = True,
         checkpoint: Optional[str] = "checkpoint.pth",
         logging_dir: Optional[str] = "runs",
-        resume: bool = True,
         device: str = "cpu",
         **kwargs
     ):
@@ -145,74 +141,70 @@ class ModelTrainer(ABC):
         self.checkpoint_path = checkpoint
         self.logging_dir = logging_dir
 
-        # Load previous trainer or initialize a new one.
-        if resume and Path(self.checkpoint_path).exists():
-            self.load_state(checkpoint_path=self.checkpoint_path)
-        else:
-            self._state = {
-                "last_global_step": -1,
-                "last_epoch": -1,
-                "patience": self._stop_patience,
-                "num_plateaus": 0,
-                "train_losses": [],
-                "val_losses": [],
-                "best_val_loss": float("inf"),
-            }
-            # Set instance attributes corresponding to specified kwargs.
-            for key, val in kwargs.items():
+        self._state = {
+            "last_global_step": -1,
+            "last_epoch": -1,
+            "patience": self._stop_patience,
+            "num_plateaus": 0,
+            "train_losses": [],
+            "val_losses": [],
+            "best_val_loss": float("inf"),
+        }
+
+        # Set private instance attributes corresponding to specified kwargs.
+        for key, val in kwargs.items():
+            if hasattr(self, f"_{key}"):
                 setattr(self, f"_{key}", val)
 
-            # Set model and device.
-            self.model = model
-            self.model.device = self.device
-            # Set criterion.
-            self.criterion = criterion
+        # Set model and device.
+        self.model = model
+        self.model.device = self.device
 
-            # Set optimizer.
-            if optimizer is not None:
-                self.optimizer = optimizer
+        # Set criterion.
+        self.criterion = criterion
+
+        # Set optimizer.
+        if optimizer is not None:
+            self.optimizer = optimizer
+        else:
+            # Use default optimizer. Split parameters if necessary.
+            if isinstance(self._lr, float):
+                self._lr = (self._lr, self._lr)
+            if issubclass(self.model.__class__, SpectrogramNetLSTM):
+                group_1, group_2 = model.model._split_params()
+                # Assign different learning rates to the groups.
+                params = [
+                    {"params": group_1, "lr": self._lr[0]},
+                    {"params": group_2, "lr": self._lr[1]}
+                ]
             else:
-                # Use default optimizer. Split parameters if necessary.
-                if isinstance(self._lr, float):
-                    self._lr = (self._lr, self._lr)
-                if issubclass(self.model.__class__, SpectrogramNetLSTM):
-                    group_1, group_2 = model.model._split_params()
-                    # Assign different learning rates to the groups.
-                    params = [
-                        {"params": group_1, "lr": self._lr[0]},
-                        {"params": group_2, "lr": self._lr[1]}
-                    ]
-                else:
-                    params = [{"params": model.model.parameters()}]
-                self.optimizer = AdamW(params=params, lr=self._lr[0])
+                params = [{"params": model.model.parameters()}]
+            self.optimizer = AdamW(params=params, lr=self._lr[0])
 
-            # Set scheduler.
-            if scheduler is not None:
-                self.scheduler = scheduler
-            else:
-                # Use the default lr scheduler.
-                self.scheduler = ReduceLROnPlateau(
-                    optimizer=self.optimizer,
-                    mode="min",
-                    verbose=not self._silent,
-                    patience=self._stop_patience
-                )
-
-            # Enable gradient scaling and mixed precision, if possible.
-            self._grad_scaler = GradScaler(
-                init_scale=self._init_scale,
-                enabled=self.use_amp and scale_grad
+        # Set scheduler.
+        if scheduler is not None:
+            self.scheduler = scheduler
+        else:
+            # Use the default lr scheduler.
+            self.scheduler = ReduceLROnPlateau(
+                optimizer=self.optimizer,
+                mode="min",
+                verbose=not self._silent,
+                patience=self._stop_patience
             )
-            # Disable gradient clipping if specified.
-            if not clip_grad:
-                self._max_grad_norm = float("inf")
+        
+        # Enable gradient scaling and mixed precision, if possible.
+        self._grad_scaler = GradScaler(
+            init_scale=self._init_scale,
+            enabled=self.use_amp and self._scale_grad
+        )
+        # Disable gradient clipping if specified.
+        if not self._clip_grad:
+            self._max_grad_norm = float("inf")
 
-            # Only use a counter for default scheduler (ReduceLROnPlateau).
-            if not isinstance(self.scheduler, ReduceLROnPlateau):
-                self._max_plateaus = 1
-
-        # Create training callback manager.
-        self._setup_callbacks()
+        # Only use a counter for default scheduler (ReduceLROnPlateau).
+        if not isinstance(self.scheduler, ReduceLROnPlateau):
+            self._max_plateaus = 1
 
     def save_state(self, checkpoint_path: str) -> None:
         if not self._silent:
@@ -241,14 +233,26 @@ class ModelTrainer(ABC):
             print("  Successful")
 
     def load_state(self, checkpoint_path: str) -> None:
+        print(999, self.scheduler)
         if Path(checkpoint_path).exists():
             # Load previous trainer state.
             if not self._silent:
                 print(f"Loading from {checkpoint_path}...")
+
+            print(111, self.scheduler)
             self._state = torch.load(
                 f=checkpoint_path,
                 map_location=self.device
             )
+            print(222, self.scheduler)
+            # Set instance attributes.
+            for key, val in self._state.items():
+                if hasattr(self, f"_{key}"):
+                    print(key)
+                    setattr(self, f"_{key}", val)
+            
+            print(333, self.scheduler)
+
             # Load model parameters.
             self.model.load_state(
                 state=self._state["model"], device=self.device
@@ -262,15 +266,12 @@ class ModelTrainer(ABC):
                 self._state["scheduler"]
             )
             # Load gradient scaler.
-            if self.use_amp and self._state["scale_grad"]:
+            if self.use_amp and self._scale_grad:
                 self._grad_scaler.load_state_dict(
                     self._state["grad_scaler"]
                 )
             else:
                 self._grad_scaler = GradScaler(enabled=False)
-            # Set instance attributes.
-            for key, val in self._state.items():
-                setattr(self, f"_{key}", val)
             if not self._silent:
                 print("  Successful")
 
@@ -370,6 +371,7 @@ class ModelTrainer(ABC):
         train_loader: DataLoader,
         val_loader: DataLoader,
         max_epochs: int = 100,
+        resume: bool = True
     ) -> None:
         """Runs training.
 
@@ -378,8 +380,17 @@ class ModelTrainer(ABC):
             val_loader (DataLoader): Validation set dataloader.
             max_epochs (int): Maximum number of epochs to train for.
                 Default: ``100``.
-
+            resume (bool): If ``True``, training will be resumed from the 
+                specified checkpoint file, if possible. Otherwise, training will 
+                be restarted. Default: ``True``.
         """
+        # Resume from previous training state.
+        if resume:
+            self.load_state(checkpoint_path=self.checkpoint_path)
+
+        # Create training callbacks manager.
+        self._setup_callbacks()
+
         self._state["last_epoch"] += 1
         self._state["last_global_step"] += 1
         stop_epoch = self._state["last_epoch"] + max_epochs
