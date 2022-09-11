@@ -427,17 +427,19 @@ def _spectrogram_visual_handler(
 
     # Apply log and mel scaling to estimate and target spectrograms.
     estimate_mel = model.audio_transform.audio_to_mel(audio=estimate_audio)
-    target_mel = model.audio_transform.audio_to_mel(audio=target_audio)
+    target_mel = model.audio_transform.audio_to_mel(
+        audio=target_audio.to(estimate_audio.device).squeeze(-1).float()
+    )
 
     # Take only the first tensors from the batch.
     estimate_mel = torch.mean(estimate_mel, dim=1)[0]
     target_mel = torch.mean(target_mel, dim=1)[0]
 
     # Compensate for single-target models for now.
-    if estimate_mel.dim() == 3:
-        estimate_mel = estimate_mel.unsqueeze(-1).cpu()
-    if target_mel.dim() == 3:
-        target_mel = target_mel.unsqueeze(-1).cpu()
+    if estimate_mel.dim() == 2:
+        estimate_mel = estimate_mel.unsqueeze(-1).cpu().numpy()
+    if target_mel.dim() == 2:
+        target_mel = target_mel.unsqueeze(-1).cpu().numpy()
 
     # Create spectrogram figure for each target source.
     for i, label in enumerate(model.targets):
