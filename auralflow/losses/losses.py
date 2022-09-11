@@ -490,11 +490,11 @@ class SISDRLoss(nn.Module):
             loss = self.forward(
                 estimate_audio=estimate_audio, target_audio=target_audio
             )
-            # Add KL loss term if applicable.
-            if isinstance(model.model, SpectrogramNetVAE):
-                mu, sigma = data["mu"], data["sigma"]
-                kl_loss = kl_div_loss(mu=mu, sigma=sigma)
-                loss = loss + kl_loss
+            # # Add KL loss term if applicable.
+            # if isinstance(model.model, SpectrogramNetVAE):
+            #     mu, sigma = data["mu"], data["sigma"]
+            #     kl_loss = kl_div_loss(mu=mu, sigma=sigma)
+            #     loss = loss + kl_loss
         return loss
 
 

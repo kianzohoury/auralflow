@@ -781,10 +781,10 @@ class SpectrogramNetVAE(SpectrogramNetLSTM):
         # Normalizing flow.
         mu_data = self.mu(enc_5)
         sigma_data = torch.exp(self.log_sigma(enc_5)).float()
-        eps = self.eps.sample(sample_shape=self.sigma_data.shape)
+        eps = self.eps.sample(sample_shape=sigma_data.shape)
 
         # Sample z from the modeled distribution.
-        latent_data = self.mu_data + self.sigma_data * eps
+        latent_data = mu_data + sigma_data * eps
 
         # Pass through recurrent stack.
         lstm_out, _ = self.lstm(latent_data)
