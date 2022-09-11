@@ -295,6 +295,7 @@ class ModelTrainer(ABC):
             self._writer = SummaryWriter(
                 log_dir=self.logging_dir
             )
+
             # Define visualization callbacks.
             self._callbacks = _create_callbacks(
                 model=self.model,
