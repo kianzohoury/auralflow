@@ -194,7 +194,7 @@ class ModelTrainer(ABC):
             )
         
         # Enable gradient scaling and mixed precision, if possible.
-        self._grad_scaler = GradScaler(
+        self.grad_scaler = GradScaler(
             init_scale=self._init_scale,
             enabled=self.use_amp and self._scale_grad
         )
@@ -221,8 +221,8 @@ class ModelTrainer(ABC):
         self._state["best_model"] = deepcopy(self._state["model"])
         self._state["optimizer"] = self.optimizer.state_dict()
         self._state["scheduler"] = self.scheduler.state_dict()
-        if self._grad_scaler.is_enabled():
-            self._state["grad_scaler"] = self._grad_scaler.state_dict()
+        if self.grad_scaler.is_enabled():
+            self._state["grad_scaler"] = self.grad_scaler.state_dict()
 
         # Transfer model back to current device.
         self.model.device = self.device
@@ -267,11 +267,11 @@ class ModelTrainer(ABC):
             )
             # Load gradient scaler.
             if self.use_amp and self._scale_grad:
-                self._grad_scaler.load_state_dict(
+                self.grad_scaler.load_state_dict(
                     self._state["grad_scaler"]
                 )
             else:
-                self._grad_scaler = GradScaler(enabled=False)
+                self.grad_scaler = GradScaler(enabled=False)
             if not self._silent:
                 print("  Successful")
 
@@ -428,7 +428,7 @@ class ModelTrainer(ABC):
                     )
 
                     # Backprop.
-                    self._grad_scaler.scale(batch_loss).backward()
+                    self.grad_scaler.scale(batch_loss).backward()
                     # Loss-end/post-backward phase callback.
                     self._callbacks.on_loss_end(
                         named_losses={
@@ -518,14 +518,14 @@ class ModelTrainer(ABC):
 
     def _optimizer_step(self) -> None:
         """Optimizes and updates the model's parameters."""
-        self._grad_scaler.unscale_(self.optimizer)
+        self.grad_scaler.unscale_(self.optimizer)
 
         # Clip gradient.
         _ = nn.utils.clip_grad_norm_(
             self.model.model.parameters(), max_norm=self._max_grad_norm
         )
-        self._grad_scaler.step(self.optimizer)
-        self._grad_scaler.update()
+        self.grad_scaler.step(self.optimizer)
+        self.grad_scaler.update()
 
         # Quicker gradient zeroing.
         for param in self.model.model.parameters():
