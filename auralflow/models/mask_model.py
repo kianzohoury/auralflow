@@ -203,7 +203,6 @@ class SpectrogramMaskModel(SeparationModel):
             to the distribution parameters: :math:`\mu, \sigma`, respectively,
             if ``self.model`` is an instance of ``SpectrogramNetVAE``.
         """
-        print(mixture.shape)
         output = self.model(mixture)
         # Handle network output.
         if isinstance(output, tuple):
