@@ -46,7 +46,8 @@ which is averaged across audio tracks from a hidden test set.
 | SpectrogramNetLSTM                | 32.3              | yes        | yes       | +4.3                       |
 | **SpectrogramNetVAE*** (VAE+LSTM) | **40**            | yes        | yes       | **+5.4**                   |
 
-Note that the models are being improved and updated as the package is actively being maintained.
+Note that the models will be updated periodically, as development of this package 
+is actively ongoing.
 
 ## Installation <a name="installation"></a>
 Install auralflow via the [PyPi](https://pypi.org) package manager:
