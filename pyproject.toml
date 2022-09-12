@@ -18,8 +18,8 @@ numpy = ">=1.21.6"
 scipy = ">=1.7.3"
 protobuf = "3.9.2"
 tensorflow = "2.9.1"
-torch = "1.12.1"
-torchaudio = "0.12.1"
+torch = "1.12.0"
+torchaudio = "0.12.0"
 #numba = "0.55.2"
 
 [tool.poetry.dev-dependencies]

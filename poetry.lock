@@ -1306,7 +1306,7 @@ tensorflow-rocm = ["tensorflow-rocm (>=2.10.0,<2.11.0)"]
 
 [[package]]
 name = "termcolor"
-version = "2.0.0"
+version = "2.0.1"
 description = "ANSI color formatting for output in terminal"
 category = "main"
 optional = false
@@ -1356,7 +1356,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "torch"
-version = "1.12.1"
+version = "1.12.0"
 description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
 category = "main"
 optional = false
@@ -1367,14 +1367,14 @@ typing-extensions = "*"
 
 [[package]]
 name = "torchaudio"
-version = "0.12.1"
+version = "0.12.0"
 description = "An audio package for PyTorch"
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-torch = "1.12.1"
+torch = "*"
 
 [[package]]
 name = "tornado"
@@ -1494,7 +1494,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">= 3.7.11 <= 3.7.13"
-content-hash = "a996eec8a26576f500d0f4fba7e939e80aa79fdbbf8f33f1b173ecc6e6d8e7b1"
+content-hash = "898f10bb41939a6f71c6b0d93d19b81d746d101d3078c6308e39267bd99f4795"
 
 [metadata.files]
 absl-py = []
