@@ -16,9 +16,6 @@ from auralflow import losses
 from auralflow import train
 from pathlib import Path
 
-import importlib
-importlib.reload(parse)
-
 
 def main():
     # Parse args.

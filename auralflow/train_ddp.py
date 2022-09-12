@@ -30,8 +30,8 @@ if __name__ == "__main__":
 #     os.system(f"python3 {file_path} " + " ".join(sys.argv[1:i]))
 #     sys.argv = [file_path] + sys.argv[:i]
     
-    print(sys.argv)
-    main_script.main()
+#     print(sys.argv)
+#     main_script.main()
     
 #     # train model
 #     sys.argv = [file_path] + sys.argv[i:]
