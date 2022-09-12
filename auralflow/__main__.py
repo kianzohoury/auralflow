@@ -137,7 +137,7 @@ def main():
     #         max_tracks=args.max_tracks,
     #         resample_rate=args.resample_rate,
     #     )
-    elif args.command == "download":
+    elif args.command == "pretrained":
         pretrained.load(
             model=args.model_type,
             target=args.target,
