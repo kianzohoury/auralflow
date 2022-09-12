@@ -13,7 +13,7 @@ from music tracks and recorded audio. The package offers the following:
 - pretrained source separator models
 - efficient data chunking of long audio clips via dataset classes
 - audio-tailored loss functions (e.g. component loss, Si-SDR loss, etc.)
-- models wrappers with built-in pre/post processing methods
+- models wrappers with built-in pre/post audio processing methods (i.e. Short-Time Fourier Transform)
 - a high-level model trainer for easy training (similar to Lightning)
 - data processing & visualization tools
 - GPU-accelerated MIR evaluation (e.g. Si-SDR, Si-SNR, etc.)
