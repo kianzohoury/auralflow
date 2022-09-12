@@ -12,7 +12,7 @@ training deep convolutional autoencoder networks that isolate _stems_ (e.g. voca
 from music tracks and recorded audio. The package offers the following:
 - pretrained source separator models
 - efficient data chunking of long audio clips via dataset classes
-- different loss functions (e.g. component loss, Si-SDR loss, etc.)
+- audio-tailored loss functions (e.g. component loss, Si-SDR loss, etc.)
 - models wrappers with built-in pre/post processing methods
 - model trainer for easy training
 - data processing & visualization tools
