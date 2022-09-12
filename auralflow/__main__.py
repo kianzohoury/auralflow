@@ -12,6 +12,7 @@ from argparse import ArgumentParser, ArgumentError
 from auralflow import configurations
 from auralflow import models
 from auralflow import parse
+from auralflow import pretrained
 from auralflow import losses
 from auralflow import train
 from pathlib import Path
@@ -136,6 +137,13 @@ def main():
     #         max_tracks=args.max_tracks,
     #         resample_rate=args.resample_rate,
     #     )
+    elif args.command == "download":
+        pretrained.load(
+            model=args.model_type,
+            target=args.target,
+            save_dir=args.save,
+            device="cuda" if torch.cuda.is_available() else "cpu"
+        )
 
 
 if __name__ == "__main__":

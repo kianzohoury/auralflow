@@ -21,6 +21,7 @@ tensorflow = "2.9.1"
 torch = "1.12.0"
 torchaudio = "0.12.0"
 #numba = "0.55.2"
+gdown = "^4.5.1"
 
 [tool.poetry.dev-dependencies]
 

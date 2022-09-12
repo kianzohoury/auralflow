@@ -208,6 +208,28 @@ def parse():
         default=44100,
         required=False,
     )
+
+    # Define pretrained loader parser.
+    pretrained_parser = subparsers.add_parser(name="pretrained")
+    pretrained_parser.add_argument(
+        "--model-type",
+        type=str,
+        choices=MODEL_NAMES,
+        required=False,
+        default="SpectrogramNetLSTM",
+        help="Base model."
+    )
+    pretrained_parser.add_argument(
+        "--target",
+        required=False,
+        default="vocals"
+    )
+    pretrained_parser.add_argument(
+        "--save",
+        default=str(Path.cwd().joinpath("my_model")),
+        required=False,
+        help="Path to the folder which will store the pretrained weights."
+    )
     args = parser.parse_args()
     return args
 
