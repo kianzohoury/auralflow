@@ -5,7 +5,6 @@
 # https://github.com/kianzohoury/auralflow.git
 
 from auralflow.datasets import create_audio_dataset
-from auralflow import configurations
 from auralflow.trainer import _DefaultModelTrainer
 from auralflow import configurations
 from torch.utils.data import DataLoader

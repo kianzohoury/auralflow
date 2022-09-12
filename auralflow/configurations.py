@@ -95,9 +95,10 @@ class CriterionConfig(Config):
     beta: float = 0.8
 
     def __str__(self) -> str:
-        if criterion != "component":
+        excluded_fields = []
+        if self.criterion != "component":
             excluded_fields = ["alpha", "beta"]
-        if criterion == "kl_div":
+        if self.criterion == "kl_div":
             excluded_fields.append("construction_loss")
         return _config_to_str(
             config=self, title="model config", excluded_fields=excluded_fields
