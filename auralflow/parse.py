@@ -57,23 +57,23 @@ def _add_default_args(sub_parser: ArgumentParser, fields, **kwargs) -> None:
                 choices=kwargs.get(field.name, None)
             )
 
-
+            
 def parse():
     parser = ArgumentParser(
         description="Main script."
     )
     subparsers = parser.add_subparsers(dest="command")
-
+    
     # Define model configuration parser.
     config_parser = subparsers.add_parser(name="config")
-    config_parser.add_argument(
-        "--model-type",
-        type=str,
-        choices=MODEL_NAMES,
-        help="Base model.",
-        required=False, 
-        default="SpectrogramNetLSTM"
-    )
+#     config_parser.add_argument(
+#         "--model-type",
+#         type=str,
+#         choices=MODEL_NAMES,
+#         required=False, 
+#         default="SpectrogramNetLSTM",
+#         help="Base model."
+#     )
     for target in TARGETS:
         config_parser.add_argument(
             f"--{target}",
