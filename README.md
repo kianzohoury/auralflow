@@ -32,8 +32,8 @@ a link to the official API [documentation](https://kianzohoury.github.io/auralfl
 Auralflow models use deep mask estimation networks to perform source separation 
 in the time-frequency domain (i.e. on magnitude spectrograms). The underlying 
 network is a deep convolutional autoencoder with a U-Net architecture that 
-uses skip connections. The final model uses a variational autoencoder as well
-as self-normalization.
+uses skip connections. Moreover, the final model uses latent space regularization
+(i.e. variational autoencoder) as well as self-normalization (see [Self-Normalizing Neural Networks](https://arxiv.org/abs/1706.02515))
 
 The models were trained on the musdb18 dataset. The table below compares each 
 model relative to its **scale-invariant signal-to-distortion ratio (____SI-SDR____)**,
