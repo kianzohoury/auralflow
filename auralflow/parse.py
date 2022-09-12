@@ -58,7 +58,7 @@ def _add_default_args(sub_parser: ArgumentParser, fields, **kwargs) -> None:
             )
 
             
-# def parse():
+def parse():
     parser = ArgumentParser(
         description="Main script."
     )
