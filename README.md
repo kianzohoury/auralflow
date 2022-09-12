@@ -34,6 +34,7 @@ in the time-frequency domain (i.e. on magnitude spectrograms). The underlying
 network is a deep convolutional autoencoder with a U-Net architecture that 
 uses skip connections. Moreover, the final model uses latent space regularization
 (i.e. a variational autoencoder) as well as self-normalization (see [Self-Normalizing Neural Networks](https://arxiv.org/abs/1706.02515))
+to boost audio generation and stabilize gradient flow (as vanishing/exploding gradients are a weakness of the deep mask estimation technique).
 
 The models were trained on the musdb18 dataset. The table below compares each 
 model relative to its **scale-invariant signal-to-distortion ratio (____SI-SDR____)**,
