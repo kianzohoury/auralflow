@@ -10,10 +10,11 @@ import shutil
 
 from argparse import ArgumentParser, ArgumentError
 from auralflow import configurations
+from auralflow import losses
 from auralflow import models
 from auralflow import parse
 from auralflow import pretrained
-from auralflow import losses
+from auralflow import separate
 from auralflow import train
 from pathlib import Path
 
@@ -111,19 +112,26 @@ def main():
             resume=args.resume
         )
 
-    # elif args.command == "separate":
-    #     config = load_config(args.folder_name)
-    #     config["training_params"]["training_mode"] = False
-    #     save_config(
-    #         config, save_filepath=args.folder_name
-    #     )
-    #     separate.main(
-    #         config_filepath=args.folder_name,
-    #         audio_filepath=args.audio_filepath,
-    #         save_filepath=args.save,
-    #         residual=args.residual,
-    #         duration=args.duration,
-    #     )
+    elif args.command == "separate":
+        print(f"Reading files from {args.folder_name}.")
+        save_dir = Path(args.folder_name)
+
+        # Load model configuration.
+        model_config = configurations._load_model_config(
+            filepath=str(save_dir.joinpath("model.json"))
+        )
+
+        separate.main(
+            model_config=model_config,
+            model_checkpoint=str(save_dir / "checkpoint.pth"),
+            audio_filepath=args.audio_filepath,
+            save_filepath=args.save,
+            sr=args.sr,
+            padding=args.padding,
+            residual=args.residual,
+            duration=args.duration,
+        )
+
     # elif args.command == "test":
     #     config = load_config(args.folder_name)
     #     config["training_params"]["training_mode"] = False

@@ -12,7 +12,6 @@ __all__ = [
     "SpectrogramNetSimple",
     "SpectrogramNetLSTM",
     "SpectrogramNetVAE",
-    "load"
 ]
 
 from .architectures import (
@@ -20,5 +19,5 @@ from .architectures import (
     SpectrogramNetLSTM,
     SpectrogramNetVAE
 )
-from .base import load, SeparationModel
+from .base import SeparationModel
 from .mask_model import SpectrogramMaskModel

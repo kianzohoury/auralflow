@@ -181,6 +181,20 @@ def parse():
         default=210,
         required=False,
     )
+    separator_parser.add_argument(
+        "--sr",
+        type=int,
+        help="Sample rate.",
+        default=44100,
+        required=False,
+    )
+    separator_parser.add_argument(
+        "--padding",
+        type=int,
+        help="Padding",
+        default=200,
+        required=False,
+    )
 
     # Define test parser.
     test_parser = subparsers.add_parser(name="test")

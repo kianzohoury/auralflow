@@ -92,6 +92,7 @@ class SpectrogramMaskModel(SeparationModel):
 
         # Note that the num bins will be num_fft // 2 + 1 due to symmetry.
         self.n_fft_bins = num_fft // 2 + 1
+        self.sample_length = sample_length
         self.num_out_channels = num_channels
         self._multi_estimator = len(self.targets) > 1
 
