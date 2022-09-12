@@ -5,6 +5,7 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import gdown
+import shutil
 import zipfile
 
 from auralflow.models.mask_model import SeparationModel
@@ -23,11 +24,23 @@ def load(
 ) -> SeparationModel:
     Path(save_dir).mkdir(parents=True, exist_ok=True)
     model_zip = gdown.download(
-        id=_model_links[f"{model}_{target}"], output=save_dir
+        id=_model_links[f"{model}_{target}"], output=save_dir + "/model.zip"
     )
     with zipfile.ZipFile(model_zip, "r") as zip_ref:
-        zip_ref.extractall(save_dir)
+        for file in zip_ref.infolist()[1:]:
+            file_name = Path(file.filename).name
+            dest = f"{save_dir}/{file_name}"
+            # Path(dest).parent.mkdir(parents=True, exist_ok=True)
 
-    model_config = _load_model_config(filepath=save_dir + "/model.json")
+            with zip_ref.open(file.filename, mode="r") as temp_file:
+                with open(dest, mode="wb") as dest_file:
+                    try:
+                        shutil.copyfileobj(temp_file, dest_file)
+                    except zipfile.error as e:
+                        raise e
+    model_config = _load_model_config(
+        filepath=f"{save_dir}/model.json"
+    )
+
     model = _build_model(model_config, device=device)
     return model
