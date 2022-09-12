@@ -45,7 +45,8 @@ def _add_default_args(sub_parser: ArgumentParser, fields, **kwargs) -> None:
             sub_parser.add_argument(
                 f"--{field.name.replace('_', '-')}",
                 required=False,
-                action="store_true"
+                action="store_const",
+                const=field.default
             )
         else:
             sub_parser.add_argument(
@@ -81,12 +82,15 @@ def parse():
         required=False,
         help="Path to the folder which will store all files created."
     )
-    config_parser.add_argument(
-        "--display",
-        action="store_true",
-        required=False,
-        help="Displays the model spec after its configuration file is created."
-    )
+    print(999)
+#     config_parser.add_argument(
+#         "--display",
+# #         action="store_const",
+#         required=False,
+#         default=False,
+# #         const=True
+#         help="Displays the model spec after its configuration file is created."
+#     )
 
     # Store default model configuration optional args.
     _add_default_args(
@@ -121,13 +125,15 @@ def parse():
         "--resume",
         help="Resumes model training from the checkpoint file.",
         required=False,
-        action="store_true"
+        action="store_const",
+        const=True
     )
     train_parser.add_argument(
         "--display",
-        action="store_true",
-        required=False,
         help="Displays the training parameters after the file is created."
+        required=False,
+        action="store_constant",
+        const=True
     )
 
     # Store default training configuration optional args.
