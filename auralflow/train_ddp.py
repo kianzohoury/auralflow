@@ -5,7 +5,26 @@
 # https://github.com/kianzohoury/auralflow.git
 
 import auralflow.__main__
+import sys
+
 
 if __name__ == "__main__":
+    
+    # manually hack arguments for now
+    file_path = sys.argv.pop(0)
+    
+    i = 0
+    while i < len(sys.argv):
+        if sys.argv[i] == "--train":
+            break
+        i += 1    
+    
+    # config model
+    sys.argv = [file_path] + sys.argv[:i]
+    
+    print(sys.argv)
     auralflow.__main__.main()
-    pass
+    
+    # train model
+    sys.argv = [file_path] + sys.argv[i:]
+    auralflow.__main__.main()

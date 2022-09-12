@@ -44,9 +44,9 @@ def _add_default_args(sub_parser: ArgumentParser, fields, **kwargs) -> None:
         if field.type is bool:
             sub_parser.add_argument(
                 f"--{field.name.replace('_', '-')}",
-                required=False,
-                action="store_const",
-                const=field.default
+                default=False,
+                const=True,
+                nargs='?',
             )
         else:
             sub_parser.add_argument(
@@ -67,13 +67,20 @@ def parse():
     # Define model configuration parser.
     config_parser = subparsers.add_parser(name="config")
     config_parser.add_argument(
-        "model_type", type=str, choices=MODEL_NAMES, help="Base model."
+        "--model-type",
+        type=str,
+        choices=MODEL_NAMES,
+        help="Base model.",
+        required=False, 
+        default="SpectrogramNetLSTM"
     )
     for target in TARGETS:
         config_parser.add_argument(
             f"--{target}",
-            action="store_true",
             required=False,
+            default=False,
+            const=True,
+            nargs='?',
             help=f"Estimate {target}."
         )
     config_parser.add_argument(
@@ -82,15 +89,14 @@ def parse():
         required=False,
         help="Path to the folder which will store all files created."
     )
-    print(999)
-#     config_parser.add_argument(
-#         "--display",
-# #         action="store_const",
-#         required=False,
-#         default=False,
-# #         const=True
-#         help="Displays the model spec after its configuration file is created."
-#     )
+    config_parser.add_argument(
+        "--display",
+        required=False,
+        default=False,
+        const=True,
+        nargs='?',
+        help="Displays the model spec after its configuration file is created."
+    )
 
     # Store default model configuration optional args.
     _add_default_args(
@@ -124,16 +130,16 @@ def parse():
     train_parser.add_argument(
         "--resume",
         help="Resumes model training from the checkpoint file.",
-        required=False,
-        action="store_const",
-        const=True
+        default=False,
+        const=True,
+        nargs='?'
     )
     train_parser.add_argument(
         "--display",
-        help="Displays the training parameters after the file is created."
-        required=False,
-        action="store_constant",
-        const=True
+        help="Displays the training parameters after the file is created.",
+        default=False,
+        const=True,
+        nargs='?'
     )
 
     # Store default training configuration optional args.
@@ -164,8 +170,9 @@ def parse():
     separator_parser.add_argument(
         "--residual",
         help="Whether to include residual audio (if possible).",
-        action="store_true",
-        required=False,
+        default=False,
+        const=True,
+        nargs='?',
     )
     separator_parser.add_argument(
         "--duration",

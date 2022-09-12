@@ -7,8 +7,8 @@
 import torch.cuda
 import shutil
 
-from argparse import ArgumentParser, ArgumentError
 
+from argparse import ArgumentParser, ArgumentError
 from auralflow import configurations
 from auralflow import models
 from auralflow import parse
