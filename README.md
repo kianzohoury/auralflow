@@ -119,7 +119,7 @@ Default: False.
 - `--input_axis` (int): Axis to squeeze features along. Default: 1.
 
 ### Run training with `train`
-See instructions on downloading the MUSDB18 dataset [here]().
+See instructions on downloading the MUSDB18 dataset [here](https://github.com/sigsep/sigsep-mus-db).
 Assuming you have access to an audio dataset with the same file structure,
 we can build and train the model specified in the training session folder by
 running the `train` command: 
