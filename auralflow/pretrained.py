@@ -31,4 +31,3 @@ def load(
     model_config = _load_model_config(filepath=save_dir + "/model.json")
     model = _build_model(model_config, device=device)
     return model
-
