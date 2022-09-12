@@ -31,13 +31,6 @@ drums and background instrumental tracks with quality results.
 
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Notes
-
-   theory
-
-
-.. toctree::
    :maxdepth: 2
    :caption: API Reference
 
