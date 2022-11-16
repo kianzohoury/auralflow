@@ -595,16 +595,13 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
         with torch.cuda.amp.autocast(enabled=True):
             # Normalize input if applicable.
             data = self.input_norm(data)
-            # print(data.dtype)
 
             # Pass through encoder.
             enc_1, skip_1 = self.down_1(data)
-            # print("ENC1", enc_1.dtype)
             enc_2, skip_2 = self.down_2(enc_1)
             enc_3, skip_3 = self.down_3(enc_2)
             enc_4, skip_4 = self.down_4(enc_3)
             enc_5, skip_5 = self.down_5(enc_4)
-            # print("ENC5", enc_5.dtype)
             # enc_6, skip_6 = self.down_6(enc_5)
 
             # Reshape encoded audio to pass through bottleneck.
@@ -615,33 +612,26 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
             # Pass through recurrent stack.
             lstm_out, _ = self.lstm(enc_5)
             lstm_out = lstm_out.reshape((n_batch * dim1, -1))
-            # print("LSTM", lstm_out.dtype)
             
             # Project latent audio onto affine space, and reshape for decoder.
             latent_data = self.linear(lstm_out)
-            # print("LATENT", latent_data.dtype)
             latent_data = latent_data.reshape((n_batch, dim1, n_channel * 2, dim2))
             latent_data = latent_data.permute(self.output_perm)
 
             # Pass through decoder.
             dec_1 = self.up_1(latent_data, skip_5)
-            # print("DEC1", dec_1.dtype)
             dec_2 = self.up_2(dec_1, skip_4)
             dec_3 = self.up_3(dec_2, skip_3)
             dec_4 = self.up_4(dec_3, skip_2)
             dec_5 = self.up_5(dec_4, skip_1)
-            # print("DEC5", dec_5.dtype)
             # dec_6 = self.up_6(dec_5, skip_1)
 
             # Pass through final 1x1 conv and normalize output if applicable.
             dec_final = self.soft_conv(dec_5)
-            # print("FINAL CONV", dec_final.dtype)
             output = self.output_norm(dec_final)
-            # print("OUTPUT", output.dtype)
 
             # Generate multiplicative soft-mask.
             mask = self.mask_activation(output)
-            # print("MASK", mask.dtype)
             mask = torch.clamp(mask, min=0, max=1.0).float()
             return mask
 
@@ -655,7 +645,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
                 other_params.append(param_val)
         return lstm_params, other_params
 
-
+import sys
 class SpectrogramNetVAE(SpectrogramNetLSTM):
     r"""Spectrogram variational autoencoder model with an LSTM bottleneck.
 
