@@ -645,7 +645,7 @@ class SpectrogramNetLSTM(SpectrogramNetSimple):
                 other_params.append(param_val)
         return lstm_params, other_params
 
-import sys
+
 class SpectrogramNetVAE(SpectrogramNetLSTM):
     r"""Spectrogram variational autoencoder model with an LSTM bottleneck.
 
