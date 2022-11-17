@@ -13,6 +13,7 @@ import sys
 import os
 from pathlib import Path
 import importlib
+import json
 
 # importlib.reload(main_script)
 
@@ -29,18 +30,17 @@ def model_fn(model_dir):
 
 
 if __name__ == "__main__":
+    print(os.environ["SM_HPS"])
+    
+    config_params = json.loads(os.environ["SM_HPS"])
     config_params = {
-        key.replace("-", "_"): val for key, val in os.environ["SM_HPS"]
+        key.replace("-", "_"): val for (key, val) in config_params.items()
     }
-    targets = []
-    for key in config_params:
-        if key in {"bass", "drums", "vocals", "other"}:
-            targets.append(key)
 
     # Create model configuration from args.
     model_config = configurations._create_model_config(
         model_type=config_params.pop("model_type"),
-        targets=sorted(targets),
+        targets=config_params["targets"],
         **config_params
     )
 
@@ -56,3 +56,5 @@ if __name__ == "__main__":
         print(model_config)
 
     print(f"Model configuration successfully saved to {str(save_dir)}.")
+
+    
