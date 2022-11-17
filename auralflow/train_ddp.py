@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # Create model configuration from args.
     model_config = configurations._create_model_config(
         model_type=config_params.pop("model_type"),
-        targets=config_params["targets"],
+        targets=config_params.pop("targets"),
         **config_params
     )
 
