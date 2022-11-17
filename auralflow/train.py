@@ -11,6 +11,16 @@ from torch.utils.data import DataLoader
 from pathlib import Path
 
 
+# def model_fn(model_dir):
+    
+    
+# #     model = configurations._build_model(
+# #         model_config=model_config,
+# #         device=training_config.device
+# #     )
+
+
+
 def main(
     model_config: configurations.AudioModelConfig,
     training_config: configurations.TrainingConfig,
