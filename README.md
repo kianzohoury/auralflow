@@ -12,10 +12,10 @@ training deep convolutional autoencoder networks that isolate _stems_ (e.g. voca
 from music tracks and recorded audio. The package offers the following:
 - pretrained source separator models
 - efficient data chunking of long audio clips via dataset classes
-- different loss functions (e.g. component loss, Si-SDR loss, etc.)
-- models wrappers with built-in pre/post processing methods
-- model trainer for easy training
-- data processing & visualization tools
+- audio-tailored loss functions (e.g. component loss, Si-SDR loss, etc.)
+- models wrappers with built-in pre/post audio processing methods (i.e. Short-Time Fourier Transform)
+- a high-level model trainer for easy training (similar to Lightning)
+- several useful data processing & visualization tools
 - GPU-accelerated MIR evaluation (e.g. Si-SDR, Si-SNR, etc.)
 - source separation of large audio folders
 
@@ -32,8 +32,9 @@ a link to the official API [documentation](https://kianzohoury.github.io/auralfl
 Auralflow models use deep mask estimation networks to perform source separation 
 in the time-frequency domain (i.e. on magnitude spectrograms). The underlying 
 network is a deep convolutional autoencoder with a U-Net architecture that 
-uses skip connections. The final model uses a variational autoencoder as well
-as self-normalization.
+uses skip connections. Moreover, the final model uses latent space regularization
+(i.e. a variational autoencoder) as well as self-normalization (see [Self-Normalizing Neural Networks](https://arxiv.org/abs/1706.02515))
+to boost audio generation and stabilize gradient flow (as vanishing/exploding gradients are a weakness of the deep mask estimation technique).
 
 The models were trained on the musdb18 dataset. The table below compares each 
 model relative to its **scale-invariant signal-to-distortion ratio (____SI-SDR____)**,
@@ -45,6 +46,8 @@ which is averaged across audio tracks from a hidden test set.
 | SpectrogramNetLSTM                | 32.3              | yes        | yes       | +4.3                       |
 | **SpectrogramNetVAE*** (VAE+LSTM) | **40**            | yes        | yes       | **+5.4**                   |
 
+Note that the models will be updated periodically, as development of this package 
+is actively ongoing.
 
 ## Installation <a name="installation"></a>
 Install auralflow via the [PyPi](https://pypi.org) package manager:
@@ -116,7 +119,7 @@ Default: False.
 - `--input_axis` (int): Axis to squeeze features along. Default: 1.
 
 ### Run training with `train`
-See instructions on downloading the MUSDB18 dataset [here]().
+See instructions on downloading the MUSDB18 dataset [here](https://github.com/sigsep/sigsep-mus-db).
 Assuming you have access to an audio dataset with the same file structure,
 we can build and train the model specified in the training session folder by
 running the `train` command: 
@@ -277,7 +280,7 @@ AI James - Schoolboy Fascination
   1. Applying $\large f$ to get the complex spectrograms of the mixture and targets, resulting in $\large f(A_{i})$ and $\large f(T_{i})$, respectively.
   2. Taking the magnitude of each complex spectrogram, resulting in $\large |X_{i}| = |f(A_{i})|$ and $\large |Y_{i}| = |f(T_{i})|$, respectively.
 
-- Let $\large g_{\theta}^k$ be the trainable deep mask estimation network for target source $\large k$. For each training pair, we feed the network $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta}^k = g_{\theta}(|X_i|)$, where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}$ is applied to $\large |X_i|$ via a Hadamard product to isolate an estimate of the target source from the mixture:
+- Let $\large g_{\theta}^k$ be the trainable deep mask estimation network for target source $\large k$. For each training pair, we feed the network $\large |X_i|$ to estimate a multiplicative soft-mask $\large M_{\theta}^k = g_{\theta}^k(|X_i|)$, where $\large m_{i} \in [0, 1]$. Next, $\large M_{\theta}^k$ is applied to $\large |X_i|$ via a Hadamard product to isolate an estimate of the target source from the mixture:
   
   $$
   \large |\hat Y_i^k| = \large M_{\theta}^k \odot |X_i|

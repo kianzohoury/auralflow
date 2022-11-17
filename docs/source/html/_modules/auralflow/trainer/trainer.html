@@ -177,10 +177,6 @@
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Notes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../theory.html">A Shallow Dive into Theory</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -271,25 +267,22 @@
 <span class="sd">            ``ReduceLROnPlateau`` is used.</span>
 <span class="sd">        use_amp (bool): If ``True``, enables automatic mixed</span>
 <span class="sd">            precision if possible. Default: ``True``.</span>
-<span class="sd">        scale_grad (bool): If ``True``, gradient scaling is used if possible.</span>
-<span class="sd">            Default: ``True``.</span>
-<span class="sd">        clip_grad (bool): If ``True``, loss gradients are clipped. Default:</span>
-<span class="sd">            ``True``.</span>
 <span class="sd">        checkpoint (optional[str]): Name of the checkpoint file to save.</span>
 <span class="sd">            If ``None`` is specified, checkpointing will be skipped.</span>
 <span class="sd">            Default: ``checkpoint.pth``.</span>
 <span class="sd">        logging_dir (optional[str]): Name of the directory to save tensorboard</span>
 <span class="sd">            files to. If ``None`` is specified, tensorboard will be disabled.</span>
 <span class="sd">            Default: ``runs``.</span>
-<span class="sd">        resume (bool): If ``True``, training will be resumed from the specified</span>
-<span class="sd">            checkpoint file, if possible. Otherwise, training will be</span>
-<span class="sd">            restarted. Default: ``True``.</span>
 <span class="sd">        device (str): Device: ``&#39;cpu&#39;`` | ``&#39;cuda&#39;``. Default: ``&#39;cpu&#39;``.</span>
 
 <span class="sd">    Keyword Args:</span>
 <span class="sd">        lr (Union[float, List[float, float]]]): Learning rate or a pair of</span>
 <span class="sd">            learning rates. If two are passed in, the second value corresponds</span>
 <span class="sd">            to the bottleneck layers. Default: ``0.008``.</span>
+<span class="sd">        scale_grad (bool): If ``True``, gradient scaling is used if possible.</span>
+<span class="sd">            Default: ``True``.</span>
+<span class="sd">        clip_grad (bool): If ``True``, loss gradients are clipped. Default:</span>
+<span class="sd">            ``True``.</span>
 <span class="sd">        init_scale (float): Initial value for the gradient scaler, if one</span>
 <span class="sd">            is enabled. Default: ``2.0 ** 16``.</span>
 <span class="sd">        max_grad_norm (float): Maximum gradient norm used for</span>
@@ -302,46 +295,44 @@
 <span class="sd">            if the validation loss does not improve. Default: ``5``.</span>
 <span class="sd">        min_delta (float): Minimum improvement in the validation loss</span>
 <span class="sd">            required to reset the stop patience counter. Default: ``0.01``.</span>
-<span class="sd">        max_lr_steps (int): Maximum number of learning rate reductions</span>
-<span class="sd">            if ``self.scheduler`` is an instance of</span>
-<span class="sd">            :class:`~torch.optim.lr_scheduler.ReduceLROnPlateau`. Default:</span>
-<span class="sd">            ``5``.</span>
-<span class="sd">        view_norm (bool): If ``True``, logs the 2-norm of each</span>
+<span class="sd">        view_norm (bool): If ``False``, logs the 2-norm of each</span>
 <span class="sd">            weight/gradient if tensorboard is enabled. Default: ``True``.</span>
-<span class="sd">        view_epoch (bool): If ``True``, logs epoch training and</span>
+<span class="sd">        view_epoch (bool): If ``False``, logs epoch training and</span>
 <span class="sd">            validation loss if tensorboard is enabled. Default: ``True``.</span>
-<span class="sd">        view_iter (bool): If ``True``, logs iteration training loss if</span>
-<span class="sd">            tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">        view_iter (bool): If ``False``, logs iteration training loss if</span>
+<span class="sd">            tensorboard is enabled. Default: ``False``.</span>
 <span class="sd">        view_grad (bool): If ``True``, logs gradients with respect</span>
-<span class="sd">            to layers if tensorboard is enabled. Default: ``True``.</span>
-<span class="sd">         view_weights (bool): If ``True``, logs model weights by layer if</span>
-<span class="sd">            tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">            to layers if tensorboard is enabled. Default: ``False``.</span>
+<span class="sd">        view_weights (bool): If ``True``, logs model weights by layer if</span>
+<span class="sd">            tensorboard is enabled. Default: ``False``.</span>
 <span class="sd">        view_spec (bool): If ``True``, logs target source estimates</span>
 <span class="sd">            as spectrogram images if model is an instance of a</span>
 <span class="sd">            ``SpectrogramMaskModel`` and tensorboard is enabled. Default:</span>
-<span class="sd">            ``True``.</span>
+<span class="sd">            ``False``.</span>
 <span class="sd">        view_wave (bool): If ``True``, logs target source estimates</span>
-<span class="sd">            as waveform images if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">            as waveform images if tensorboard is enabled. Default: ``False``.</span>
 <span class="sd">        play_estimate (bool): If ``True``, logs listenable target source</span>
-<span class="sd">            estimates if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">            estimates if tensorboard is enabled. Default: ``False``.</span>
 <span class="sd">        play_residual (bool): If ``True``, logs listenable background track</span>
-<span class="sd">            estimates if tensorboard is enabled. Default: ``True``.</span>
+<span class="sd">            estimates if tensorboard is enabled. Default: ``False``.</span>
 <span class="sd">        image_dir (optional[str]):</span>
 <span class="sd">        image_freq (int): Frequency (in epochs) at which to save images.</span>
 <span class="sd">            Default: ``5``.</span>
 <span class="sd">        silent (bool): If ``True``, suppresses checkpoint logging.</span>
-<span class="sd">            Default: ``True``.</span>
+<span class="sd">            Default: ``False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_lr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.008</span>
+    <span class="n">_scale_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_clip_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">_init_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">**</span> <span class="mi">16</span>
     <span class="n">_max_grad_norm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span>
     <span class="n">_max_plateaus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
     <span class="n">_stop_patience</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
     <span class="n">_min_delta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span>
-    <span class="n">_view_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">_view_epoch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">_view_iter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_view_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_view_epoch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_view_iter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">_view_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">_view_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">_view_spec</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
@@ -359,11 +350,8 @@
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">use_amp</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">scale_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">clip_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;checkpoint.pth&quot;</span><span class="p">,</span>
         <span class="n">logging_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;runs&quot;</span><span class="p">,</span>
-        <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
@@ -378,83 +366,82 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">checkpoint</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logging_dir</span> <span class="o">=</span> <span class="n">logging_dir</span>
 
-        <span class="c1"># Load previous trainer or initialize a new one.</span>
-        <span class="k">if</span> <span class="n">resume</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;last_global_step&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-                <span class="s2">&quot;last_epoch&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-                <span class="s2">&quot;patience&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_patience</span><span class="p">,</span>
-                <span class="s2">&quot;num_plateaus&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;train_losses&quot;</span><span class="p">:</span> <span class="p">[],</span>
-                <span class="s2">&quot;val_losses&quot;</span><span class="p">:</span> <span class="p">[],</span>
-                <span class="s2">&quot;best_val_loss&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
-            <span class="p">}</span>
-            <span class="c1"># Set instance attributes corresponding to specified kwargs.</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;last_global_step&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;last_epoch&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;stop_epoch&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;patience&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_patience</span><span class="p">,</span>
+            <span class="s2">&quot;num_plateaus&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;train_losses&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;val_losses&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;best_val_loss&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Set private instance attributes corresponding to specified kwargs.</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">):</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 
-            <span class="c1"># Set model and device.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span>
-            <span class="c1"># Set criterion.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
+        <span class="c1"># Set model and device.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span>
 
-            <span class="c1"># Set optimizer.</span>
-            <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="c1"># Set criterion.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
+
+        <span class="c1"># Set optimizer.</span>
+        <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Use default optimizer. Split parameters if necessary.</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">SpectrogramNetLSTM</span><span class="p">):</span>
+                <span class="n">group_1</span><span class="p">,</span> <span class="n">group_2</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_split_params</span><span class="p">()</span>
+                <span class="c1"># Assign different learning rates to the groups.</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">group_1</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">[</span><span class="mi">0</span><span class="p">]},</span>
+                    <span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">group_2</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+                <span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Use default optimizer. Split parameters if necessary.</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_lr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">SpectrogramNetLSTM</span><span class="p">):</span>
-                    <span class="n">group_1</span><span class="p">,</span> <span class="n">group_2</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_split_params</span><span class="p">()</span>
-                    <span class="c1"># Assign different learning rates to the groups.</span>
-                    <span class="n">params</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">group_1</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">[</span><span class="mi">0</span><span class="p">]},</span>
-                        <span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">group_2</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
-                    <span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">params</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()}]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">AdamW</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()}]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">AdamW</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-            <span class="c1"># Set scheduler.</span>
-            <span class="k">if</span> <span class="n">scheduler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">scheduler</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Use the default lr scheduler.</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span>
-                    <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
-                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
-                    <span class="n">verbose</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_silent</span><span class="p">,</span>
-                    <span class="n">patience</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_patience</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Enable gradient scaling and mixed precision, if possible.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span> <span class="o">=</span> <span class="n">GradScaler</span><span class="p">(</span>
-                <span class="n">init_scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_scale</span><span class="p">,</span>
-                <span class="n">enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_amp</span> <span class="ow">and</span> <span class="n">scale_grad</span>
+        <span class="c1"># Set scheduler.</span>
+        <span class="k">if</span> <span class="n">scheduler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">scheduler</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Use the default lr scheduler.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+                <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_silent</span><span class="p">,</span>
+                <span class="n">patience</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_patience</span>
             <span class="p">)</span>
-            <span class="c1"># Disable gradient clipping if specified.</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">clip_grad</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_max_grad_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Enable gradient scaling and mixed precision, if possible.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span> <span class="o">=</span> <span class="n">GradScaler</span><span class="p">(</span>
+            <span class="n">init_scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_scale</span><span class="p">,</span>
+            <span class="n">enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_amp</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_grad</span>
+        <span class="p">)</span>
+        <span class="c1"># Disable gradient clipping if specified.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clip_grad</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_grad_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
 
-            <span class="c1"># Only use a counter for default scheduler (ReduceLROnPlateau).</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_max_plateaus</span> <span class="o">=</span> <span class="mi">1</span>
-
-        <span class="c1"># Create training callback manager.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_callbacks</span><span class="p">()</span>
+        <span class="c1"># Only use a counter for default scheduler (ReduceLROnPlateau).</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_plateaus</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_silent</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving trainer to </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving checkpoint to </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="c1"># Store private instance attributes.</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;_callbacks&quot;</span><span class="p">,</span> <span class="s2">&quot;_writer&quot;</span><span class="p">}:</span>
+                <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span>
+                    <span class="s2">&quot;_state&quot;</span><span class="p">,</span> <span class="s2">&quot;_callbacks&quot;</span><span class="p">,</span> <span class="s2">&quot;_writer&quot;</span>
+                <span class="p">}:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span> <span class="o">=</span> <span class="n">val</span>
 
         <span class="c1"># Gather object states.</span>
@@ -462,8 +449,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;best_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;optimizer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;scheduler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span><span class="o">.</span><span class="n">is_enabled</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">is_enabled</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
 
         <span class="c1"># Transfer model back to current device.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span>
@@ -478,10 +465,17 @@
             <span class="c1"># Load previous trainer state.</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_silent</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading from </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
             <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
                 <span class="n">f</span><span class="o">=</span><span class="n">checkpoint_path</span><span class="p">,</span>
                 <span class="n">map_location</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span>
             <span class="p">)</span>
+
+            <span class="c1"># Set instance attributes.</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">):</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            
             <span class="c1"># Load model parameters.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span>
                 <span class="n">state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span>
@@ -495,17 +489,12 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;scheduler&quot;</span><span class="p">]</span>
             <span class="p">)</span>
             <span class="c1"># Load gradient scaler.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_amp</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;scale_grad&quot;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_amp</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_grad</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">]</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span> <span class="o">=</span> <span class="n">GradScaler</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="c1"># Set instance attributes.</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_silent</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Successful&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span> <span class="o">=</span> <span class="n">GradScaler</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_save_if_best</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Saves model only if epoch validation loss improves.&quot;&quot;&quot;</span>
@@ -603,6 +592,7 @@
         <span class="n">train_loader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span>
         <span class="n">val_loader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">,</span>
         <span class="n">max_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Runs training.</span>
 
@@ -611,15 +601,26 @@
 <span class="sd">            val_loader (DataLoader): Validation set dataloader.</span>
 <span class="sd">            max_epochs (int): Maximum number of epochs to train for.</span>
 <span class="sd">                Default: ``100``.</span>
-
+<span class="sd">            resume (bool): If ``True``, training will be resumed from the </span>
+<span class="sd">                specified checkpoint file, if possible. Otherwise, training will </span>
+<span class="sd">                be restarted. Default: ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Resume from previous training state.</span>
+        <span class="k">if</span> <span class="n">resume</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="p">)</span>
+
+        <span class="c1"># Create training callbacks manager.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_callbacks</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;stop_epoch&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;stop_epoch&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">max_epochs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;last_global_step&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">stop_epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">max_epochs</span>
+        <span class="n">stop_epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;stop_epoch&quot;</span><span class="p">]</span>
         <span class="n">max_iters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">],</span> <span class="n">stop_epoch</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">stop_epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch [</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">stop_epoch</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">total_train_loss</span> <span class="o">=</span> <span class="mi">0</span>
 
             <span class="c1"># Set model to training mode.</span>
@@ -639,18 +640,15 @@
                     <span class="n">loss_val</span> <span class="o">=</span> <span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
                     <span class="n">total_train_loss</span> <span class="o">+=</span> <span class="n">loss_val</span>
                     <span class="n">mean_train_loss</span> <span class="o">=</span> <span class="n">total_train_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;train_losses&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_train_loss</span><span class="p">)</span>
 
                     <span class="c1"># Display loss via progress bar.</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
-                        <span class="p">{</span>
-                            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">loss_val</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;mean_loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_train_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                        <span class="p">}</span>
-                    <span class="p">)</span>
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">({</span>
+                        <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">loss_val</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;mean_loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_train_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="p">})</span>
 
                     <span class="c1"># Backprop.</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">batch_loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">batch_loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
                     <span class="c1"># Loss-end/post-backward phase callback.</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span><span class="o">.</span><span class="n">on_loss_end</span><span class="p">(</span>
                         <span class="n">named_losses</span><span class="o">=</span><span class="p">{</span>
@@ -675,6 +673,7 @@
             <span class="c1"># Run validation loop. </span>
             <span class="n">mean_val_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">val_loader</span><span class="o">=</span><span class="n">val_loader</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">mean_val_loss</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;train_losses&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_train_loss</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;val_losses&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_val_loss</span><span class="p">)</span>
 
             <span class="c1"># Epoch-end callback.</span>
@@ -697,7 +696,10 @@
                 <span class="k">break</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">[</span><span class="s2">&quot;last_epoch&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_flush_writer</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flush_writer</span><span class="p">()</span>
+        
+        <span class="c1"># save final state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ModelTrainer.validate"><a class="viewcode-back" href="../../../auralflow.trainer.ModelTrainer.html#auralflow.trainer.ModelTrainer.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val_loader</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Given a validation set, runs validation and returns the mean loss.</span>
@@ -730,24 +732,22 @@
                         <span class="n">mean_loss</span> <span class="o">=</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
                 <span class="c1"># Display loss.</span>
-                <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">loss_val</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;mean_loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">({</span>
+                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">loss_val</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;mean_loss&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_loss</span><span class="si">:</span><span class="s2">6.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">})</span>
         <span class="k">return</span> <span class="n">mean_loss</span></div>
 
     <span class="k">def</span> <span class="nf">_optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Optimizes and updates the model&#39;s parameters.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span><span class="o">.</span><span class="n">unscale_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">unscale_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
 
         <span class="c1"># Clip gradient.</span>
         <span class="n">_</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">max_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_grad_norm</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_grad_scaler</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 
         <span class="c1"># Quicker gradient zeroing.</span>
         <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
@@ -755,38 +755,38 @@
 
     <span class="k">def</span> <span class="nf">_flush_writer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span>
+    <span class="c1"># @property</span>
+    <span class="c1"># def scheduler(self):</span>
+    <span class="c1">#     return self._scheduler</span>
 
-    <span class="nd">@scheduler</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scheduler_obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">scheduler_obj</span><span class="p">,</span> <span class="s2">&quot;state_dict&quot;</span><span class="p">):</span>
-            <span class="n">is_valid</span> <span class="o">=</span> <span class="n">callable</span><span class="p">(</span><span class="n">scheduler_obj</span><span class="o">.</span><span class="n">state_dict</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Scheduler must define state_dict().&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">scheduler_obj</span><span class="p">,</span> <span class="s2">&quot;load_state_dict&quot;</span><span class="p">):</span>
-            <span class="n">is_valid</span> <span class="o">=</span> <span class="n">is_valid</span> <span class="ow">and</span> <span class="n">callable</span><span class="p">(</span><span class="n">scheduler_obj</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Scheduler must define load_state_dict().&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scheduler_obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not a valid scheduler.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span> <span class="o">=</span> <span class="n">scheduler_obj</span></div>
+    <span class="c1"># @scheduler.setter</span>
+    <span class="c1"># def scheduler(self, scheduler_obj: object) -&gt; None:</span>
+    <span class="c1">#     if hasattr(scheduler_obj, &quot;state_dict&quot;):</span>
+    <span class="c1">#         is_valid = callable(scheduler_obj.state_dict)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         raise AttributeError(&quot;Scheduler must define state_dict().&quot;)</span>
+    <span class="c1">#     if hasattr(scheduler_obj, &quot;load_state_dict&quot;):</span>
+    <span class="c1">#         is_valid = is_valid and callable(scheduler_obj.load_state_dict)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         raise AttributeError(&quot;Scheduler must define load_state_dict().&quot;)</span>
+    <span class="c1">#     if not is_valid:</span>
+    <span class="c1">#         raise ValueError(</span>
+    <span class="c1">#             f&quot;{scheduler_obj.__class__.__name__} is not a valid scheduler.&quot;</span>
+    <span class="c1">#         )</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         self._scheduler = scheduler_obj</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="k">def</span> <span class="nf">time_forward</span><span class="p">(</span><span class="n">full_forward</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">full_forward</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TIME: </span><span class="si">{</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">result</span>
-    <span class="k">return</span> <span class="n">inner</span>
+<span class="c1"># import time</span>
+<span class="c1"># def time_forward(full_forward):</span>
+<span class="c1">#     def inner(*args, **kwargs):</span>
+<span class="c1">#         t1 = time.clock()</span>
+<span class="c1">#         result = full_forward(*args, **kwargs)</span>
+<span class="c1">#         t2 = time.clock()</span>
+<span class="c1">#         print(f&quot;TIME: {t2 - t1}&quot;)</span>
+<span class="c1">#         return result</span>
+<span class="c1">#     return inner</span>
         
 
 <span class="k">class</span> <span class="nc">_DefaultModelTrainer</span><span class="p">(</span><span class="n">ModelTrainer</span><span class="p">):</span>
@@ -797,7 +797,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">_DefaultModelTrainer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="nd">@time_forward</span>
+    <span class="c1"># @time_forward</span>
     <span class="k">def</span> <span class="nf">full_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixture</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">autocast</span><span class="p">(</span>
             <span class="n">device_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>

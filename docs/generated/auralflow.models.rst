@@ -5,6 +5,14 @@
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+
+   
+      load
+   
    
 
    

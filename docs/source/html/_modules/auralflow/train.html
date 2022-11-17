@@ -177,10 +177,6 @@
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Notes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../theory.html">A Shallow Dive into Theory</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -234,7 +230,6 @@
 <span class="c1"># https://github.com/kianzohoury/auralflow.git</span>
 
 <span class="kn">from</span> <span class="nn">auralflow.datasets</span> <span class="kn">import</span> <span class="n">create_audio_dataset</span>
-<span class="kn">from</span> <span class="nn">auralflow</span> <span class="kn">import</span> <span class="n">configurations</span>
 <span class="kn">from</span> <span class="nn">auralflow.trainer</span> <span class="kn">import</span> <span class="n">_DefaultModelTrainer</span>
 <span class="kn">from</span> <span class="nn">auralflow</span> <span class="kn">import</span> <span class="n">configurations</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
@@ -246,8 +241,8 @@
     <span class="n">training_config</span><span class="p">:</span> <span class="n">configurations</span><span class="o">.</span><span class="n">TrainingConfig</span><span class="p">,</span>
     <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">dataset_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">max_num_tracks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">max_num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">max_num_tracks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
+    <span class="n">max_num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
     <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Trains a model given a valid path to a configuration file.</span>
@@ -261,8 +256,9 @@
 <span class="sd">        training_config (TrainingConfig): Training configuration.</span>
 <span class="sd">        dataset_path (str): Path to the dataset.</span>
 <span class="sd">        max_num_tracks (int): Max number of tracks to load into memory.</span>
+<span class="sd">            Default: 80.</span>
 <span class="sd">        max_num_samples (int): Max number of resampled chunks from the pool</span>
-<span class="sd">            of tracks.</span>
+<span class="sd">            of tracks. Default: 10000.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading training data...&quot;</span><span class="p">)</span>
     <span class="n">train_dataset_metadata_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
@@ -358,7 +354,7 @@
         <span class="n">view_grad</span><span class="o">=</span><span class="n">training_config</span><span class="o">.</span><span class="n">visuals_config</span><span class="o">.</span><span class="n">view_grad</span><span class="p">,</span>
         <span class="n">view_weights</span><span class="o">=</span><span class="n">training_config</span><span class="o">.</span><span class="n">visuals_config</span><span class="o">.</span><span class="n">view_weights</span><span class="p">,</span>
         <span class="n">view_spec</span><span class="o">=</span><span class="n">training_config</span><span class="o">.</span><span class="n">visuals_config</span><span class="o">.</span><span class="n">view_spec</span><span class="p">,</span>
-        <span class="n">view_wav</span><span class="o">=</span><span class="n">training_config</span><span class="o">.</span><span class="n">visuals_config</span><span class="o">.</span><span class="n">view_wave</span><span class="p">,</span>
+        <span class="n">view_wave</span><span class="o">=</span><span class="n">training_config</span><span class="o">.</span><span class="n">visuals_config</span><span class="o">.</span><span class="n">view_wave</span><span class="p">,</span>
         <span class="n">play_estimate</span><span class="o">=</span><span class="n">training_config</span><span class="o">.</span><span class="n">visuals_config</span><span class="o">.</span><span class="n">play_estimate</span><span class="p">,</span>
         <span class="n">play_residual</span><span class="o">=</span><span class="n">training_config</span><span class="o">.</span><span class="n">visuals_config</span><span class="o">.</span><span class="n">play_residual</span><span class="p">,</span>
         <span class="n">image_dir</span><span class="o">=</span><span class="n">training_config</span><span class="o">.</span><span class="n">visuals_config</span><span class="o">.</span><span class="n">image_dir</span><span class="p">,</span>

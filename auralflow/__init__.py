@@ -13,6 +13,7 @@ from auralflow import visualizer
 from auralflow import utils
 from . import configurations
 from . import parse
+from . import pretrained
 from . import separate
 from . import test
 from . import train

@@ -6,7 +6,7 @@
 
 # __all__ = ["separate_audio"]
 
-
+from auralflow.datasets.datasets import AudioDataset
 import torch
 from scipy.io import wavfile
 
@@ -14,6 +14,7 @@ from scipy.io import wavfile
 from typing import Mapping
 from pathlib import Path
 from torch import Tensor
+from auralflow import configurations
 from auralflow.configurations import _build_model
 from auralflow.transforms import trim_audio
 from auralflow.visualizer import ProgressBar
@@ -33,17 +34,20 @@ def separate_audio(
     track_path = Path(filename)
     print(track_path.name, flush=True)
 
-    # # Load audio.
-    # mix_audio, sr = librosa.load(
-    #     str(track_path) + "/mixture.wav", sr=sr, duration=duration
-    # )
-    mix_audio = None
-    # mix_audio = torch.from_numpy(mix_audio).unsqueeze(0)
+    # Load audio.
+    sr, mix_audio = wavfile.read(
+        filename=str(track_path) + "/mixture.wav"
+    )
+    mix_audio = torch.from_numpy(mix_audio).T.unsqueeze(0).float()
+    
+    # Collapse to mono if necessary.
+    if model.num_out_channels == 1:
+        mix_audio = torch.mean(mix_audio, dim=1, keepdim=True)
 
     # Split audio into chunks.
-    length = model.dataset_params["sample_length"]
+    length = model.sample_length
     step_size = length * sr
-    max_frames = min(mix_audio.shape[-1], duration * sr)
+    max_frames = mix_audio.shape[-1]
 
     # Store chunks.
     est_chunks, res_chunks, mix_chunks = [], [], []
@@ -53,11 +57,7 @@ def separate_audio(
     with ProgressBar(iterable=None, total=max_frames, ascii=" #") as pbar:
         while offset < max_frames:
             # Reshape and trim audio chunk.
-            audio_chunk = mix_audio[:, offset: offset + step_size - padding]
-
-            # Unsqueeze batch dimension if not already batched.
-            if audio_chunk.dim() == 2:
-                audio_chunk = audio_chunk.unsqueeze(0)
+            audio_chunk = mix_audio[..., offset: offset + step_size - padding]
 
             # Separate audio and trim.
             estimate = model.separate(audio_chunk)[..., :-padding]
@@ -69,7 +69,7 @@ def separate_audio(
             mix_chunks.append(audio_chunk)
 
             # Update current frame position.
-            offset = offset + step_size - padding
+            offset += step_size - padding
             pbar.n += step_size - padding
             if offset + step_size >= max_frames:
                 break
@@ -102,7 +102,8 @@ def separate_audio(
 
 
 def main(
-    config_filepath: str,
+    model_config: configurations.AudioModelConfig,
+    model_checkpoint: str,
     audio_filepath: str,
     save_filepath: str,
     sr: int = 44100,
@@ -112,18 +113,14 @@ def main(
 ) -> None:
     """Separates audio tracks and saves them to a given filepath."""
 
-    # Load configuration file.
-    print("Reading configuration file...")
-    # configuration = load_config(config_filepath)
-    configuration = {}
-    print("  Successful.")
-
-    # Load model. Setup restores previous state if resuming training.
-    print("Loading model...")
-    model = _build_model(
-        **configuration
+    # Build and initialize the source separation model.
+    print(f"Building model...")
+    model = configurations._build_model(
+        model_config=model_config,
+        device="cuda" if torch.cuda.is_available() else "cpu"
     )
-    # model = setup_model(model)
+    model_state = torch.load(model_checkpoint)["best_model"]
+    model.load_state(state=model_state, device=model.device)
     print("  Successful.")
 
     # Folder to store output.

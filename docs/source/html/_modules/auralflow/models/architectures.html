@@ -177,10 +177,6 @@
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Notes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../theory.html">A Shallow Dive into Theory</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -1010,10 +1006,10 @@
         <span class="c1"># Normalizing flow.</span>
         <span class="n">mu_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">enc_5</span><span class="p">)</span>
         <span class="n">sigma_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_sigma</span><span class="p">(</span><span class="n">enc_5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-        <span class="n">eps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="n">sigma_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
         <span class="c1"># Sample z from the modeled distribution.</span>
-        <span class="n">latent_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">*</span> <span class="n">eps</span>
+        <span class="n">latent_data</span> <span class="o">=</span> <span class="n">mu_data</span> <span class="o">+</span> <span class="n">sigma_data</span> <span class="o">*</span> <span class="n">eps</span>
 
         <span class="c1"># Pass through recurrent stack.</span>
         <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">latent_data</span><span class="p">)</span>

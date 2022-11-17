@@ -177,10 +177,6 @@
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Notes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../theory.html">A Shallow Dive into Theory</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api.html">Python API</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -719,11 +715,11 @@
             <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span>
                 <span class="n">estimate_audio</span><span class="o">=</span><span class="n">estimate_audio</span><span class="p">,</span> <span class="n">target_audio</span><span class="o">=</span><span class="n">target_audio</span>
             <span class="p">)</span>
-            <span class="c1"># Add KL loss term if applicable.</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">SpectrogramNetVAE</span><span class="p">):</span>
-                <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;mu&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]</span>
-                <span class="n">kl_loss</span> <span class="o">=</span> <span class="n">kl_div_loss</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
-                <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span> <span class="o">+</span> <span class="n">kl_loss</span>
+            <span class="c1"># # Add KL loss term if applicable.</span>
+            <span class="c1"># if isinstance(model.model, SpectrogramNetVAE):</span>
+            <span class="c1">#     mu, sigma = data[&quot;mu&quot;], data[&quot;sigma&quot;]</span>
+            <span class="c1">#     kl_loss = kl_div_loss(mu=mu, sigma=sigma)</span>
+            <span class="c1">#     loss = loss + kl_loss</span>
         <span class="k">return</span> <span class="n">loss</span></div>
 
 
